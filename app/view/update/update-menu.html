@@ -1,0 +1,26 @@
+{% extends 'base-system.html' %}
+
+{% block content %}
+<big>The following system update options are available:</big><br><br>
+	{% if mysql_enabled %}
+	- <a href='{{baseurl}}update/errors/'>display error log</a> - show a list of errors and related debug info<br>
+	<hr>
+	- <a href='{{baseurl}}update/database/'>database model update</a> - needed after any manual modification of db definitions in model files<br>
+	{% elseif %}
+	- <span style="color: silver;">error log disabled</span> - error log requires database accesss<br>
+	<hr>
+	- <span style="color: silver;">database model disabled</span> - you can enable it by changing the <em>zaj_mysql_enabled</em> setting<br/>
+	{% endif %}
+	- <a href='{{baseurl}}update/cache/'>reset object cache</a> - delete and regenerate object cache files<br>
+	- <a href='{{baseurl}}update/template/'>reset template, conf, and lang cache</a> - delete and regenerate template, conf, and lang cache files<br>
+	<hr>
+	- <a href='{{baseurl}}update/install/'>install/update version</a> - updates your data files and db to the latest version if needed<br>
+	<hr>
+
+{% if zaj.debug_mode %}
+	<h3 align="center" style="color: orange;">Mozajik is running in debug mode!</h3>
+{% elseif %}
+	<h3 align="center" style="color: green;">Mozajik is running in production mode!</h3>
+{% endif %}
+
+{% endblock content %}

@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		
+	<!-- internal stylesheets -->
+		<link rel="stylesheet" type="text/css" href="{{baseurl}}system/css/mozajik-yui.css?3.0">
+
+	<!-- YUI Base --> 
+		<script type="text/javascript" src="http://yui.yahooapis.com/2.8.0r4/build/yahoo/yahoo-min.js" ></script> 
+
+	{% block scripts %}{% endblock scripts %}
+
+</head>
+
+<body class='yui-skin-sam'>
+	<script language="javascript">
+		// set variables
+			var zajyuiobj = function(){
+				// create my references to the parent page
+					this.field = parent.document.getElementById('{{get.id}}');
+					this.iframe = parent.document.getElementById('{{get.id}}-iframe');
+					this.zajlib = parent.zajlib;
+					this.parent = parent;
+				// fire event on field
+					this.fireEvent = function(event){ this.zajlib.onExtControlEvent(this.field, event); }
+			}
+			function afterInit(){
+				zajyui.zajlib.onExtControlLoad();
+			}
+			var zajyui = new zajyuiobj();			
+	</script>	
+	
+	{% block content %}{% endblock content %}
+</body>

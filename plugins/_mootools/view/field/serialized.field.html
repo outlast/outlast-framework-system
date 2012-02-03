@@ -1,0 +1,8 @@
+	<div id='{{field.id}}'>
+	{% if field.value %}
+		{% foreach field.value as val %}
+			<input class='field text' type='text' name='{{field.name}}[]' value='{{val|escape}}'>
+		{% endforeach %}
+	{% endif %}
+	</div>
+	<a class="icon tiny add" onclick="var el = new Element('input', {'name': '{{field.name}}[]', 'class': 'field text', 'type': 'text'}); el.inject('{{field.id}}');">New</a>
