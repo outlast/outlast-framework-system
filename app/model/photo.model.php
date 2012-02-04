@@ -84,6 +84,8 @@ class Photo extends zajModel {
 			}
 		// now remove the original
 			unlink($file_path);
+		// Remove temporary location flag
+			$this->temporary = false;
 		$this->set('status', 'saved');
 		$this->save();
 		return $this;
@@ -122,10 +124,12 @@ class Photo extends zajModel {
 		// look for bad characters in $size
 			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0) return false;
 		// generate path
-			$this->zajlib->load->library('file');
 			$file_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$size.jpg");
 		// if it is in preview mode (only if not yet finalized)
-			if(!$this->exists && $size == "preview") $file_path = $this->tmppath;
+			$preview_path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
+			if($this->temporary && $size == "preview") $file_path = $preview_path;
+		// final test, if file exists
+			if(!file_exists($file_path)) exit("File could not be found.");
 		// pass file thru to user
 			if($force_download) header('Content-Disposition: attachment; filename="'.$this->data->name.'"');
 			header('Content-Type: image/jpeg;');

@@ -64,7 +64,7 @@
 			// Set status to uploaded
 				$obj->set('name', $orig_name);
 				$obj->set('status', 'uploaded');
-				$obj->tmppath = $this->zajlib->basepath.'cache/upload/'.$obj->id.'.tmp';
+				$obj->temporary = true;
 				$obj->save();
 			return $obj;
 		}
