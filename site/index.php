@@ -33,7 +33,7 @@
 	// set internal error handler
 		set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext){ if(!is_object($GLOBALS['zajlib'])){ print "FATAL ERROR: Check error log."; } else $GLOBALS['zajlib']->error_handler($errno, $errstr, $errfile, $errline, $errcontext);});			
 	// debug mode needed?
-		if(in_array($zajlib->host, $GLOBALS['debug_mode_domains']) || $GLOBALS['debug_mode']) $zajlib->debug_mode = true;
+		if(in_array($zajlib->host, $GLOBALS['debug_mode_domains']) || !empty($GLOBALS['debug_mode']) || !empty($_SERVER['DEBUG_MODE'])) $zajlib->debug_mode = true;
 	// debug mode explicity overridden?
 		if($zajlib->debug_mode && isset($_REQUEST['debug_mode'])) $zajlib->debug_mode = false;
 	// load default libraries
