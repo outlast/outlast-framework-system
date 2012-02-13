@@ -22,10 +22,8 @@
 /* #Base 960 Grid
 ================================================== */
 
-    .container                                  { position: relative; width: 960px; margin: 0 auto; padding: 0; }
 	    /* 1200 grid verison */
-	    .c1200                                  { position: relative; width: 1260px; margin: 0 auto; padding: 0; }
-
+    .container                                  { position: relative; width: 1260px; margin: 0 auto; padding: 0; }
     .column, .columns                           { float: left; display: inline; margin-left: 10px; margin-right: 10px; }
     .row                                        { margin-bottom: 20px; }
 
@@ -199,13 +197,12 @@
         .container .fifteen.columns,
         .container .sixteen.columns,
         .container .one-third.column,
-        .container .two-thirds.column  { width: 300px; }
-		    /* 1200 grid verison */
-		    .container .seventeen.columns				{ width: 300px; }
-		    .container .eighteen.columns					{ width: 300px; }
-		    .container .nineteen.columns					{ width: 300px; }
-		    .container .twenty.columns					{ width: 300px; }
-		    .container .twentyone.columns				{ width: 300px; }
+        .container .two-thirds.column,
+		  .container .seventeen.columns,
+		  .container .eighteen.columns,
+		  .container .nineteen.columns,
+		  .container .twenty.columns,
+		  .container .twentyone.columns			{ width: 300px; }
         
 
         /* Offsets */
@@ -254,13 +251,12 @@
         .container .fifteen.columns,
         .container .sixteen.columns,
         .container .one-third.column,
-        .container .two-thirds.column { width: 420px; }
-		    /* 1200 grid verison */
-		    .container .seventeen.columns				{ width: 420px; }
-		    .container .eighteen.columns					{ width: 420px; }
-		    .container .nineteen.columns					{ width: 420px; }
-		    .container .twenty.columns					{ width: 420px; }
-		    .container .twentyone.columns				{ width: 420px; }
+        .container .two-thirds.column,
+ 	     .container .seventeen.columns,
+        .container .eighteen.columns,
+        .container .nineteen.columns,
+        .container .twenty.columns,
+        .container .twentyone.columns	{ width: 420px; }
         
     }
 
