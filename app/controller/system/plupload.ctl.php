@@ -76,6 +76,9 @@
 		 **/
 		private function upload_standard($process_as_image = false){
 			// Process this one file
+					// If process as image, then also return size
+						$width = $height = 0;
+						if($process_as_image) list($width, $height, $type, $attr) = getimagesize($_FILES['file']['tmp_name']);
 					// Process this one file			 		 	
 			 		 	$orig_name = $_FILES['file']['name'];
 						$file = $this->upload_process($orig_name, $_FILES['file']['tmp_name'], $process_as_image);
@@ -93,6 +96,8 @@
 		 		 				'id'=>$file->id,
 		 		 				'name'=>$file->name,
 		 		 				'type'=>$file->class_name,
+		 		 				'width'=>$width,
+		 		 				'height'=>$height,
 		 		 			);
 		 		 		}
 

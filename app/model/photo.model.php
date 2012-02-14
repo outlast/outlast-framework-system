@@ -1,5 +1,6 @@
 <?php
-$GLOBALS['photosizes'] = array('thumb'=>50,'small'=>300,'normal'=>700,'large'=>2000,'full'=>false);
+// Define my photo sizes if not already done!
+if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'small'=>300,'normal'=>700,'large'=>2000,'full'=>false);
 
 /**
  * A built-in model to handle photos.
