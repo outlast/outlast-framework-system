@@ -116,6 +116,15 @@ class zajfield_manytoone extends zajField {
 				// generate query and return
 					return "model.`$field` $logic $query";
 			}
+			elseif(is_array($value)){
+				// get my other query
+					$query = '("'.join('","', $value).'")';
+				// figure out how to connect me
+					if($logic=='NOT LIKE' || $logic=='!=' || $logic=='!==') $logic = "NOT IN";
+					else $logic = "IN";
+				// generate query and return
+					return "model.`$field` $logic $query";
+			}
 			else{
 				// Possible values: object, string
 					if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
