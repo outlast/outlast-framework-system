@@ -22,7 +22,7 @@ class zajlib_graphics extends zajLibExtension {
 	/**
 	 * Resize and convert a file to a new size and format.
 	 * @param string $oldpath The path to the original file. Path is a full path (for backwards compatibility).
-	 * @param string $newpath The path to the new file. Whatever the filename is, it will use that extension to create the new file.
+	 * @param string $newpath The path to the new file. Whatever the filename is, it will use that extension to create the new file. Format defaults to jpg, but png and gif also supported.
 	 * @param integer $maxwidth Specifies the maximum width the image can be. Set to 0 or false if you do not want to touch the width.
 	 * @param integer $maxheight Specifies the maximum height the image can be. Set to 0 or false if you do not want to touch the height.
 	 * @param integer $jpeg_quality A number value of the jpg quality to be used in conversion. Only matters for jpg output.
@@ -72,9 +72,9 @@ class zajlib_graphics extends zajLibExtension {
 			 }
 		
 	   // Done with resize. Save as an image.	
-		   if($newpathdata[extension] == "jpg" || $newpathdata[extension] == "jpeg") ImageJpeg($im, $newpath, $jpeg_quality);
-		   elseif($newpathdata[extension] == "gif") ImageGif($im, $newpath);
-		   elseif($newpathdata[extension] == "png") ImagePng($im, $newpath);
+			if($newpathdata[extension] == "gif") ImageGif($im, $newpath);
+			elseif($newpathdata[extension] == "png") ImagePng($im, $newpath);
+			else ImageJpeg($im, $newpath, $jpeg_quality);
 	
 	   // Clean up and return true
 		   ImageDestroy ($im);
@@ -87,7 +87,7 @@ class zajlib_graphics extends zajLibExtension {
 	/**
 	 * Crop and convert a file to a new size and format.
 	 * @param string $oldpath The path to the original file. Path is a full path (for backwards compatibility).
-	 * @param string $newpath The path to the new file. Whatever the filename is, it will use that extension to create the new file.
+	 * @param string $newpath The path to the new file. Whatever the filename is, it will use that extension to create the new file. Format defaults to jpg, but png and gif also supported.
 	 * @param integer $x Cropped image offset from left.
 	 * @param integer $y Cropped image offset from top.
 	 * @param integer $w Cropped image width.
@@ -118,10 +118,9 @@ class zajlib_graphics extends zajLibExtension {
 		$im = $newim;
 		
 	   // Done with resize. Save as an image.	
-		   if($newpathdata[extension] == "jpg" || $newpathdata[extension] == "jpeg") ImageJpeg($im, $newpath, $jpeg_quality);
-		   elseif($newpathdata[extension] == "gif") ImageGif($im, $newpath);
-		   elseif($newpathdata[extension] == "png") ImagePng($im, $newpath);
-	
+			if($newpathdata['extension'] == "gif") ImageGif($im, $newpath);
+			elseif($newpathdata['extension'] == "png") ImagePng($im, $newpath);
+			else ImageJpeg($im, $newpath, $jpeg_quality);
 	   // Clean up and return true
 		   ImageDestroy ($im);
 		   if($delete_original) @unlink($oldpath);
