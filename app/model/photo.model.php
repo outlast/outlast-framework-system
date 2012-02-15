@@ -213,9 +213,10 @@ class Photo extends zajModel {
 	/**
 	 * Creates a photo object from a standard upload HTML4
 	 * @param string $field_name The name of the file input field.
+	 * @param boolean $save_now If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @param zajObject $parent My parent object.
 	 **/
-	public static function create_from_upload($field_name, $parent = false){
+	public static function create_from_upload($field_name, $parent = false, $save_now = true){
 		// File names
 			$orig_name = $_FILES[$field_name]['name'];
 			$tmp_name = $_FILES[$field_name]['tmp_name'];
@@ -230,7 +231,9 @@ class Photo extends zajModel {
 			$obj->set('name', $orig_name);
 			if($parent !== false) $obj->set('parent', $parent);
 			//$obj->set('status', 'saved'); (done by set_image)
-			$obj->upload();
+			if($save_now) $obj->upload();
+			else $obj->temporary = true;
+			$obj->save();
 			@unlink($tmp_name);
 		return $obj;
 	}
