@@ -100,8 +100,8 @@
 			position: fixed;
 			z-index: 99;
 			background-color: white;
-			opacity: 0.2;
-			filter: alpha(opacity=20);
+			opacity: 0.6;
+			filter: alpha(opacity=60);
 			top: 0px;
 			left: 0px;
 			width: 100%;
@@ -109,20 +109,17 @@
 		}
 			div.popover.contenttitle{
 				background-color: #f2f3f7;		
-				width: 100%;
 				color: black;
 				height: 15px;
 				font-size: 13px;
 				overflow: hidden;
 				font-weight: bold;
-				top: -16px;
+				top: 5px;
 				text-align: center;
 			}
 			div.popover.contentview{
 				background-color: #f2f3f7;		
-				width: 100%;
 				color: black;
-				height: 100%;
 				overflow: hidden;
 				padding: 0px;
 			}
@@ -218,12 +215,18 @@
 		div.popover.popup{
 			position: fixed;
 			z-index: 100;
+			background-color: #f2f3f7;
+			border-radius: 10px;
+			padding: 20px;
+			-webkit-box-shadow: 0px 0px 20px 0px #000000;
+			-moz-box-shadow: 0px 0px 20px 0px #000000;
+			box-shadow: 0px 0px 20px 0px #000000;
 		}
 			a.popover.close{
 				position: absolute;
 				z-index: 101;
-				top: -15px;
-				right: -10px;
+				top: 10px;
+				right: 7px;
 			}
 
 	/* Checklist */

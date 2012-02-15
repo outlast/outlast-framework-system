@@ -283,9 +283,9 @@ var PopUp = new Class({
 	// constructor
 		initialize: function(content, options){
 			// set default options
-				this.setOptions(options);
+				//this.setOptions(options);
 			// create div
-				this.popup = new Element('div', {'class':'popover popup', 'html':"<div class='popover side top'></div><div class='popover side bottom'></div><div class='popover side left'></div><div class='popover side right'></div><div class='popover side tl'></div><div class='popover side tr'></div><div class='popover side bl'></div><div class='popover side br'></div>"});				
+				this.popup = new Element('div', {'class':'popover popup', 'html':""});				
 			// create title and content, plus close box
 				this.potitle = new Element('div', {'class':'popover contenttitle', 'html': this.options.title});
 				this.pocontent = new Element('div', {'class':'popover contentview', 'html': content });

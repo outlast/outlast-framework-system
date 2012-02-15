@@ -111,6 +111,41 @@ Mozajik.FileList = new Class({
 	 	}
 });
 
+/**
+ * Crop class allows you to crop an image.
+ * @author Aron Budinszky /aron@mozajik.org/
+ * @version 3.0
+ */
+Crop = new Class({
+	Implements: [Options, Events],
+	
+	options: {
+		y: 10,
+		x: 10,
+		w: 50,
+		h: 50
+	},
+	
+	/**
+	 * Creates a new Crop object
+	 * @param Element The element which is to contain the ratings stars.
+	 **/
+		initialize: function(image, options){
+			// set default options
+				this.setOptions(options);
+				this.image = $(image);
+			// get my image location
+				var ipos = this.image.getPosition();
+			// create my crop select tool
+				this.croptool = new Element('div', { 'styles': { 'border': '1px solid black', 'position': 'absolute', 'top':ipos.y+this.options.y, 'left':ipos.x+this.options.x, 'width': this.options.w, 'height': this.options.h }});
+				document.body.appendChild(this.croptool);
+		}
+
+});
+
+
+
+
 
 /**
  * Rating allows you to create a generic rating system.
