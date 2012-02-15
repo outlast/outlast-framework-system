@@ -135,6 +135,9 @@ var MozajikBase = new Class({
 	 * @param options All other options as an object.
 	 **/
 		window: function(url, width, height, options){
+			// Default options!
+				if(typeof width == 'undefined') width = 500;
+				if(typeof height == 'undefined') height = 300;
 			// TODO: implement options
 			window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=0,height="+height+",width="+width);
 		}
