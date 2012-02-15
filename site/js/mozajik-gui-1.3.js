@@ -283,7 +283,7 @@ var PopUp = new Class({
 	// constructor
 		initialize: function(content, options){
 			// set default options
-				//this.setOptions(options);
+				this.setOptions(options);
 			// create div
 				this.popup = new Element('div', {'class':'popover popup', 'html':""});				
 			// create title and content, plus close box
