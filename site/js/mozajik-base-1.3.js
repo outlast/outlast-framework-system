@@ -139,7 +139,7 @@ var MozajikBase = new Class({
 				if(typeof width == 'undefined') width = 500;
 				if(typeof height == 'undefined') height = 300;
 			// TODO: implement options
-			window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=0,height="+height+",width="+width);
+			window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height="+height+",width="+width);
 		}
 });
 
