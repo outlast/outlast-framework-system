@@ -13,8 +13,8 @@
 			text-decoration: none;
 		}
 		a.icon.tiny:hover{
-			opacity: 0.8;
-			filter: alpha(opacity=80);
+			opacity: 0.4;
+			filter: alpha(opacity=40);
 		}
 		a.icon.tiny.left{
 			float: left;
@@ -100,8 +100,8 @@
 			position: fixed;
 			z-index: 99;
 			background-color: white;
-			opacity: 0.6;
-			filter: alpha(opacity=60);
+			opacity: 0.8;
+			filter: alpha(opacity=80);
 			top: 0px;
 			left: 0px;
 			width: 100%;
