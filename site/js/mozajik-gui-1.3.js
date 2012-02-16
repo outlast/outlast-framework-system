@@ -97,7 +97,8 @@ var PopOver = new Class({
 					offsetx = this.options.left-40-this.options.width;
 					offsety = -25+this.options.top;				
 					this.popointer.addClass('right');
-				}			
+				}				
+					
 			// position it
 				this.popover.position({
 					relativeTo: this.options.relativeTo,
@@ -303,7 +304,15 @@ var PopUp = new Class({
 					height: this.options.height,
 					display: 'none'
 				});
-				this.reposition()			
+			// set automatic top if in FB context
+				if(this.options.top == 0 && typeof FB != 'undefined'){
+					var self = this;
+					FB.Canvas.getPageInfo(function(info){
+						self.options.top = info.scrollTop/2-info.offsetTop;
+						self.resize();
+					});
+				}
+				else this.reposition();
 			
 			// now add events
 				var self = this;
