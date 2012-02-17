@@ -5,6 +5,10 @@
  * @subpackage BuiltinControllers
  **/
 
+	// Set default configuration options
+		if(empty($GLOBALS['zaj_plupload_photo_maxwidth'])) $GLOBALS['zaj_plupload_photo_maxwidth'] = 5000;
+		if(empty($GLOBALS['zaj_plupload_photo_maxfilesize'])) $GLOBALS['zaj_plupload_photo_maxfilesize'] = 5000000;
+
 	class zajapp_system_plupload extends zajController{
 		
 		/**
@@ -60,7 +64,10 @@
 				}
 				else $obj = File::create();
 			// Move to cache folder with id name
-				@move_uploaded_file($temp_name, $this->zajlib->basepath.'cache/upload/'.$obj->id.'.tmp');
+				$new_tmp_name = $this->zajlib->basepath.'cache/upload/'.$obj->id.'.tmp';
+			// Resize if max size set and image
+				if($process_as_image && !empty($GLOBALS['zaj_plupload_photo_maxwidth'])) $this->zajlib->graphics->resize($temp_name, $new_tmp_name, $GLOBALS['zaj_plupload_photo_maxwidth'], $GLOBALS['zaj_plupload_photo_maxwidth']*2, 85, true);
+				else @move_uploaded_file($temp_name, $new_tmp_name);
 			// Set status to uploaded
 				$obj->set('name', $orig_name);
 				$obj->set('status', 'uploaded');
@@ -76,17 +83,20 @@
 		 **/
 		private function upload_standard($process_as_image = false){
 			// Process this one file
+				$error = false;
 					// If process as image, then also return size
 						$width = $height = 0;
 						if($process_as_image) list($width, $height, $type, $attr) = getimagesize($_FILES['file']['tmp_name']);
+						if($process_as_image && $_FILES['file']['size'] > $GLOBALS['zaj_plupload_photo_maxfilesize']) $error = "Image file size too big (".$_FILES['file']['size']."/".$_GLOBALS['zaj_plupload_photo_maxfilesize']." bytes)!";
 					// Process this one file			 		 	
 			 		 	$orig_name = $_FILES['file']['name'];
-						$file = $this->upload_process($orig_name, $_FILES['file']['tmp_name'], $process_as_image);
+						if(!$error) $file = $this->upload_process($orig_name, $_FILES['file']['tmp_name'], $process_as_image);
 		 		 	// If there was an error
-		 		 		if(!$file){
+		 		 		if($error || !$file){
+		 		 			if(!$error) $error = 'Invalid file format or size.';
 		 		 			$result = array(
 		 		 				'status'=>'error',
-		 		 				'message'=>'Invalid file format or size.',
+		 		 				'message'=>$error,
 		 		 			);
 		 		 		}
 		 		 		else{

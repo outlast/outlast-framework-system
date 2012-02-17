@@ -34,12 +34,13 @@ class zajlib_graphics extends zajLibExtension {
 		// get the new file type
 			$newpathdata = pathinfo($newpath);
 			$newpathdata['extension'] = mb_strtolower($newpathdata[extension]);
+			
 		// create the folders needed
 			@mkdir($newpathdata['dirname'], 0777, true);
 		// prepare image
 			$im = $this->prepare_image($oldpath);
 			if(!$im) return false;
-	
+
 		// Execute resize
 			$width = imagesx($im);
 			$height = imagesy($im);
@@ -136,9 +137,9 @@ class zajlib_graphics extends zajLibExtension {
 	   // Check for GD library
 	   		if(!function_exists("imagecreatefromjpeg")) return $this->zajlib->error("PHP GD library not installed! Please contact your system administrator.");
 	   // First try jpeg, then gif and png
-	   		$im = @imagecreatefromjpeg($oldpath);
-			if($im === false) $im = @imagecreatefromgif($oldpath);
-			if($im === false) $im = @imagecreatefrompng($oldpath);	   
+	   		$im = imagecreatefromjpeg($oldpath);
+			if($im === false) $im = imagecreatefromgif($oldpath);
+			if($im === false) $im = imagecreatefrompng($oldpath);	   
 	   	return $im;
 	}
 
