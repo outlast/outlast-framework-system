@@ -91,6 +91,8 @@
 					// Process this one file			 		 	
 			 		 	$orig_name = $_FILES['file']['name'];
 						if(!$error) $file = $this->upload_process($orig_name, $_FILES['file']['tmp_name'], $process_as_image);
+					// Now recheck the file size (it may have been resized!)
+						if($process_as_image) list($width, $height, $type, $attr) = getimagesize($this->zajlib->basepath.'cache/upload/'.$file->id.'.tmp');
 		 		 	// If there was an error
 		 		 		if($error || !$file){
 		 		 			if(!$error) $error = 'Invalid file format or size.';
