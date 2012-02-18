@@ -85,8 +85,14 @@ class zajlib_request extends zajLibExtension {
 			}
 			else $port = 80;
 		// get method
-			 if($method == 'POST') $method = 'POST';
-			 else $method = 'GET';
+			 if($method == 'POST'){
+			 	$method = 'POST';
+			 	$path = $urldata['path'];
+			 }
+			 else{
+			 	$method = 'GET';
+			 	$path = $url;
+			 }
 		// assemble my headers (if none given)
 			if(empty($customheaders)) $customheaders = array();
 			if(!is_array($customheaders)) return $this->zajlib->error("Invalid format for custom headers! Must be a key/value array.");
@@ -95,8 +101,8 @@ class zajlib_request extends zajLibExtension {
 			$fp = fsockopen($prefix.$urldata['host'], $port);
 			if($fp === false) return false;
 		// send GET or POST request
-			fputs($fp, "$method $urldata[path] HTTP/1.1\r\n");
-			fputs($fp, "Host: $urldata[host]\r\n");
+			fputs($fp, "$method $path HTTP/1.1\r\n");
+			fputs($fp, "Host: ".$urldata['host']."\r\n");
 			// Send custom headers
 				foreach($customheaders as $key=>$value) fputs($fp, "$key: $value\r\n");
 		// send the content		
