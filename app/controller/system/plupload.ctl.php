@@ -84,15 +84,25 @@
 		private function upload_standard($process_as_image = false){
 			// Process this one file
 				$error = false;
-					// If process as image, then also return size
-						$width = $height = 0;
-						if($process_as_image) list($width, $height, $type, $attr) = getimagesize($_FILES['file']['tmp_name']);
-						if($process_as_image && $_FILES['file']['size'] > $GLOBALS['zaj_plupload_photo_maxfilesize']) $error = "Image file size too big (".$_FILES['file']['size']."/".$_GLOBALS['zaj_plupload_photo_maxfilesize']." bytes)!";
+					// Check if file uploaded
+						if(empty($_FILES['file']['tmp_name'])){
+							$error = "File coud not be uploaded.";
+							$this->zajlib->warning("File could not be uploaded.".print_r($_POST, true));
+						}
+						else{
+							// If process as image, then also return size
+								$width = $height = 0;
+								if($process_as_image) list($width, $height, $type, $attr) = getimagesize($_FILES['file']['tmp_name']);
+								if($process_as_image && $_FILES['file']['size'] > $GLOBALS['zaj_plupload_photo_maxfilesize']) $error = "Image file size too big (".$_FILES['file']['size']."/".$_GLOBALS['zaj_plupload_photo_maxfilesize']." bytes)!";
+						}
 					// Process this one file			 		 	
 			 		 	$orig_name = $_FILES['file']['name'];
-						if(!$error) $file = $this->upload_process($orig_name, $_FILES['file']['tmp_name'], $process_as_image);
-					// Now recheck the file size (it may have been resized!)
-						if($process_as_image) list($width, $height, $type, $attr) = getimagesize($this->zajlib->basepath.'cache/upload/'.$file->id.'.tmp');
+						if(!$error){
+							// Process file
+							$file = $this->upload_process($orig_name, $_FILES['file']['tmp_name'], $process_as_image);
+							// Now recheck the file size (it may have been resized!)
+							if(is_object($file) && $process_as_image) list($width, $height, $type, $attr) = getimagesize($this->zajlib->basepath.'cache/upload/'.$file->id.'.tmp');
+						}
 		 		 	// If there was an error
 		 		 		if($error || !$file){
 		 		 			if(!$error) $error = 'Invalid file format or size.';
