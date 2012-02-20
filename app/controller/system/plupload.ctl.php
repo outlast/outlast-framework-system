@@ -87,7 +87,7 @@
 					// Check if file uploaded
 						if(empty($_FILES['file']['tmp_name'])){
 							$error = "File coud not be uploaded.";
-							$this->zajlib->warning("File could not be uploaded.".print_r($_POST, true));
+							$this->zajlib->warning("File could not be uploaded.".$_SERVER['HTTP_USER_AGENT']);
 						}
 						else{
 							// If process as image, then also return size
