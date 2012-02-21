@@ -334,8 +334,7 @@ var PopUp = new Class({
 				this.popup.setStyle('top', '50%');
 				this.popup.setStyle('left', '50%');
 				// get size!
-				var psize = this.pocontent.getScrollSize();
-				this.popup.setStyle('margin-left', ((-1)*psize.x/2));
+				this.popup.setStyle('margin-left', ((-1)*this.options.width/2));
 			return true;
 		},
 		resize: function(){
