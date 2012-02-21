@@ -593,26 +593,38 @@ class zajLibLoader{
 			$this->app = $zaj_app;
 			$this->mode = $zaj_mode;
 		
-		// start the app controller
-			$app_object_name = "zajapp_".$zaj_app;
-			$my_app = new $app_object_name($this->zajlib, $zaj_app);
-		// fire __load magic method
-			if(method_exists($my_app, "__load")) $my_app->__load();
-		
+
 		// assemble optional parameters
 			if(!$optional_parameters) $optional_parameters = array();
 			elseif(!is_array($optional_parameters)){
 				$op[] = $optional_parameters;
 				$optional_parameters = $op;
 			}
-			
+
+		// start the app controller
+			$app_object_name = "zajapp_".$zaj_app;
+			$my_app = new $app_object_name($this->zajlib, $zaj_app);
+		// fire __load magic method
+			if(method_exists($my_app, "__load")) $my_app->__load($zaj_mode, $optional_parameters);
+					
 		// if method does not exist, call __error
 			// TODO: make errors go backwards as well: check child folder's default controllers first!
 			if(!method_exists($my_app, $zaj_mode)){
 				// If I have an __error method and it is allowed, reroute to that
 					if(method_exists($my_app, '__error') && $reroute_to_error) return $my_app->__error($zaj_mode, $optional_parameters);
 				// If no error method, but $reroute_to_error is true, throw an error
-					elseif($reroute_to_error) return $this->zajlib->error("Could not route $request and no __error method found.");
+					elseif($reroute_to_error){
+						// Check if not already default
+							if($zaj_app == $GLOBALS['zaj_default_app']) $this->zajlib->error("Could not route request and default controller does not implement __error() method.");
+						// Split into sections and remerge into parent
+							$parent_controller = implode('_', array_slice(explode('_', $zaj_app), 0, -1));
+						// Set to default
+							if(empty($parent_controller)) $parent_controller = $GLOBALS['zaj_default_app'];
+						// Reroute to parent method's error method
+							// TODO: fix so that first parameter passed is correct (currently it is not!)
+							return $this->app($parent_controller.'/__error', array($zaj_app.'_'.$zaj_mode, $optional_parameters));
+						//return $this->zajlib->error("Could not route $request and $zaj_app no __error method found.");
+					}
 				// If reroute to error is disabled, then dont check and dont make noise - just return true.
 					else return true;
 			}
