@@ -316,11 +316,14 @@ class zajLib {
 
 	/**
 	 * Send json data to the browser.
-	 * @param string $message The content to send to the browser.
+	 * @param string|array|object $data This can be a json-encoded string or any other data (in this latter case it would be converted to json data).
 	 **/
 	function json($data){
-		header("Content-Type: application/json; charset=UTF-8");
-		print $data;
+		// If the data is not already a string, convert it with json_encode()
+			if(!is_string($data)) $data = json_encode($data);
+		// Now output and exit!
+			header("Content-Type: application/json; charset=UTF-8");
+			print $data;
 		exit;
 	}
 
