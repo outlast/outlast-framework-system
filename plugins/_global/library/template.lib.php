@@ -52,7 +52,8 @@ class zajlib_template extends zajLibExtension {
 			$this->zajlib->variable->mozajik = $this->zajlib->variable->zaj->bc_get('mozajik');
 		// init js layer
 		// requests and urls
-			$this->zajlib->variable->protocol = $protocol;
+			if($this->zajlib->https) $this->zajlib->variable->protocol = 'https';
+			else $this->zajlib->variable->protocol = 'http';
 			$this->zajlib->variable->get = (object) $_GET;
 			$this->zajlib->variable->post = (object) $_POST;
 			$this->zajlib->variable->cookie = (object) $_COOKIE;
