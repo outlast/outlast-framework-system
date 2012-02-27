@@ -515,4 +515,4 @@ MozajikBaseElement.implement({
 /**
  * Check if Mozajik was properly loaded
  **/
-window.addEvent('domready', function(){ if(zaj.baseurl == '') zaj.log('Mozajik JS layer loaded, but not initialized. Requests will not work properly!'); });
+window.addEvent('domready', function(){ if(zaj.baseurl == '') zaj.warning('Mozajik JS layer loaded, but not initialized. Requests will not work properly!'); });
