@@ -35,6 +35,15 @@ class zajlib_cookie extends zajLibExtension {
 	}
 
 	/**
+	 * Get a cookie.
+	 * @param string $name The name of the cookie.
+	 * @return string The value of the cookie.
+	 **/
+	function get($name){
+		return $_COOKIE[$name];
+	}
+
+	/**
 	 * Remove a cookie with the name $name.
 	 * @param string $name The name of the cookie to remove.
 	 * @param boolean $subdomains Make it available to all subdomains if this is true. Default is false. Must be the same value as when you were setting the cookie.
