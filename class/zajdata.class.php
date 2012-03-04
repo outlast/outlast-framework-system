@@ -155,7 +155,7 @@ class zajData {
 		 **/
 		private function init(){
 			// init default fields
-				$this->data['time_create'] = time();
+				if(empty($this->data['time_create'])) $this->data['time_create'] = time();
 				// TODO: set ordernum to autoincrement
 				$this->data['ordernum'] = MYSQL_MAX_PLUS; //$this->db->max($this->zajobject->table_name,"ordernum")+1;
 				$this->data['id'] = $this->zajobject->id;

@@ -91,6 +91,8 @@ var MozajikBase = new Class({
 			return true;
 		},
 
+	// Go back
+		back: function(){ history.back(); },
 
 	/**
 	 * Toggles two DOM elements, showing one and hiding another.
@@ -492,6 +494,7 @@ Mozajik.implement({
 	reload: zaj.base.reload,
 	refresh: zaj.base.reload,
 	window: zaj.base.window,
+	back: zaj.base.back,
 	open: zaj.base.window
 });
 
