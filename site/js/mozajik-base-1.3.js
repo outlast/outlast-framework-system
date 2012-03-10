@@ -83,16 +83,18 @@ var MozajikBase = new Class({
 	 * Logs a message to the console.
 	 * @param string message The message to log.
 	 * @param string type Can be notice, warning, or error
+	 * @param string context The context is any other element or object which will be logged.
 	 **/
-		log: function(message, type){
+		log: function(message, type, context){
 			if(typeof console != 'undefined' && typeOf(console) == 'object'){
+				if(typeof context == 'undefined') context = '';
 				switch(type){
-					case 'error': return console.error(message);
+					case 'error': return console.error(message, context);
 					case 'warn':
-					case 'warning': return console.warn(message);
+					case 'warning': return console.warn(message, context);
 					case 'info':
-					case 'notice': return console.info(message);
-					default: console.log(message);
+					case 'notice': return console.info(message, context);
+					default: console.log(message, context);
 				}
 			}
 			return true;
@@ -324,15 +326,13 @@ var MozajikBaseAjax = new Class({
 					}
 				// pushState actions
 					if(psused){
-						// string mode - only set url and data
-							if(typeOf(pushstate) == 'string') window.history.pushState(psdata, "", pushstate);
-						// object mode - set everything, and title
-							else{
-								pushstate = Object.merge({'title': false}, pushstate);	// default title is false
-								window.history.pushState(psdata, pushstate.title, pushstate.url);
-								if(pushstate.title) document.title = pushstate.title;
-							}
-							
+						// string mode - convert to object
+							if(typeOf(pushstate) == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
+						// now set everything and fire event
+							pushstate = Object.merge({'title': false}, pushstate);	// default title is false
+							window.history.pushState(psdata, pushstate.title, pushstate.url);
+							if(pushstate.title) document.title = pushstate.title;
+						this.fireEvent('pushState', pushstate);							
 					}
 			return true;
 		},
@@ -346,24 +346,30 @@ var MozajikBaseAjax = new Class({
 				if(!zaj.pushstate) return false;
 			// Run through all my data-container links				
 				$$('a[data-container]').each(function(el){
-					// parse my selector
-						var sel = el.getAttribute('data-container');
-						if(sel.substring(0, 1) == '#') sel = sel.substr(1);
-					// remove href
-						var href = el.getAttribute('href');
-						var req = href;
-						el.removeAttribute('href');
-						el.setAttribute('data-href', href);
-						el.setStyle('cursor', 'pointer');
-					// generate query string
-						var qstr = 'zaj_pushstate_mode=true&zaj_pushstate_block='+el.getAttribute('data-block');
-						if(req.contains('?')) req+='&'+qstr;
-						else req+='?'+qstr;
-					// add event
-						el.addEvent('click', function(){
-							zaj.ajax.get(req, $(sel), {'data': $(sel).get('html'), 'title': el.getAttribute('data-title'), 'url': href });
-						});
-					//console.log(el);
+					// mark this element with a class (TODO: can we select the a[] above negated so we can avoid this check?)
+					if(!el.hasClass('mozajik-pushstate-enabled')){
+						// parse my selector
+							var sel = el.getAttribute('data-container');
+							if(sel.substring(0, 1) == '#') sel = sel.substr(1);
+							if(typeOf($(sel)) != 'element') return zaj.error("PushState error: Selector '"+sel+"' needs to be a single element (use an id).");
+						// remove href
+							var href = el.getAttribute('href');
+							var req = href;
+							if(typeOf(req) != 'string') return zaj.error("PushState error: the href parameter is required for the element.", el);
+							el.removeAttribute('href');
+							el.setAttribute('data-href', href);
+							el.setStyle('cursor', 'pointer');
+						// generate query string
+							var qstr = 'zaj_pushstate_mode=true&zaj_pushstate_block='+el.getAttribute('data-block');
+							if(req.contains('?')) req+='&'+qstr;
+							else req+='?'+qstr;
+						// add event
+							el.addEvent('click', function(){
+								zaj.ajax.get(req, $(sel), {'data': $(sel).get('html'), 'title': el.getAttribute('data-title'), 'url': href });
+							});
+						// mark this element with a class (TODO: can we select the a[] above negated so we can avoid this check?)
+							el.addClass('mozajik-pushstate-enabled');
+					}					
 				});
 		},
 
@@ -516,17 +522,17 @@ Mozajik.implement({
 	/**
 	 * Log messages.
 	 **/
-	log: function(message, type){
-		return zaj.base.log(message, type);
+	log: function(message, type, context){
+		return zaj.base.log(message, type, context);
 	},
-	error: function(message){
-		return this.log(message, 'error');
+	error: function(message, context){
+		return this.log(message, 'error', context);
 	},
-	warning: function(message){
-		return this.log(message, 'warning');
+	warning: function(message, context){
+		return this.log(message, 'warning', context);
 	},
-	notice: function(message){
-		return this.log(message, 'notice');
+	notice: function(message, context){
+		return this.log(message, 'notice', context);
 	},
 	/**
 	 * Custom alerts, confirms, prompts
@@ -585,7 +591,11 @@ window.addEvent('domready', function(){
 	if(zaj.baseurl == '') zaj.warning('Mozajik JS layer loaded, but not initialized. Requests will not work properly!');
 	else{
 		// init stuff
-			// pushstate support
-				zaj.base.ajax.pushstate();
+			if(zaj.pushstate){
+				// pushstate support
+					zaj.base.ajax.pushstate();
+				// ajax pushstate support
+					zaj.ajax.addEvent('complete', function(){ zaj.base.ajax.pushstate(); });
+			}
 	}		
 });
