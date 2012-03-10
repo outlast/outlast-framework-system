@@ -353,6 +353,7 @@ var MozajikBaseAjax = new Class({
 						var href = el.getAttribute('href');
 						var req = href;
 						el.removeAttribute('href');
+						el.setAttribute('data-href', href);
 						el.setStyle('cursor', 'pointer');
 					// generate query string
 						var qstr = 'zaj_pushstate_mode=true&zaj_pushstate_block='+el.getAttribute('data-block');
