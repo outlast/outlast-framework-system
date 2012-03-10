@@ -305,15 +305,6 @@ var MozajikBaseAjax = new Class({
 						// we are done!
 							this.fireEvent('complete');
 					}
-				// is it a selector?
-					else if(typeOf($$(result)) == 'elements'){
-						// get old div contents
-							if(psused && !psdata) psdata = ($$(result)[0]).get('html');
-						// set div contents
-							$$(result).set('html', responseText);
-						// we are done!
-							this.fireEvent('complete');
-					}
 				// is result a URL?
 					else if(typeOf(result) == 'string'){
 						if(responseText.trim() == "ok"){
@@ -330,7 +321,7 @@ var MozajikBaseAjax = new Class({
 							if(typeOf(pushstate) == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
 						// now set everything and fire event
 							pushstate = Object.merge({'title': false}, pushstate);	// default title is false
-							window.history.pushState(psdata, pushstate.title, pushstate.url);
+							if(pushstate.url) window.history.pushState(psdata, pushstate.title, pushstate.url);
 							if(pushstate.title) document.title = pushstate.title;
 						this.fireEvent('pushState', pushstate);							
 					}
