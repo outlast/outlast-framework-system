@@ -3,11 +3,18 @@
  *	and 'ui' (user interface elements)
  * @author Aron Budinszky /aron@mozajik.org/
  * @version 1.3
+ * 
+ * @changes 1.3 Now supports pushstate, but ajax methods' parameter order has changed: bind is now the fourth param, the third is the new url.
  **/
 
 // Create a new class which will contain the sections
 	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http',ready:function(){}});
 	var zaj = new Mozajik();
+
+// Pushstate support (from pjax)
+	zaj.pushstate = window.history && window.history.pushState && window.history.replaceState
+					// pushState isn't reliable on iOS until 5.
+					&& !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/)
 
 /**
  * Backwards-compatible functions implemented temporarily. The implementation is imperfect, but compatible - on purpose! Depricated, remove from release!
@@ -176,20 +183,22 @@ var MozajikBaseAjax = new Class({
 	 * Creates a GET request and sends it to the specified URL (relative to baseurl), which is then routed to the appropriate controller
 	 * @param string request The request url relative to baseurl.
 	 * @param function|element|string result The result can be a function, an element, or a url.
+	 * @param string|object pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
 	 * @param object bind Used to bind 'this' within the function. Only matters if result is a function.
 	 **/
-		get: function(request,result,bind){
-			this.send('get',request,result,bind);
+		get: function(request,result,pushstate,bind){
+			this.send('get',request,result,pushstate,bind);
 		},
 
 	/**
 	 * Creates a POST request and sends it to the specified URL (relative to baseurl), which is then routed to the appropriate controller
 	 * @param string request The request url relative to baseurl.
 	 * @param function|element|string result The result can be a function, an element, or a url.
+	 * @param string|object pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
 	 * @param object bind Used to bind 'this' within the function. Only matters if result is a function.
 	 **/
-		post: function(request, result,bind){
-			this.send('post',request,result,bind);
+		post: function(request,result,pushstate,bind){
+			this.send('post',request,result,pushstate,bind);
 		},
 
 	/**
@@ -219,7 +228,7 @@ var MozajikBaseAjax = new Class({
 	/**
 	 * Sends the actual request via method and returns the result to a div, a function, or url
 	 **/
-		send: function(method, request, result, bind){
+		send: function(method, request, result, pushstate, bind){
 			// init variables
 				var request_url = "";
 				var request_data = "";
@@ -253,7 +262,7 @@ var MozajikBaseAjax = new Class({
 				});
 			// set my process function
 				var self = this;
-				new_request.addEvent('success',function(responseTree, responseElements, responseHTML, responseJavaScript){self.process(result, responseHTML, bind);});
+				new_request.addEvent('success',function(responseTree, responseElements, responseHTML, responseJavaScript){ self.process(result, responseHTML, pushstate, bind); });
 				new_request.addEvent('failure',function(xhr){self.error(xhr);});
 			// fire request event
 				this.fireEvent('request');
@@ -265,7 +274,11 @@ var MozajikBaseAjax = new Class({
 	/**
 	 * Handle response and pass to a div, a function, or url
 	 **/
-		process: function(result, responseText, bind){
+		process: function(result, responseText, pushstate, bind){
+			// is pushstate used now
+				var psused = zaj.pushstate && (typeOf(pushstate) == 'string' || typeOf(pushstate) == 'object');
+				var psdata = false;
+				if(typeOf(pushstate) == 'object' && pushstate.data) psdata = pushstate.data;
 			// now what is result?
 				// is result even defined?
 					if(!typeOf(result)){
@@ -273,26 +286,34 @@ var MozajikBaseAjax = new Class({
 						return true;
 					} 
 				// is result a function?
-					if(typeOf(result) == 'function'){
+					else if(typeOf(result) == 'function'){
 						// if bind requested
 							if(bind != undefined && bind) result = result.bind(bind);
 						// call result
 							result(responseText.trim());	
 						// we are done!
 							this.fireEvent('complete');
-						return true;
 					}
 				// is it a div id?
-					if(typeOf($(result)) == 'element'){
+					else if(typeOf($(result)) == 'element'){
+						// get old div contents
+							if(psused && !psdata) psdata = $(result).get('html');
 						// set div contents
 							$(result).set('html', responseText);
 						// we are done!
 							this.fireEvent('complete');
-							//(function(){ window.fireEvent('domready'); }).delay(500);
-						return true;
+					}
+				// is it a selector?
+					else if(typeOf($$(result)) == 'elements'){
+						// get old div contents
+							if(psused && !psdata) psdata = ($$(result)[0]).get('html');
+						// set div contents
+							$$(result).set('html', responseText);
+						// we are done!
+							this.fireEvent('complete');
 					}
 				// is result a URL?
-					if(typeOf(result) == 'string'){
+					else if(typeOf(result) == 'string'){
 						if(responseText.trim() == "ok"){
 							// add the baseurl if needed
 								if(result.substr(0, 2) != '//' && result.substr(4, 3) != "://" && result.substr(5, 3) != "://") result = zaj.baseurl+'/'+result;
@@ -301,7 +322,48 @@ var MozajikBaseAjax = new Class({
 						}
 						else zaj.alert(responseText);
 					}
-					return true;
+				// pushState actions
+					if(psused){
+						// string mode - only set url and data
+							if(typeOf(pushstate) == 'string') window.history.pushState(psdata, "", pushstate);
+						// object mode - set everything, and title
+							else{
+								pushstate = Object.merge({'title': false}, pushstate);	// default title is false
+								window.history.pushState(psdata, pushstate.title, pushstate.url);
+								if(pushstate.title) document.title = pushstate.title;
+							}
+							
+					}
+			return true;
+		},
+
+	/**
+	 * Parses the page for and automatically sets up pushstate links. A pushstate link is one with data-container attribute.
+	 * Format: <a href="{{baseurl}}url/to/content" data-container="#divid" data-block="template_block_name" data-title="My Page Title">My Link</a>
+	 **/
+		pushstate: function(){
+			// Is pushstate supported?
+				if(!zaj.pushstate) return false;
+			// Run through all my data-container links				
+				$$('a[data-container]').each(function(el){
+					// parse my selector
+						var sel = el.getAttribute('data-container');
+						if(sel.substring(0, 1) == '#') sel = sel.substr(1);
+					// remove href
+						var href = el.getAttribute('href');
+						var req = href;
+						el.removeAttribute('href');
+						el.setStyle('cursor', 'pointer');
+					// generate query string
+						var qstr = 'zaj_pushstate_mode=true&zaj_pushstate_block='+el.getAttribute('data-block');
+						if(req.contains('?')) req+='&'+qstr;
+						else req+='?'+qstr;
+					// add event
+						el.addEvent('click', function(){
+							zaj.ajax.get(req, $(sel), {'data': $(sel).get('html'), 'title': el.getAttribute('data-title'), 'url': href });
+						});
+					//console.log(el);
+				});
 		},
 
 	/**
@@ -518,4 +580,11 @@ MozajikBaseElement.implement({
 /**
  * Check if Mozajik was properly loaded
  **/
-window.addEvent('domready', function(){ if(zaj.baseurl == '') zaj.warning('Mozajik JS layer loaded, but not initialized. Requests will not work properly!'); });
+window.addEvent('domready', function(){
+	if(zaj.baseurl == '') zaj.warning('Mozajik JS layer loaded, but not initialized. Requests will not work properly!');
+	else{
+		// init stuff
+			// pushstate support
+				zaj.base.ajax.pushstate();
+	}		
+});

@@ -83,6 +83,7 @@ class zajlib_template extends zajLibExtension {
 
 	/**
 	 * Display a specific template.
+	 * If the request contains zaj_pushstate_block, it will reroute to block. See Mozajik pushState support for more info.
 	 * @param string $source_path The path to the template to be compiled relative to the active view folders. 
 	 * @param boolean $force_recompile If set to true, the template file will be recompiled even if a cached version already exists. (False by default.)
 	 * @param boolean $return_contents If set to true, the compiled contents will be returned by the function and not sent to the browser (as is the default).
@@ -90,6 +91,8 @@ class zajlib_template extends zajLibExtension {
 	 * @return string If requested by the $return_contents parameter, it returns the entire generated contents.
 	 **/
 	function show($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
+		// do i need to show by block (if pushState request detected)
+			if(!empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
 		// prepare
 			$include_file = $this->prepare($source_path, $force_recompile, $custom_compile_destination);
 		// set that we have started the output

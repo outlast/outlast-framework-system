@@ -368,7 +368,10 @@ Search = new Class({
 		callback: false,				// A function or an element.
 		callback_bind: false,			// The callback function's 'this' will bind to whatever is specified here.
 		method: 'get',					// The method to send by. Values can be 'post' (default) or 'get'.
-		allow_empty_query: true			// If set to true, an empty query will also execute
+		allow_empty_query: true,		// If set to true, an empty query will also execute
+		pushstate_url: false,			// You can use pushState to change the url and data of the site after the search is done
+		pushstate_data: false,			// You can use pushState to change the url and data of the site after the search is done
+		pushstate_name: false			// You can use pushState to change the url and data of the site after the search is done
 	},
 	
 	/**
@@ -410,8 +413,8 @@ Search = new Class({
 					if(this.last_query == this.element.value) return false;
 					else this.last_query = this.element.value;
 				// now send via the appropriate method
-					if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, this.options.callback_bind);
-					else zaj.ajax.post(url, this.options.callback, this.options.callback_bind);
+					if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
+					else zaj.ajax.post(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
 			}
 			else{
 				this.options.callback(this.element.value);
