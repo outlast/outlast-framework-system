@@ -107,14 +107,14 @@ class zajlib_url extends zajLibExtension {
 	 * Depricated. Use {@link zajlib_request->post()} instead.
 	 **/
 	function send_post($url, $returnheaders = false){
-		$this->zajlib->request->post($url, '', $returnheaders);
+		return $this->zajlib->request->post($url, '', $returnheaders);
 	}
 	
 	/**
 	 * Depricated. Use {@link zajlib_request->get()} instead.
 	 **/
-	function send_request($url, $content, $method = 'GET', $customheaders = false, $returnheaders = false){
-		$this->zajlib->request->get($url, $content, $returnheaders, $customheaders, $method);
+	function send_request($url, $content='', $method = 'GET', $customheaders = false, $returnheaders = false){
+		return $this->zajlib->request->get($url, $content, $returnheaders, $customheaders, $method);
 	}
 
 }
