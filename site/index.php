@@ -43,6 +43,9 @@
 	// load controller support
 		include_once($GLOBALS['zaj_root_folder'].'/system/class/zajcontroller.class.php');
 
+	// update progress check
+		if(file_exists($zajlib->basepath."cache/progress.dat") && $zajlib->app != $GLOBALS['zaj_update_appname']) $zajlib->reroute($GLOBALS['zaj_update_appname'].'/progress/');
+
 	// installation check
 		$installation_valid = true;
 		
@@ -61,7 +64,7 @@
 					$zajlib->load->library("db");
 			}
 		// 5. Check user/pass for update
-			if(!$zajlib->debug_mode && (empty($GLOBALS['zaj_update_user']) || empty($GLOBALS['zaj_update_password']))) $installation_valid  = false;
+			if(!$zajlib->debug_mode && (empty($GLOBALS['zaj_update_user']) || empty($GLOBALS['zaj_update_password']))) $installation_valid  = false;			
 
 	// Now reroute to install script if installation issues found			
 		if(!$installation_valid && $zajlib->app != $GLOBALS['zaj_update_appname']) $zajlib->reroute($GLOBALS['zaj_update_appname'].'/install/');

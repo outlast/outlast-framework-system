@@ -89,6 +89,8 @@
 		 * @return integer The count is returned if $show_result is set to false.
 		 **/
 		function template($show_result = true){
+			// enable update mode
+				file_put_contents($this->zajlib->basepath."cache/progress.dat", time());
 			// get all the files in the template cache folder
 				$this->zajlib->load->library("file");
 				$my_files = $this->zajlib->file->get_files_in_dir($this->zajlib->basepath."cache/view/", true);
@@ -108,6 +110,14 @@
 				if(is_array($my_files)) foreach($my_files as $f) @unlink($f);
 				$total_count += count($my_files);
 
+			// get all the files in the temp folder
+				$my_files = $this->zajlib->file->get_files_in_dir($this->zajlib->basepath."cache/temp/", true);
+			// delete them
+				if(is_array($my_files)) foreach($my_files as $f) @unlink($f);
+				$total_count += count($my_files);
+
+			// disable update mode
+				unlink($this->zajlib->basepath."cache/progress.dat");
 			// print them
 				if($show_result){
 					$this->zajlib->variable->title = "template cache update | reset";
@@ -213,19 +223,6 @@
 			<?php
 			
 			exit();
-		
-		
-			// First, check 
-				//if(!$GLOBALS['zaj_update_user'] || !$GLOBALS['zaj_update_password'])
-		
-			// manually load model (avoids issues when database disabled)
-				//$this->zajlib->load->model('MozajikVersion');
-			// check to see if my current install is up to date
-				//$version_status = MozajikVersion::check();
-			// if all is good, display that message
-				//if($version_status < 0) return $this->zajlib->template->show('update/update-version-toonew.html'); 
-				//elseif($version_status > 0) return $this->zajlib->template->show('update/update-version-ok.html');
-				//else return $this->zajlib->template->show('update/update-version-needed.html'); 
 		}	
 
 		/**
@@ -240,6 +237,58 @@
 				if($redirect_me) return $this->zajlib->redirect("update/install/");
 				else return true;
 		}
+
+
+		/**
+		 * Update in progress
+		 **/
+		function progress(){
+			?>
+<head>
+	<meta charset="utf-8">
+	<title>Site update in progress...</title>
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<!--[if lt IE 9]><script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/skeleton/base.css">
+	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/skeleton/skeleton.css">
+	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/skeleton/layout.css">
+	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/mozajik.css">
+
+
+	<script language="JavaScript" src="<?php echo $this->zajlib->baseurl; ?>system/js/mootools/mootools-core-1.3.js" type="text/javascript"></script>
+	<script language="JavaScript" src="<?php echo $this->zajlib->baseurl; ?>system/js/mootools/mootools-more-1.3.js" type="text/javascript"></script>	
+	<script language="JavaScript" src="<?php echo $this->zajlib->baseurl; ?>system/js/mozajik-base-1.3.js" type="text/javascript"></script>
+
+</head>
+<body>
+	<div class="container">
+		<div class="sixteen columns">
+			<br/><br/>
+			<h1>Update in progress...</h1>
+			<h3>This site is being updated. Please retry in a few minutes.</h3>
+			<hr/>
+			<p>If this message does not go away after a few minutes, please contact the site administrator.</p>
+		</div>
+		<div class="five columns left">
+			<input type="button" onclick="zaj.reload();" value="Reload page now">
+		</div>
+		<div class="five columns center">
+
+		</div>
+		<div class="five columns center">
+
+		</div>
+	</div>
+</body>
+			
+			
+			
+			
+			<?php
+			
+			exit();
+		}	
 
 		/**
 		 * Display error log
