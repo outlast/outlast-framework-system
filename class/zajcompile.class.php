@@ -521,6 +521,8 @@ class zajCompileDestination {
 	}
 	
 	public function __destruct(){
+		// close the file
+			if($this->file) fclose($this->file);
 		// if this is temporary, delete
 			if($this->temporary) $this->zajlib->compile->unlink($this);
 	}
