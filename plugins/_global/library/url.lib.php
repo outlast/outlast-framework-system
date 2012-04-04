@@ -29,9 +29,10 @@ class zajlib_url extends zajLibExtension {
 		// Get my hostname
 			$hostname = parse_url($url, PHP_URL_HOST);
 		// Get my domain match
-			preg_match('/^(.*)\.(.*)\.(.*)/', $hostname, $matches);
+			$hdata = explode('.', $hostname);
+			$hc = count($hdata);
 		// Return my proper match
-			return $matches[2].'.'.$matches[3];
+			return $hdata[$hc-2].'.'.$hdata[$hc-1];
 	}
 
 	/**
