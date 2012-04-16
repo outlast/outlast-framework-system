@@ -8,6 +8,7 @@
 	// Set default configuration options
 		if(empty($GLOBALS['zaj_plupload_photo_maxwidth'])) $GLOBALS['zaj_plupload_photo_maxwidth'] = 5000;
 		if(empty($GLOBALS['zaj_plupload_photo_maxfilesize'])) $GLOBALS['zaj_plupload_photo_maxfilesize'] = 5000000;
+		if(empty($GLOBALS['zaj_plupload_photo_maxuploadwidth'])) $GLOBALS['zaj_plupload_photo_maxuploadwidth'] = 5000;
 
 	class zajapp_system_plupload extends zajController{
 		
@@ -94,6 +95,8 @@
 								$width = $height = 0;
 								if($process_as_image) list($width, $height, $type, $attr) = getimagesize($_FILES['file']['tmp_name']);
 								if($process_as_image && $_FILES['file']['size'] > $GLOBALS['zaj_plupload_photo_maxfilesize']) $error = "Image file size too big (".$_FILES['file']['size']."/".$_GLOBALS['zaj_plupload_photo_maxfilesize']." bytes)!";
+							// Check for image width max
+								if($process_as_image && $width > $GLOBALS['zaj_plupload_photo_maxuploadwidth']) $error = "Image width too large (maximum is ".$GLOBALS['zaj_plupload_photo_maxuploadwidth']."px wide / your image is ".$width."px wide)!";
 						}
 					// Process this one file			 		 	
 			 		 	$orig_name = $_FILES['file']['name'];
