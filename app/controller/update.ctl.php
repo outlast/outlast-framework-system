@@ -209,10 +209,10 @@
 			<input type="button" onclick="zaj.reload();" value="Recheck install status">
 		</div>
 		<div class="five columns center">
-			<input type="button" onclick="zaj.open('<?php echo $this->zajlib->baseurl; ?>update/database/', 1000, 500);" <? if(!$ready_to_dbupdate){ ?>disabled="disabled"<?php } ?> value="Update the database">
+			<input type="button" onclick="zaj.open('<?php echo $this->zajlib->baseurl; ?>update/database/', 1000, 500);" <?php if(!$ready_to_dbupdate){ ?>disabled="disabled"<?php } ?> value="Update the database">
 		</div>
 		<div class="five columns center">
-			<input type="submit" onclick="window.location = '<?php echo $this->zajlib->baseurl; ?>update/install/go/';" <? if(!$ready_to_activate || $status_activate == $done){ ?>disabled="disabled"<?php } ?> value="Activate this installation">			
+			<input type="submit" onclick="window.location = '<?php echo $this->zajlib->baseurl; ?>update/install/go/';" <?php if(!$ready_to_activate || $status_activate == $done){ ?>disabled="disabled"<?php } ?> value="Activate this installation">			
 		</div>
 	</div>
 </body>
