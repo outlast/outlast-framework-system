@@ -151,7 +151,16 @@ var MozajikBase = new Class({
 				if(typeof height == 'undefined') height = 300;
 			// TODO: implement options
 			window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height="+height+",width="+width);
-		}
+		},
+	/**
+	 * URLencodes a string so that it can safely be submitted in a GET query.
+	 * @param url The url to encode.
+	 * @return The url in encoded form.
+	 **/
+	 	urlencode: function(url){
+	 		return encodeURIComponent(url);
+	 	}
+		
 });
 
 /**
@@ -554,6 +563,7 @@ Mozajik.implement({
 	reload: zaj.base.reload,
 	refresh: zaj.base.reload,
 	window: zaj.base.window,
+	urlencode: zaj.base.urlencode,
 	back: zaj.base.back,
 	open: zaj.base.window
 });
