@@ -18,7 +18,8 @@ class zajfield_boolean extends zajField {
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
 		// set default options
-			// no options
+			// A single option is interpreted as the default field value (backwards-compatibility)
+			if(!is_array($options)) $options['default'] = $options;
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
 	}	
@@ -28,13 +29,16 @@ class zajfield_boolean extends zajField {
 	 * @return array Returns in array with the database definition.
 	 **/
 	public function database(){
+		// set my default
+			if($this->options['default']) $default = 'yes';
+			else $default = '';
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name,
 					'type' => 'enum',
 					'option' => array('yes',''),
  					'key' => 'MUL',
-					'default' => '',
+					'default' => $default,
 					'extra' => '',
 					'comment' => 'boolean',
 			);
