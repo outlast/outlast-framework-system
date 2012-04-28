@@ -9,7 +9,8 @@
 	
 	<script language="javascript">
 		function add_field_{{field.uid}}(){
-			var chtml = $('{{field.id}}').get('html');
-			$('{{field.id}}').set('html', chtml+"<label><input class='field text' type='text' name='{{field.name}}[]' value=''> <a href=\"#delete\" onclick=\"$(this).getParent('label').destroy();\">X</a></label>");
+			var div = new Element('label');
+			div.set('html', "<input class='field text' type='text' name='{{field.name}}[]' value=''> <a href=\"#delete\" onclick=\"$(this).getParent('label').destroy();\">X</a>");
+			$('{{field.id}}').appendChild(div);
 		}
 	</script>
