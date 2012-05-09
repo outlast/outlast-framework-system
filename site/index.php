@@ -23,7 +23,8 @@
 		
 	// figure out my relative path
 		if($GLOBALS['zaj_site_folder'] != "" && $GLOBALS['zaj_root_folder'] == "") exit("MOZAJIK CONFIG ERROR: If you set the zaj_site_folder parameter, you must also set the zaj_root_folder!");
-		if($GLOBALS['zaj_site_folder'] == "" && $GLOBALS['zaj_root_folder'] == "") $GLOBALS['zaj_root_folder'] = "..";
+	// auto-detect root folder if not set already
+		if(empty($GLOBALS['zaj_root_folder'])) $GLOBALS['zaj_root_folder'] = realpath(dirname(__FILE__).'/../../');	
 	// set the default system plugins (for backwards compatibility)
 		if(empty($GLOBALS['zaj_system_apps'])) $GLOBALS['zaj_system_apps'] = array('_global', '_mootools');
 	// include the zajlib system class

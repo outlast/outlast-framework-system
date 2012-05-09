@@ -81,6 +81,11 @@ class zajLib {
 			 * @var MozajikVersion
 			 **/
 			public $mozajik;
+			/**
+			 * A boolean value which if set to false turns off autoloading of model files. This can be useful when integrating in other systems.
+			 * @var boolean
+			 **/
+			public $model_autoloading = true;
 			
 		// my settings
 
@@ -960,6 +965,8 @@ class zajVariable {
  * Autoloads object files
  **/
 function __autoload($class_name){	
+	// If autoloading enabled or not
+		if(!$GLOBALS['zajlib']->model_autoloading) return false;
 	// check if models enabled
 		if(!$GLOBALS['zaj_mysql_enabled']) $GLOBALS['zajlib']->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
 	// load the model
