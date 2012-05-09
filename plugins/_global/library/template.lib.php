@@ -63,6 +63,13 @@ class zajlib_template extends zajLibExtension {
 	}
 	
 	/**
+	 * Returns an object containing the built-in 'zaj' variables that are available to the template.
+	 **/
+	public function get_variables(){
+		return new zajlib_template_zajvariables($this->zajlib);
+	}
+	
+	/**
 	 * Performs the actual display or return of the contents.
 	 * @param string $include_file The full path to the file which is to be included.
 	 * @param boolean $return_contents If set to true, the compiled contents will be returned by the function and not sent to the browser (as is the default).
