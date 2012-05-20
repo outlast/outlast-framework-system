@@ -1,6 +1,6 @@
 <?php
 /**
- * This library performs various language and encoding related conversions.
+ * This library performs various language and encoding related conversions. It also enables loading language files and changing the current language.
  * @author Aron Budinszky <aron@mozajik.org>
  * @version 3.0
  * @package Library
@@ -11,6 +11,11 @@
 
 
 class zajlib_lang extends zajlib_config {
+	
+	/**
+	 * Sets the current language. English by default.
+	 **/
+	 	public $current = 'en';
 
 	/**
 	 * Extend the config file loading mechanism.
@@ -18,6 +23,44 @@ class zajlib_lang extends zajlib_config {
 		protected $dest_path = 'cache/lang/';	// string - subfolder where compiled conf files are stored (cannot be changed)
 		protected $conf_path = 'lang/';			// string - default subfolder where uncompiled conf files are stored
 		protected $type_of_file = 'language';	// string - the name of the file type this is (either configuration or language)
+	/**
+	 * Methods for loading and changing current language.
+	 **/
+
+		/**
+		 * Get the current language. Cookie will be dominant, but 
+		 * @return string A two-letter code of the current language (en for english, hu for hungarian, etc.)
+		 **/
+		function get(){
+			// Set the default to the default setting based on the first to characters of the locale setting
+				//$GLOBALS['zaj_locale
+				$language = 'en';
+			// First, check to see 
+		}
+
+		/**
+		 * Change the language to a new language and set the cookie.
+		 * @param string $new_language If set, it will force this. Otherwise it will see if ?language= GET string is set.
+		 **/
+	 	function set($new_language = false){
+			// Fetch current setting based on cookie or some other
+				if(!empty($new_language)) $language = $new_language;
+				elseif(!empty($_GET['language'])) $language = $_GET['language'];
+				elseif(!empty($_COOKIE['mozajik-language'])) $language = $_COOKIE['mozajik-language'];
+				elseif(strlen($GLOBALS['zajlib']->tld) > 2) $language = 'en';
+				else $language = $GLOBALS['zajlib']->tld;
+			// Is it a valid language, if not set to default
+				if(AVAILABLE_LANGUAGES && !in_array($language, explode(',', AVAILABLE_LANGUAGES))) $language = DEFAULT_LANGUAGE;
+			// Now set cookie and global var
+				$this->zajlib->
+				setcookie('mozajik-language', $language, time()+60*60*24*7, '/');
+			
+			
+			// 
+			$GLOBALS['zajlib']->variable->language = $language;
+				
+			return $language;
+		}
 
 	/**
 	 * Other language-specific methods.

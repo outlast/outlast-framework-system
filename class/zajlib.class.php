@@ -67,6 +67,11 @@ class zajLib {
 			 **/
 			public $mode;
 			/**
+			 * The currently active htaccess file version.
+			 * @var integer
+			 **/
+			public $htver;
+			/**
 			 * Set to true if current request is a https secure request.
 			 * @var boolean
 			 **/
@@ -148,6 +153,7 @@ class zajLib {
 			// autodetect my app
 				$this->app = $_GET['zajapp'];
 				$this->mode = $_GET['zajmode'];
+				$this->htver = $_GET['zajhtver'];
 			// set GET query string (cut off zajapp and zajmode)
 				unset($_GET['zajapp'], $_GET['zajmode'], $_GET['zajhtver']);
 			}
@@ -155,8 +161,9 @@ class zajLib {
 			// autodetect my app
 				$this->app = $_POST['zajapp'];
 				$this->mode = $_POST['zajmode'];
+				$this->htver = $_POST['zajhtver'];
 			// set POST query string (cut off zajapp and zajmode)
-				unset($_POST['zajapp'], $_POST['zajmode']);
+				unset($_POST['zajapp'], $_POST['zajmode'], $_GET['zajhtver']);
 			}
 		// default app & mode
 			if(empty($this->app)){

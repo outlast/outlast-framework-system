@@ -1,6 +1,6 @@
-{% extends 'base-system.html' %}
+{% extends 'update/update-menu.html' %}
 
-{% block content %}
+{% block updatecontent %}
 
 <big>The template cache has been reset (deleted {{count}} files).</big><br><br>
  Each template file will now be regenerated upon first request, so server load
@@ -8,4 +8,4 @@ may be significantly higher during the next few requests...	<hr>
 	- <a href='{{baseurl}}update/'>back to the update menu</a> -<br>
 	<hr>
 
-{% endblock content %}
+{% endblock %}

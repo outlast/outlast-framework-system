@@ -1,6 +1,6 @@
-{% extends 'base-system.html' %}
+{% extends 'update/update-menu.html' %}
 
-{% block content %}
+{% block updatecontent %}
 
 <h2>A total of {{errors|total}} errors/warnings/notices were generated since you last cleared the log.</h2>
 
@@ -20,4 +20,4 @@
 	<p align='center'>{{errors.pagination.prev}} {{errors.pagination.next}}</p>
 
 
-{% endblock content %}
+{% endblock %}

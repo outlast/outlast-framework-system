@@ -1,11 +1,12 @@
-{% extends 'base-system.html' %}
+{% extends 'update/update-menu.html' %}
+
 
 {% block onload %}
 onload='checkIfSuccess();'
 {% endblock onload %}
 
 
-{% block content %}
+{% block updatecontent %}
 <script language="javascript">
 	function checkIfSuccess(){
 			var result = 0;
@@ -46,4 +47,5 @@ onload='checkIfSuccess();'
 	</div>
 	<br>
 	<b><a href='{{baseurl}}update/'>&lt; back to app update menu</a></b>
+	<hr>
 {% endblock content %}

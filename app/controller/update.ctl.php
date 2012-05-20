@@ -10,15 +10,20 @@
 		 * Authenticate the request if not in debug mode
 		 **/
 		function __load(){
+			global $zajconf;
 			// is update disabled?
-				if(!$GLOBALS['zaj_update_enabled']) return exit("Update disabled.");
+				if(!$zajconf['update_enabled']) return exit("Update disabled.");
 			// am i not in debug mode?
 				if(!$this->zajlib->debug_mode){
 					// is my password defined?
-						if(!$GLOBALS['zaj_update_user'] || !$GLOBALS['zaj_update_password']) return $this->install();
+						if(!$zajconf['update_user'] || !$zajconf['update_password']) return $this->install();
 					// all is good, so authenticate
-						return $this->zajlib->security->protect_me($GLOBALS['zaj_update_user'], $GLOBALS['zaj_update_password'], "Mozajik update");
+						return $this->zajlib->security->protect_me($zajconf['update_user'], $zajconf['update_password'], "Mozajik update");
 				}
+			// check for recommended updates
+			
+				if(defined('MOZAJIK_RECOMMENDED_HTACCESS_VERSION') && MOZAJIK_RECOMMENDED_HTACCESS_VERSION > $this->zajlib->htver) $this->zajlib->variable->htver_upgrade = MOZAJIK_RECOMMENDED_HTACCESS_VERSION;
+				if(defined('MOZAJIK_RECOMMENDED_CONFIG_VERSION') && MOZAJIK_RECOMMENDED_CONFIG_VERSION > $zajconf['config_file_version']) $this->zajlib->variable->conf_upgrade = MOZAJIK_RECOMMENDED_CONFIG_VERSION;
 			return true;
 		}
 		
@@ -132,6 +137,7 @@
 		 * Install a new version of Mozajik
 		 **/
 		function install(){
+			global $zajconf;
 			// Load my version information
 				$this->zajlib->load->model('MozajikVersion');
 			// Define my statuses
@@ -152,7 +158,7 @@
 						else{ $status_db  = $todo; $ready_to_dbupdate = false; $ready_to_activate = false; }
 					}
 				// 3. Check user/pass for update
-					if(empty($GLOBALS['zaj_update_user']) || empty($GLOBALS['zaj_update_password'])){
+					if(empty($zajconf['update_user']) || empty($zajconf['update_password'])){
 						if($this->zajlib->debug_mode) $status_updatepass = $optional;
 						else{ $status_updatepass = $todo; $ready_to_activate = false; }
 					}

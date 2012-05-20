@@ -42,9 +42,6 @@ abstract class zajController{
 	function __call($name, $arguments){
 		// if not in debug mode, call the __error on current app
 			if(method_exists($this, "__error")) $this->__error($name, $arguments);
-		// is there a default error handler method? -
-			//	TODO: review this...is this needed? if so, we need to check if default app HAS error, otherwise we have infinite loop!
-			//elseif(!$this->zajlib->debug_mode) $this->zajlib->app_mode_redirect("$GLOBALS[zaj_default_app]/__error/");
 		// else just call the standard mozajik error
 			else $this->zajlib->error("application request ($this->name/$name) could not be processed. no matching application control method found!");
 	}	
