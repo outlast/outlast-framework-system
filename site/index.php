@@ -8,19 +8,6 @@
 
 	// Set variables for backwards compatibility
 		global $zajconf;
-		if(!is_array($zajconf)){
-			// These are already converted to new format
-			$zajconf['debug_mode'] = $GLOBALS['debug_mode'];
-			$zajconf['debug_mode_domains'] = $GLOBALS['debug_mode_domains'];
-			$zajconf['root_folder'] = $GLOBALS['zaj_root_folder'];
-			$zajconf['site_folder'] = $GLOBALS['zaj_site_folder'];
-
-			$zajconf['update_enabled'] = $GLOBALS['zaj_update_enabled'];
-			$zajconf['update_appname'] = $GLOBALS['zaj_update_appname'];
-			$zajconf['update_user'] = $GLOBALS['zaj_update_user'];
-			$zajconf['update_password'] = $GLOBALS['zaj_update_password'];
-		
-		}
 		if(is_array($zajconf)){
 			// These are not yet converted to new format
 			$GLOBALS['zaj_default_app'] = $zajconf['default_app'];
@@ -46,6 +33,18 @@
 		
 			$GLOBALS['zaj_config_file_version'] = $zajconf['config_file_version'];
 		}
+		if(!is_array($zajconf)){
+			// These are already converted to new format
+			$zajconf['debug_mode'] = $GLOBALS['debug_mode'];
+			$zajconf['debug_mode_domains'] = $GLOBALS['debug_mode_domains'];
+			$zajconf['root_folder'] = $GLOBALS['zaj_root_folder'];
+			$zajconf['site_folder'] = $GLOBALS['zaj_site_folder'];
+
+			$zajconf['update_enabled'] = $GLOBALS['zaj_update_enabled'];
+			$zajconf['update_appname'] = $GLOBALS['zaj_update_appname'];
+			$zajconf['update_user'] = $GLOBALS['zaj_update_user'];
+			$zajconf['update_password'] = $GLOBALS['zaj_update_password'];
+		}	
 	
 	// start execution
 		$GLOBALS['execute_start'] = microtime(true);
