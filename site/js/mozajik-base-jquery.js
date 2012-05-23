@@ -8,23 +8,13 @@
  **/
 
 // Create a new class which will contain the sections
-	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http',ready:function(){}});
+	var Mozajik = {baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http',ready:function(){}};
 	var zaj = new Mozajik();
 
 // Pushstate support (from pjax)
 	zaj.pushstate = window.history && window.history.pushState && window.history.replaceState
 					// pushState isn't reliable on iOS until 5.
 					&& !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/)
-
-/**
- * Backwards-compatible functions implemented temporarily. The implementation is imperfect, but compatible - on purpose! Depricated, remove from release!
- **/
-	var $chk = function(obj){
-    	zaj.log('Depricated method chk or defined used!');
-    	if(typeOf(obj) == 'element') return true;
-    	else return false;
-	};
-	var $defined = $chk;	
 
 /**
  * Enable JS error logging.
@@ -538,9 +528,8 @@ Mozajik.implement({
 	 * Custom alerts, confirms, prompts
 	 **/
 	alert: function(message, options){
-		//if(typeof zaj.popup == 'object') return zaj.popup.show(message, options);
-		//else
-		return alert(message);
+		if(typeof zaj.popup == 'object') return zaj.popup.show(message, options);
+		else return alert(message);
 	},
 	confirm: function(message, urlORfunction){
 		// if the passed param is a function, then return confirmation as its param

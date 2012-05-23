@@ -242,7 +242,7 @@ class zajFetcher implements Iterator, Countable{
 	 * Toggle whether or not to show deleted items. By default, Mozajik will not delete rows you remove, but simply put them in a 'deleted' status. However, {@link zajFetcher} will not show these unless you toggle this option.
 	 * @return zajFetcher This method can be chained.
 	 **/
-	public function show_deleted($default = false){
+	public function show_deleted($default = true){
 		// i want to hide them!
 			if(!$default) $this->filter_deleted = "model.status!='deleted'";
 			else $this->filter_deleted = "1";

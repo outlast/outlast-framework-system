@@ -409,6 +409,7 @@ Search = new Class({
 					var url = this.options.url;
 					if(this.options.url.contains('?')) url += '&query='+this.element.value;
 					else url += '?query='+this.element.value;
+					url += '&mozajik-tool-search=true';
 				// check if the current query is like last query
 					if(this.last_query == this.element.value) return false;
 					else this.last_query = this.element.value;
