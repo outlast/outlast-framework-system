@@ -36,6 +36,9 @@ class zajlib_lang extends zajlib_config {
 				//$GLOBALS['zaj_locale
 				$language = 'en';
 			// First, check to see 
+			
+			
+			return $language;
 		}
 
 		/**
@@ -43,6 +46,7 @@ class zajlib_lang extends zajlib_config {
 		 * @param string $new_language If set, it will force this. Otherwise it will see if ?language= GET string is set.
 		 **/
 	 	function set($new_language = false){
+			/**
 			// Fetch current setting based on cookie or some other
 				if(!empty($new_language)) $language = $new_language;
 				elseif(!empty($_GET['language'])) $language = $_GET['language'];
@@ -52,13 +56,14 @@ class zajlib_lang extends zajlib_config {
 			// Is it a valid language, if not set to default
 				if(AVAILABLE_LANGUAGES && !in_array($language, explode(',', AVAILABLE_LANGUAGES))) $language = DEFAULT_LANGUAGE;
 			// Now set cookie and global var
-				$this->zajlib->
+				//$this->zajlib->
 				setcookie('mozajik-language', $language, time()+60*60*24*7, '/');
 			
 			
 			// 
 			$GLOBALS['zajlib']->variable->language = $language;
-				
+			**/
+			$language = 'en';
 			return $language;
 		}
 

@@ -4,11 +4,14 @@
 		define('MOZAJIK_CONFIG_VERSION', 303);
 
 		define('MOZAJIK_RECOMMENDED_HTACCESS_VERSION', 303);
-		define('MOZAJIK_RECOMMENDED_CONFIG_VERSION', 304);
+		define('MOZAJIK_RECOMMENDED_CONFIG_VERSION', 305);
 
 	// Set variables for backwards compatibility
 		global $zajconf;
 		if(is_array($zajconf)){
+			// Set my locale and numeric to US for compatibility
+			setlocale(LC_ALL, $zajconf['locale_default']);
+			setlocale(LC_NUMERIC, $zajconf['locale_numeric']);
 			// These are not yet converted to new format
 			$GLOBALS['zaj_default_app'] = $zajconf['default_app'];
 			$GLOBALS['zaj_default_mode'] = $zajconf['default_mode'];
@@ -28,9 +31,7 @@
 			$GLOBALS['zaj_error_log_file'] = $zajconf['error_log_file'];
 			$GLOBALS['zaj_jserror_log_enabled'] = $zajconf['jserror_log_enabled'];
 			$GLOBALS['zaj_jserror_log_file'] = $zajconf['jserror_log_file'];
-		
-			$GLOBALS['zaj_locale'] = $zajconf['locale'];
-		
+					
 			$GLOBALS['zaj_config_file_version'] = $zajconf['config_file_version'];
 		}
 		if(!is_array($zajconf)){
@@ -73,7 +74,7 @@
 	// include the zajlib system class
 		if (!(include $zajconf['root_folder'].'/system/class/zajlib.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
 	// create a new zajlib object
-		$zajlib = new zajLib($zajconf['root_folder']);
+		$zajlib = new zajLib($zajconf['root_folder'], $zajconf);
 	// set internal error handler
 		set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext){ if(!is_object($GLOBALS['zajlib'])){ print "FATAL ERROR: Check error log."; } else $GLOBALS['zajlib']->error_handler($errno, $errstr, $errfile, $errline, $errcontext);});			
 	// debug mode needed?

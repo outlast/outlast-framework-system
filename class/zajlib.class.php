@@ -91,6 +91,12 @@ class zajLib {
 			 * @var boolean
 			 **/
 			public $model_autoloading = true;
+			/**
+			 * An array which stores the configuration values.
+			 * @var array
+			 **/
+			public $zajconf;
+			 
 			
 		// my settings
 
@@ -142,11 +148,14 @@ class zajLib {
 	/**
 	 * Creates a the zajlib object.
 	 * @param string $zaj_root_folder The root from which basepath and others are calculated.
+	 * @param array $zajconf The configuration array. This can be blank for backwards-compatible reasons.
 	 **/
-	public function __construct($zaj_root_folder){
+	public function __construct($zaj_root_folder, $zajconf = ''){
 		// autodetect my path
 			if($zaj_root_folder) $this->basepath = realpath($zaj_root_folder)."/"; 
 			else $this->basepath = realpath(dirname(__FILE__)."/../../")."/";
+		// store configuration
+			$this->zajconf = $zajconf;
 		// parse query string
 			$default_mode = false;
 			if(isset($_GET['zajapp'])){
