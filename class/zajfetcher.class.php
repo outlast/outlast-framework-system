@@ -275,6 +275,7 @@ class zajFetcher implements Iterator, Countable{
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function exclude($field, $value, $operator='NOT LIKE', $type='AND'){ return $this->filter($field, $value, $operator, $type); }
+	public function exc($field, $value, $operator='NOT LIKE', $type='AND'){ return $this->filter($field, $value, $operator, $type); }
 
 	/**
 	 * Remove all results. This is good for reseting a fetch to zero results by default.

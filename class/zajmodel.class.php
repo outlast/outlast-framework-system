@@ -473,14 +473,28 @@ abstract class zajModel {
 	 * Shortcuts to static events and actions.
 	 *
 	 * @ignore
+	 * @todo Once you remove passing of CLASS_NAME via $arguments[0] you MUST also remove array_shift() in this function.
 	 */
 	public static function __callStatic($name, $arguments){		
+		// get current class
+			$class_name = get_called_class();
 		// any specific static?
 			switch($name){
 				case 'extend':
 				case 'extension_of':
 											$GLOBALS['zajlib']->error("The class $arguments[0] is not a child of zajModelExtender. Check the valid syntax for extending classes!");
 											return false;
+			}
+		// do I have an extension? if so, these override my own settings but only if method is not __model() as that is special!
+			$extended_but_does_not_exist = false;
+			$ext = $class_name::extension();
+			if($ext && $name != '__model'){
+				// now, check if method exists on extension
+					if(method_exists($ext, $name)){
+						array_shift($arguments);
+						return call_user_func_array("$ext::$name", $arguments);
+					}
+					else  $extended_but_does_not_exist = true;				
 			}
 		// redirect static method calls to local private ones
 			if(!method_exists($arguments[0], $name)) $GLOBALS['zajlib']->error("called undefined method '$name'!"); return call_user_func_array("$arguments[0]::$name", $arguments);
