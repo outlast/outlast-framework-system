@@ -184,13 +184,14 @@
 	}
 	
 	
-	td.list input[type="button"], div.list input[type="button"], div.item input[type="button"]{
+	td.list input[type="button"], div.list input[type="button"], div.item input[type="button"], div.list a.btn{
 		height: 22px;
 		margin: 0px 3px 0px 0px;
 		float: right;
-		padding: 0px 10px 0px 10px;
+		padding: 0px 8px;
 		font-size: 10px;
 	}
+	div.list a.btn{ font-size: 11px; }
 	
 	.grippy{
 		cursor: move;
