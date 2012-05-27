@@ -10,7 +10,7 @@
 	h1 { font-size: 30px; text-shadow: 1px 1px white; margin-left: -30px; }
 	h2 { font-size: 20px; margin-top: 40px; margin-left: -20px; }
 	
-	a, a:active, a:visited{ color: #3F6A23; }
+	a, a:active, a:not(.btn):visited{ color: #3F6A23; }
 	a:hover{ color: #333333; }
 
 	input { outline: none; }	
