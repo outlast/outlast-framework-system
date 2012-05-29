@@ -134,13 +134,13 @@ class zajlib_graphics extends zajLibExtension {
 	 * @param string $oldpath The path to the original file. Path is a full path (for backwards compatibility).
 	 **/
 	private function prepare_image($oldpath){	   
-	   // Check for GD library
-	   		if(!function_exists("imagecreatefromjpeg")) return $this->zajlib->error("PHP GD library not installed! Please contact your system administrator.");
-	   // First try jpeg, then gif and png
-	   		$im = imagecreatefromjpeg($oldpath);
-			if($im === false) $im = imagecreatefromgif($oldpath);
-			if($im === false) $im = imagecreatefrompng($oldpath);	   
-	   	return $im;
+		// Check for GD library
+			if(!function_exists("imagecreatefromjpeg")) return $this->zajlib->error("PHP GD library not installed! Please contact your system administrator.");
+		// First try jpeg, then gif and png
+			$im = @imagecreatefromjpeg($oldpath);
+			if($im === false) $im = @imagecreatefromgif($oldpath);
+			if($im === false) $im = @imagecreatefrompng($oldpath);	   
+		return $im;
 	}
 
 }
