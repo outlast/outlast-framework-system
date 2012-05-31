@@ -488,7 +488,7 @@ abstract class zajModel {
 		// do I have an extension? if so, these override my own settings but only if method is not __model() as that is special!
 			$extended_but_does_not_exist = false;
 			$ext = $class_name::extension();
-			if($ext && $name != '__model'){
+			if($ext && $name != '__model' && $name != 'create'){
 				// now, check if method exists on extension
 					if(method_exists($ext, $name)){
 						array_shift($arguments);
