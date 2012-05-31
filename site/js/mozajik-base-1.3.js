@@ -538,9 +538,8 @@ Mozajik.implement({
 	 * Custom alerts, confirms, prompts
 	 **/
 	alert: function(message, options){
-		//if(typeof zaj.popup == 'object') return zaj.popup.show(message, options);
-		//else
-		return alert(message);
+		if(typeof zaj.popup == 'object') return zaj.popup.show(message, options);
+		else return alert(message);
 	},
 	confirm: function(message, urlORfunction){
 		// if the passed param is a function, then return confirmation as its param

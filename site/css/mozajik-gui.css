@@ -222,7 +222,8 @@
 			-webkit-box-shadow: 0px 0px 20px 0px #000000;
 			-moz-box-shadow: 0px 0px 20px 0px #000000;
 			box-shadow: 0px 0px 20px 0px #000000;
-			overflow: auto;
+			overflow: hidden;
+			overflow-y: auto;
 		}
 			a.popover.close{
 				position: absolute;
