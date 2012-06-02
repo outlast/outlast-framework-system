@@ -130,8 +130,10 @@ class File extends zajModel {
 	
 	/**
 	 * Creates a photo object from php://input stream.
+	 * @param string $parent_field The name of the field in the parent model. Defaults to $field_name.
+	 * @param zajObject $parent My parent object.
 	 **/
-	public static function create_from_stream(){
+	public static function create_from_stream($parent_field = false, $parent = false){
 		// tmp folder
 			$folder = $GLOBALS['zajlib']->basepath.'/cache/upload/';
 			$filename = uniqid().'.upload';
@@ -142,9 +144,13 @@ class File extends zajModel {
 			@file_put_contents($folder.$filename, $photofile);
 		// now create object and return the object
 			$pobj = File::create();
+		// parent and field?
+			if($parent !== false) $pobj->set('parent', $parent);
+			if($parent_field !== false) $pobj->set('field', $parent);
+		// set file and delete temp
 		 	$pobj->set_file($filename);
 			@unlink($folder.$filename);
-			return $pobj;
+		return $pobj;
 	}
 	
 	/**
