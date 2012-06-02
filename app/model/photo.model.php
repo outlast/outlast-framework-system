@@ -19,6 +19,7 @@ class Photo extends zajModel {
 	public static function __model(){	
 		// define custom database fields
 			$fields->parent = zajDb::text();
+			$fields->field = zajDb::text();
 			$fields->name = zajDb::name();
 			$fields->original = zajDb::text();
 			$fields->description = zajDb::textbox();

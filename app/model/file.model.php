@@ -16,6 +16,7 @@ class File extends zajModel {
 	public static function __model(){	
 		// define custom database fields
 			$fields->parent = zajDb::text();
+			$fields->field = zajDb::text();
 			$fields->name = zajDb::name();
 			$fields->mime = zajDb::text();
 			$fields->size = zajDb::integer();
@@ -150,8 +151,9 @@ class File extends zajModel {
 	 * Creates a file object from a standard upload HTML4
 	 * @param string $field_name The name of the file input field.
 	 * @param zajObject $parent My parent object.
+	 * @param string $parent_field The name of the field in the parent model. Defaults to $field_name.
 	 **/
-	public static function create_from_upload($field_name, $parent = false){
+	public static function create_from_upload($field_name, $parent = false, $parent_field = false){
 		// File names
 			$orig_name = $_FILES[$field_name]['name'];
 			$tmp_name = $_FILES[$field_name]['tmp_name'];
@@ -164,7 +166,11 @@ class File extends zajModel {
 			move_uploaded_file($tmp_name, $GLOBALS['zajlib']->basepath.'cache/upload/'.$obj->id.'.tmp');
 		// Now set and save
 			$obj->set('name', $orig_name);
-			if($parent !== false) $obj->set('parent', $parent);
+			if($parent !== false){
+				$obj->set('parent', $parent);
+				if(!$parent_field) $obj->set('field', $field_name);
+				else $obj->set('field', $parent_field);
+			}
 			$obj->set_file();
 			@unlink($tmp_name);
 		return $obj;
