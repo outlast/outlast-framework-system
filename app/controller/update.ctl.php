@@ -4,6 +4,7 @@
  * @package Controller
  * @subpackage BuiltinControllers
  **/
+ 	define('ZAJ_INSTALL_DONTCHECK', 'dont_check_install');
 
 	class zajapp_update extends zajController{
 		/**
@@ -145,6 +146,21 @@
 				$na = "<span style='color: grey;'>Not enabled.</span>";
 				$ready_to_activate = true;
 				$ready_to_dbupdate = true;
+			// Check install status of plugins
+				// 1. Calls __install() method on each plugin
+				// 2. Checks return value: if it is ZAJ_INSTALL_DONTCHECK, then the installation check is not continued (USE ONLY WHEN OTHER INSTALL PROCEDURES NEEDED. Ex: Wordpress).
+				// 3. Checks return value: if it is a string, then it is an error and it is displayed.
+				foreach(array_reverse($GLOBALS['zaj_plugin_apps']) as $plugin){
+					// only do this if either default controller exists in the plugin folder
+						if(file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'/default.ctl.php')){			
+							// reroute but if no __install method, just skip without an error message (TODO: maybe remove the false here?)!
+								$result = $this->zajlib->reroute($plugin.'/__install/', array($app_request, $zaj_app, $zaj_mode), false);
+							// __install should return a string if it fails, otherwise it is considered to pass
+								if(is_string($result) && $result == ZAJ_INSTALL_DONTCHECK) return true;
+								elseif(is_string($result)){ $plugin_text .= "<li>Checking plugin $plugin. <strong style='color: red;'>FAILED!</strong><pre style='font-family: monospace; border: 1px solid grey; padding: 10px; overflow: auto; background-color: #f5f5f5; '>$result</pre></li>"; $ready_to_activate = false; }
+								else $plugin_text .= "<li>Checking plugin $plugin... Ok.</li>";
+						}
+				}				
 			// Check status for each step
 				// 1. Check writable
 					if(!is_writable($this->zajlib->basepath."cache/") || !is_writable($this->zajlib->basepath."data/")){ $status_write  = $todo; $ready_to_dbupdate = false; $ready_to_activate = false; }
@@ -198,6 +214,10 @@
 			<h1>Mozajik Installation</h1>
 			<h3>Welcome to the Mozajik Framework installation for version <?php echo MozajikVersion::$major; ?>.<?php echo MozajikVersion::$minor; ?>.<?php echo MozajikVersion::$build; ?> <?php if(MozajikVersion::$beta) echo "beta"; ?></h3>
 			<?php if($this->zajlib->debug_mode){ ?><h5><span style="color: red;">Attention!</span> This installation will be running in <strong>debug mode</strong>. This is not recommended for production sites!</h5><?php } ?>
+			<hr/>
+			<ul>
+				<?php if(empty($plugin_text)) echo "<li>Checking plugins... No plugins activated.</li>"; else echo $plugin_text ?>
+			</ul>
 			<hr/>
 			<ol>
 				<li>Make /cache and /data folders writable by webserver. - <?php echo $status_write; ?></li>
