@@ -433,7 +433,7 @@ class zajCompileSource {
 			// if type is plugin_apps, then it is special!
 				if($type == 'plugin_apps' && $path){
 					// run through all of my registered plugin apps' views and return if one found!
-						foreach($this->zajlib->loaded_plugins as $plugin_app){
+						foreach($GLOBALS['zajlib']->loaded_plugins as $plugin_app){
 							$path = $GLOBALS['zajlib']->basepath.'plugins/'.$plugin_app.'/view/'.$source_file;
 							if(file_exists($path)) return $path;
 						}
