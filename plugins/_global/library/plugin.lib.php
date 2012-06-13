@@ -31,9 +31,10 @@ class zajlib_plugin extends zajLibExtension {
 	/**
 	 * Dynamically load a plugin.
 	 * @param string $plugin The name of the plugin to be loaded.
+	 * @param boolean $load_function If set to true (the default) the __plugin function will be called once the plugin is loaded (this is where you can init the plugin).
 	 * @return boolean Returns true if the plugin was loaded successfully, false otherwise. In case of failure, a warning will also be issued.
 	 **/
-	public function load($plugin){		
+	public function load($plugin, $load_function = true){		
 		// Disable double loading
 			if($this->is_loaded($plugin)) return true;
 		// Result defaults to true

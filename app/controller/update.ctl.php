@@ -152,6 +152,8 @@
 				// 2. Checks return value: if it is ZAJ_INSTALL_DONTCHECK, then the installation check is not continued (USE ONLY WHEN OTHER INSTALL PROCEDURES NEEDED. Ex: Wordpress).
 				// 3. Checks return value: if it is a string, then it is an error and it is displayed.
 				foreach(array_reverse($GLOBALS['zaj_plugin_apps']) as $plugin){
+					// first load up the plugin without __plugin execution
+						$this->zajlib->plugin->load($plugin, false);
 					// only do this if either default controller exists in the plugin folder
 						if(file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'/default.ctl.php')){			
 							// reroute but if no __install method, just skip without an error message (TODO: maybe remove the false here?)!
