@@ -755,7 +755,7 @@ abstract class zajModelExtender {
 			if(!class_exists($parentmodel, false) && $parentmodel_source_file) $GLOBALS['zajlib']->load->file($parentmodel_source_file, true, true, "specific");
 		// If the current class does not exist, try to load it from all files in the plugin app hierarchy
 			if(!class_exists($parentmodel, false)){
-				foreach($GLOBALS['zaj_plugin_apps'] as $plugin_app){
+				foreach($GLOBALS['zajlib']->loaded_plugins as $plugin_app){
 					// Attempt to load file
 						$result = $GLOBALS['zajlib']->load->file('plugins/'.$plugin_app.'/model/'.strtolower($known_as).'.model.php', false, true, "specific");
 					// If successful, break

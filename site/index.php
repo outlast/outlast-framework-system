@@ -89,7 +89,7 @@
 		include_once($zajconf['root_folder'].'/system/class/zajcontroller.class.php');
 
 	// update progress check
-		if(file_exists($zajlib->basepath."cache/progress.dat") && $zajlib->app != $zajconf['update_appname']) $zajlib->reroute($zajconf['update_appname'].'/progress/');
+		if(file_exists($zajlib->basepath."cache/progress.dat") && trim($zajlib->app, '/') != $zajconf['update_appname']) $zajlib->reroute($zajconf['update_appname'].'/progress/');
 
 	// installation check
 		$installation_valid = true;
@@ -112,7 +112,7 @@
 			if(!$zajlib->debug_mode && (empty($zajconf['update_user']) || empty($zajconf['update_password']))) $installation_valid  = false;			
 
 	// Now reroute to install script if installation issues found			
-		if(!$installation_valid && $zajlib->app != $zajconf['update_appname']) $zajlib->reroute($zajconf['update_appname'].'/install/');
+		if(!$installation_valid && trim($zajlib->app, '/') != $zajconf['update_appname']) $zajlib->reroute($zajconf['update_appname'].'/install/');
 
 	// select the right app and mode
 		// select
@@ -124,13 +124,8 @@
 	// now create url
 		$app_request = $zaj_app."/".$zaj_mode;
 
-	// load plugin default files - run through each activated plugin and reroute to /PLUGIN_NAME/__plugin()
+	// load plugins
 		foreach(array_reverse($GLOBALS['zaj_plugin_apps']) as $plugin){
-			// only do this if either default controller exists in the plugin folder
-				if(file_exists($zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'/default.ctl.php')){			
-					// reroute but if no __plugin method, just skip without an error message (TODO: maybe remove the false here?)!
-						$result = $zajlib->reroute($plugin.'/__plugin/', array($app_request, $zaj_app, $zaj_mode), false);
-				}
+			$zajlib->plugin->load($plugin);
 		}
-
 ?>

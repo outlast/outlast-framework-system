@@ -135,6 +135,7 @@
 		
 		/**
 		 * Install a new version of Mozajik
+		 * @todo Add plugin install check for dynamically loaded plugins (so check the folder instead of zaj_plugin_apps)
 		 **/
 		function install(){
 			// Load my version information

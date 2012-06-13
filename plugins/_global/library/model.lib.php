@@ -538,7 +538,7 @@ class zajlib_model extends zajLibExtension {
 
 	/**
 	 * Get the model definitions.
-	 * @todo Add support for models in system plugins.
+	 * @todo Add support for models in system plugins. Also add support for dynamically loaded plugins!
 	 **/
 	private function get_models(){
 		$models = array();

@@ -255,7 +255,7 @@ class zajlib_template_zajvariables {
 				case 'useragent': if(!empty($_SERVER['HTTP_USER_AGENT'])) return $_SERVER['HTTP_USER_AGENT']; else return '';
 			// Return which plugins are loaded
 				case 'plugin':
-					$my_plugins = $GLOBALS['zaj_plugin_apps'];
+					$my_plugins = $this->zajlib->loaded_plugins;
 					array_unshift($my_plugins, '');
 					return (object) array_flip($my_plugins);
 			// JS layer init script

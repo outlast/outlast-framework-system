@@ -144,6 +144,15 @@ class zajLib {
 			 * @var integer
 			 **/
 			public $event_stack = 0;
+
+		// status of plugins
+
+			/**
+			 * An array of plugins loaded.
+			 * @var array
+			 **/
+			public $loaded_plugins = array();
+
 		
 	/**
 	 * Creates a the zajlib object.
@@ -189,7 +198,10 @@ class zajLib {
 			$this->baseurl = "//".$_SERVER['HTTP_HOST'].$this->subfolder.'/';
 		// full request detection (includes query string)
 			if(!empty($_GET)) $this->fullrequest = $this->fullurl.'?'.http_build_query($_GET);
-			else $this->fullrequest = $this->fullurl;			
+			else $this->fullrequest = $this->fullurl;
+		// fix my app and mode to always have a single trailing slash
+			$this->app = trim($this->app, '/').'/';
+			$this->mode = trim($this->mode, '/').'/';
 		// autodetect my domain (todo: optimize this part with regexp!)
 			$this->host = $_SERVER['HTTP_HOST'];
 			// if not an ip address
@@ -461,27 +473,12 @@ class zajLibLoader{
 	public $loaded = array();
 
 	/**
-	 * An array of plugin apps.
-	 * @var array
-	 **/
-	public $loaded_plugin_apps = array();
-
-	/**
-	 * An array of system apps.
-	 * @var array
-	 **/
-	public $loaded_system_apps = array();
-
-	/**
 	 * Creates a new {@link zajLibLoader}. This is run when initializing the request.
 	 * @param zajLib $zajlib A reference to the global zajlib object.
 	 **/
 	public function __construct(&$zajlib){
 		// set my parent
 			$this->zajlib =& $zajlib;
-		// create my default loaded_plugin_apps, loaded_system_apps
-			$this->loaded_plugin_apps = array_reverse($GLOBALS['zaj_plugin_apps']);
-			$this->loaded_system_apps = array_reverse($GLOBALS['zaj_system_apps']);
 	}
 	
 
@@ -732,7 +729,7 @@ class zajLibLoader{
 					}
 				// 2. try plugin paths in order					
 					if($scope == "full" || $scope == "plugin"){
-						foreach($GLOBALS['zaj_plugin_apps'] as $app){
+						foreach($this->zajlib->loaded_plugins as $app){
 							if(file_exists($this->zajlib->basepath.'plugins/'.$app.'/'.$file_path) && (!$include_now || include_once $this->zajlib->basepath.'plugins/'.$app.'/'.$file_path)){
 								// set file as loaded and return true
 									if($include_now) $this->loaded['file'][$file_path] = true;
