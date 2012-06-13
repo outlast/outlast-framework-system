@@ -112,7 +112,7 @@
 			if(!$zajlib->debug_mode && (empty($zajconf['update_user']) || empty($zajconf['update_password']))) $installation_valid  = false;			
 
 	// Now reroute to install script if installation issues found			
-		if(!$installation_valid && trim($zajlib->app, '/') != $zajconf['update_appname']) $zajlib->reroute($zajconf['update_appname'].'/install/');
+		if(!$installation_valid && trim($zajlib->app, '/') != $zajconf['update_appname']) $zajlib->redirect($zajconf['update_appname'].'/install/');
 
 	// select the right app and mode
 		// select

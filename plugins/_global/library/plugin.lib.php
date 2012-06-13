@@ -31,18 +31,23 @@ class zajlib_plugin extends zajLibExtension {
 	/**
 	 * Dynamically load a plugin.
 	 * @param string $plugin The name of the plugin to be loaded.
-	 * @param boolean $load_function If set to true (the default) the __plugin function will be called once the plugin is loaded (this is where you can init the plugin).
+	 * @param boolean $load_function If set to true (the default) the __plugin function will be called once the plugin is loaded (this is where you can init the plugin). This is automatically disabled during update app.
 	 * @return boolean Returns true if the plugin was loaded successfully, false otherwise. In case of failure, a warning will also be issued.
 	 **/
-	public function load($plugin, $load_function = true){		
+	public function load($plugin, $load_function = 'DEFAULT'){		
 		// Disable double loading
 			if($this->is_loaded($plugin)) return true;
 		// Result defaults to true
 			$result = true;
+		// Load function is disabled during update app, otherwise it defaults to true
+			if($load_function == 'DEFAULT'){
+				if($this->zajlib->zajconf['update_appname'].'/' == $this->zajlib->app) $load_function = false;
+				else $load_function = true;
+			}
 		// Add the new plugin to the front of the assoc array
 			$this->zajlib->loaded_plugins = array_merge(array($plugin=>$plugin), $this->zajlib->loaded_plugins);			
 		// only do this if either default controller exists in the plugin folder
-			if(file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'/default.ctl.php')){
+			if($load_function && file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'/default.ctl.php')){
 				// reroute but if no __plugin method, just skip without an error message (TODO: maybe remove the false here?)!
 					$result = $this->zajlib->reroute($plugin.'/__plugin/', array($this->zajlib->app.$this->zajlib->mode, $this->zajlib->app, $this->zajlib->mode), false);
 				// unload the plugin if the result is explicitly false
