@@ -87,7 +87,15 @@
 
 	// load controller support
 		include_once($zajconf['root_folder'].'/system/class/zajcontroller.class.php');
+		
+	// all init is completed, after this it's only checks and plugin loads, etcetc.
+		if(!empty($GLOBALS['ZAJ_HOOK_INIT']) && is_callable($GLOBALS['ZAJ_HOOK_INIT'])) $GLOBALS['ZAJ_HOOK_INIT']();
 
+	// load plugins
+		foreach(array_reverse($GLOBALS['zaj_plugin_apps']) as $plugin){
+			$zajlib->plugin->load($plugin);
+		}
+		
 	// update progress check
 		if(file_exists($zajlib->basepath."cache/progress.dat") && trim($zajlib->app, '/') != $zajconf['update_appname']) $zajlib->reroute($zajconf['update_appname'].'/progress/');
 
@@ -111,8 +119,8 @@
 		// 5. Check user/pass for update
 			if(!$zajlib->debug_mode && (empty($zajconf['update_user']) || empty($zajconf['update_password']))) $installation_valid  = false;			
 
-	// Now reroute to install script if installation issues found			
-		if(!$installation_valid && trim($zajlib->app, '/') != $zajconf['update_appname']) $zajlib->redirect($zajconf['update_appname'].'/install/');
+	// Now reroute to install script if installation issues found and not explicitly disabled with $zaj_dont_install_mode
+		if(empty($zaj_dont_install_mode) && !$installation_valid && trim($zajlib->app, '/') != $zajconf['update_appname']) $zajlib->redirect($zajconf['update_appname'].'/install/');
 
 	// select the right app and mode
 		// select
@@ -124,8 +132,4 @@
 	// now create url
 		$app_request = $zaj_app."/".$zaj_mode;
 
-	// load plugins
-		foreach(array_reverse($GLOBALS['zaj_plugin_apps']) as $plugin){
-			$zajlib->plugin->load($plugin);
-		}
 ?>
