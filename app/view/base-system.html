@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE HTML>
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -35,8 +35,10 @@
 		{% block body %}
 		<div class='contentframe'>
 			<div class='header'>
-				<a href='{{baseurl}}'><img src='{{baseurl}}system/img/update/logo.jpg' border='0'></a>
-				<div class='menu'>| <a href='{{baseurl}}'>home</a> |</div>
+				{% block header %}
+					<a href='{{baseurl}}'><img src='{{baseurl}}system/img/update/logo.jpg' border='0'></a>
+					<div class='menu'>| <a href='{{baseurl}}'>home</a> |</div>
+				{% endblock header %}
 			</div>
 			<div class='submenu'>
 				{% block submenu %}{% endblock submenu %}
@@ -46,9 +48,12 @@
 				<br/>
 			</div>
 			<div class='footer'>
-				| mozajik php+javascript framework | <a href='http://www.zajmedia.com/'>developed by zajmedia</a> (c) 2006-2010 | mit licence |
+				{% block footer %}
+					| mozajik php+javascript framework | <a href='http://www.zajmedia.com/'>developed by zajmedia</a> (c) 2006-{% now 'Y' %} | mit licence |
+				{% endblock footer %}
 			</div>
 		</div>
 		{% endblock body %}
+		{% block foot %}{% endblock foot %}
 	</body>
 </html>
