@@ -508,31 +508,30 @@ class zajlib_model extends zajLibExtension {
 	 **/
 	private function get_columns($table){
 		$columns = array();
-		// Get columns for this table
-			$database = $GLOBALS['zaj_mysql_db'];
+		// Get database name from settings
+			$database_name = $this->zajlib->zajconf['mysql_db'];
+		// Create a new database connection to information_schema
+			$db = $this->zajlib->db->create_connection($this->zajlib->zajconf['mysql_server'], $this->zajlib->zajconf['mysql_user'], $this->zajlib->zajconf['mysql_password'], 'information_schema');
 			// select scheme db then revert!
-				mysql_select_db('information_schema');
-				$this->db->query("SELECT `COLUMN_NAME` as 'Field', `COLUMN_TYPE` as 'Type', `COLUMN_KEY` as 'Key', `COLUMN_DEFAULT` as 'Default', `EXTRA` as 'Extra', `COLUMN_COMMENT` as 'Comment' FROM `COLUMNS` WHERE `TABLE_SCHEMA`='$database' && `TABLE_NAME`='$table'");			
-			while($col = $this->db->get_one()){
-				// process type
-					$tdata = explode('(', $col['Type']);
-					$type = $tdata[0];
-				// process options
-					$options = array();
-					foreach(explode(',', $tdata[1]) as $option) if($option != '') $options[] = trim($option, "')");
-				// create my array		
-					$columns[$col['Field']] = array(
-						'field'=>$col['Field'],
-						'type'=>$type,
-						'option'=>$options,
-						'key'=>$col['Key'],
-						'default'=>$col['Default'],
-						'extra'=>strtoupper($col['Extra']),
-						'comment'=>$col['Comment'],
-					);
-			}
-			// revert back to my db
-				mysql_select_db($database);
+				$db->query("SELECT `COLUMN_NAME` as 'Field', `COLUMN_TYPE` as 'Type', `COLUMN_KEY` as 'Key', `COLUMN_DEFAULT` as 'Default', `EXTRA` as 'Extra', `COLUMN_COMMENT` as 'Comment' FROM `COLUMNS` WHERE `TABLE_SCHEMA`='$database_name' && `TABLE_NAME`='$table'");			
+				foreach($db as $col){
+					// process type
+						$tdata = explode('(', $col->Type);
+						$type = $tdata[0];
+					// process options
+						$options = array();
+						foreach(explode(',', $tdata[1]) as $option) if($option != '') $options[] = trim($option, "')");
+					// create my array		
+						$columns[$col->Field] = array(
+							'field'=>$col->Field,
+							'type'=>$type,
+							'option'=>$options,
+							'key'=>$col->Key,
+							'default'=>$col->Default,
+							'extra'=>strtoupper($col->Extra),
+							'comment'=>$col->Comment,
+						);
+				}
 		return $columns;
 	}
 
