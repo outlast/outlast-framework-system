@@ -585,8 +585,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 **/
 		private function send_error($display_warning = false, $error_text = ""){
 			// set all the necessary variables
-				if($error_text) $this->current_session->last_error = $error_text;
-				else $this->current_session->last_error = mysql_error();//($this->current_session->conn);
+				if(!empty($error_text)) $this->current_session->last_error = $error_text;
 			// display the error
 				if($display_warning || $this->zajlib->debug_mode) $this->zajlib->error('SQL: '.$this->current_session->last_error.' / '.$this->last_query.' (Hints: Typo? Missing DB update?)');
 			// reset error
