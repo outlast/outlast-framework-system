@@ -579,8 +579,8 @@ class zajLibLoader{
 			}
 		// Fnum is now one two big!
 			$fnum--;
-		// now try to go through various alternatives (3. admin/whatever/default.ctl.php / 4. admin/default.ctl.php)
-			while(!$result && $fnum >= 1){
+		// now try to go through various alternatives (3. admin/whatever/default.ctl.php / 4. admin/default.ctl.php) if app is defined
+			while(!empty($zaj_app) && !$result && $fnum >= 1){
 				// create file name
 					$zaj_app = implode("/", array_slice($rdata, 0, $fnum));
 					$zaj_mode = implode("_", array_slice($rdata, $fnum));
