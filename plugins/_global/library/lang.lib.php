@@ -33,7 +33,7 @@ class zajlib_lang extends zajlib_config {
 		 **/
 		function get(){
 			// Set the default to the default setting based on the first to characters of the locale setting
-				//$GLOBALS['zaj_locale
+				// TODO: add zajconf here!
 				$language = 'en';
 			// First, check to see 
 			

@@ -51,7 +51,7 @@ class MozajikError extends zajModel {
 			if($backtrace[1]['class'] == 'MozajikError') exit('Could not log error: '.$errortext);
 			
 		// check if db connection is ok, if so, log to db!
-			if($GLOBALS['zaj_error_log_file'] == 'MYSQL' && $GLOBALS['zaj_mysql_enabled'] && is_object($GLOBALS['zajlib']->db) && !$GLOBALS['zajlib']->db->get_error()) $log_mode = 'db';
+			if($GLOBALS['zajlib']->zajconf['error_log_file'] == 'MYSQL' && $GLOBALS['zajlib']->zajconf['mysql_enabled'] && is_object($GLOBALS['zajlib']->db) && !$GLOBALS['zajlib']->db->get_error()) $log_mode = 'db';
 			else $log_mode = 'file';
 		
 		// now create array
@@ -91,7 +91,7 @@ class MozajikError extends zajModel {
 			
 			error_log("Mozajik $errorlevel at ".date("Y.m.d. G:i:s")." - ".$errortext);
 		// log the backtrace?
-			if($GLOBALS['zaj_error_log_backtraces']) error_log("Backtrace:".print_r($backtrace, true));
+			if($GLOBALS['zajlib']->zajconf['error_log_backtraces']) error_log("Backtrace:".print_r($backtrace, true));
 
 		// print it to screen
 			if($GLOBALS['zajlib']->debug_mode){

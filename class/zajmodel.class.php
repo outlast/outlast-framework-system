@@ -764,7 +764,7 @@ abstract class zajModelExtender {
 			}
 		// If the current class does not exist, try to load it from all files in the system app hierarchy
 			if(!class_exists($parentmodel, false)){
-				foreach($GLOBALS['zaj_system_apps'] as $system_app){
+				foreach($GLOBALS['zajlib']->zajconf['system_apps'] as $system_app){
 					// Attempt to load file
 						$result = $GLOBALS['zajlib']->load->file('system/plugins/'.$system_app.'/model/'.strtolower($parentmodel).'.model.php', false, true, "specific");
 					// If successful, break

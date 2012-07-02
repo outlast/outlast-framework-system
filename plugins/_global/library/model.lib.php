@@ -496,7 +496,7 @@ class zajlib_model extends zajLibExtension {
 				// get the first element
 					$name = reset($table);
 				// add to assoc array with columns (if not in the ignore list)
-					if(!in_array($name, $GLOBALS['zaj_mysql_ignore_tables'])) $tables_array[$name] = $this->get_columns($name);
+					if(!in_array($name, $this->zajlib->zajconf['mysql_ignore_tables'])) $tables_array[$name] = $this->get_columns($name);
 			}
 		return $tables_array;
 		
@@ -548,7 +548,7 @@ class zajlib_model extends zajLibExtension {
 			// Load my local files
 				$myfiles = $this->zajlib->file->get_files_in_dir($this->zajlib->basepath.'/app/model/');
 			// Load my plugin files
-				foreach($GLOBALS['zaj_plugin_apps'] as $plugin_app) $myfiles = array_merge($myfiles, $this->zajlib->file->get_files_in_dir($this->zajlib->basepath.'/plugins/'.$plugin_app.'/model/'));
+				foreach($this->zajlib->zajconf['plugin_apps'] as $plugin_app) $myfiles = array_merge($myfiles, $this->zajlib->file->get_files_in_dir($this->zajlib->basepath.'/plugins/'.$plugin_app.'/model/'));
 			// Load my system files
 				$myfiles = array_merge($myfiles, $this->zajlib->file->get_files_in_dir($this->zajlib->basepath.'/system/app/model/'));
 

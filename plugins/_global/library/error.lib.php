@@ -100,7 +100,7 @@ class zajlib_error extends zajLibExtension {
 			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.$this->zajlib->fullrequest."] $post_data [Mozajik $errorlevel - ".$errortext."]".$referer);
 			
 		// log the backtrace?
-			if($GLOBALS['zaj_error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
+			if($GLOBALS['zajlib']->zajconf['error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
 
 		// only print if it is fatal error or debug mode
 			if($errorlevel == 'error' || $GLOBALS['zajlib']->debug_mode){		
@@ -130,9 +130,9 @@ class zajlib_error extends zajLibExtension {
 	 **/ 
 	private function file_log($message){
 		// Is logging disabled?
-			if(!$GLOBALS['zaj_error_log_enabled']) return false;
+			if(!$this->zajlib->zajconf['error_log_enabled']) return false;
 		// Is logging to a specific file?
-			if(!empty($GLOBALS['zaj_error_log_file']) && $GLOBALS['zaj_error_log_file'] != 'MYSQL') return error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, $GLOBALS['zaj_error_log_file']);
+			if(!empty($this->zajlib->zajconf['error_log_file']) && $this->zajlib->zajconf['error_log_file'] != 'MYSQL') return error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, $this->zajlib->zajconf['error_log_file']);
 			else return error_log($message);
 	}
 

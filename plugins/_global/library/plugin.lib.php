@@ -15,7 +15,7 @@ class zajlib_plugin extends zajLibExtension {
 	 * @return boolean Returns true if the plugin is enabled, false otherwise.
 	 **/
 	public function is_enabled($name){
-		return in_array($name, $GLOBALS['zaj_plugin_apps']);
+		return in_array($name, $this->zajlib->zajconf['plugin_apps']);
 	}
 	
 	/**

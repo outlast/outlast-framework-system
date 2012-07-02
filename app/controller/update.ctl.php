@@ -32,7 +32,7 @@
 		 **/
 		function main(){
 			// mysql enabled?
-				$this->zajlib->variable->mysql_enabled = $GLOBALS['zaj_mysql_enabled'];
+				$this->zajlib->variable->mysql_enabled = $this->zajlib->zajconf['mysql_enabled'];
 			// load menu
 				$this->zajlib->variable->title = "app update";
 				$this->zajlib->template->show("update/update-menu.html");						
@@ -135,7 +135,7 @@
 		
 		/**
 		 * Install a new version of Mozajik
-		 * @todo Add plugin install check for dynamically loaded plugins (so check the folder instead of zaj_plugin_apps)
+		 * @todo Add plugin install check for dynamically loaded plugins (so check the folder instead of plugin_apps)
 		 **/
 		function install(){
 			// Load my version information
@@ -151,7 +151,7 @@
 				// 1. Calls __install() method on each plugin
 				// 2. Checks return value: if it is ZAJ_INSTALL_DONTCHECK, then the installation check is not continued (USE ONLY WHEN OTHER INSTALL PROCEDURES NEEDED. Ex: Wordpress).
 				// 3. Checks return value: if it is a string, then it is an error and it is displayed.
-				foreach(array_reverse($GLOBALS['zaj_plugin_apps']) as $plugin){
+				foreach(array_reverse($this->zajlib->zajconf['plugin_apps']) as $plugin){
 					// first load up the plugin without __plugin execution
 						$this->zajlib->plugin->load($plugin, false);
 					// only do this if either default controller exists in the plugin folder
@@ -169,9 +169,9 @@
 					if(!is_writable($this->zajlib->basepath."cache/") || !is_writable($this->zajlib->basepath."data/")){ $status_write  = $todo; $ready_to_dbupdate = false; $ready_to_activate = false; }
 					else $status_write  = $done;
 				// 2. Check database permissions
-					if(!$GLOBALS['zaj_mysql_enabled']){ $status_db  = $na; $ready_to_dbupdate = false; }
+					if(!$this->zajlib->zajconf['mysql_enabled']){ $status_db  = $na; $ready_to_dbupdate = false; }
 					else{
-						if($this->zajlib->db->connect($GLOBALS['zaj_mysql_server'], $GLOBALS['zaj_mysql_user'], $GLOBALS['zaj_mysql_password'], $GLOBALS['zaj_mysql_db'], false)) $status_db = $done;
+						if($this->zajlib->db->connect($this->zajlib->zajconf['mysql_server'], $this->zajlib->zajconf['mysql_user'], $this->zajlib->zajconf['mysql_password'], $this->zajlib->zajconf['mysql_db'], false)) $status_db = $done;
 						else{ $status_db  = $todo; $ready_to_dbupdate = false; $ready_to_activate = false; }
 					}
 				// 3. Check user/pass for update
@@ -181,10 +181,10 @@
 					}
 					else $status_updatepass = $done;
 				// 4. Check database update (photo table should always exist)
-					if(!$GLOBALS['zaj_mysql_enabled']) $status_dbupdate  = $na;
+					if(!$this->zajlib->zajconf['mysql_enabled']) $status_dbupdate  = $na;
 					elseif($status_db == $todo){ $status_dbupdate  = $todo; $ready_to_activate = false; }
 					else{				
-						$result = $this->zajlib->db->query("SELECT count(*) as c FROM information_schema.tables WHERE table_schema = '".addslashes($GLOBALS['zaj_mysql_db'])."' AND table_name = 'photo'")->next();
+						$result = $this->zajlib->db->query("SELECT count(*) as c FROM information_schema.tables WHERE table_schema = '".addslashes($this->zajlib->zajconf['mysql_db'])."' AND table_name = 'photo'")->next();
 						if($result->c <= 0){ $status_dbupdate = $todo; $ready_to_activate = false; }
 						else $status_dbupdate = $done;
 					}

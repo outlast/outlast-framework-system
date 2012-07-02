@@ -54,7 +54,7 @@ class MozajikVersion extends zajModel {
 	 **/
 	public static function install(){
 		// If database enable
-		if($GLOBALS['zaj_mysql_enabled']){
+		if($GLOBALS['zajlib']->zajconf['mysql_enabled']){
 			// set all installed to false
 				$GLOBALS['zajlib']->db->query("UPDATE `mozajikversion` SET `installed`='';");
 			// now create the new version

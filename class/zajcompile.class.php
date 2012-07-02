@@ -300,6 +300,13 @@ class zajCompileSource {
 				$this->current_line = fgets($this->file);
 				$this->line_number++;
 			}
+		// check for php related stuff (but only if parsing is on)
+			if($this->parse){
+				// disable PHP tags
+					if(preg_match("/<[\?%](php| |\\n)+/", $this->current_line) > 0) return $this->zajlib->error("cannot use PHP or ASP tags in template files: &lt;?, &lt;?php, or &lt;% are all forbidden.");
+				// now replace any other codes in line (<?xml for example)
+					$this->current_line = preg_replace("/(<[\?%][A-z]*)/", '<?php print "${1}"; ?>', $this->current_line);				
+			}
 		// try to match a tag
 			$currentmatches = '';
 			if(

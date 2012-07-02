@@ -521,7 +521,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 **/
 		private function query($sql, $disable_error = false){
 			// create the connection if it doesnt already exist
-				if(!$this->current_session->conn) $this->connect($GLOBALS['zaj_mysql_server'], $GLOBALS['zaj_mysql_user'], $GLOBALS['zaj_mysql_password'], $GLOBALS['zaj_mysql_db']);
+				if(!$this->current_session->conn) $this->connect($this->zajlib->zajconf['mysql_server'], $this->zajlib->zajconf['mysql_user'], $this->zajlib->zajconf['mysql_password'], $this->zajlib->zajconf['mysql_db']);
 			// add total tracking if not already there
 				$sql = trim($sql);
 				if(strpos($sql, 'SELECT') !== false && strpos($sql, 'SQL_CALC_FOUND_ROWS') === false  && substr($sql, 0, 6) == 'SELECT') $sql ='SELECT SQL_CALC_FOUND_ROWS '.substr($sql, 7);
@@ -609,7 +609,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 **/
 		public function escape($string_to_escape){
 			// create the connection if it doesnt already exist
-				if(!$this->current_session->conn) $this->connect($GLOBALS['zaj_mysql_server'], $GLOBALS['zaj_mysql_user'], $GLOBALS['zaj_mysql_password'], $GLOBALS['zaj_mysql_db']);
+				if(!$this->current_session->conn) $this->connect($this->zajlib->zajconf['mysql_server'], $this->zajlib->zajconf['mysql_user'], $this->zajlib->zajconf['mysql_password'], $this->zajlib->zajconf['mysql_db']);
 			// now escape
 				return mysql_real_escape_string($string_to_escape, $this->current_session->conn);
 		}

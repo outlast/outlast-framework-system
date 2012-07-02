@@ -6,36 +6,20 @@
 		define('MOZAJIK_RECOMMENDED_HTACCESS_VERSION', 303);
 		define('MOZAJIK_RECOMMENDED_CONFIG_VERSION', 305);
 
-	// Set variables for backwards compatibility
+	// Set locale but only if new config version
 		global $zajconf;
 		if(is_array($zajconf)){
 			// Set my locale and numeric to US for compatibility
 			setlocale(LC_ALL, $zajconf['locale_default']);
 			setlocale(LC_NUMERIC, $zajconf['locale_numeric']);
-			// These are not yet converted to new format
-			$GLOBALS['zaj_default_app'] = $zajconf['default_app'];
-			$GLOBALS['zaj_default_mode'] = $zajconf['default_mode'];
-			$GLOBALS['zaj_plugin_apps'] = $zajconf['plugin_apps'];
-			$GLOBALS['zaj_system_apps'] = $zajconf['system_apps'];
-		
-			$GLOBALS['zaj_mysql_enabled'] = $zajconf['mysql_enabled'];
-			$GLOBALS['zaj_mysql_server'] = $zajconf['mysql_server'];
-			$GLOBALS['zaj_mysql_user'] = $zajconf['mysql_user'];
-			$GLOBALS['zaj_mysql_password'] = $zajconf['mysql_password'];
-			$GLOBALS['zaj_mysql_db'] = $zajconf['mysql_db'];
-			$GLOBALS['zaj_mysql_ignore_tables'] = $zajconf['mysql_ignore_tables'];
-						
-			$GLOBALS['zaj_error_log_enabled'] = $zajconf['error_log_enabled'];
-			$GLOBALS['zaj_error_log_notices'] = $zajconf['error_log_notices'];
-			$GLOBALS['zaj_error_log_backtrace'] = $zajconf['error_log_backtrace'];
-			$GLOBALS['zaj_error_log_file'] = $zajconf['error_log_file'];
-			$GLOBALS['zaj_jserror_log_enabled'] = $zajconf['jserror_log_enabled'];
-			$GLOBALS['zaj_jserror_log_file'] = $zajconf['jserror_log_file'];
-					
-			$GLOBALS['zaj_config_file_version'] = $zajconf['config_file_version'];
 		}
+	// Set variables for backwards compatibility with old config version
 		if(!is_array($zajconf)){
-			// These are already converted to new format
+			$zajconf['default_app'] = $GLOBALS['zaj_default_app'];
+			$zajconf['default_mode'] = $GLOBALS['zaj_default_mode'];
+			$zajconf['plugin_apps'] = $GLOBALS['zaj_plugin_apps'];
+			$zajconf['system_apps'] = $GLOBALS['zaj_system_apps'];
+			
 			$zajconf['debug_mode'] = $GLOBALS['debug_mode'];
 			$zajconf['debug_mode_domains'] = $GLOBALS['debug_mode_domains'];
 			$zajconf['root_folder'] = $GLOBALS['zaj_root_folder'];
@@ -45,6 +29,26 @@
 			$zajconf['update_appname'] = $GLOBALS['zaj_update_appname'];
 			$zajconf['update_user'] = $GLOBALS['zaj_update_user'];
 			$zajconf['update_password'] = $GLOBALS['zaj_update_password'];
+
+			$zajconf['mysql_enabled'] = $GLOBALS['zaj_mysql_enabled'];
+			$zajconf['mysql_server'] = $GLOBALS['zaj_mysql_server'];
+			$zajconf['mysql_user'] = $GLOBALS['zaj_mysql_user'];
+			$zajconf['mysql_password'] = $GLOBALS['zaj_mysql_password'];
+			$zajconf['mysql_db'] = $GLOBALS['zaj_mysql_db'];
+			$zajconf['mysql_ignore_tables'] = $GLOBALS['zaj_mysql_ignore_tables'];
+
+			$zajconf['error_log_enabled'] = $GLOBALS['zaj_error_log_enabled'];
+			$zajconf['error_log_notices'] = $GLOBALS['zaj_error_log_notices'];
+			$zajconf['error_log_backtrace'] = $GLOBALS['zaj_error_log_backtrace'];
+			$zajconf['error_log_file'] = $GLOBALS['zaj_error_log_file'];
+			$zajconf['jserror_log_enabled'] = $GLOBALS['zaj_jserror_log_enabled'];
+			$zajconf['jserror_log_file'] = $GLOBALS['zaj_jserror_log_file'];
+
+			$zajconf['plupload_photo_maxwidth'] = $GLOBALS['zaj_plupload_photo_maxwidth'];
+			$zajconf['plupload_photo_maxfilesize'] = $GLOBALS['zaj_plupload_photo_maxfilesize'];
+			$zajconf['plupload_photo_maxuploadwidth'] = $GLOBALS['zaj_plupload_photo_maxuploadwidth'];
+
+			$zajconf['config_file_version'] = $GLOBALS['zaj_config_file_version'];
 		}	
 	
 	// start execution
@@ -60,7 +64,7 @@
 		}
 	// check for versions
 		if(empty($_REQUEST['zajhtver']) || $_REQUEST['zajhtver'] < MOZAJIK_HTACCESS_VERSION) exit("MOZAJIK VERSION ERROR: please update the htaccess file to the latest version!");
-		if(empty($GLOBALS['zaj_config_file_version']) || $GLOBALS['zaj_config_file_version'] < MOZAJIK_CONFIG_VERSION) exit("MOZAJIK VERSION ERROR: please update your main config file to the latest version!");
+		if(empty($zajconf['config_file_version']) || $zajconf['config_file_version'] < MOZAJIK_CONFIG_VERSION) exit("MOZAJIK VERSION ERROR: please update your main config file to the latest version!");
 	// prepare my requests - trim app and mode
 		$_REQUEST['zajapp'] = trim($_REQUEST['zajapp'], " _-\"\\'/");
 		$_REQUEST['zajmode'] = trim($_REQUEST['zajmode'], " _-\"\\'/");
@@ -70,7 +74,7 @@
 	// auto-detect root folder if not set already
 		if(empty($zajconf['root_folder'])) $zajconf['root_folder'] = realpath(dirname(__FILE__).'/../../');	
 	// set the default system plugins (for backwards compatibility)
-		if(empty($GLOBALS['zaj_system_apps'])) $GLOBALS['zaj_system_apps'] = array('_global', '_mootools');
+		if(empty($zajconf['system_apps'])) $zajconf['system_apps'] = array('_global', '_mootools');
 	// include the zajlib system class
 		if (!(include $zajconf['root_folder'].'/system/class/zajlib.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
 	// create a new zajlib object
@@ -92,7 +96,7 @@
 		if(!empty($GLOBALS['ZAJ_HOOK_INIT']) && is_callable($GLOBALS['ZAJ_HOOK_INIT'])) $GLOBALS['ZAJ_HOOK_INIT']();
 
 	// load plugins
-		foreach(array_reverse($GLOBALS['zaj_plugin_apps']) as $plugin){
+		foreach(array_reverse($zajconf['plugin_apps']) as $plugin){
 			$zajlib->plugin->load($plugin);
 		}
 		
@@ -109,7 +113,7 @@
 		// 3. Activate model support and check system file validity (fatal error if not)
 			if (!(include $zajconf['root_folder'].'/system/class/zajmodel.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
 		// 4. Check database issues (if mysql is enabled) - this does not actually connect but newly installed sites should already run into (2) activation error. Again, fatal errors if missing.
-			if($GLOBALS['zaj_mysql_enabled']){	
+			if($zajconf['mysql_enabled']){	
 				// include the data and fetcher system class
 					if (!(include $zajconf['root_folder'].'/system/class/zajdata.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
 					if (!(include $zajconf['root_folder'].'/system/class/zajfetcher.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
@@ -124,7 +128,7 @@
 
 	// select the right app and mode
 		// select
-			if(!isset($_REQUEST['zajapp']) || $_REQUEST['zajapp']=='' || $_REQUEST['zajapp'] == "default") $zaj_app = $GLOBALS['zaj_default_app'];
+			if(!isset($_REQUEST['zajapp']) || $_REQUEST['zajapp']=='' || $_REQUEST['zajapp'] == "default") $zaj_app = $zajconf['default_app'];
 			else $zaj_app = $_REQUEST['zajapp'];
 		// select the mode (and trim trailing slash)
 			if(!isset($_REQUEST['zajmode']) || $_REQUEST['zajmode']=='' || $_REQUEST['zajmode'] == "default") $zaj_mode = '';

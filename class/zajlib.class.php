@@ -185,8 +185,8 @@ class zajLib {
 			}
 		// default app & mode
 			if(empty($this->app)){
-				$this->app = $GLOBALS['zaj_default_app'];
-				$this->mode = $GLOBALS['zaj_default_mode'];
+				$this->app = $this->zajconf['default_app'];
+				$this->mode = $this->zajconf['default_mode'];
 				$default_mode = true;
 			}
 		// autodetect my url
@@ -305,7 +305,7 @@ class zajLib {
 			}
 			$this->num_of_notices++;
 		// log notices?
-			if($GLOBALS['zaj_mysql_enabled'] && $GLOBALS['zaj_error_log_enabled'] && $GLOBALS['zaj_error_log_notices']) MozajikError::log($message, 'notice');
+			if($this->zajconf['mysql_enabled'] && $this->zajconf['error_log_enabled'] && $this->zajconf['error_log_notices']) MozajikError::log($message, 'notice');
 	}
 	
 	/**
@@ -585,14 +585,14 @@ class zajLibLoader{
 					$zaj_app = implode("/", array_slice($rdata, 0, $fnum));
 					$zaj_mode = implode("_", array_slice($rdata, $fnum));
 				// now try to load the file
-					$result = $this->file("controller/".strtolower($zaj_app).'/'.strtolower($GLOBALS['zaj_default_app']).'.ctl.php', false);
+					$result = $this->file("controller/".strtolower($zaj_app).'/'.strtolower($this->zajlib->zajconf['default_app']).'.ctl.php', false);
 				// add one
 					$fnum--;
 			}
 		// if result still not successful just do default (5. default.ctl.php)
 			if(!$result){
 				// create file name
-					$zaj_app = $GLOBALS['zaj_default_app'];
+					$zaj_app = $this->zajlib->zajconf['default_app'];
 					$zaj_mode = implode("_", $rdata);
 				// now try to load the file
 					$result = $this->file("controller/".strtolower($zaj_app).".ctl.php", false);
@@ -600,7 +600,7 @@ class zajLibLoader{
 			}
 		
 		// if zaj_mode not defined
-			if(empty($zaj_mode)) $zaj_mode = strtolower($GLOBALS['zaj_default_mode']);
+			if(empty($zaj_mode)) $zaj_mode = strtolower($this->zajlib->zajconf['default_mode']);
 		
 		//////////////////////////////////////////////////
 		// - zaj_mode and zaj_app are properly defined!
@@ -636,11 +636,11 @@ class zajLibLoader{
 				// If no error method, but $reroute_to_error is true, throw an error
 					elseif($reroute_to_error){
 						// Check if not already default
-							if($zaj_app == $GLOBALS['zaj_default_app']) $this->zajlib->error("Could not route request and default controller does not implement __error() method.");
+							if($zaj_app == $this->zajlib->zajconf['default_app']) $this->zajlib->error("Could not route request and default controller does not implement __error() method.");
 						// Split into sections and remerge into parent
 							$parent_controller = implode('_', array_slice(explode('_', $zaj_app), 0, -1));
 						// Set to default
-							if(empty($parent_controller)) $parent_controller = $GLOBALS['zaj_default_app'];
+							if(empty($parent_controller)) $parent_controller = $this->zajlib->zajconf['default_app'];
 						// Reroute to parent method's error method
 							// TODO: fix so that first parameter passed is correct (currently it is not!)
 							return $this->app($parent_controller.'/__error', array($zaj_app.'_'.$zaj_mode, $optional_parameters));
@@ -746,7 +746,7 @@ class zajLibLoader{
 					}
 				// 4. try the system plugins
 					if($scope == "full" || $scope == "system"){
-						foreach($GLOBALS['zaj_system_apps'] as $app){
+						foreach($this->zajlib->zajconf['system_apps'] as $app){
 							if(file_exists($this->zajlib->basepath.'system/plugins/'.$app.'/'.$file_path) && (!$include_now || include_once $this->zajlib->basepath.'system/plugins/'.$app.'/'.$file_path)){
 								if($include_now) $this->loaded['file'][$file_path] = true;
 								return 'system/plugins/'.$app.'/'.$file_path;
@@ -981,7 +981,7 @@ function __autoload($class_name){
 	// If autoloading enabled or not
 		if(!$GLOBALS['zajlib']->model_autoloading) return false;
 	// check if models enabled
-		if(!$GLOBALS['zaj_mysql_enabled']) $GLOBALS['zajlib']->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
+		if(!$GLOBALS['zajlib']->zajconf['mysql_enabled']) $GLOBALS['zajlib']->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
 	// load the model
 		return $GLOBALS['zajlib']->load->model($class_name);
 }
