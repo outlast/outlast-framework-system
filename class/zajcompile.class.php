@@ -447,7 +447,7 @@ class zajCompileSource {
 				}
 				elseif($type == 'system_apps' && $path){
 					// run through all of my registered system apps' views and return if one found!
-						foreach($GLOBALS['zaj_system_apps'] as $plugin_app){
+						foreach($GLOBALS['zajlib']->zajconf['system_apps'] as $plugin_app){
 							$path = $GLOBALS['zajlib']->basepath.'system/plugins/'.$plugin_app.'/view/'.$source_file;
 							if(file_exists($path)) return $path;
 						}
