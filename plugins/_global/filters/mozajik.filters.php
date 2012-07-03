@@ -153,7 +153,7 @@ class zajlib_filter_mozajik extends zajElementCollection{
 	public function filter_subtract($parameter, &$source){
 		// validate parameter
 			$parameter = (trim($parameter,"'\""));
-			if(!is_numeric($parameter)) return $source->warning('subtract filter parameter not an integer!');
+			if(substr($parameter, 0, 1) != '$' && !is_numeric($parameter)) return $source->warning('subtract filter parameter not a variable or an integer!');
 		// write to file
 			$this->zajlib->compile->write('$filter_var=$filter_var-'.$parameter.';');
 		return true;

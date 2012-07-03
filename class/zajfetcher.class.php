@@ -100,6 +100,7 @@ class zajFetcher implements Iterator, Countable{
 			// now set pagination variables
 				$this->pagination->page = $page;
 				$this->pagination->perpage = $perpage;
+				$this->pagination->pagefirstitem = ($page-1)*$perpage+1;
 				$this->pagination->nextpage = $page+1;	// nextpage is reset to false if not enough object (done after query)
 				$this->pagination->prevpage = $page-1;
 				$this->pagination->prevurl = $GLOBALS['zajlib']->fullrequest."&zajpagination[{$this->class_name}]={$this->pagination->prevpage}";
