@@ -247,6 +247,8 @@ class zajlib_template_zajvariables {
 				case 'request': return $this->zajlib->array->array_to_object($_SERVER);
 			// The current protocol (HTTP/HTTPS)
 				case 'protocol': if($this->zajlib->https) return 'https'; else return 'http';
+			// True if https
+				case 'https': return $this->zajlib->https;
 			// Mozajik version info and other stuff
 				case 'mozajik': return $this->zajlib->mozajik;
 			// Referer
