@@ -100,7 +100,9 @@ class zajlib_config extends zajLibExtension{
 													if(strpos($varcontent,'?>') !== false) $this->error('Illegal characters found in variable content');
 													if(strpos($varcontent,'<?') !== false) $this->error('Illegal characters found in variable content');
 												// generate variable
-													$current_line = '$this->zajlib->config->variable->'.$varname.' = \''.addslashes($varcontent)."';\n";
+													// treat booleans and numbers separately
+														if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n";
+														else $current_line = '$this->zajlib->config->variable->'.$varname.' = \''.addslashes($varcontent)."';\n";
 													$this->write_line($current_line);
 												// while not in any section, add the current line to the "global" scope
 													if(!$section_file) $global_scope .= $current_line;
