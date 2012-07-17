@@ -55,17 +55,22 @@ class zajlib_tag_base extends zajElementCollection{
 	public function tag_cycle($param_array, &$source){
 		// generate cycle array
 			$var_name = '$cycle_array_'.uniqid("");
+			$var_name_counter = '$cycle_counter_'.uniqid("");
 			$my_array = 'if(empty('.$var_name.')) '.$var_name.' = array(';
 			foreach($param_array as $el) $my_array .= "$el->variable, ";
 			$my_array .= ');';
+			$which_one_var = "[\$which_one]";
 		// generate content
 			$contents = <<<EOF
 <?php
-	// define my choices
+	// define my choices and my default
 		$my_array
+		if(!isset($var_name_counter)) $var_name_counter = 0;
+		else $var_name_counter++;
+	// choose which one to display now
+		\$which_one = abs($var_name_counter % count($var_name));
 	// choose
-		echo current($var_name);
-		if(next($var_name) === false) reset($var_name);
+		echo {$var_name}{$which_one_var};
 ?>
 EOF;
 		// write to file
