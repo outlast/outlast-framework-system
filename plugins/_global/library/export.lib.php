@@ -32,7 +32,6 @@ class zajlib_export extends zajLibExtension {
 					}
 				// Create output
 					$outstream = fopen("php://output", 'w');
-
 				// Now write data
 					$this->send_data($outstream, $fetcher, $fields, $excel_encoding, $delimiter);
 				exit;
@@ -109,11 +108,17 @@ class zajlib_export extends zajLibExtension {
 						if($model_mode) $data['name'] = $s->name;
 					// Convert encoding if excel mode selected
 						if($excel_encoding) $data['name'] = mb_convert_encoding($data['name'], 'UTF-16LE', 'UTF-8');
+					
+						
 					// Add my values for each field
 						foreach($fields as $type => $field){
 							// Set to value
 								if($model_mode) $field_value = $s->data->$field;
-								else $field_value = $s->$field;
+								else{
+									// Either an array or an object
+									if(is_array($s)) $field_value = $s[$field];
+									else $field_value = $s->$field;
+								}
 							
 							// Relationship field support (for manytoone only)
 								if(is_object($field_value) && is_a($field_value, 'zajModel')){
