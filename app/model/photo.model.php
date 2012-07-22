@@ -44,9 +44,16 @@ class Photo extends zajModel {
 		$this->parent = $this->data->parent;
 	}
 
+	/**
+	 * Returns the url based on size ($photo->small) or the relative url ($photo->rel_small)
+	 **/
 	public function __get($name){
+		$relname = str_ireplace('rel_', '', $name);
 		if(!empty($GLOBALS['photosizes'][$name])) return $this->zajlib->file->get_id_path($this->zajlib->baseurl."data/Photo", $this->id."-$name.jpg");
-		else return parent::__get($name);
+		else{
+			if(!empty($GLOBALS['photosizes'][$relname])) return $this->zajlib->file->get_id_path("data/Photo", $this->id."-$relname.jpg");
+			else return parent::__get($name);
+		}
 	}
 
 
