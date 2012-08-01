@@ -11,6 +11,11 @@
 class zajlib_template extends zajLibExtension {
 
 	/**
+	 * This variables is used to verify the validity of each included file.
+	 **/
+	private $template_valid = false;
+
+	/**
 	 * Compile the file specified by file_path.
 	 * @param string $source_path This is the source file's path relative to any of the active view folders.
 	 * @param string $destination_path This is the destination file's path relative to the final compiled view folder. If not specified, the destination will be the same as the source (relative), which is the preferred way of doing things. You should only specify this if you are customizing the template compilation process.
@@ -78,14 +83,22 @@ class zajlib_template extends zajLibExtension {
 	private function display($include_file, $return_contents = false){
 		// now include the file
 			// but should i return the contents?
-			if($return_contents) ob_start();	// start output buffer
-			include($include_file);
-			if($return_contents){ 				// end output buffer
-				$contents = ob_get_contents();
-				ob_end_clean();
-				return $contents;
-			}
-			else return true;
+				if($return_contents) ob_start();	// start output buffer
+			// validity
+				$this->template_valid = false;
+			// now include the file
+				include($include_file);
+			// verify validity
+				if(!$this->template_valid){
+					$this->zajlib->warning("Invalid template cache file found: $included_file. File was reset.");
+					// TODO: add code for template reset
+				}
+				if($return_contents){ 				// end output buffer
+					$contents = ob_get_contents();
+					ob_end_clean();
+					return $contents;
+				}
+				else return true;
 	}
 
 	/**
