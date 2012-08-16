@@ -21,7 +21,7 @@
 		/**
 		 * Enable automatic file and photo uploads.
 		 **/
-		function upload_photo(){
+		/**function upload_photo(){
 			// capture the file
 				$photofile = file_get_contents("php://input");
 			// create photo file and return object
@@ -38,18 +38,18 @@
 				}
 			$this->zajlib->json(json_encode((object) $return));
 			exit();
-		}
+		}**/
 		
 		
 		/**
 		 * Enable file uploads.
 		 **/
-		function upload_file(){
+		/**function upload_file(){
 			//print "<textarea>".json_encode((object) array('file'=>'uploaded/PIC01.jpg'))."</textarea>";
 			$this->zajlib->json((object) array('file'=>'uploaded/PIC01.jpg'));
 			//print "file=uploaded/PIC01.jpg,name=PIC01.jpg,width=320,height=240,type=jpg,error=Not recognized file type";
 			exit;
-		}
+		}**/
 	
 		
 		
