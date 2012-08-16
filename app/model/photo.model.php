@@ -132,6 +132,7 @@ class Photo extends zajModel {
 	public function download($size = "normal", $force_download = true){
 		// look for bad characters in $size
 			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0) return false;
+			if(!$this->temporary && $size == "preview") $size = 'normal';
 		// generate path
 			$file_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$size.jpg");
 		// if it is in preview mode (only if not yet finalized)
