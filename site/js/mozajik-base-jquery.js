@@ -69,6 +69,62 @@
 	zaj.prompt = function(message){
 		return prompt(message);
 	};
+	
+	/**
+	 * Reload the current url.
+	 **/
+		zaj.reload = function(){
+			window.location.reload(false);
+		};
+		zaj.refresh = function(){ zaj.reload(); };
+		
+	/**
+	 * A function which serves to unify dojo.ready, window.addEvent('domready'), etcetc. This also fires after any ajax requests are completed and ready.
+	 **/
+	 	zaj.ready = function(func){
+	 		// TODO: add ajax functionality via ready_functions array.
+	 		//window.addEvent('domready', func);
+	 	};
+	
+	/**
+	 * Redirect to a page relative to baseurl or absolute.
+	 * @param relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
+	 **/
+		zaj.redirect = function(relative_or_absolute_url){
+			// Is it relative?
+			if(relative_or_absolute_url.substr(0,2) != '//' && relative_or_absolute_url.substr(4, 3) != "://" && relative_or_absolute_url.substr(5, 3) != "://") window.location = zaj.baseurl+relative_or_absolute_url;
+			else window.location = relative_or_absolute_url;
+			return true;
+		};
+
+
+
+	/**
+	 * Redirect to a page relative to baseurl or absolute.
+	 * @param relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
+	 **/
+		zaj.ajax = {};
+			zaj.ajax.get = function(request,result){
+				zaj.ajax.request('get', request, result);
+			};
+			zaj.ajax.post = function(request,result){
+				zaj.ajax.request('post', request, result);
+			};
+			zaj.ajax.request = function(mode,request,result){
+				zaj.log("sending request to "+zaj.baseurl+request);
+				$.ajax(zaj.baseurl+request, {
+					success: function(data, textStatus, jqXHR){
+						if(typeof result == "function") result(data);
+						else{
+							if(data == 'ok') zaj.redirect(result);
+							else alert(result);
+						}
+					},
+					type: mode
+				});				
+			};
+	
+	
 	/**
 	 * Shortcuts to base
 	 **/
