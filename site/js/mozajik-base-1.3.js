@@ -114,11 +114,13 @@ var MozajikBase = new Class({
 		},
 
 	/**
-	 * Redirect to a page relative to baseurl.
-	 * @param relative_url The URL relative to baseurl.
+	 * Redirect to a page relative to baseurl or absolute.
+	 * @param relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
 	 **/
-		redirect: function(relative_url){
-			window.location = zaj.baseurl+relative_url;
+		redirect: function(relative_or_absolute_url){
+			// Is it relative?
+			if(relative_or_absolute_url.substr(0,2) != '//' && relative_or_absolute_url.substr(4, 3) != "://" && relative_or_absolute_url.substr(5, 3) != "://") window.location = zaj.baseurl+relative_or_absolute_url;
+			else window.location = relative_or_absolute_url;
 			return true;
 		},
 		
