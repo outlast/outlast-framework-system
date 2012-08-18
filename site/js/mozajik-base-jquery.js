@@ -111,7 +111,6 @@
 				zaj.ajax.request('post', request, result);
 			};
 			zaj.ajax.request = function(mode,request,result){
-				zaj.log("sending request to "+zaj.baseurl+request);
 				$.ajax(zaj.baseurl+request, {
 					success: function(data, textStatus, jqXHR){
 						if(typeof result == "function") result(data);
