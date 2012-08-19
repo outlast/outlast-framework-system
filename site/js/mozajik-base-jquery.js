@@ -20,6 +20,11 @@
  * Mozajik zaj object implementations.
  **/
 	/**
+	 * Layer for onready functions.
+	 **/
+ 	zaj.ready = function(func){ $.ready(func); };
+
+	/**
 	 * Logs a message to the console.
 	 * @param string message The message to log.
 	 * @param string type Can be notice, warning, or error
@@ -155,3 +160,5 @@
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
 	 	};
+
+
