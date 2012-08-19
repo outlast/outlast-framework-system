@@ -8,7 +8,7 @@
  **/
 
 // Create a new class which will contain the sections
-	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http',ready:function(){}});
+	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http'});
 	var zaj = new Mozajik();
 
 // Pushstate support (from pjax)
@@ -561,6 +561,7 @@ Mozajik.implement({
 	 * Shortcuts to base
 	 **/
 	ajax: zaj.base.ajax,
+	ready: zaj.base.ready,
 	redirect: zaj.base.redirect,
 	reload: zaj.base.reload,
 	refresh: zaj.base.reload,
