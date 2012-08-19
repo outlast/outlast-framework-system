@@ -49,6 +49,10 @@
 		return zaj.log(message, 'notice', context);
 	};
 
+	// Go back!
+	zaj.back = function(){ history.back(); };
+
+
 	/**
 	 * Custom alerts, confirms, prompts
 	 **/
@@ -76,7 +80,7 @@
 		zaj.reload = function(){
 			window.location.reload(false);
 		};
-		zaj.refresh = function(){ zaj.reload(); };
+		zaj.refresh = zaj.reload;
 		
 	/**
 	 * A function which serves to unify dojo.ready, window.addEvent('domready'), etcetc. This also fires after any ajax requests are completed and ready.
@@ -119,20 +123,35 @@
 							else alert(result);
 						}
 					},
+					complete: function(jqXHR, textStatus){
+						if(textStatus != "success") console.log("Ajax request failed with status ".textStatus);
+					},
+					dataType: 'html',
 					type: mode
 				});				
 			};
 	
-	
 	/**
-	 * Shortcuts to base
+	 * A function which opens up a new window with the specified properties
+	 * @param url The url of the window
+	 * @param width The width in pixels.
+	 * @param height The height in pixels
+	 * @param options All other options as an object.
 	 **/
-	/**ajax: zaj.base.ajax,
-	redirect: zaj.base.redirect,
-	reload: zaj.base.reload,
-	refresh: zaj.base.reload,
-	window: zaj.base.window,
-	urlencode: zaj.base.urlencode,
-	back: zaj.base.back,
-	open: zaj.base.window**/
+		zaj.window = function(url, width, height, options){
+			// Default options!
+				if(typeof width == 'undefined') width = 500;
+				if(typeof height == 'undefined') height = 300;
+			// TODO: implement options
+			window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height="+height+",width="+width);
+		};
+		zaj.open = zaj.window;
 
+	/**
+	 * URLencodes a string so that it can safely be submitted in a GET query.
+	 * @param url The url to encode.
+	 * @return The url in encoded form.
+	 **/
+	 	zaj.urlencode = function(url){
+	 		return encodeURIComponent(url);
+	 	};
