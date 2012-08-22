@@ -378,12 +378,13 @@ class zajLib {
 	 * @param string $request The request relative to my baseurl.
 	 * @param $optional_parameters An array of parameters to be passed.
 	 * @param boolean $reroute_to_error When set to true (the default), the function will reroute requests to the proper __error method.
+	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
 	 **/
-	function reroute($request, $optional_parameters = false, $reroute_to_error = true){
+	function reroute($request, $optional_parameters = false, $reroute_to_error = true, $call_load_method = true){
 		// request must be a string
 			if(!is_string($request)) $this->warning('Invalid reroute request!');		
 		// load the app
-			return $this->load->app($request, $optional_parameters, $reroute_to_error);
+			return $this->load->app($request, $optional_parameters, $reroute_to_error, $call_load_method);
 	}
 
 	/**
@@ -486,9 +487,10 @@ class zajLibLoader{
 	 * Load a controller file.
 	 * @param string $file_name The relative file name of the controller to load.
 	 * @param array $optional_parameters An array or a single parameter which is passed as the first parameter to __load()
+	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
 	 * @todo Rewrite $controller_name generation to regexp
 	 **/
-	public function controller($file_name, $optional_parameters=false){
+	public function controller($file_name, $optional_parameters=false, $call_load_method=true){
 		// Load the file
 			$this->zajlib->load->file('controller/'.$file_name);
 		// Remove .ctl.php off of end and / to _
@@ -499,7 +501,7 @@ class zajLibLoader{
 			$controller_class = 'zajapp_'.$controller_name;
 		// Create a new object
 			$cobj = new $controller_class($this->zajlib, $controller_name);
-			if(method_exists($cobj, "__load")) $cobj->__load($optional_parameters);
+			if($call_load_method && method_exists($cobj, "__load")) $cobj->__load($optional_parameters);
 		// Return the controller object
 			return $cobj;
 	}
@@ -552,8 +554,9 @@ class zajLibLoader{
 	 * @param string $request The application request.
 	 * @param array $optional_parameters An array of parameters passed to the request method.
 	 * @param boolean $reroute_to_error When set to true (the default), the function will reroute requests to the proper __error method.
+	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
 	 **/
-	public function app($request, $optional_parameters=false, $reroute_to_error=true){
+	public function app($request, $optional_parameters=false, $reroute_to_error=true, $call_load_method=true){
 		// check for security
 			if(substr_count($request, "..") > 0) $this->zajlib->error("application request ($request) could not be processed: illegal characters!");
 		// remove the starting and trailing slash
@@ -625,8 +628,8 @@ class zajLibLoader{
 		// start the app controller
 			$app_object_name = "zajapp_".$zaj_app;
 			$my_app = new $app_object_name($this->zajlib, $zaj_app);
-		// fire __load magic method
-			if(method_exists($my_app, "__load")) $my_app->__load($zaj_mode, $optional_parameters);
+		// fire __load magic method if call_load_method is true
+			if($call_load_method && method_exists($my_app, "__load")) $my_app->__load($zaj_mode, $optional_parameters);
 					
 		// if method does not exist, call __error
 			// TODO: make errors go backwards as well: check child folder's default controllers first!
