@@ -84,6 +84,8 @@ class zajlib_export extends zajLibExtension {
 					// Get the first row and create $fields[] array from it
 						if(is_a($fetcher, 'Iterator')) $my_fields = $fetcher->rewind();
 						else $my_fields = reset($fetcher);
+					// Make sure that it is an object or array
+						if(!is_array($my_fields) && !is_object($my_fields)) return $this->zajlib->error("Tried exporting data but failed. Input data must be an array of objects or an object.");
 					foreach($my_fields as $field=>$val) $fields[] = $field;
 				}
 			// Prepare if XLS
