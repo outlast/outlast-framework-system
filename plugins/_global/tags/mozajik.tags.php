@@ -293,26 +293,6 @@ EOF;
 	}
 
 	/**
-	 * Tag: lang - Loads a language file in full or just a specified section
-	 *
-	 *  <b>{% lang 'file_name.lang.ini' 'section_name' %}</b>
-	 *  1. <b>file_name</b> - A filename of the configuration file relative to the plugins conf directory.
-	 *  2. <b>section_name</b> - The name of the section to load. If omitted, the entire file will be loaded.
-	 **/
-	public function tag_lang($param_array, &$source){
-		// Is section name specified?
-			if(!empty($param_array[1])) $param2 = ", {$param_array[1]->variable}";
-			else $param2 = "";
-		// figure out content
-			$contents = "<?php \$this->zajlib->lang->load({$param_array[0]->variable} $param2); ?>";
-		// write to file
-			$this->zajlib->compile->write($contents);
-		// return debug_stats
-			return true;
-	}
-
-
-	/**
 	 * Tag: unique - Generates a random unique id using php's uniqid("") and prints it or saves it to a variable.
 	 *
 	 *  <b>{% unique as uid %}</b>
