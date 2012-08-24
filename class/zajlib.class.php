@@ -183,6 +183,8 @@ class zajLib {
 			// set POST query string (cut off zajapp and zajmode)
 				unset($_POST['zajapp'], $_POST['zajmode'], $_GET['zajhtver']);
 			}
+			// unset request query string
+			unset($_REQUEST['zajhtver'], $_REQUEST['zajapp'], $_REQUEST['zajmode']);
 		// default app & mode
 			if(empty($this->app)){
 				$this->app = $this->zajconf['default_app'];
