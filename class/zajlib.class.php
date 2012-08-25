@@ -369,7 +369,7 @@ class zajLib {
 	function redirect($url){
 		// Now redirect
 			// Is it a url or does it begin with two slashes?
-			if(substr($url, 0, 2) == '//' || $ulib->is_url($url)) header("Location: ".$url);
+			if(substr($url, 0, 2) == '//' || $this->url->is_url($url)) header("Location: ".$url);
 			// If not, add baseurl
 			else header("Location: ".$this->baseurl.$url);
 		exit;
