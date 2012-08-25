@@ -367,10 +367,10 @@ class zajLib {
 	 * @param string $url The specific url to redirect the user to.
 	 **/
 	function redirect($url){
-		// Is URL in itself?
-			$ulib = $this->load->library('url');
 		// Now redirect
-			if($ulib->is_url($url)) header("Location: ".$url);
+			// Is it a url or does it begin with two slashes?
+			if(substr($url, 0, 2) == '//' || $ulib->is_url($url)) header("Location: ".$url);
+			// If not, add baseurl
 			else header("Location: ".$this->baseurl.$url);
 		exit;
 	}
