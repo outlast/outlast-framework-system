@@ -368,7 +368,7 @@ class zajLib {
 	 **/
 	function redirect($url){
 		// Now redirect
-			if($this->zajlib->url->is_url($url)) header("Location: ".$url);
+			if($this->url->is_url($url)) header("Location: ".$url);
 			else header("Location: ".$this->baseurl.$url);
 		exit;
 	}
