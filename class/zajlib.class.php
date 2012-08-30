@@ -200,7 +200,7 @@ class zajLib {
 			$this->baseurl = "//".$_SERVER['HTTP_HOST'].$this->subfolder.'/';
 		// full request detection (includes query string)
 			if(!empty($_GET)) $this->fullrequest = $this->fullurl.'?'.http_build_query($_GET);
-			else $this->fullrequest = $this->fullurl;
+			else $this->fullrequest = $this->fullurl.'?';
 		// fix my app and mode to always have a single trailing slash
 			$this->app = trim($this->app, '/').'/';
 			$this->mode = trim($this->mode, '/').'/';
