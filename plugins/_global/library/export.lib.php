@@ -178,5 +178,26 @@ class zajlib_export extends zajLibExtension {
 						$linecount++;
 				}
 		}
+	
+		/**
+		 * Send an array of form responses to a Google Docs spreadsheet form. You must make the sheet publicly visible and create a form from it.
+		 * @param string $formkey The form key. You can get this data from the form's public URL query string.
+		 * @param array $responses An key/value array of responses which to record. You must use the same key as the name of the field in the form (use 'inspect element' feature in Chrome on the Google Docs form to check).
+		 * @param string $ok_text This text is searched for when we try to determine if the save was successful. You only need to change this if a custom confirmation message is set in Google Docs.
+		 * @return boolean Returns true if successful and false if fails. It also throws a warning if it failed.
+		 **/
+		public function gdocs_form($formkey, $responses, $ok_text = "Your response has been recorded."){
+			// Build entries list
+				$query = '';
+				foreach($responses as $key=>$val) $query .= '&'.urlencode($key).'='.urlencode($val);
+			// Send the data
+				$response = file_get_contents("https://docs.google.com/a/zajmedia.com/spreadsheet/formResponse?formkey=".$formkey."&embedded=true&ifq&pageNumber=0&submit=Submit".$query);
+			// If $ok_text is contained in the response then all is ok.
+				if(strstr($response, $ok_text) !== false) return true;
+				else{
+					$this->zajlib->warning('Unable to save responses to Google Forms: '.$query);
+					return false;
+				}
+		}
 
 }
