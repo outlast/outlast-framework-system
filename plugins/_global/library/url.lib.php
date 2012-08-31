@@ -83,7 +83,7 @@ class zajlib_url extends zajLibExtension {
 	 * @todo Move this to validation lib.
 	 **/
 	function is_email($email){
-	 	return @eregi('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$', $email);
+		$this->zajlib->email->valid($email);
 	 	//return preg_match("/\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/", $email);
 	}
 		

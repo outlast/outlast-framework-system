@@ -69,6 +69,45 @@ class zajlib_email extends zajLibExtension {
 
 			return $mimemail->send();
 	}
+	
+	/**
+	 * Parse an email address in "Mr. Name <name@example.com>" format. Returns an object.
+	 * @param string $email_address_with_name The email address to parse.
+	 * @return object Returns an object {'name'=>'Mr. Name', 'email'=>'name@example.com'}. If no name specified, the 'name' property will be empty.
+	 **/
+	function get_named_email($email_address_with_name){
+		// Parse an email first via regexp (if in format My Name <name@example.com>)
+			$result = preg_match_all('/([^<]*)<([^>]*)/', $email_address_with_name, $arr, PREG_SET_ORDER);
+		// Create my return object
+			$email_data = (object) array();
+		// If result found then parse it now
+			if($result){
+				$email_data->name = $arr[0][1];
+				$email_data->email = $arr[0][2];
+			}
+			else{
+				$email_data->name = '';
+				$email_data->email = $email_address_with_name;
+			}
+		return $email_data;
+	}
+
+	/**
+	 * Checks and returns true if the email address is valid. You can specify whether to allow "Name <test@test.com>" formatting.
+	 * @param string $email The email address to test.
+	 * @param boolean $allow_named_format Set to true if you want to allow named format. False by default.
+	 * @todo Change to preg_match support.
+	 * @return boolean Returns true if the email is valid, false otherwise.
+	 **/
+	function valid($email, $allow_named_format = false){
+		// If allow named format
+			if($allow_named_format){
+				$email_data = $this->get_named_email($email);
+				$email = $email_data->email;
+			}
+		// Now check and return 
+			return @eregi('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$', $email);
+	}
 }
 
 /************************************************\
