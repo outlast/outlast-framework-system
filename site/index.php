@@ -126,13 +126,15 @@
 	// Now reroute to install script if installation issues found and not explicitly disabled with $zaj_dont_install_mode
 		if(empty($zaj_dont_install_mode) && !$installation_valid && trim($zajlib->app, '/') != $zajconf['update_appname']) $zajlib->redirect($zajconf['update_appname'].'/install/');
 
-	// select the right app and mode
+	// select the right app and mode (todo: move this stuff to zajlib.class.php eventually)
 		// select
 			if(!isset($_REQUEST['zajapp']) || $_REQUEST['zajapp']=='' || $_REQUEST['zajapp'] == "default") $zaj_app = $zajconf['default_app'];
 			else $zaj_app = $_REQUEST['zajapp'];
 		// select the mode (and trim trailing slash)
 			if(!isset($_REQUEST['zajmode']) || $_REQUEST['zajmode']=='' || $_REQUEST['zajmode'] == "default") $zaj_mode = '';
 			else $zaj_mode = trim($_REQUEST['zajmode'], "/");
+		// ready to unset $_REQUEST!
+			unset($_REQUEST['zajhtver'], $_REQUEST['zajapp'], $_REQUEST['zajmode']);
 	// now create url
 		$app_request = $zaj_app."/".$zaj_mode;
 
