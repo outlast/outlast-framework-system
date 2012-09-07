@@ -7,10 +7,6 @@
 		background-image: url(../system/img/update/back.jpg);
 		color: #303030;
 	}
-	h1,h2,h3,h4,h5,h6{
-		font: 15px/24px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-		font-weight: bold;	
-	}
 	
 	div{ }
 	div.clearb{ clear: both; height: 1px; }
@@ -287,10 +283,7 @@
 		margin-top: 15px;
 	}
 	div.admin.content h3{
-		margin-top: 30px;
-		padding-bottom: 3px;
-		border-bottom: 1px dotted grey;
-		margin-bottom: 15px;
+		font-size: 18px;
 	}
 	div.admin.content hr{
 		border-style: none;

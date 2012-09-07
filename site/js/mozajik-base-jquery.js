@@ -120,17 +120,27 @@
 				zaj.ajax.request('post', request, result);
 			};
 			zaj.ajax.request = function(mode,request,result){
+				// Figure out query string
+					if(mode == 'post'){
+						var rdata = request.split('?');
+						if(rdata.length > 2) zaj.warning("Found multiple question marks in query string!");
+						request = rdata[0];
+						datarequest = rdata[1];
+					}
+					else datarequest = '';
+				// Now send request
 				$.ajax(zaj.baseurl+request, {
 					success: function(data, textStatus, jqXHR){
 						if(typeof result == "function") result(data);
 						else{
 							if(data == 'ok') zaj.redirect(result);
-							else alert(result);
+							else alert(data);
 						}
 					},
 					complete: function(jqXHR, textStatus){
 						if(textStatus != "success") console.log("Ajax request failed with status ".textStatus);
 					},
+					data: datarequest,
 					dataType: 'html',
 					type: mode
 				});				
@@ -160,5 +170,18 @@
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
 	 	};
-
-
+	 
+	/**
+	 * Now extend the jQuery object.
+	 **/
+	(function($){
+	  $.fn.zaj = function(){
+	  	var target = this;
+	  	// Create my object and return
+	  	return {
+	  		// Get or post serialized data
+	  		get: function(url, response){ return zaj.ajax.get(url+'?'+target.serialize(), response); },
+	  		post: function(url, response){ return zaj.ajax.post(url+'?'+target.serialize(), response); }
+	  	}
+	  };
+	})(jQuery);
