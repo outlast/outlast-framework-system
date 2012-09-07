@@ -19,7 +19,7 @@ class zajlib_config extends zajLibExtension{
 	/**
 	 * object - config variables are stored here
 	 **/
-	public $variable;
+	private $variable;
 	
 	/**
 	 * Loads a configuration or language file at runtime.
@@ -47,6 +47,15 @@ class zajlib_config extends zajLibExtension{
 			return true; 
 	}
 	
+	/**
+	 * My getter method.
+	 **/
+	 	function __get($name){
+		 	if($name == 'variable') return $this->zajlib->config->variable;
+		 	return $this->$name;
+	 	}
+
+
 	/**
 	 * Compiles a configuration file. Source_path should be relative to the conf path set by set_folder (conf/ by default). You should not call this method manually.
 	 * @param $source_path The source of the configuration file relative to the conf folder.
