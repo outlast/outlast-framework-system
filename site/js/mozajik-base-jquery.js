@@ -22,10 +22,10 @@
 	/**
 	 * Layer for onready functions.
 	 **/
- 	zaj.ready = function(func){ $.ready(func); };
+ 	zaj.ready = function(func){ $(document).ready(func); };
 
 	/**
-	 * Logs a message to the console.
+	 * Logs a message to the console. Ingored if console not available.
 	 * @param string message The message to log.
 	 * @param string type Can be notice, warning, or error
 	 * @param string context The context is any other element or object which will be logged.
@@ -86,15 +86,7 @@
 			window.location.reload(false);
 		};
 		zaj.refresh = zaj.reload;
-		
-	/**
-	 * A function which serves to unify dojo.ready, window.addEvent('domready'), etcetc. This also fires after any ajax requests are completed and ready.
-	 **/
-	 	zaj.ready = function(func){
-	 		// TODO: add ajax functionality via ready_functions array.
-	 		//window.addEvent('domready', func);
-	 	};
-	
+			
 	/**
 	 * Redirect to a page relative to baseurl or absolute.
 	 * @param relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
