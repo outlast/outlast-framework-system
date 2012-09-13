@@ -13,9 +13,9 @@
 class zajlib_lang extends zajlib_config {
 	
 	/**
-	 * Sets the current language. English by default.
+	 * Sets the current locale. The default is set in the config file site/index.php.
 	 **/
-	 	public $current = 'en';
+	 	private $current_locale;
 
 	/**
 	 * Extend the config file loading mechanism.
@@ -23,48 +23,102 @@ class zajlib_lang extends zajlib_config {
 		protected $dest_path = 'cache/lang/';	// string - subfolder where compiled conf files are stored (cannot be changed)
 		protected $conf_path = 'lang/';			// string - default subfolder where uncompiled conf files are stored
 		protected $type_of_file = 'language';	// string - the name of the file type this is (either configuration or language)
+
+	/**
+	 * Creates a new language library.
+	 **/
+	public function __construct(&$zajlib, $system_library) {
+		parent::__construct($zajlib, $system_library);
+		// set my default locale
+			$this->set();
+	}
+
 	/**
 	 * Methods for loading and changing current language.
 	 **/
 
 		/**
-		 * Get the current language. Cookie will be dominant, but 
-		 * @return string A two-letter code of the current language (en for english, hu for hungarian, etc.)
+		 * Get the current locale.
+		 * @return string The locale code of the current language.
 		 **/
 		function get(){
-			// Set the default to the default setting based on the first to characters of the locale setting
-				// TODO: add zajconf here!
-				$language = 'en';
-			// First, check to see 
-			
-			
-			return $language;
+			// Return the current locale language
+				return $this->current_locale;
 		}
 
 		/**
-		 * Change the language to a new language and set the cookie.
-		 * @param string $new_language If set, it will force this. Otherwise it will see if ?language= GET string is set.
+		 * Get the current two-letter language code based on the current locale.
+		 * @return string The language code based on current locale.
+		 **/
+		function get_by_code(){
+			// Return the current locale language
+				return substr($this->current_locale, 0, 2);
+		}
+
+		/**
+		 * Change locale language to a new one.
+		 * @param string $new_language If set, it will try to choose this locale. Otherwise the default locale will be chosen.
+		 * @return string Returns the name of the locale that was set.
 		 **/
 	 	function set($new_language = false){
-			/**
-			// Fetch current setting based on cookie or some other
-				if(!empty($new_language)) $language = $new_language;
-				elseif(!empty($_GET['language'])) $language = $_GET['language'];
-				elseif(!empty($_COOKIE['mozajik-language'])) $language = $_COOKIE['mozajik-language'];
-				elseif(strlen($GLOBALS['zajlib']->tld) > 2) $language = 'en';
-				else $language = $GLOBALS['zajlib']->tld;
-			// Is it a valid language, if not set to default
-				if(AVAILABLE_LANGUAGES && !in_array($language, explode(',', AVAILABLE_LANGUAGES))) $language = DEFAULT_LANGUAGE;
-			// Now set cookie and global var
-				//$this->zajlib->
-				setcookie('mozajik-language', $language, time()+60*60*24*7, '/');
-			
-			
-			// 
-			$GLOBALS['zajlib']->variable->language = $language;
-			**/
-			$language = 'en';
-			return $language;
+	 		// Language can be set to any of the locales and by default the default locale is chosen
+	 			if(!empty($new_language)) $available_locales = explode(',', $this->zajlib->zajconf['locale_available']);
+	 		// Check to see if the language to be set is not false and is in locales available. If problem, set to default locale.
+	 			if(!empty($new_language) && in_array($new_language, $this->zajlib->zajconf['locale_available'])){
+	 				$this->current_locale = $new_language;
+	 			}
+	 			else $this->current_locale = $this->zajlib->zajconf['locale_default'];
+	 		// Return new locale
+	 			return $this->current_locale;
+		}
+
+		/**
+		 * Set the current language (locale) using a two-letter language code. In case two or more locales use the same two letter code, the first will be chosen. If possible, use {@link $this->set()} instead.
+		 * @param string $new_language If set, it will try to choose this language. Otherwise the default langauge will be chosen based on the default locale.
+		 * @return string The two-letter language code based on current locale.
+		 **/
+		function set_by_code($new_language = false){
+			if(!empty($new_language)){
+			// Let's see if we have a compatible locale
+	 			$available_locales = explode(',', $this->zajlib->zajconf['locale_available']);
+	 			foreach($available_locales as $l){
+	 				// If found, set the locale and return me
+	 				$lcompare = substr($l, 0, 2);
+	 				if($lcompare == $new_language){
+	 					$this->set($l);
+	 					return $lcompare;
+	 				}
+	 			}
+	 		}
+	 		// Not found, set to default locale and return it
+	 			return substr($this->set(), 0, 2);
+		}
+
+		/**
+		 * Automatically set the locale based on a number of factors.
+		 * @return string The automatically selected locale.
+		 **/
+		function auto(){
+			// TODO: implement this based on current codes
+		}
+
+	/**
+	 * Override my load method for loading language files
+	 **/
+		/**
+		 * Loads a langauge file at runtime. The file name can be specified two ways: either the specific ini file or just the name with the locale and extension automatic.
+		 *
+		 * For example: if you specify 'admin_shop' as the first parameter with en_US as the locale, the file lang/admin/shop.en_US.lang.ini will be loaded.
+		 *
+		 * @param string $name_OR_source_path The name of the file (without locale or ini extension) or the specific ini file to load.
+		 * @param string $section The section to compile.
+		 * @param boolean $force_compile This will force recompile even if a cached version already exists.
+		 **/
+		public function load($name_OR_source_path, $section=false, $force_compile=false){
+			// First let's see if . is not found in path. If so, this is a name, so figure out what source path is based on current locale
+				if(strstr($name_OR_source_path, '.') === false) $name_OR_source_path = $name_OR_source_path.'.'.$this->get().'.lang.ini';
+			// Now just load the file as if it were a usual config and return
+				return parent::load($name_OR_source_path, $section, $force_compile);
 		}
 
 	/**

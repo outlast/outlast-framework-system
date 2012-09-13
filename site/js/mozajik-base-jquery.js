@@ -175,7 +175,7 @@
 	 * Now extend the jQuery object.
 	 **/
 	(function($){
-	  $.fn.zaj = function(){
+	   $.fn.$zaj = $.fn.zaj = function(){
 	  	var target = this;
 	  	// Create my object and return
 	  	return {
@@ -185,3 +185,4 @@
 	  	}
 	  };
 	})(jQuery);
+
