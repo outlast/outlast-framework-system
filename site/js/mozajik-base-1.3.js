@@ -8,7 +8,7 @@
  **/
 
 // Create a new class which will contain the sections
-	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http'});
+	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http',jslib:'mootools',jslibver:1.3});
 	var zaj = new Mozajik();
 
 // Pushstate support (from pjax)
@@ -308,11 +308,14 @@ var MozajikBaseAjax = new Class({
 							this.fireEvent('complete');
 					}
 				// is it a div id?
-					else if(typeOf($(result)) == 'element'){
+					else if(typeOf(result) == 'elements' || typeOf($(result)) == 'element'){
+						// set r
+							if(typeOf(result) == 'elements') r = result;
+							else r = $(result);
 						// get old div contents
-							if(psused && !psdata) psdata = $(result).get('html');
+							if(psused && !psdata) psdata = r.get('html');
 						// set div contents
-							$(result).set('html', responseText);
+							r.set('html', responseText);
 						// we are done!
 							this.fireEvent('complete');
 					}

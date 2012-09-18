@@ -8,13 +8,21 @@
  **/
 
 // Create a new class which will contain the sections
-	var zaj = {baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http',ready:function(){}};
+	var zaj = {baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http',jslib:'jquery',jslibver:1.7};
 	//var zaj = new Mozajik();
 
 // Pushstate support (from pjax)
 	zaj.pushstate = window.history && window.history.pushState && window.history.replaceState
 					// pushState isn't reliable on iOS until 5.
 					&& !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/)
+
+	/**
+	 * Backwards compatibility for mootools
+	 **/
+	 var $$ = function(e){
+	 	zaj.notice('Notice: Used $$ in jQuery.');
+	 	return $(e);
+	 };
 
 /**
  * Mozajik zaj object implementations.
@@ -120,10 +128,11 @@
 						datarequest = rdata[1];
 					}
 					else datarequest = '';
-				// Now send request
+				// Now send request and call callback function, set callback element, or alert
 				$.ajax(zaj.baseurl+request, {
 					success: function(data, textStatus, jqXHR){
 						if(typeof result == "function") result(data);
+						else if(typeof result == "object") $(result).html(data);
 						else{
 							if(data == 'ok') zaj.redirect(result);
 							else alert(data);
