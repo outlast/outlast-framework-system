@@ -519,6 +519,13 @@ Element.implement({
 	/* Implement the zaj object */
 	$zaj: function(){ return new MozajikBaseElement(this); }
 });
+Elements.implement({
+	/* Implement the zaj object - only the first element is supported for these! */
+	$zaj: function(){
+		var elements = this;
+		return new MozajikBaseElement(elements[0]);
+	}
+});
 
 /**
  * Implement shortcuts from zaj to base
