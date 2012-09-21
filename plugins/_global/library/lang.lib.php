@@ -64,7 +64,7 @@ class zajlib_lang extends zajlib_config {
 	 		// Language can be set to any of the locales and by default the default locale is chosen
 	 			if(!empty($new_language)) $available_locales = explode(',', $this->zajlib->zajconf['locale_available']);
 	 		// Check to see if the language to be set is not false and is in locales available. If problem, set to default locale.
-	 			if(!empty($new_language) && in_array($new_language, $this->zajlib->zajconf['locale_available'])){
+	 			if(!empty($new_language) && in_array($new_language, $available_locales)){
 	 				$this->current_locale = $new_language;
 	 			}
 	 			else $this->current_locale = $this->zajlib->zajconf['locale_default'];
