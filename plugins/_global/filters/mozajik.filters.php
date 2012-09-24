@@ -10,6 +10,7 @@
 //	using the write method.
 //		- parameter - the parsed parameter variable/string
 //		- source - the source file object
+//		- counter (optional) - a 1-based counter specifying which filter is currently running (1st, 2nd, or 3rd, etcetc.)
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -214,11 +215,9 @@ class zajlib_filter_mozajik extends zajElementCollection{
 	 *  <b>{{#translated_string#|printf:'16'}}</b> Assuming translated_string is 'There are %s registered' it will return 'There are 16 registered users'. Of course, '16' can be replaced with a variable as such: {{#translated_string#|printf:users.total}}
 	 **/
 	
-	public function filter_printf($parameter, &$source){
-		static $counter = 1;
+	public function filter_printf($parameter, &$source, $counter){
 		// write to file
 			$this->zajlib->compile->write('$filter_var = str_ireplace(\'%'.$counter.'\', '.$parameter.', $filter_var);');
-			$counter++;
 		return true;
 	}
 

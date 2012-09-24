@@ -10,6 +10,7 @@
 //	using the write method.
 //		- parameter - the parsed parameter variable/string
 //		- source - the source file object
+//		- counter (optional) - a 1-based counter specifying which filter is currently running (1st, 2nd, or 3rd, etcetc.)
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 class zajlib_filter_base extends zajElementCollection{	

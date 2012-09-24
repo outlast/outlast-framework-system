@@ -670,11 +670,13 @@ class zajCompileVariable extends zajCompileElement {
 		// start the filter var
 			$this->parent->write("<?php \$filter_var = $this->variable; ");
 		// now execute all the filters
+			$count = 1;
 			foreach($this->filters as $filter){
 				// get filter
 					list($filter, $parameter) = array_values($filter);
 				// now call the filter
-					$this->parent->zajlib->compile->filters->$filter($parameter, $this->parent);
+					$this->parent->zajlib->compile->filters->$filter($parameter, $this->parent, $count);
+					$count++;
 			}			
 			//$this->parent->write("\$filter_var = \$filter_var;");
 		// now end it

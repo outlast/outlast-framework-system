@@ -155,6 +155,7 @@ class zajElementsLoader{
 	}
 	
 	// handle any element calls
+	// TODO: remove call by reference in call_user_func_array()
 	public function __call($name, $arguments){
 		// do we need to load any collections?
 			$this->load();
@@ -166,7 +167,7 @@ class zajElementsLoader{
 					if(method_exists($element_object, $element_method)){
 						// call the method in the apprpriate tags.php/filters.php file
 							// must use & here on second arg, because otherwise argument is not passed by reference!
-							$return = call_user_func_array(array($element_object, $element_method), array($arguments[0], &$arguments[1]));
+							$return = call_user_func_array(array($element_object, $element_method), array($arguments[0], &$arguments[1], $arguments[2]));
 						// check if return value is valid, if not just return the unmodified $debug_stats
 							return $return;
 					}
