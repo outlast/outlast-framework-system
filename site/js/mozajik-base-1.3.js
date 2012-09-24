@@ -152,7 +152,7 @@ var MozajikBase = new Class({
 				if(typeof width == 'undefined') width = 500;
 				if(typeof height == 'undefined') height = 300;
 			// TODO: implement options
-			window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height="+height+",width="+width);
+			return window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height="+height+",width="+width);
 		},
 	/**
 	 * URLencodes a string so that it can safely be submitted in a GET query.
