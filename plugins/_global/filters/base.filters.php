@@ -437,7 +437,7 @@ EOF;
 	public function filter_striptags($parameter, &$source){
 		// parameter
 		$content = <<<EOF
-			\$filter_var=strip_tags(\$filter_var);
+			\$filter_var = strip_tags(\$filter_var);
 EOF;
 		// write to file
 			$this->zajlib->compile->write($content);
