@@ -17,7 +17,7 @@
  * @const string
  **/
 define('RANDOM', 'RANDOM');
-define('RAND', 'RAND');
+define('RAND', 'RANDOM');
 
 class zajFetcher implements Iterator, Countable{
 	// create a fetch class
