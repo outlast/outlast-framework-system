@@ -80,7 +80,7 @@ class zajlib_lang extends zajlib_config {
 		function set_by_code($new_language = false){
 			if(!empty($new_language)){
 			// Let's see if we have a compatible locale
-	 			$available_locales = explode(',', $this->zajlib->zajconf['locale_available']);
+	 			$available_locales = explode(',', $this->zajlib->zajconf['locale_available']);	 			
 	 			foreach($available_locales as $l){
 	 				// If found, set the locale and return me
 	 				$lcompare = substr($l, 0, 2);
@@ -99,7 +99,24 @@ class zajlib_lang extends zajlib_config {
 		 * @return string The automatically selected locale.
 		 **/
 		function auto(){
-			// TODO: implement this based on current codes
+			// Do I have Wordpress enabled?
+				if($GLOBALS['zajlib']->plugin->is_enabled('wordpress')){
+					if(!empty($_GET['language'])) $language = $_GET['language'];
+					if(!empty($_COOKIE['_icl_current_language'])) $language = $_COOKIE['_icl_current_language'];
+				}
+				else{			
+					// Fetch current setting based on cookie or some other
+					if(!empty($GLOBALS['zajlib']->subdomain)) $language = $GLOBALS['zajlib']->subdomain;
+					elseif(!empty($_GET['language'])) $language = $_GET['language'];
+					elseif(!empty($_COOKIE['language'])) $language = $_COOKIE['language'];
+					else $language = $GLOBALS['zajlib']->tld;
+				}
+			// Set by code
+				$this->set_by_code($language);
+			// Now set cookie and global var
+				setcookie('language', $language, time()+60*60*24*7, '/');
+				$GLOBALS['zajlib']->variable->language = $language;
+			return $this->get();
 		}
 
 	/**
