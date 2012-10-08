@@ -81,6 +81,16 @@
 		$zajlib = new zajLib($zajconf['root_folder'], $zajconf);
 	// set internal error handler
 		set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext){ if(!is_object($GLOBALS['zajlib'])){ print "FATAL ERROR: Check error log."; } else $GLOBALS['zajlib']->error_handler($errno, $errstr, $errfile, $errline, $errcontext);});			
+	// set shutdown error handler (fatal)
+		register_shutdown_function(function(){
+			// Get error info (if there is one)
+				$error = error_get_last();
+				// Is there an error? Is it fatal or is it a parse error
+				if($error !== NULL && ($error['type'] == 4 || $error['type'] == 1)){
+					// Try to log it to file
+						$GLOBALS['zajlib']->error_handler(E_USER_ERROR, $error['message'], $error['file'], $error['line']);
+				}
+		});			
 	// debug mode needed?
 		if(in_array($zajlib->host, $zajconf['debug_mode_domains']) || !empty($zajconf['debug_mode']) || !empty($_SERVER['DEBUG_MODE'])) $zajlib->debug_mode = true;
 	// debug mode explicity overridden?
