@@ -386,6 +386,7 @@ class zajFetcher implements Iterator, Countable{
 			$model = $class_name::__model();
 		// similarity?
 			if($similarity_search) $sim = "SOUNDS";
+			else $sim = "";
 		// figure out search fields (searchfield=true is usually the case for text and id fields)
 			$this->wherestr .= " && (0";
 			foreach($model as $key=>$field){

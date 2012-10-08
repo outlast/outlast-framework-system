@@ -288,7 +288,7 @@ class zajLib {
 		// todo: log this instead of printing it?
 			if(isset($_GET['query'])){
 				$query_backtrace = debug_backtrace(false);
-				$this->js_log .= " zaj.ready(function(){zaj.log('ZAJLIB SQL QUERY: ".str_replace("'","\\'",$message).' in '.$query_backtrace[6]['file'].' on line '.$query_backtrace[6]['line']."'); });";
+				//$this->js_log .= " zaj.ready(function(){zaj.log('ZAJLIB SQL QUERY: ".str_replace("'","\\'",$message).' in '.$query_backtrace[6]['file'].' on line '.$query_backtrace[6]['line']."'); });";
 			}
 			$this->num_of_queries++;
 	}
@@ -301,7 +301,7 @@ class zajLib {
 		// todo: log this instead of printing it?
 			if(isset($_GET['notice'])){
 				if($_GET['notice']=="screen") print "<div style='border: 2px red solid; padding: 5px;'>MOZAJIK NOTICE: $message</div>";
-				else $this->js_log .= " zaj.ready(function(){zajlib.log('ZAJLIB NOTICE: ".str_replace("'","\\'",$message)."'); });";
+				//else $this->js_log .= " zaj.ready(function(){zaj.log('ZAJLIB NOTICE: ".str_replace("'","\\'",$message)."'); });";
 			}
 			$this->num_of_notices++;
 		// log notices?

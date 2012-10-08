@@ -110,8 +110,8 @@ EOF;
 			foreach($param_array as $el) $my_array .= "$el->variable, ";
 			$my_array .= ');';
 		// generate content
-			$contents = <<<'EOF'
-<?php
+			$contents = "<?php\n";
+			$contents .= <<<'EOF'
 	// my array
 		$my_array
 	// first which is true
@@ -119,8 +119,8 @@ EOF;
 			if($el->variable) echo $el->variable;
 			break;
 		}
-?>
 EOF;
+			$contents .= "\n?>";
 		
 		
 		// write to file

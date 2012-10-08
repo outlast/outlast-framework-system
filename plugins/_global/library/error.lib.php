@@ -96,8 +96,11 @@ class zajlib_error extends zajLibExtension {
 		// is there a referer?
 			if(!empty($_SERVER['HTTP_REFERER'])) $referer = " [REFERER: ".$_SERVER['HTTP_REFERER']."]";
 			else $referer = " [direct]";
+		// are we in debug mode?
+			if($GLOBALS['zajlib']->debug_mode) $debug_mode = " [DEBUG_MODE]";
+			else $debug_mode = "";
 		// write to error_log			
-			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.$this->zajlib->fullrequest."] $post_data [Mozajik $errorlevel - ".$errortext."]".$referer);
+			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.$this->zajlib->fullrequest."] $post_data [Mozajik $errorlevel - ".$errortext."]".$referer.$debug_mode);
 			
 		// log the backtrace?
 			if($GLOBALS['zajlib']->zajconf['error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
