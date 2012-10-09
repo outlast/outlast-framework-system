@@ -6,11 +6,12 @@
 			positionOffset: {x: -10, y: 20},
 			draggable: false,
 			onSelect: function(date){
-				$('{{field.id}}[value]').value = date.format('%s');
+				$('{{field.id}}[value]').value = date.format('%Y.%m.%d.');
 			}
 		});
 	});
 	zaj.loader.start();
 </script>
 <input class='field date' type='text' id='{{field.id}}[display]' name='{{field.name}}[display]' value='{%if field.value gt '1'%}{{field.value|date:'Y.m.d.'}}{%endif%}'>
+<input type='hidden' id='{{field.id}}[format]' name='{{field.name}}[format]' value='Y.m.d.'>
 <input type='hidden' id='{{field.id}}[value]' name='{{field.name}}[value]' value='{{field.value}}'>
