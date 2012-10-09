@@ -12,6 +12,5 @@
 	});
 	zaj.loader.start();
 </script>
-
 <input class='field date' type='text' id='{{field.id}}[display]' name='{{field.name}}[display]' value='{%if field.value gt '1'%}{{field.value|date:'Y.m.d.'}}{%endif%}'>
 <input type='hidden' id='{{field.id}}[value]' name='{{field.name}}[value]' value='{{field.value}}'>
