@@ -61,7 +61,17 @@ class zajfield_photos extends zajField {
 			}
 		// else if it is an array (form field input)
 			else{
+				$sdata = $data;
 				$data = json_decode($data);
+				// If data is empty alltogether, it means that it wasnt JSON data, so it's a single photo id to be added!
+					if(empty($data) && !empty($sdata)){
+						$pobj = Photo::fetch($sdata);
+							// cannot reclaim here!
+							if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->error("Cannot save a final of a photo that already exists! You are not the owner!");
+						$pobj->set('parent',$object->id);							
+						$pobj->upload();
+						return array(false, false);
+					}
 				// get new ones
 					if(!empty($data->add)){
 						foreach($data->add as $count=>$id){

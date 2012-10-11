@@ -480,6 +480,11 @@ abstract class zajModel {
 			$class_name = get_called_class();
 		// any specific static?
 			switch($name){
+				// Validation
+				case 'validate':			return $GLOBALS['zajlib']->form->validate($class_name, $arguments);
+				case 'check':				return $GLOBALS['zajlib']->form->check($class_name, $arguments);
+				case 'filled':				return $GLOBALS['zajlib']->form->filled($arguments);
+				// Extending
 				case 'extend':
 				case 'extension_of':
 											$GLOBALS['zajlib']->error("The class $arguments[0] is not a child of zajModelExtender. Check the valid syntax for extending classes!");
@@ -835,7 +840,7 @@ abstract class zajModelExtender {
 	 **/
 	public static function __callStatic($name, $arguments){
 		$class_name = get_called_class();
-		$parent_class = $class_name::extension_of();		
+		$parent_class = $class_name::extension_of();
 		// redirect static method calls to local private ones
 			return call_user_func_array("$parent_class::$name", $arguments);
 	}
