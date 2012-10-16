@@ -19,11 +19,11 @@ define('regexp_zaj_tag', "(\\{[%{][ ]*([[:alnum:]_#\\.]+)(.*?)([\\%}]}|\\n))");
 /**
  * Regular expression to one filter.
  */
-define('regexp_zaj_onefilter', '\|(([A-z]*)([ ]*(:)[ ]*)?)?(\'(.*?)[^\\\']\'|\"(.*?)[^\\\\\"]\"|[A-z.1-9#]*)');
+define('regexp_zaj_onefilter', '\|(([A-z]*)([ ]*(:)[ ]*)?)?(\'(.*?)[^\\\']\'|\"(.*?)[^\\\\\"]\"|[A-z.0-9#]*)');
 /**
  * Regular expression to one tag parameter (including filter support).
  */
-define('regexp_zaj_oneparam', '([A-z]*[ ]*=[ ]*)?(\'(.*?)\'|\"(.*?)\"|[A-z.\-_1-9#]*)('.regexp_zaj_onefilter.")*");
+define('regexp_zaj_oneparam', '([A-z]*[ ]*=[ ]*)?(\'(.*?)\'|\"(.*?)\"|[A-z.\-_0-9#]*)('.regexp_zaj_onefilter.")*");
 
 /**
  * One compile session, which may include several source and destination files.
