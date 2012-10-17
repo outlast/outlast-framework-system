@@ -230,8 +230,14 @@ class zajlib_filter_mozajik extends zajElementCollection{
 	 *
 	 **/
 	public function filter_translate($parameter, &$source, $counter){
+		// If parameter is not defined, then the parameter is the current locale
+			if(empty($parameter)) return $source->warning('You must specify which field you want to translate for filter "translate".');
 		// write to file
-			$this->zajlib->compile->write('$paramval = '.$parameter.'; $translate_var = $filter_var->data->translations->$paramval; $filter_var = $filter_var->data->$paramval;');
+			$this->zajlib->compile->write('$paramval = '.$parameter.'; $translate_var = $filter_var->data->translations->$paramval; $ori_var = $filter_var; $current_locale = $this->zajlib->lang->get(); $filter_var = $translate_var->$current_locale; if(empty($filter_var)){ $filter_var = $ori_var->data->$paramval; }');
+
+
+			//$this->zajlib->compile->write('$paramval = '.$parameter.'; $default_locale = $this->zajlib->zajconf["locale_default"]; $ori_filtervar = $filter_var; $translate_var = $filter_var->data->translations->$paramval; $filter_var = $translate_var->$default_locale; if(empty($filter_var)){ $filter_var = $ori_filtervar->data->$paramval; }');
+
 		return true;
 	}
 
