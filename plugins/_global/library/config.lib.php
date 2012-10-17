@@ -26,8 +26,9 @@ class zajlib_config extends zajLibExtension{
 	 * @param string $source_path The source of the configuration file relative to the conf folder.
 	 * @param string $section The section to compile.
 	 * @param boolean $force_compile This will force recompile even if a cached version already exists.
+	 * @param boolean $fail_on_error If set to true (the default), it will fail with error. 
 	 **/
-	public function load($source_path, $section=false, $force_compile=false){
+	public function load($source_path, $section=false, $force_compile=false, $fail_on_error = true){
 		// check chroot
 			if(strpos($source_path, '..') !== false) return $this->zajlib->error($this->type_of_file.' source file must be relative to conf path.');
 		// generate the file name
@@ -38,9 +39,12 @@ class zajlib_config extends zajLibExtension{
 			if(!empty($this->loaded_files[$file_name])) return true;
 		// does it exist? if not, compile now!
 			$result = true;
-			if($force_compile || $this->zajlib->debug_mode || !file_exists($file_name)) $result = $this->compile($source_path);
+			if($force_compile || $this->zajlib->debug_mode || !file_exists($file_name)) $result = $this->compile($source_path, $fail_on_error);
 		// If compile failed or if include fails
-			if(!$result || !(@include_once($file_name))) $this->error("Could not load ".$this->type_of_file." file $source_path / $section! Section not found ($file_name)!");
+			if(!$result || !(@include_once($file_name))){
+				if(fail_on_error) $this->error("Could not load ".$this->type_of_file." file $source_path / $section! Section not found ($file_name)!");
+				else return false;
+			}
 		// now load me!
 		// set as loaded
 			$this->loaded_files[$file_name] = true;
@@ -59,12 +63,16 @@ class zajlib_config extends zajLibExtension{
 	/**
 	 * Compiles a configuration file. Source_path should be relative to the conf path set by set_folder (conf/ by default). You should not call this method manually.
 	 * @param $source_path The source of the configuration file relative to the conf folder.
+	 * @param boolean $fail_on_error If set to true (the default), it will fail with error.
 	 * @todo Make this private?
 	 **/
-	public function compile($source_path){
+	public function compile($source_path, $fail_on_error = true){
 		// Search for my source file
 			$full_path = $this->zajlib->load->file($this->conf_path.$source_path, false, false);
-			if($full_path === false) return $this->zajlib->error($this->type_of_file.' file failed to load. The file '.$source_path.' could not be found in any of the local or plugin folders.');
+			if($full_path === false){
+				if($fail_on_error) return $this->zajlib->error($this->type_of_file.' file failed to load. The file '.$source_path.' could not be found in any of the local or plugin folders.');
+				else return false;
+			}
 			else $full_path = $this->zajlib->basepath.$full_path;
 		// add the global output file
 			$this->zajlib->load->library('file');

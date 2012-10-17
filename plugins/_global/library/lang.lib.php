@@ -99,6 +99,8 @@ class zajlib_lang extends zajlib_config {
 		 * @return string The automatically selected locale.
 		 **/
 		function auto(){
+			// Check if already done...
+				if(!empty($this->auto_done)) return $this->get();
 			// Do I have Wordpress enabled?
 				if($GLOBALS['zajlib']->plugin->is_enabled('wordpress')){
 					if(!empty($_GET['language'])) $language = $_GET['language'];
@@ -113,6 +115,8 @@ class zajlib_lang extends zajlib_config {
 				}
 			// Set by code
 				$this->set_by_code($language);
+			// Set as true
+				$this->auto_done = true;
 			// Now set cookie and global var
 				setcookie('language', $language, time()+60*60*24*7, '/');
 				$GLOBALS['zajlib']->variable->language = $language;
@@ -125,7 +129,7 @@ class zajlib_lang extends zajlib_config {
 		/**
 		 * Loads a langauge file at runtime. The file name can be specified two ways: either the specific ini file or just the name with the locale and extension automatic.
 		 *
-		 * For example: if you specify 'admin_shop' as the first parameter with en_US as the locale, the file lang/admin/shop.en_US.lang.ini will be loaded.
+		 * For example: if you specify 'admin_shop' as the first parameter with en_US as the locale, the file lang/admin/shop.en_US.lang.ini will be loaded. If it is not found, the default locale will also be searched.
 		 *
 		 * @param string $name_OR_source_path The name of the file (without locale or ini extension) or the specific ini file to load.
 		 * @param string $section The section to compile.
