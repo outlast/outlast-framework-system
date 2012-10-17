@@ -221,6 +221,35 @@ class zajlib_filter_mozajik extends zajElementCollection{
 		return true;
 	}
 
+	/**
+	 * Filter: translate - Allows substitution of text values with a localized string.
+	 *
+	 * It is important to note that models MUST support this feature in order for this to work by including a 'translation' field (right now this is a serialized field named translation).
+	 *
+	 * <b>{{product|translate:'name'}}</b> Will return the localized version of the product name based on the current language.
+	 *
+	 **/
+	public function filter_translate($parameter, &$source, $counter){
+		// write to file
+			$this->zajlib->compile->write('$paramval = '.$parameter.'; $translate_var = $filter_var->data->translations->$paramval; $filter_var = $filter_var->data->$paramval;');
+		return true;
+	}
+
+	/**
+	 * Filter: translate|into - You can use this to force translation into a specific language.
+	 *
+	 * You must use info with the filter translate.
+	 *
+	 * <b>{{product|translate:'name'|into:'de_DE'}}</b> Will return the german localized version of the product name.
+	 *
+	 **/
+	public function filter_into($parameter, &$source, $counter){
+		// If not used as second filter, warn!
+			if($counter < 2) return $source->warning('The filter "into" requires use of the filter "translate" first!');
+		// write to file
+			$this->zajlib->compile->write('$paramval = '.$parameter.'; $filter_var = $translate_var->$paramval;');
+		return true;
+	}
 }
 
 
