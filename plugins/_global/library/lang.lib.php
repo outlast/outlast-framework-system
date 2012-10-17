@@ -50,7 +50,7 @@ class zajlib_lang extends zajlib_config {
 		 * Get the current two-letter language code based on the current locale.
 		 * @return string The language code based on current locale.
 		 **/
-		function get_by_code(){
+		function get_code(){
 			// Return the current locale language
 				return substr($this->current_locale, 0, 2);
 		}
