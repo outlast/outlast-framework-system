@@ -62,5 +62,26 @@ class zajlib_cookie extends zajLibExtension {
 	 * @ignore
 	 **/
 	function delete($name){ return $this->remove($name); }
+
+	/**
+ 	 * Remove all cookies.
+ 	 **/
+	function remove_all(){
+		if(isset($_SERVER['HTTP_COOKIE'])) {
+			$cookies = explode(';', $_SERVER['HTTP_COOKIE']);
+			foreach($cookies as $cookie) {
+				$parts = explode('=', $cookie);
+				$name = trim($parts[0]);
+				setcookie($name, '', time()-1000);
+				setcookie($name, '', time()-1000, '/');
+			}
+		}		
+	}
+	/**
+	 * An alias of remove_all.
+	 * @ignore
+	 **/
+	function delete_all(){ return $this->remove_all(); }
+
 }
 ?>
