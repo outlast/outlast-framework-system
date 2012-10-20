@@ -8,7 +8,7 @@
 
 	// If LOGIN_AUTH is set up in Apache conf and user does not have proper cookie set, redirect!
 		if(!empty($_SERVER['MOZAJIK_LOGIN_AUTH']) && !empty($_SERVER['MOZAJIK_LOGIN_URL'])){
-			if($_SERVER['MOZAJIK_LOGIN_AUTH'] != $_COOKIE['MOZAJIK_LOGIN_AUTH']){ header("Location: ".$_SERVER['MOZAJIK_LOGIN_URL']); exit; }
+			if($_SERVER['MOZAJIK_LOGIN_AUTH'] != $_COOKIE['MOZAJIK_LOGIN_AUTH']){ header("Location: ".$_SERVER['MOZAJIK_LOGIN_URL'].'?from='.urlencode('http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'])); exit; }
 		}
 
 	// Set locale but only if new config version
