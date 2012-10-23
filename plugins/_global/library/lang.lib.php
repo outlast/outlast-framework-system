@@ -13,9 +13,14 @@
 class zajlib_lang extends zajlib_config {
 	
 	/**
-	 * Sets the current locale. The default is set in the config file site/index.php.
+	 * Contains the current locale. Available locales are set in the config file site/index.php.
 	 **/
 	 	private $current_locale;
+
+	/**
+	 * Contains the default locale. The default is set in the config file site/index.php.
+	 **/
+	 	private $default_locale;
 
 	/**
 	 * Extend the config file loading mechanism.
@@ -68,6 +73,8 @@ class zajlib_lang extends zajlib_config {
 	 				$this->current_locale = $new_language;
 	 			}
 	 			else $this->current_locale = $this->zajlib->zajconf['locale_default'];
+	 		// Set the default
+	 			$this->default_locale = $this->zajlib->zajconf['locale_default'];
 	 		// Return new locale
 	 			return $this->current_locale;
 		}
@@ -124,6 +131,51 @@ class zajlib_lang extends zajlib_config {
 		}
 
 	/**
+	 * Template loading based on current locale.
+	 **/
+		/**
+		 * Display a specific template by searching for a locale file first.
+		 * If the request contains zaj_pushstate_block, it will reroute to block. See Mozajik pushState support for more info.
+		 * @param string $source_path The path to the template to be compiled relative to the active view folders. 
+		 * @param boolean $force_recompile If set to true, the template file will be recompiled even if a cached version already exists. (False by default.)
+		 * @param boolean $return_contents If set to true, the compiled contents will be returned by the function and not sent to the browser (as is the default).
+		 * @param boolean $custom_compile_destination If set, this allows you to compile the template to a different location than the default. This is not recommended unless you really know what you are doing!
+		 * @return string If requested by the $return_contents parameter, it returns the entire generated contents.
+		 * @todo Add support so that template and block in lang will search all plugin folders as well.
+		 **/
+		function template($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
+			// Cut off the .html (.htm not supported!)
+				$base_source_path = substr($source_path, 0, -5);
+			// Seach for a local source_path
+				// Search first for current locale
+					if(file_exists($this->zajlib->basepath.'app/view/'.$base_source_path.'.'.$this->current_locale.'.html')) return $this->zajlib->template->show($base_source_path.'.'.$this->current_locale.'.html', $force_recompile, $return_contents, $custom_compile_destination);
+				// Next for default locale
+					if(file_exists($this->zajlib->basepath.'app/view/'.$base_source_path.'.'.$this->default_locale.'.html')) return $this->zajlib->template->show($base_source_path.'.'.$this->default_locale.'.html', $force_recompile, $return_contents, $custom_compile_destination);
+				// All failed, so finally, just include me
+					return $this->zajlib->template->show($source_path, $force_recompile, $return_contents, $custom_compile_destination); 
+		}
+		
+		/**
+		 * Extracts a specific block from a template and displays only that. This is useful for ajax requests.
+		 * @param string $source_path The path to the template to be compiled relative to the active view folders. 
+		 * @param string $block_name The name of the block within the template.
+		 * @param boolean $force_recompile If set to true, the template file will be recompiled even if a cached version already exists. (False by default.)
+		 * @param boolean $return_contents If set to true, the compiled contents will be returned by the function and not sent to the browser (as is the default).
+		 * @todo Add support so that template and block in lang will search all plugin folders as well.
+		 **/
+		function block($source_path, $block_name, $force_recompile = false, $return_contents = false){
+			// Cut off the .html (.htm not supported!)
+				$base_source_path = substr($source_path, 0, -4);
+			// Seach for a local source_path
+				// Search first for current locale
+					if(file_exists($this->zajlib->basepath.'app/view/'.$base_source_path.'.'.$this->current_locale.'.html')) return $this->zajlib->template->block($base_source_path.'.'.$this->current_locale.'.html', $block_name, $force_recompile, $return_contents);
+				// Next for default locale
+					if(file_exists($this->zajlib->basepath.'app/view/'.$base_source_path.'.'.$this->default_locale.'.html')) return $this->zajlib->template->block($base_source_path.'.'.$this->default_locale.'.html', $block_name, $force_recompile, $return_contents);
+				// All failed, so finally, just include me
+					return $this->zajlib->template->block($source_path, $block_name, $force_recompile, $return_contents); 
+		}
+
+		/**
 	 * Override my load method for loading language files
 	 **/
 		/**
@@ -141,6 +193,7 @@ class zajlib_lang extends zajlib_config {
 			// Now just load the file as if it were a usual config and return
 				return parent::load($name_OR_source_path, $section, $force_compile);
 		}
+
 
 	/**
 	 * Other language-specific methods.

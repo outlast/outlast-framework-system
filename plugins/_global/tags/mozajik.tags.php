@@ -87,6 +87,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
 				// insert to current destination
 					$this->zajlib->compile->insert_file($tvar.'.php');
 			}*/
+			// DO THIS FOR insertlocal as well
 
 		// if it is a single variable, then we need to do it with template->show
 				if(count($param_array) <= 1) $contents = <<<EOF
@@ -100,6 +101,40 @@ EOF;
 <?php
 // start insert block
 	\$this->zajlib->template->block({$param_array[0]->variable}, {$param_array[1]->variable});
+?>
+EOF;
+			
+		
+				// write to file
+					$this->zajlib->compile->write($contents);
+			//}
+		// return debug_stats
+			return true;
+	}	
+
+	/**
+	 * Tag: insertlocal - Same as {@link insert} except that this also checks for localized versions of the HTML file before including.
+	 *
+	 *  <b>{% insertlocal '/admin/news_edit.html' 'block_name' %}</b>
+	 *  1. <b>template_file</b> - The template file to insert.
+	 *  2. <b>block_section</b> - If you only want to insert the block section from the file. (optional)
+	 **/
+	public function tag_insertlocal($param_array, &$source){
+		// get the first parameter...
+			$var = $param_array[0]->variable;
+			$tvar = trim($var, "'\"");
+		// if it is a single variable, then we need to do it with template->show
+				if(count($param_array) <= 1) $contents = <<<EOF
+<?php
+// start insert for local file
+	\$this->zajlib->lang->template({$param_array[0]->variable});
+?>
+EOF;
+		// if it is two variables, then we need to do it with template->block
+				else $contents = <<<EOF
+<?php
+// start insert block for local file
+	\$this->zajlib->lang->block({$param_array[0]->variable}, {$param_array[1]->variable});
 ?>
 EOF;
 			
