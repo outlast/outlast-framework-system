@@ -39,7 +39,6 @@ class zajlib_tag_mozajik extends zajElementCollection{
 			// get field object
 				$field_object = $classname::__field($fieldname);
 			// generate options
-				$this->zajlib->load->library('array');
 				$options_php = $this->zajlib->array->array_to_php($field_object->options);
 			// create an empty field object
 				$this->zajlib->compile->write('<?php $this->zajlib->variable->field = (object) array(); ?>');
@@ -66,6 +65,51 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	public function tag_formfield($param_array, &$source){
 		// depricated old name for input
 			return $this->tag_input($param_array, $source);
+	}
+
+	/**
+	 * Tag: inputlocale - Generates a locale-enabled input field based on the input defined in the model. This must be supported by the model and field type.
+	 *
+	 *  <b>{% inputlocale user.avatar user.data.avatar 'sk_SK' %}</b>
+	 *  1. <b>model_field</b> - The field name defined in the model. The format is model_name.field_name.
+	 *  2. <b>default_value</b> - The default value. This will usually be the existing data of the model object.
+	 *  3. <b>locale</b> - The locale name to use. If left empty, the current locale will be used.
+	 *  4. <b>custom_html</b> - If you want to use a custom HTML to generate your own field editor then you can specify the html relative to any of the view directories.
+	 **/
+	public function tag_inputlocale($param_array, &$source){
+		// check for required param
+			if(empty($param_array[0])) $source->error("Tag {%inputlocale%} requires at least one parameter.");
+		// grab my class and field name
+			list($classname, $fieldname) = explode('.', $param_array[0]->vartext);
+		// check for required param
+			if(empty($classname) || empty($fieldname)) $source->error("Tag {%inputlocale%} parameter one needs to be in 'modelname.fieldname' format.");
+		// id or options
+			$id = $template = '';
+			$value = $param_array[1]->variable;
+			if(!empty($param_array[2])) $template = ', '.$param_array[2]->variable;
+		// generate content
+					
+			// get field object
+				$field_object = $classname::__field($fieldname);
+			// generate options
+				$options_php = $this->zajlib->array->array_to_php($field_object->options);
+			// create an empty field object
+				$this->zajlib->compile->write('<?php $this->zajlib->variable->field = (object) array(); ?>');
+			// callback
+				$field_object->__onInputGeneration($param_array, $source);			
+			// set stuff
+				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->name = "'.$fieldname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
+			// add set value
+				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
+			// generate template based on type unless specified
+				if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
+				else $template = $field_object::edit_template;
+			// now create form field
+				$this->zajlib->compile->compile($template);
+				//$this->zajlib->compile->write("insert file $template");
+				$this->zajlib->compile->insert_file($template.'.php');		
+		// return debug_stats
+			return true;
 	}
 	
 	/**
