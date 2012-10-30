@@ -257,7 +257,7 @@ class zajlib_template_zajvariables {
 			// The REQUEST request
 				case 'request': return $this->zajlib->array->array_to_object($_REQUEST);
 			// The SERVER variables
-				case 'request': return $this->zajlib->array->array_to_object($_SERVER);
+				case 'server': return $this->zajlib->array->array_to_object($_SERVER);
 			// The current protocol (HTTP/HTTPS)
 				case 'protocol': if($this->zajlib->https) return 'https:'; else return 'http:';
 			// Domain and top level domain
