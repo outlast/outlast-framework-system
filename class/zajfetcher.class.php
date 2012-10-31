@@ -117,8 +117,8 @@ class zajFetcher implements Iterator, Countable{
 	}
 	/**
 	 * Sort by a specific field and by an order.
-	 * @param string $by The field name to sort by. Or RANDOM if you want it randomly.
-	 * @param string $order ASC or DESC or RANDOM depending on what you want. If left empty, the default for this model will be used.
+	 * @param string $by The field name to sort by. Or RANDOM if you want it randomly. Or CUSTOM_SORT if you want the second parameter to just be used directly.
+	 * @param string $order ASC or DESC or RANDOM depending on what you want. If left empty, the default for this model will be used. If the first parameter is set to CUSTOM_SORT, you can provide a custom sort string here, including ORDER BY.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function sort($by, $order=''){
@@ -127,6 +127,7 @@ class zajFetcher implements Iterator, Countable{
 			// else do not change
 		// set the orderby
 			if($by == RANDOM || $order == RANDOM) $this->orderby = "ORDER BY RAND()";
+			elseif($by == 'CUSTOM_SORT') $this->orderby = $order;
 			elseif($by) $this->orderby = "ORDER BY model.$by";
 			else{
 				$this->orderby = '';
