@@ -127,7 +127,10 @@ class zajFetcher implements Iterator, Countable{
 			// else do not change
 		// set the orderby
 			if($by == RANDOM || $order == RANDOM) $this->orderby = "ORDER BY RAND()";
-			elseif($by == 'CUSTOM_SORT') $this->orderby = $order;
+			elseif($by == 'CUSTOM_SORT'){
+				$this->order = $order;
+				$this->ordermode = '';
+			}
 			elseif($by) $this->orderby = "ORDER BY model.$by";
 			else{
 				$this->orderby = '';
