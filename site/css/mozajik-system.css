@@ -150,5 +150,9 @@
 			margin-top: 3px;
 			margin-bottom: 5px;
 		}
+	/* bootstrap overrides */
+		table .btn.pull-right{
+			margin-left: 5px;
+		}
 		
 				
