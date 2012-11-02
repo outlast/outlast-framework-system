@@ -88,7 +88,7 @@ class zajlib_error extends zajLibExtension {
 			$error_details['id'] = uniqid("");
 		
 		// which protocol?
-			if($this->zajlib->https) $protocol = 'https:';
+			if($GLOBALS['zajlib']->https) $protocol = 'https:';
 			else $protocol = 'http:';
 		// anything POSTed?
 			if(!empty($_POST)) $post_data = "[POST]";
@@ -100,7 +100,7 @@ class zajlib_error extends zajLibExtension {
 			if($GLOBALS['zajlib']->debug_mode) $debug_mode = " [DEBUG_MODE]";
 			else $debug_mode = "";
 		// write to error_log			
-			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.$this->zajlib->fullrequest."] $post_data [Mozajik $errorlevel - ".$errortext."]".$referer.$debug_mode);
+			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.$GLOBALS['zajlib']->fullrequest."] $post_data [Mozajik $errorlevel - ".$errortext."]".$referer.$debug_mode);
 			
 		// log the backtrace?
 			if($GLOBALS['zajlib']->zajconf['error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
@@ -133,7 +133,7 @@ class zajlib_error extends zajLibExtension {
 	 **/ 
 	private function file_log($message){
 		// Is logging to a specific file enabled?
-			if($this->zajlib->zajconf['error_log_enabled'] && !empty($this->zajlib->zajconf['error_log_file']) && $this->zajlib->zajconf['error_log_file'] != 'MYSQL') return @error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, $this->zajlib->zajconf['error_log_file']);
+			if($GLOBALS['zajlib']->zajconf['error_log_enabled'] && !empty($GLOBALS['zajlib']->zajconf['error_log_file']) && $GLOBALS['zajlib']->zajconf['error_log_file'] != 'MYSQL') return @error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, $GLOBALS['zajlib']->zajconf['error_log_file']);
 			else return @error_log($message);
 	}
 
