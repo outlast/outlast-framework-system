@@ -132,10 +132,8 @@ class zajlib_error extends zajLibExtension {
 	 * @todo Remove MYSQL. That is only there for backwards compatibility.
 	 **/ 
 	private function file_log($message){
-		// Is logging disabled?
-			if(!$this->zajlib->zajconf['error_log_enabled']) return false;
-		// Is logging to a specific file?
-			if(!empty($this->zajlib->zajconf['error_log_file']) && $this->zajlib->zajconf['error_log_file'] != 'MYSQL') return @error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, $this->zajlib->zajconf['error_log_file']);
+		// Is logging to a specific file enabled?
+			if($this->zajlib->zajconf['error_log_enabled'] && !empty($this->zajlib->zajconf['error_log_file']) && $this->zajlib->zajconf['error_log_file'] != 'MYSQL') return @error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, $this->zajlib->zajconf['error_log_file']);
 			else return @error_log($message);
 	}
 
