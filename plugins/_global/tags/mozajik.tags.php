@@ -84,9 +84,10 @@ class zajlib_tag_mozajik extends zajElementCollection{
 		// check for required param
 			if(empty($classname) || empty($fieldname)) $source->error("Tag {%inputlocale%} parameter one needs to be in 'modelname.fieldname' format.");
 		// id or options
-			$id = $template = '';
-			$value = $param_array[1]->variable;
-			if(!empty($param_array[2])) $template = ', '.$param_array[2]->variable;
+			$id = $locale = '';
+			$value = preg_replace('/[^>]+$/', "translations->\\0", $param_array[1]->variable).'->$___locale';
+			if(!empty($param_array[2])) $locale = $param_array[2]->variable;
+			else $locale = '$this->zajlib->lang->get();';
 		// generate content
 					
 			// get field object
@@ -94,15 +95,15 @@ class zajlib_tag_mozajik extends zajElementCollection{
 			// generate options
 				$options_php = $this->zajlib->array->array_to_php($field_object->options);
 			// create an empty field object
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field = (object) array(); ?>');
+				$this->zajlib->compile->write('<?php $this->zajlib->variable->field = (object) array(); $___locale = '.$locale.'; ?>');
 			// callback
 				$field_object->__onInputGeneration($param_array, $source);			
 			// set stuff
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->name = "'.$fieldname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
+				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->name = "translations['.$fieldname.'][$___locale]"; $this->zajlib->variable->field->id = "field[translation]['.$fieldname.'][$___locale]"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
 			// add set value
 				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
 			// generate template based on type unless specified
-				if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
+				if(!empty($param_array[3])) $template = trim($param_array[3]->variable, "'\"");
 				else $template = $field_object::edit_template;
 			// now create form field
 				$this->zajlib->compile->compile($template);
