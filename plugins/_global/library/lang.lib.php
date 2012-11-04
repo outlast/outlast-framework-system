@@ -23,6 +23,11 @@ class zajlib_lang extends zajlib_config {
 	 	private $default_locale;
 
 	/**
+	 * Contains all the available locales. These are set in the config file site/index.php.
+	 **/
+	 	private $available_locales;
+
+	/**
 	 * Extend the config file loading mechanism.
 	 **/
 		protected $dest_path = 'cache/lang/';	// string - subfolder where compiled conf files are stored (cannot be changed)
@@ -34,6 +39,9 @@ class zajlib_lang extends zajlib_config {
 	 **/
 	public function __construct(&$zajlib, $system_library) {
 		parent::__construct($zajlib, $system_library);
+		// set default locale and available locales
+	 		$this->default_locale = $this->zajlib->zajconf['locale_default'];
+	 		$this->available_locales = explode(',', $this->zajlib->zajconf['locale_available']);
 		// set my default locale
 			$this->set();
 	}
@@ -66,15 +74,11 @@ class zajlib_lang extends zajlib_config {
 		 * @return string Returns the name of the locale that was set.
 		 **/
 	 	function set($new_language = false){
-	 		// Language can be set to any of the locales and by default the default locale is chosen
-	 			if(!empty($new_language)) $available_locales = explode(',', $this->zajlib->zajconf['locale_available']);
 	 		// Check to see if the language to be set is not false and is in locales available. If problem, set to default locale.
-	 			if(!empty($new_language) && in_array($new_language, $available_locales)){
+	 			if(!empty($new_language) && in_array($new_language, $this->available_locales)){
 	 				$this->current_locale = $new_language;
 	 			}
-	 			else $this->current_locale = $this->zajlib->zajconf['locale_default'];
-	 		// Set the default
-	 			$this->default_locale = $this->zajlib->zajconf['locale_default'];
+	 			else $this->current_locale = $this->default_locale;
 	 		// Return new locale
 	 			return $this->current_locale;
 		}
@@ -129,6 +133,19 @@ class zajlib_lang extends zajlib_config {
 				$GLOBALS['zajlib']->variable->language = $language;
 			return $this->get();
 		}
+
+	/**
+	 * All locales.
+	 **/
+		/**
+		 * Get all locales.
+		 * @return array Returns an array of all available locales
+		 **/
+		function get_locales(){
+			return $this->available_locales;
+		}
+
+
 
 	/**
 	 * Template loading based on current locale.

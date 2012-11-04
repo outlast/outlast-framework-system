@@ -496,7 +496,12 @@ class zajlib_model extends zajLibExtension {
 				// get the first element
 					$name = reset($table);
 				// add to assoc array with columns (if not in the ignore list)
-					if(!in_array($name, $this->zajlib->zajconf['mysql_ignore_tables'])) $tables_array[$name] = $this->get_columns($name);
+					if(!in_array($name, $this->zajlib->zajconf['mysql_ignore_tables'])){
+						// Is Wordpress enabled? If so, also ignore any tables beginning with wp_
+						if(!$this->zajlib->plugin->is_enabled('wordpress') || substr($name, 0, 3) != 'wp_'){
+							$tables_array[$name] = $this->get_columns($name);
+						}
+					}
 			}
 		return $tables_array;
 		
