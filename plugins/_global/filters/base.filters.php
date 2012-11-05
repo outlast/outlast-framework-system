@@ -431,13 +431,13 @@ EOF;
 	/**
 	 * Filter: striptags - Removes [X]HTML tags from the output except those specified by argument. Argument is space separated (Django-style) or accepts the {@link http://php.net/manual/en/function.strip-tags.php PHP format}.
 	 *
-	 *  <b>{{ value|striptags:'b a' }}</b> Removes all tags from value except <b> and <a>.
-	 * @todo add parameter support.
+	 *  <b>{{ value|striptags:'<b><a>' }}</b> Removes all tags from value except <b> and <a>.
 	 **/
 	public function filter_striptags($parameter, &$source){
+		if(empty($parameter)) $parameter = "''";
 		// parameter
 		$content = <<<EOF
-			\$filter_var = strip_tags(\$filter_var);
+			\$filter_var = strip_tags(\$filter_var, $parameter);
 EOF;
 		// write to file
 			$this->zajlib->compile->write($content);
