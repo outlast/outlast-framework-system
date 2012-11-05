@@ -72,9 +72,11 @@ class zajlib_url extends zajLibExtension {
 	 * @return bool True if a valid url. False otherwise.
 	 * @todo Move this to validation lib.
 	 **/
-	function is_url($url){
+	function valid($url){
 	 	return preg_match('|^http(s)?://[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(/.*)?$|i', $url);
 	}
+	// Depricated!
+	function is_url($url){ $this->valid($url); }
 
 	/**
 	 * Returns true or false depending on whether the passed string is a valid email address.
