@@ -8,7 +8,7 @@
  **/
 
 // Create a new class which will contain the sections
-	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http',jslib:'mootools',jslibver:1.3});
+	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debug_mode:false,protocol:'http',jslib:'mootools',jslibver:1.3});
 	var zaj = new Mozajik();
 
 // Pushstate support (from pjax)

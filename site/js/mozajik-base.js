@@ -6,7 +6,7 @@
  **/
 
 // Create a new class which will contain the sections
-	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debugmode:false,protocol:'http'});
+	var Mozajik = new Class({baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debug_mode:false,protocol:'http'});
 	var zaj = new Mozajik();
 
 /**
