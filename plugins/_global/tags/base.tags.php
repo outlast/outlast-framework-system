@@ -738,6 +738,7 @@ EOF;
 	 *  1. <b>block name</b> - A unique name used to identify this block. Blocks with the same names will override each other according to the rules of {@link http://docs.djangoproject.com/en/1.2/topics/templates/#template-inheritance Template inheritance}
 	 * @todo Either merge or somehow optimize $permanent_name and $file_name
 	 **/
+	private $block_name = "";
 	public function tag_block($param_array, &$source){
 		// Note: the block parameter is special because even if it is a variable it is not
 		//		treated as such. So {% block content %} is same as {% block 'content' %}.
@@ -772,8 +773,10 @@ EOF;
 					$unpause_dest = true;
 			}
 
-		// add the level
-			$source->add_level('block', array($block_name,$file_name,$unpause_dest,$permanent_name));		
+		// add the level with block parent as last param
+			$source->add_level('block', array($block_name,$file_name,$unpause_dest,$permanent_name,$this->block_name));
+		// set as current global block (overwriting parent)
+			$this->block_name = $block_name;
 
 		// return true
 			return true;
@@ -788,7 +791,7 @@ EOF;
 		//		last opened block. If none open, then fatal error is issued.
 
 		// remove level
-			list($block_name, $file_name, $unpause_dest, $permanent_name) = $source->remove_level('block');
+			list($block_name, $file_name, $unpause_dest, $permanent_name, $parent_block) = $source->remove_level('block');
 		// if this is a new block (file was written and needs to be removed)
 			if($file_name) $this->zajlib->compile->remove_destination($file_name);
 		// remove permanent block file (if exists)
@@ -798,21 +801,40 @@ EOF;
 			if($unpause_dest) $this->zajlib->compile->resume_destinations();
 		// repause the main destination if current source is extended
 			if($source->extended) $this->zajlib->compile->main_dest_paused(true);
+		// reset current block to parent block
+			$this->block_name = $parent_block;
+		// return true
+			return true;
+	}
+
+	/**
+	 * Tag: parentblock - Inserts the block from the parent template (specified by extends tag) here. This can be used when you do not want to override the block but instead add to it.
+	 *
+	 *  <b>{% parentblock %}</b>
+	 **/
+	public function tag_parentblock($param_array, &$source){
+		// check if valid
+			if(empty($this->extended_path)) $source->error("No extends tag found. You cannot use parentblock unless this template extends another.");
+		// set source to be extended and set actual file path
+			$this->zajlib->compile->write("<?php  \$this->zajlib->template->block({$this->extended_path}, '{$this->block_name}', true); ?>");
 		// return true
 			return true;
 	}
 	
 	/**
-	 * Tag: extends - Extends a parent template.
+	 * Tag: extends - Extends a parent template. You can also use this programatically 
 	 *
 	 *  <b>{% extends '/my/template/path' %}</b>
 	 *  1. <b>template_path</b> - The path to the parent template.
 	 **/
+	private $extended_path = "";
 	public function tag_extends($param_array, &$source){
 		// check if valid
 			if(count($param_array) > 1) $source->error("Invalid extends parameter: must be a valid variable or string!");
+		// save current extended path to var
+			$this->extended_path = strtolower(trim($param_array[0]->vartext, " "));
 		// prepare unparsed parameter string
-			$source_path = strtolower(trim($param_array[0]->vartext, "'\" "));
+			$source_path = trim($this->extended_path, "'\"");
 		// is not in first line?
 			if($source->line_number != 1) $source->error("Extends must be on first line before any other content!");
 		// is the user jailed?
@@ -821,7 +843,7 @@ EOF;
 		// check if it exists
 			if(!zajCompileSource::file_exists($source_path)) $source->error("Invalid extends path ($source_path) found during compilation! File does not exist.");
 		
-		// set source to be extended
+		// set source to be extended and set actual file path
 			$source->extended = true;
 		
 		// now pause main destination
@@ -833,7 +855,11 @@ EOF;
 			return true;
 	}
 
-
+	/**
+	 * These are special functions which return the current extend file path and block name in use. THESE ARE NOT TAGS!
+	 **/
+	public function tag_get_extend(){ return trim($this->extended_path, "'\""); }
+	public function tag_get_block(){ return $this->block_name; }
 }
 
 

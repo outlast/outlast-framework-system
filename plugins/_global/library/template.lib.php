@@ -125,10 +125,11 @@ class zajlib_template extends zajLibExtension {
 	 * Extracts a specific block from a template and displays only that. This is useful for ajax requests.
 	 * @param string $source_path The path to the template to be compiled relative to the active view folders. 
 	 * @param string $block_name The name of the block within the template.
+	 * @param boolean $recursive If set to true (false by default), all parent files will be checked for this block as well.
 	 * @param boolean $force_recompile If set to true, the template file will be recompiled even if a cached version already exists. (False by default.)
 	 * @param boolean $return_contents If set to true, the compiled contents will be returned by the function and not sent to the browser (as is the default).
 	 **/
-	function block($source_path, $block_name, $force_recompile = false, $return_contents = false){
+	function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
 		// first do a show to compile (if needed)
 			$include_file = $this->prepare($source_path, $force_recompile);
 		// set that we have started the output
@@ -137,7 +138,15 @@ class zajlib_template extends zajLibExtension {
 			// generate appropriate file name
 				$include_file = $this->zajlib->basepath."/cache/view/__block/".$source_path.'-'.$block_name.'.html.php';
 			// check to see if block even exists
-				if(!file_exists($include_file)) return $this->zajlib->error("Template block display failed! The request block '$block_name' could not be found in template file '$source_path'.");
+				if(!file_exists($include_file)){
+					// if recursive and extended_path exists, try
+					if($recursive){
+						// see if extended
+							$extend = $this->zajlib->compile->tags->extend;
+							if($extend) return $this->block($extend, $block_name, $recursive, $force_recompile, $return_contents);
+					}
+					return $this->zajlib->error("Template block display failed! The request block '$block_name' could not be found in template file '$source_path'.");
+				}
 		// now display or return
 			return $this->display($include_file, $return_contents);
 	}

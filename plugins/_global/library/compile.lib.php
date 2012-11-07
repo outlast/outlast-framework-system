@@ -153,7 +153,7 @@ class zajElementsLoader{
 			}
 		return true;		
 	}
-	
+
 	// handle any element calls
 	// TODO: remove call by reference in call_user_func_array()
 	public function __call($name, $arguments){
@@ -177,6 +177,29 @@ class zajElementsLoader{
 			$this->zajlib->compile->get_source()->warning("$this->element_type name '$name' cannot be found!", $arguments[2]);
 		return $arguments[2];		
 	}
+
+	/**
+	 * This is a special method to retrieve variables instead of calling tags via tag getter methods.
+	 *
+	 * Tag getter methods can be declared in zajElementCollection classes. See {@link tag_get_extend()} as an example.
+	 **/
+	public function __get($name){
+		// do we need to load any collections?
+			$this->load();
+		// generate element method name
+			$element_method = $this->element_type.'_get_'.$name;
+		// search for $name among all registered tags
+			foreach($this->elements as $element_class_name=>$element_object){
+				// does this tag getter method exist in this collection?
+					if(method_exists($element_object, $element_method)){
+						// call the method in the apprpriate tags.php/filters.php file and return
+							return call_user_func_array(array($element_object, $element_method), array());
+					}
+			}
+		// The filter/tag does not exist but no error thrown
+			$this->zajlib->compile->get_source()->warning("$this->element_type getter method for '$name' cannot be found!");
+	}
+
 }
 
 /**
