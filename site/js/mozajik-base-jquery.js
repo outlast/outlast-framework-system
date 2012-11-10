@@ -6,7 +6,7 @@
  * 
  * @changes 1.0 Now supports pushstate, but ajax methods' parameter order has changed: bind is now the fourth param, the third is the new url.
  **/
-
+ 
 // Create a new class which will contain the sections
 	var zaj = {baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debug_mode:false,protocol:'http',jslib:'jquery',jslibver:1.7};
 	//var zaj = new Mozajik();
@@ -146,7 +146,74 @@
 					type: mode
 				});				
 			};
-	
+
+		/**
+		 * Class Search creates a search box which sends ajax requests at specified intervals to a given url.
+		 * @author Aron Budinszky /aron@mozajik.org/
+		 * @todo Add placeholder text
+		 * @version 3.0
+		 */
+		zaj.search = {
+			options: {
+				delay: 300,						// Number of miliseconds before 
+				url: false,						// The url to send the request to. This should be relative. &query=your+query will be appended. If no url (false), it will not be submitted anywhere.
+				callback: false,				// A function or an element.
+				callback_bind: false,			// The callback function's 'this' will bind to whatever is specified here.
+				method: 'get',					// The method to send by. Values can be 'post' (default) or 'get'.
+				allow_empty_query: true,		// If set to true, an empty query will also execute
+				pushstate_url: false,			// You can use pushState to change the url and data of the site after the search is done
+				pushstate_data: false,			// You can use pushState to change the url and data of the site after the search is done
+				pushstate_name: false			// You can use pushState to change the url and data of the site after the search is done
+			},
+			
+			/**
+			 * Creates a new Search object
+			 **/
+				initialize: function(element, options){
+					// set default options
+						this.options = $.extend(this.options, options);
+					// register events
+						this.timer = false;
+						this.element = $(element);
+						var self = this;
+						this.element.keyup(function(){
+							// reset earlier timer
+								if(self.timer){ clearTimeout(self.timer); }
+							// now set a new timer
+								self.timer = setTimeout(function(){ self.send(); }, self.options.delay);
+						});
+						this.element.blur(function(){
+							self.send();
+						});
+					return true;
+				},
+			
+			/**
+			 * Sends the query to the set url and processes.
+			 **/
+				send: function(){
+					// if the element value is empty, do not do anything
+						if(!this.options.allow_empty_query && !this.element.val()) return false;
+					// if url not set, just do callback immediately!
+					if(this.options.url){			
+						// append element value to url
+							var url = this.options.url;
+							if(this.options.url.indexOf('?') >= 0) url += '&query='+this.element.val();
+							else url += '?query='+this.element.val();
+							url += '&mozajik-tool-search=true';
+						// check if the current query is like last query
+							if(this.last_query == this.element.val()) return false;
+							else this.last_query = this.element.val();
+						// now send via the appropriate method
+							console.log(url);
+							if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
+							else zaj.ajax.post(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
+					}
+					else{
+						this.options.callback(this.element.val());
+					}
+				}
+			};
 	/**
 	 * A function which opens up a new window with the specified properties
 	 * @param url The url of the window
@@ -170,8 +237,8 @@
 	 **/
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
-	 	};
-	 
+	 	};	 
+
 	/**
 	 * Now extend the jQuery object.
 	 **/
@@ -182,7 +249,10 @@
 	  	return {
 	  		// Get or post serialized data
 	  		get: function(url, response){ return zaj.ajax.get(url+'?'+target.serialize(), response); },
-	  		post: function(url, response){ return zaj.ajax.post(url+'?'+target.serialize(), response); }
+	  		post: function(url, response){ return zaj.ajax.post(url+'?'+target.serialize(), response); },
+	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, callback: function(r){
+	  			$(receiver).html(r);
+	  		} }); }
 	  	}
 	  };
 	})(jQuery);
