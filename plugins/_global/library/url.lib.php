@@ -76,7 +76,7 @@ class zajlib_url extends zajLibExtension {
 	 	return preg_match('|^http(s)?://[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(/.*)?$|i', $url);
 	}
 	// Depricated!
-	function is_url($url){ $this->valid($url); }
+	function is_url($url){ return $this->valid($url); }
 
 	/**
 	 * Returns true or false depending on whether the passed string is a valid email address.
