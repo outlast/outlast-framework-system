@@ -64,6 +64,9 @@ class zajlib_security extends zajLibExtension {
 	 * @return Will return true if the specified IP is within the given range.
 	 **/
 	 public function ip_in_range($ip, $range) {
+		// if ip is equal to range
+		if($ip == $range) return true;
+		// otherwise...
 		if (strpos($range, '/') !== false) {
 		    // $range is in IP/NETMASK format
 		    list($range, $netmask) = explode('/', $range, 2);
