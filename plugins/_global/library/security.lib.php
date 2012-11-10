@@ -15,7 +15,7 @@ class zajlib_security extends zajLibExtension {
 	 * @param string $realm The realm is a string which specifies which area this access includes. Search google for HTTP AUTH for more details.
 	 * @param string $message This message is displayed if the user fails to input the correct user/password.
 	 **/	 
-	function protect_me($user,$password,$realm="default",$message="ACCESS DENIED!"){
+	public function protect_me($user,$password,$realm="default",$message="ACCESS DENIED!"){
 		// check if already logged in
 			if($_SERVER['PHP_AUTH_USER']==$user && ($_SERVER['PHP_AUTH_PW']==$password || crypt($_SERVER['PHP_AUTH_PW'], "za")==$password || md5($_SERVER['PHP_AUTH_PW'])==$password)) return true;
 		// if not then show login
@@ -34,7 +34,7 @@ class zajlib_security extends zajLibExtension {
 	 * @param integer $length The length of the password. 10 by default.
 	 * @return string The generated password.
 	 **/
-	function random_password($length = 10) {
+	public function random_password($length = 10) {
 		$allowable_characters = "ABCDEFGHKMNPQRSTUVWXYZ23456789";
 		// Explode string into array of characters
 			$chars = str_split($allowable_characters);
@@ -63,7 +63,7 @@ class zajlib_security extends zajLibExtension {
 	 * @param string $range The ip address range to check in.
 	 * @return Will return true if the specified IP is within the given range.
 	 **/
-	 function ip_in_range($ip, $range) {
+	 public function ip_in_range($ip, $range) {
 		if (strpos($range, '/') !== false) {
 		    // $range is in IP/NETMASK format
 		    list($range, $netmask) = explode('/', $range, 2);

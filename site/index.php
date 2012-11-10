@@ -6,11 +6,6 @@
 		define('MOZAJIK_RECOMMENDED_HTACCESS_VERSION', 303);
 		define('MOZAJIK_RECOMMENDED_CONFIG_VERSION', 305);
 
-	// If LOGIN_AUTH is set up in Apache conf and user does not have proper cookie set, redirect!
-		if(!empty($_SERVER['MOZAJIK_LOGIN_AUTH']) && !empty($_SERVER['MOZAJIK_LOGIN_URL'])){
-			if($_SERVER['MOZAJIK_LOGIN_AUTH'] != $_COOKIE['MOZAJIK_LOGIN_AUTH']){ header("Location: ".$_SERVER['MOZAJIK_LOGIN_URL'].'?from='.urlencode('http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'])); exit; }
-		}
-
 	// Set locale but only if new config version
 		global $zajconf;
 		if(is_array($zajconf)){
@@ -100,9 +95,22 @@
 		if(in_array($zajlib->host, $zajconf['debug_mode_domains']) || !empty($zajconf['debug_mode']) || !empty($_SERVER['DEBUG_MODE']) || !empty($_SERVER['MOZAJIK_DEBUG_MODE'])) $zajlib->debug_mode = true;
 	// debug mode explicity overridden?
 		if($zajlib->debug_mode && isset($_REQUEST['debug_mode'])) $zajlib->debug_mode = false;
-	// load default libraries
-		$zajlib->load->library('text');
-		$zajlib->load->library('template');
+
+	// If LOGIN_AUTH is set up in Apache conf and user does not have proper cookie set, redirect!
+		if(!empty($_SERVER['MOZAJIK_LOGIN_AUTH']) && !empty($_SERVER['MOZAJIK_LOGIN_URL'])){
+			// Check if whitelisted ip
+				$whitelisted = false;
+				if(!empty($_SERVER['MOZAJIK_LOGIN_WHITELIST'])){
+					// Get all IPs that are whitelisted
+						$whitelisted_ips = explode(',', $_SERVER['MOZAJIK_LOGIN_WHITELIST']);
+					// Check against my ip
+						foreach($whitelisted_ips as $whitelisted_ip){
+							if($zajlib->security->ip_in_range($_SERVER['REMOTE_ADDR'], $whitelisted_ip)) $whitelisted = true;
+						}
+				}
+			// Redirect to authentication
+				if(!$whitelisted && $_SERVER['MOZAJIK_LOGIN_AUTH'] != $_COOKIE['MOZAJIK_LOGIN_AUTH']){ header("Location: ".$_SERVER['MOZAJIK_LOGIN_URL'].'?from='.urlencode('http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'])); exit; }
+		}
 
 	// load controller support
 		include_once($zajconf['root_folder'].'/system/class/zajcontroller.class.php');
