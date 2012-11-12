@@ -131,7 +131,9 @@ class Photo extends zajModel {
 	 * @param string $size One of the standard photo sizes.
 	 **/
 	public function get_image($size = 'normal'){
-		return $this->zajlib->file->get_id_path($this->zajlib->baseurl."data/Photo", $this->id."-$size.jpg");
+		// Default the extension to jpg if not defined (backwards compatibility)
+			if(empty($this->extension)) $this->extension = 'jpg';
+		return $this->zajlib->file->get_id_path($this->zajlib->baseurl."data/Photo", $this->id."-$size.".$this->extension);
 	}
 
 	/**
@@ -139,7 +141,9 @@ class Photo extends zajModel {
 	 * @param string $size One of the standard photo sizes.
 	 **/
 	public function get_path($size = 'normal'){
-		return $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$size.jpg");
+		// Default the extension to jpg if not defined (backwards compatibility)
+			if(empty($this->extension)) $this->extension = 'jpg';
+		return $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$size.".$this->extension);
 	}
 
 	/**
@@ -156,11 +160,13 @@ class Photo extends zajModel {
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
 	 **/
 	public function download($size = "normal", $force_download = true){
+		// Default the extension to jpg if not defined (backwards compatibility)
+			if(empty($this->extension)) $this->extension = 'jpg';
 		// look for bad characters in $size
 			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0) return false;
 			if(!$this->temporary && $size == "preview") $size = 'normal';
 		// generate path
-			$file_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$size.jpg");
+			$file_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$size.".$this->extension);
 		// if it is in preview mode (only if not yet finalized)
 			$preview_path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
 			if($this->temporary && $size == "preview") $file_path = $preview_path;
@@ -168,7 +174,14 @@ class Photo extends zajModel {
 			if(!file_exists($file_path)) exit("File could not be found.");
 		// pass file thru to user
 			if($force_download) header('Content-Disposition: attachment; filename="'.$this->data->name.'"');
-			header('Content-Type: image/jpeg;');
+		// create header
+			switch ($this->extension){
+				case 'png': header('Content-Type: image/png;'); break;
+				case 'gif': header('Content-Type: image/gif;'); break;
+				default: header('Content-Type: image/jpeg;'); break;
+			}
+
+			
 			$f = fopen($file_path, "r");
 				fpassthru($f);
 			fclose($f);
@@ -176,11 +189,13 @@ class Photo extends zajModel {
 		exit;
 	}
 	public function delete($complete = false){
+		// Default the extension to jpg if not defined (backwards compatibility)
+			if(empty($this->extension)) $this->extension = 'jpg';
 		// remove photo files
 			if($complete){
 				$this->zajlib->load->library('file');
 				foreach($GLOBALS['photosizes'] as $name=>$size){
-					if($size) @unlink($this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$name.jpg"));
+					if($size) @unlink($this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$name.".$this->extension));
 				}
 			}
 		// call parent
