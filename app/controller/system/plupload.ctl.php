@@ -66,8 +66,10 @@
 				else $obj = File::create();
 			// Move to cache folder with id name
 				$new_tmp_name = $this->zajlib->basepath.'cache/upload/'.$obj->id.'.tmp';
+			// check image type of source to preserve it
+				$force_exif_imagetype = exif_imagetype($temp_name);
 			// Resize if max size set and image
-				if($process_as_image && !empty($this->zajlib->zajconf['plupload_photo_maxwidth'])) $this->zajlib->graphics->resize($temp_name, $new_tmp_name, $this->zajlib->zajconf['plupload_photo_maxwidth'], $this->zajlib->zajconf['plupload_photo_maxwidth']*2, 85, true);
+				if($process_as_image && !empty($this->zajlib->zajconf['plupload_photo_maxwidth'])) $this->zajlib->graphics->resize($temp_name, $new_tmp_name, $this->zajlib->zajconf['plupload_photo_maxwidth'], $this->zajlib->zajconf['plupload_photo_maxwidth']*2, 85, true, $force_exif_imagetype);
 				else @move_uploaded_file($temp_name, $new_tmp_name);
 			// Set status to uploaded
 				$obj->set('name', $orig_name);

@@ -22,15 +22,16 @@ class zajlib_graphics extends zajLibExtension {
 	/**
 	 * Resize and convert a file to a new size and format.
 	 * @param string $oldpath The path to the original file. Path is a full path (for backwards compatibility).
-	 * @param string $newpath The path to the new file. Whatever the filename is, it will use that extension to create the new file. Format defaults to jpg, but png and gif also supported.
+	 * @param string $newpath The path to the new file. Whatever the filename is, it will use that extension to create the new file (unless you specify $force_exif_imagetype parameter). Format defaults to jpg, but png and gif also supported.
 	 * @param integer $maxwidth Specifies the maximum width the image can be. Set to 0 or false if you do not want to touch the width.
 	 * @param integer $maxheight Specifies the maximum height the image can be. Set to 0 or false if you do not want to touch the height.
 	 * @param integer $jpeg_quality A number value of the jpg quality to be used in conversion. Only matters for jpg output.
 	 * @param boolean $delete_original If set to true, the original file will be deleted.
+	 * @param integer $force_exif_imagetype If set, this particular image format will be forced upon the conversion even if the file name would suggest otherwise. See {@link http://www.php.net/manual/en/function.exif-imagetype.php} for more info.
 	 * @return boolean True if successful, false otherwise.
 	 * @todo Change paths relative to basepath.
 	 **/
-	public function resize($oldpath, $newpath, $maxwidth = 0, $maxheight = 0, $jpeg_quality = 85, $delete_original = false){
+	public function resize($oldpath, $newpath, $maxwidth = 0, $maxheight = 0, $jpeg_quality = 85, $delete_original = false, $force_exif_imagetype = 0){
 		// get the new file type
 			$newpathdata = pathinfo($newpath);
 			$newpathdata['extension'] = mb_strtolower($newpathdata[extension]);
@@ -40,7 +41,9 @@ class zajlib_graphics extends zajLibExtension {
 		// prepare image
 			$im = $this->prepare_image($oldpath);
 			if(!$im) return false;
-
+		// enable alpha channels on old image
+			imagealphablending($im, false);
+			imagesavealpha($im, true);
 		// Execute resize
 			$width = imagesx($im);
 			$height = imagesy($im);
@@ -64,6 +67,8 @@ class zajlib_graphics extends zajLibExtension {
 		        $newheight = $height * $ratio;
 				if(function_exists("imagecopyresampled")){
 		      		$newim = imagecreatetruecolor($newwidth, $newheight);
+					imagealphablending($newim, false);
+					imagesavealpha($newim, true);
 		      		imagecopyresampled($newim, $im, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 				}else{
 					$newim = imagecreate($newwidth, $newheight);
@@ -73,8 +78,8 @@ class zajlib_graphics extends zajLibExtension {
 			 }
 		
 	   // Done with resize. Save as an image.	
-			if($newpathdata[extension] == "gif") ImageGif($im, $newpath);
-			elseif($newpathdata[extension] == "png") ImagePng($im, $newpath);
+			if($force_exif_imagetype == IMAGETYPE_GIF || $newpathdata[extension] == "gif") ImageGif($im, $newpath);
+			elseif($force_exif_imagetype == IMAGETYPE_PNG || $newpathdata[extension] == "png") ImagePng($im, $newpath);
 			else ImageJpeg($im, $newpath, $jpeg_quality);
 	
 	   // Clean up and return true

@@ -1,6 +1,6 @@
 <?php
 // Define my photo sizes if not already done!
-if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'small'=>300,'normal'=>700,'large'=>2000,'full'=>false);
+if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'small'=>300,'normal'=>700,'large'=>2000,'full'=>true);
 
 /**
  * A built-in model to handle photos.
@@ -9,8 +9,8 @@ if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'sm
  *
  * @package Model
  * @subpackage BuiltinModels
- * @todo Add support for keeping the full size version.
- */
+ * @todo Add saving of 'imagetype' and 'class' - this is delayed for a later version to ensure database updates on all projects...
+ **/
 class Photo extends zajModel {
 		
 	///////////////////////////////////////////////////////////////
@@ -18,9 +18,11 @@ class Photo extends zajModel {
 	///////////////////////////////////////////////////////////////
 	public static function __model(){	
 		// define custom database fields
+			$fields->class = zajDb::text();
 			$fields->parent = zajDb::text();
 			$fields->field = zajDb::text();
 			$fields->name = zajDb::name();
+			$fields->imagetype = zajDb::integer();
 			$fields->original = zajDb::text();
 			$fields->description = zajDb::textbox();
 			$fields->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
@@ -37,23 +39,38 @@ class Photo extends zajModel {
 	// !Magic methods
 	///////////////////////////////////////////////////////////////
 	public function __afterFetch(){
-		//foreach($GLOBALS['photosizes'] as $key=>$size){
-			//$this->$key = $this->get_image($key);
-		//}
-		$this->status = $this->data->status;
-		$this->parent = $this->data->parent;
+		// Set status and parents
+			$this->status = $this->data->status;
+			$this->parent = $this->data->parent;
+			$this->field = $this->data->field;
+		// See which file exists
+			if(file_exists($this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-normal.png"))){
+				$this->extension = 'png';
+				$this->imagetype = IMAGETYPE_PNG;
+			}
+			elseif(file_exists($this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-normal.gif"))){
+				$this->extension = 'gif';
+				$this->imagetype = IMAGETYPE_GIF;
+			}
+			else{
+				$this->extension = 'jpg';
+				$this->imagetype = IMAGETYPE_JPEG;
+			}
 	}
 
 	/**
 	 * Returns the url based on size ($photo->small) or the relative url ($photo->rel_small)
 	 **/
 	public function __get($name){
-		$relname = str_ireplace('rel_', '', $name);
-		if(!empty($GLOBALS['photosizes'][$name])) return $this->zajlib->file->get_id_path($this->zajlib->baseurl."data/Photo", $this->id."-$name.jpg");
-		else{
-			if(!empty($GLOBALS['photosizes'][$relname])) return $this->zajlib->file->get_id_path("data/Photo", $this->id."-$relname.jpg");
-			else return parent::__get($name);
-		}
+		// Default the extension to jpg if not defined
+			if(empty($this->extension)) $this->extension = 'jpg';
+		// Figure out direct or relative file name
+			$relname = str_ireplace('rel_', '', $name);
+			if(!empty($GLOBALS['photosizes'][$name])) return $this->zajlib->file->get_id_path($this->zajlib->baseurl."data/Photo", $this->id."-$name.".$this->extension);
+			else{
+				if(!empty($GLOBALS['photosizes'][$relname])) return $this->zajlib->file->get_id_path("data/Photo", $this->id."-$relname.".$this->extension);
+				else return parent::__get($name);
+			}
 	}
 
 
@@ -83,20 +100,29 @@ class Photo extends zajModel {
 			if(strpos($filename,"/") !== false) return $this->zajlib->error('uploaded photo cannot be saved: must specify relative path to cache/upload folder.');
 			if(!file_exists($this->zajlib->basepath."cache/upload/".$filename)) return $this->zajlib->error("uploaded photo $filename does not exist!");
 			if($image_data === false) return $this->zajlib->error('uploaded file is not a photo. you should always check this before calling set_image/upload!');
+		// check image type of source
+			$image_type = exif_imagetype($file_path);
+		// select extension
+			if($image_type == IMAGETYPE_PNG) $extension = 'png';
+			elseif($image_type == IMAGETYPE_GIF) $extension = 'gif';
+			else $extension = 'jpg';
 		// no errors, resize and save
 			foreach($GLOBALS['photosizes'] as $key => $size){
 				if($size !== false){
-					// save resized images
-					$new_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$key.jpg");
-					$this->zajlib->graphics->resize($file_path, $new_path, $size);
+					// save resized images perserving extension
+						$new_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$key.".$extension);
+					// resize it now!
+						$this->zajlib->graphics->resize($file_path, $new_path, $size);
 				}
 			}
-		// now remove the original
-			unlink($file_path);
+		// now remove the original or copy to full location
+			if($GLOBALS['photosizes']['full']) copy($file_path, $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-full.".$extension));
+			else unlink($file_path);
 		// Remove temporary location flag
 			$this->temporary = false;
-		$this->set('status', 'saved');
-		$this->save();
+			//$this->set('imagetype', $image_type);
+			$this->set('status', 'saved');
+			$this->save();
 		return $this;
 	}
 
@@ -235,7 +261,8 @@ class Photo extends zajModel {
 			$obj = Photo::create();
 		// Move uploaded file to tmp
 			@mkdir($GLOBALS['zajlib']->basepath.'cache/upload/');
-			move_uploaded_file($tmp_name, $GLOBALS['zajlib']->basepath.'cache/upload/'.$obj->id.'.tmp');
+			$new_name = $GLOBALS['zajlib']->basepath.'cache/upload/'.$obj->id.'.tmp';
+			move_uploaded_file($tmp_name, $new_name);
 		// Now set and save
 			$obj->set('name', $orig_name);
 			if($parent !== false) $obj->set('parent', $parent);

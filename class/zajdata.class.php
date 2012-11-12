@@ -218,6 +218,8 @@ class zajData {
 
 		/**
 		 * Magic method used for modifying the data in specific fields. This is most often accessed via {@link zajModel->set()} method.
+		 * @param string $name The name of the field to set.
+		 * @param variable $value Any kind of variable that the field accepts.
 		 **/		
 		public function __set($name, $value){
 			// check for error
