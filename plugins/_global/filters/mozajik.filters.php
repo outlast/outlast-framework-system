@@ -28,7 +28,27 @@ class zajlib_filter_mozajik extends zajElementCollection{
 		// normal is default size
 			if(!$parameter) $parameter = "'normal'";
 		// write to file
-			$this->zajlib->compile->write('if(is_object($filter_var) && is_a($filter_var, "Photo")) $filter_var = $filter_var->get_image('.$parameter.'); elseif(is_object($filter_var) && is_a($filter_var, "zajFetcher") && $obj = $filter_var->rewind()){$filter_var=$obj->get_image('.$parameter.'); } elseif(is_object($filter_var) && !empty($filter_var->photo_filter_supported)){ $filter_var = $filter_var->{'.$parameter.'}; } else{ $filter_var=false; }');
+			$content = <<<EOF
+if(is_object(\$filter_var) && is_a(\$filter_var, "Photo")){
+	\$filter_var = \$filter_var->get_image($parameter);
+}
+elseif(is_object(\$filter_var) && is_a(\$filter_var, "zajFetcher") && \$obj = \$filter_var->rewind()){
+	\$filter_var=\$obj->get_image($parameter);
+}
+elseif(is_array(\$filter_var)){
+	\$f = reset(\$filter_var);
+	if(empty(\$f->photo_filter_supported)){
+		\$filter_var = false;
+	}
+	else{
+		\$filter_var = \$f->{{$parameter}};
+	}
+}
+else{
+	\$filter_var=false;
+}
+EOF;
+			$this->zajlib->compile->write($content);
 		return true;
 	}
 	/**
