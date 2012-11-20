@@ -44,7 +44,7 @@ Mozajik.ReorderList = new Class({
 	 * Send the event
 	 **/
 	 	sort: function(ids){
-				console.log(this.options.url, ids);
+				//console.log(this.options.url, ids);
 			// Fire event
 				this.fireEvent('sort', [ids])
 	 	}
