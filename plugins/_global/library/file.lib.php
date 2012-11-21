@@ -9,6 +9,39 @@
 class zajlib_file extends zajLibExtension {
 
 	/**
+	 * Cleans a path and makes sure that it is jailed to my project folder basepath. This can take full paths (within the basepath) or relatives to the basepath.
+	 * @param string $path The path of the file either relative to the basepath, or a full path within the basepath.
+	 * @param string $custom_error The error message to fail on if an incorrect path is found.
+	 * @param boolean $add_trailing_slash If this is a folder, then the trailing slash is added after sanitization.
+	 * @return string Returns the sanitized path relative to the basepath if successful. Fatal error if not.
+	 **/
+	function folder_check($path, $custom_error = "Invalid folder path given.", $add_trailing_slash = true){
+		// Save original
+			$opath = $path;
+		// First we need to get rid of our full path (if it exists) and trim /-es, \-es, and spaces.
+			$path = str_ireplace($this->zajlib->basepath, '', $path);
+		// Now make sure it is not still absolute url
+			if($opath == $path && strpos($path, '/') === 0) return $this->zajlib->error($custom_error.' '.$opath);
+		// Now make sure no relative path stuff is tried
+			if(strstr($path, '..') !== false) return $this->zajlib->error($custom_error.' '.$opath);
+		// If basepath was trimmed, now readd
+			if($opath !== $path) $path = $this->zajlib->basepath.$path;
+		// All is ok, so let's fix it up with single trailing slash!
+			if($add_trailing_slash) $path = rtrim($path, '/').'/';
+		return $path;
+	}
+
+	/**
+	 * Same as {@link folder_check} except that this does not add a trailing slash by default (since it is for files).
+	 * @param string $path The path of the file either relative to the basepath, or a full path within the basepath.
+	 * @param string $custom_error The error message to fail on if an incorrect path is found.
+	 * @return string Returns the sanitized file path relative to the basepath if successful. Fatal error if not.
+	 **/
+	function file_check($path, $custom_error = "Invalid file path given."){
+		return $this->folder_check($path, $custom_error, false);
+	}
+
+	/**
 	 * Returns an array of files found in this folder. If set to recursive, the file paths will be returned relative to the specified path.
 	 * @param string $path The path to check for files.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
@@ -18,7 +51,8 @@ class zajlib_file extends zajLibExtension {
 	 **/
 	function get_files_in_dir($path, $recursive = false, $mode = "files", $hidden_files_and_folders = false){
 		$files = $folders = array();
-		$this->zajlib->load->library('array');
+		// validate path
+			$path = $this->zajlib->basepath.$this->folder_check($path, "Invalid path requested for get_files_in_dir.");
 		// check if folder
 			if(!is_dir($path)) return array();
 		// else, fetch files in folder		
@@ -72,7 +106,11 @@ class zajlib_file extends zajLibExtension {
 	 * @param string $filename The full filename, including extension.
 	 **/
 	function create_path_for($filename){
-		$path = dirname($filename);
+		// get folder
+			$path = dirname($filename);
+		// validate path
+			$path = $this->folder_check($path, "Invalid path requested for create_path_for.");
+		// all ok, create
 		return @mkdir($path, 0777, true);
 	}
 	
@@ -89,13 +127,8 @@ class zajlib_file extends zajLibExtension {
 			if(!is_array($extORextarray)) $extORextarray = array($extORextarray);
 		// get file extension
 			$ext = $this->get_extension($filename);
-		
-		// now check to see if any are correct and return true if so
-		$r = false;
-		foreach($extORextarray as $e){
-			if($ext == $e) return true;
-		}
-		return false;
+		// is it in the array?
+			return in_array($ext, $extORextarray);
 	}
 	
 	/**
@@ -108,25 +141,25 @@ class zajlib_file extends zajLibExtension {
 	 * @return string The new full path of the file.
 	 **/
 	function get_time_path($basepath,$filename,$timestamp = 0,$create_folders_if_they_dont_exist = true,$include_day=true){
+		// Validate path
+			$basepath = $this->zajlib->basepath.$this->folder_check($basepath, "Invalid path requested for get_time_path.");
+		// Validate file
+			$filename = $this->file_check($filename, "Invalid file requested for get_time_path.");
 		// defaults and error checks
-		if($basepath == "") return false;
-		if($timestamp == 0) $timestamp = time();
-			
+			if($basepath == "") return false;
+			if($timestamp == 0) $timestamp = time();
 		// Get timestamp based subfolder: /year/month/
-		$timedata = localtime($timestamp, true);
-		$sub1 = $timedata["tm_year"]+1900;
-		$sub2 = date("M", $timestamp);
-		if($include_day) $sub3 = date("d", $timestamp);
-				
+			$timedata = localtime($timestamp, true);
+			$sub1 = $timedata["tm_year"]+1900;
+			$sub2 = date("M", $timestamp);
+			if($include_day) $sub3 = date("d", $timestamp);
 		// Generate full string and return
-		$fullpath = $basepath."/".$sub1."/".$sub2."/".$sub3."/".$filename;
-		
+			$fullpath = $basepath."/".$sub1."/".$sub2."/".$sub3."/".$filename;
 		// Make sure folders exist...if not, create...(unless not needed)
-		if($create_folders_if_they_dont_exist){
-			if(!$filename) @mkdir($fullpath, 0777, true);
-			else $this->create_path_for($fullpath);
-		}
-		
+			if($create_folders_if_they_dont_exist){
+				if(!$filename) @mkdir($fullpath, 0777, true);
+				else $this->create_path_for($fullpath);
+			}		
 		// Return the full path	
 		return $fullpath;
 	}
@@ -140,9 +173,12 @@ class zajlib_file extends zajLibExtension {
 	 * @return string The new full path of the file.
 	 **/
 	function get_id_path($basepath,$filename,$create_folders_if_they_dont_exist = true,$level = 10){
+		// Validate path
+			$basepath = $this->folder_check($basepath, "Invalid path requested for get_id_path.");
+		// Validate file
+			$filename = $this->file_check($filename, "Invalid file requested for get_id_path.");
 		// defaults and error checks
-			if($basepath == "") return false;
-		
+			if($basepath == "") return false;		
 		// get filename and parts
 			$pathdata = pathinfo($filename);
 			$parts = str_split($pathdata['filename']);
@@ -170,6 +206,9 @@ class zajlib_file extends zajLibExtension {
 	 * @return string The mime type of the file
 	 **/
 	function get_mime_type($filename) {
+		// Validate path
+			$filename = $this->zajlib->basepath.$this->file_check($filename, "Invalid file requested for get_mime_type.");
+		// Define mime types
 	        $mime_types = array(
 	            'txt' => 'text/plain',
 	            'htm' => 'text/html',

@@ -40,7 +40,7 @@ class zajlib_cache extends zajLibExtension{
 	 */
 	public function clear_object($class, $id){
 		// Generate my path
-			$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$class_name, $id.".cache", false);
+			$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
 		// Try to delete and return result
 			return @unlink($filename);
 	}

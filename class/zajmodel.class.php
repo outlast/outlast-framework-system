@@ -10,6 +10,7 @@
  */
 
 define('MAX_EVENT_STACK', 50);
+define('CACHE_DIR_LEVEL', 4);
 
 /**
  * This is the abstract model class from which all model classes are derived.
@@ -572,7 +573,7 @@ abstract class zajModel {
 	private static function get_cache($class_name, $id){
 		// return the resumed class
 			$GLOBALS['zajlib']->load->library("file");
-			$filename = $GLOBALS['zajlib']->file->get_id_path($GLOBALS['zajlib']->basepath."cache/object/".$class_name,$id.".cache", false);
+			$filename = $GLOBALS['zajlib']->file->get_id_path($GLOBALS['zajlib']->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
 		// try opening the file
 			$item_cached = false;
 			if(!file_exists($filename)){
@@ -617,7 +618,7 @@ abstract class zajModel {
 			if($this->fire('beforeUncache') === false) return false;
 		// return the resumed class
 			$this->zajlib->load->library("file");
-			$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name,$this->id.".cache", false);
+			$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name, $this->id.".cache", false, CACHE_DIR_LEVEL);
 		// if remove is successful, call __afterUncache event and return true. false otherwise
 			if(!@unlink($filename)) return false;
 			else{
@@ -637,7 +638,7 @@ abstract class zajModel {
 			if(!$this::$in_database) $this->exists = true;		
 		// get filename
 			$this->zajlib->load->library("file");
-			$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name,$this->id.".cache");
+			$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name,$this->id.".cache", true, CACHE_DIR_LEVEL);
 		// model, data do not need to be saved!
 			$data = $this->data;
 			$model = $this->model;

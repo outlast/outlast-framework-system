@@ -66,7 +66,7 @@ class Photo extends zajModel {
 			if(empty($this->extension)) $this->extension = 'jpg';
 		// Figure out direct or relative file name
 			$relname = str_ireplace('rel_', '', $name);
-			if(!empty($GLOBALS['photosizes'][$name])) return $this->zajlib->file->get_id_path($this->zajlib->baseurl."data/Photo", $this->id."-$name.".$this->extension);
+			if(!empty($GLOBALS['photosizes'][$name])) return $this->get_image($name);
 			else{
 				if(!empty($GLOBALS['photosizes'][$relname])) return $this->zajlib->file->get_id_path("data/Photo", $this->id."-$relname.".$this->extension);
 				else return parent::__get($name);
@@ -133,7 +133,7 @@ class Photo extends zajModel {
 	public function get_image($size = 'normal'){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
-		return $this->zajlib->file->get_id_path($this->zajlib->baseurl."data/Photo", $this->id."-$size.".$this->extension);
+		return $this->zajlib->baseurl.$this->zajlib->file->get_id_path("data/Photo", $this->id."-$size.".$this->extension);
 	}
 
 	/**
