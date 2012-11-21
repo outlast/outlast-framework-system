@@ -52,7 +52,7 @@ class zajlib_file extends zajLibExtension {
 	function get_files_in_dir($path, $recursive = false, $mode = "files", $hidden_files_and_folders = false){
 		$files = $folders = array();
 		// validate path
-			$path = $this->zajlib->basepath.$this->folder_check($path, "Invalid path requested for get_files_in_dir.");
+			$path = $this->folder_check($path, "Invalid path requested for get_files_in_dir.");
 		// check if folder
 			if(!is_dir($path)) return array();
 		// else, fetch files in folder		
@@ -142,7 +142,7 @@ class zajlib_file extends zajLibExtension {
 	 **/
 	function get_time_path($basepath,$filename,$timestamp = 0,$create_folders_if_they_dont_exist = true,$include_day=true){
 		// Validate path
-			$basepath = $this->zajlib->basepath.$this->folder_check($basepath, "Invalid path requested for get_time_path.");
+			$basepath = $this->folder_check($basepath, "Invalid path requested for get_time_path.");
 		// Validate file
 			$filename = $this->file_check($filename, "Invalid file requested for get_time_path.");
 		// defaults and error checks
@@ -207,7 +207,7 @@ class zajlib_file extends zajLibExtension {
 	 **/
 	function get_mime_type($filename) {
 		// Validate path
-			$filename = $this->zajlib->basepath.$this->file_check($filename, "Invalid file requested for get_mime_type.");
+			$filename = $this->file_check($filename, "Invalid file requested for get_mime_type.");
 		// Define mime types
 	        $mime_types = array(
 	            'txt' => 'text/plain',
