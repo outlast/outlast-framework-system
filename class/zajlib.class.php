@@ -77,6 +77,11 @@ class zajLib {
 			 **/
 			public $https = false;			// boolean - am i in secure mode?
 			/**
+			 * Set to the current protocol. Can be http: or https:.
+			 * @var string
+			 **/
+			public $protocol = 'http:';
+			/**
 			 * Set to true if output to user has begun already.
 			 * @var boolean
 			 **/
@@ -191,7 +196,10 @@ class zajLib {
 			}
 		// autodetect my url
 			if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off") $this->https = false;
-			else $this->https = true;
+			else{
+				$this->https = true;
+				$this->protocol = 'https:';
+			}
 		// base url detection
 			$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($_SERVER['HTTP_HOST']).addslashes($_SERVER['REQUEST_URI'])).'/');
 			$this->subfolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
