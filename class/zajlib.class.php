@@ -715,7 +715,7 @@ class zajLibLoader{
 	}
 	
 	/**
-	 * Include a file.
+	 * Include a file as relative to the base path.
 	 * @param string $file_path The file path relative to the base path.
 	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
 	 * @param boolean $include_now If set to true (the default), the file will also be included. On false, only the file path will be returned (and $this->loaded will not be set to true!).
