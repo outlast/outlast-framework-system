@@ -39,7 +39,8 @@ class zajfield_files extends zajField {
 	 * @return Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
-		return File::fetch()->filter('parent',$object->id);
+		if(is_string($object)) return File::fetch()->filter('parent',$object);
+		else return File::fetch()->filter('parent',$object->id);
 	}
 	
 	/**

@@ -270,6 +270,7 @@ class zajlib_template_zajvariables {
 			// The current protocol (HTTP/HTTPS)
 				case 'protocol': return $this->zajlib->protocol;
 			// Domain and top level domain
+				case 'subdomain': return $this->zajlib->subdomain;
 				case 'domain': return $this->zajlib->domain;
 				case 'tld': return $this->zajlib->tld;
 			// True if https
@@ -278,6 +279,10 @@ class zajlib_template_zajvariables {
 				case 'locale': return $this->zajlib->lang->get();
 			// Mozajik version info and other stuff
 				case 'mozajik': return $this->zajlib->mozajik;
+			// Mobile detection (uses server-side detection)
+				case 'mobile': return $this->zajlib->browser->is_mobile();
+			// Platform detection (uses server-side detection, returns string from browser.lib.php)
+				case 'platform': return $this->zajlib->browser->get_platform();
 			// Referer
 				case 'referer': if(!empty($_SERVER['HTTP_REFERER'])) return $_SERVER['HTTP_REFERER']; else return '';
 			// User-agent

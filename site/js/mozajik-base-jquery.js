@@ -69,8 +69,10 @@
 	/**
 	 * Custom alerts, confirms, prompts
 	 **/
-	zaj.alert = function(message, options){
-		return alert(message);
+	zaj.alert = function(message, urlORfunction){
+		alert(message);
+		if(typeof urlORfunction == 'function') urlORfunction();
+		else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction);
 	};
 	zaj.confirm = function(message, urlORfunction){
 		// if the passed param is a function, then return confirmation as its param
@@ -100,6 +102,7 @@
 	 * @param relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
 	 **/
 		zaj.redirect = function(relative_or_absolute_url){
+			if(typeof relative_or_absolute_url == 'undefined' || !relative_or_absolute_url) return false;
 			// Is it relative?
 			if(relative_or_absolute_url.substr(0,2) != '//' && relative_or_absolute_url.substr(4, 3) != "://" && relative_or_absolute_url.substr(5, 3) != "://") window.location = zaj.baseurl+relative_or_absolute_url;
 			else window.location = relative_or_absolute_url;
@@ -109,8 +112,7 @@
 
 
 	/**
-	 * Redirect to a page relative to baseurl or absolute.
-	 * @param relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
+	 * Ajax methods.
 	 **/
 		zaj.ajax = {};
 			zaj.ajax.get = function(request,result){
@@ -135,7 +137,7 @@
 						else if(typeof result == "object") $(result).html(data);
 						else{
 							if(data == 'ok') zaj.redirect(result);
-							else alert(data);
+							else zaj.alert(data);
 						}
 					},
 					complete: function(jqXHR, textStatus){
@@ -226,7 +228,7 @@
 				if(typeof width == 'undefined') width = 500;
 				if(typeof height == 'undefined') height = 300;
 			// TODO: implement options
-			window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height="+height+",width="+width);
+			return window.open (url,"mywindow","status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height="+height+",width="+width);
 		};
 		zaj.open = zaj.window;
 

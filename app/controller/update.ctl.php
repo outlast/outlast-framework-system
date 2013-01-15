@@ -21,9 +21,11 @@
 						return $this->zajlib->security->protect_me($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], "Mozajik update");
 				}
 			// check for recommended updates
-			
 				if(defined('MOZAJIK_RECOMMENDED_HTACCESS_VERSION') && MOZAJIK_RECOMMENDED_HTACCESS_VERSION > $this->zajlib->htver) $this->zajlib->variable->htver_upgrade = MOZAJIK_RECOMMENDED_HTACCESS_VERSION;
 				if(defined('MOZAJIK_RECOMMENDED_CONFIG_VERSION') && MOZAJIK_RECOMMENDED_CONFIG_VERSION > $this->zajlib->zajconf['config_file_version']) $this->zajlib->variable->conf_upgrade = MOZAJIK_RECOMMENDED_CONFIG_VERSION;
+			// check for other stuff
+				$this->zajlib->variable->mysql_enabled = true; //$this->zajlib->zajconf['mysql_enabled'];
+
 			return true;
 		}
 		
@@ -31,12 +33,25 @@
 		 * Display main menu for update
 		 **/
 		function main(){
-			// mysql enabled?
-				$this->zajlib->variable->mysql_enabled = $this->zajlib->zajconf['mysql_enabled'];
 			// load menu
-				$this->zajlib->variable->title = "app update";
-				$this->zajlib->template->show("update/update-menu.html");						
+				$this->zajlib->template->show("update/base-update.html");						
 		}
+
+		/**
+		 * Run the deployment script
+		 **/
+		function deploy(){
+			// Run template update
+				$this->zajlib->variable->count = $this->template(false);
+			// Run unit tests
+				$this->test(false);
+			// Get test results
+				$this->zajlib->variable->testresults = $this->zajlib->template->block("update/update-test.html", "testresults", false, false, true);
+			// all is okay, continue with update
+				$this->zajlib->template->show("update/update-deploy.html");			
+		}
+
+
 
 		/**
 		 * Display the database update menu
@@ -65,12 +80,32 @@
 				$this->zajlib->load->library("model");
 				$db_update_result = $this->zajlib->model->update();
 				$db_update_todo = $this->zajlib->model->num_of_todo;
+			// start output
+				print "<div class='updatelog-results'>";
 			// now check if any errors
 				if($db_update_result[0] >= 0) print $db_update_result[1];
-				else exit("<input class='mozajik-update' type='hidden' id='update_result' value='$db_update_result[0]'><br>error: stopping update</body></html>");
+				else exit("<input class='mozajik-update' type='hidden' id='update_result' value='$db_update_result[0]'><br>error: stopping update</div></body></html>");
 			// now print the update_result
-				print "<input class='mozajik-update' type='hidden' id='update_result' value='$db_update_result[0]'><input class='mozajik-update' type='hidden' id='update_todo' value='$db_update_todo'></body></html>";
+				print "<input class='mozajik-update' type='hidden' id='update_result' value='$db_update_result[0]'><input class='mozajik-update' type='hidden' id='update_todo' value='$db_update_todo'></div></body></html>";
 			exit;
+		}
+
+		/**
+		 * Run all the unit tests.
+		 * @param boolean $show_results If set to true, it will display results.
+		 **/
+		function test($show_result = true){
+			// Prepare the tests
+				$this->zajlib->test->prepare_all();
+			// Run all
+				$result = $this->zajlib->test->run();
+			// Now return error if any error found
+				if(count($this->zajlib->variable->test->Errors) > 0){
+					header('HTTP/1.1 500 Internal Server Error');
+				}
+			// Display!
+				if($show_result) return $this->zajlib->template->show("update/update-test.html");
+				else return $result;
 		}
 
 		/**
@@ -141,10 +176,10 @@
 			// Load my version information
 				$this->zajlib->load->model('MozajikVersion');
 			// Define my statuses
-				$done = "<span style='color: green;'>Done.</span>";	
-				$todo = "<span style='color: red;'>Not done.</span>";
-				$optional = "<span style='color: grey;'>Optional.</span>";
-				$na = "<span style='color: grey;'>Not enabled.</span>";
+				$done = '<span class="label label-success">Done</span>';
+				$todo = '<span class="label label-important">Not done</span>';
+				$optional = '<span class="label label-info">Optional</span>';
+				$na = '<span class="label label-inverse">Not enabled</span>';
 				$ready_to_activate = true;
 				$ready_to_dbupdate = true;
 			// Check install status of plugins
@@ -160,8 +195,8 @@
 								$result = $this->zajlib->reroute($plugin.'/__install/', array($app_request, $zaj_app, $zaj_mode), false);
 							// __install should return a string if it fails, otherwise it is considered to pass
 								if(is_string($result) && $result == ZAJ_INSTALL_DONTCHECK) return true;
-								elseif(is_string($result)){ $plugin_text .= "<li>Checking plugin $plugin. <strong style='color: red;'>FAILED!</strong><pre style='font-family: monospace; border: 1px solid grey; padding: 10px; overflow: auto; background-color: #f5f5f5; '>$result</pre></li>"; $ready_to_activate = false; }
-								else $plugin_text .= "<li>Checking plugin $plugin... Ok.</li>";
+								elseif(is_string($result)){ $plugin_text .= "<li>Checking plugin $plugin. <span class='label label-important'>Failed</span><pre class='well' style='font-family: monospace; padding: 10px; overflow: auto; background-color: #f5f5f5; margin-top: 10px;'>$result</pre></li>"; $ready_to_activate = false; }
+								else $plugin_text .= "<li>Checking plugin $plugin... <span class='label label-success'>Done</span></li>";
 						}
 				}				
 			// Check status for each step
@@ -199,23 +234,23 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 	<!--[if lt IE 9]><script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/skeleton/base.css">
-	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/skeleton/skeleton.css">
-	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/skeleton/layout.css">
-	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/mozajik.css">
+	<link rel="stylesheet" href="<?php echo $this->zajlib->baseurl; ?>system/css/bootstrap/css/bootstrap.min.css">
 
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300" rel="stylesheet" type="text/css">
+	<link rel="shortcut icon" type="image/png" href="//localhost/wlp/system/img/outlast-favicon.png">
+	<link rel="stylesheet" type="text/css" href="//localhost/wlp/system/css/outlast-update.css?v3" media="all">
 
-	<script language="JavaScript" src="<?php echo $this->zajlib->baseurl; ?>system/js/mootools/mootools-core-1.3.js" type="text/javascript"></script>
-	<script language="JavaScript" src="<?php echo $this->zajlib->baseurl; ?>system/js/mootools/mootools-more-1.3.js" type="text/javascript"></script>	
-	<script language="JavaScript" src="<?php echo $this->zajlib->baseurl; ?>system/js/mozajik-base-1.3.js" type="text/javascript"></script>
+	<script language="JavaScript" src="<?php echo $this->zajlib->baseurl; ?>system/js/jquery/jquery-1.8.0.min.js" type="text/javascript"></script>
+	<script language="JavaScript" src="<?php echo $this->zajlib->baseurl; ?>system/js/mozajik-base-jquery.js" type="text/javascript"></script>
 
 </head>
 <body>
 	<div class="container">
-		<div class="sixteen columns">
+		<div class="row">
+			<div class="span12">
 			<br/><br/>
-			<h1>Mozajik Installation</h1>
-			<h3>Welcome to the Mozajik Framework installation for version <?php echo MozajikVersion::$major; ?>.<?php echo MozajikVersion::$minor; ?>.<?php echo MozajikVersion::$build; ?> <?php if(MozajikVersion::$beta) echo "beta"; ?></h3>
+			<h1>Outlast Framework Installation</h1>
+			<h3>Welcome to the Outlast Framework installation for version <?php echo MozajikVersion::$major; ?>.<?php echo MozajikVersion::$minor; ?>.<?php echo MozajikVersion::$build; ?> <?php if(MozajikVersion::$beta) echo "beta"; ?></h3>
 			<?php if($this->zajlib->debug_mode){ ?><h5><span style="color: red;">Attention!</span> This installation will be running in <strong>debug mode</strong>. This is not recommended for production sites!</h5><?php } ?>
 			<hr/>
 			<ul>
@@ -228,18 +263,27 @@
 				<li>Create an update user and password in /site/index.php (required if in production mode). - <?php echo $status_updatepass; ?></li>
 				<li>Update the database (if mysql is enabled). - <?php echo $status_dbupdate; ?></li>
 				<li>Activate this installation. - <?php echo $status_activate; ?></li>
-				<?php if($ready_to_activate && $status_activate == $done){ ?><p class="center">Your installation is currently <span style="color:green;">activated</span>. Go to the <a href="<?php echo $this->zajlib->baseurl; ?>">home page</a>.</p><?php } ?>
+				<?php if($ready_to_activate && $status_activate == $done){ ?><br/><div class="alert alert-success center">Your installation is currently <span style="color:green;">activated</span>. Go to the <a href="<?php echo $this->zajlib->baseurl; ?>">home page</a>.</div><?php } ?>
 			</ol>
 			<hr/>
+			</div>
 		</div>
-		<div class="five columns center">
-			<input type="button" onclick="zaj.reload();" value="Recheck install status">
+		<div class="row">
+			<div class="span4 center">
+				<input class="btn" type="button" onclick="zaj.reload();" value="Recheck install status">
+			</div>
+			<div class="span4 center">
+				<input class="btn btn-primary" type="button" onclick="zaj.open('<?php echo $this->zajlib->baseurl; ?>update/database/', 1000, 500);" <?php if(!$ready_to_dbupdate){ ?>disabled="disabled"<?php } ?> value="Update the database">
+			</div>
+			<div class="span4 center">
+				<input class="btn btn-success" type="submit" onclick="window.location = '<?php echo $this->zajlib->baseurl; ?>update/install/go/';" <?php if(!$ready_to_activate || $status_activate == $done){ ?>disabled="disabled"<?php } ?> value="Activate this installation">			
+			</div>
 		</div>
-		<div class="five columns center">
-			<input type="button" onclick="zaj.open('<?php echo $this->zajlib->baseurl; ?>update/database/', 1000, 500);" <?php if(!$ready_to_dbupdate){ ?>disabled="disabled"<?php } ?> value="Update the database">
-		</div>
-		<div class="five columns center">
-			<input type="submit" onclick="window.location = '<?php echo $this->zajlib->baseurl; ?>update/install/go/';" <?php if(!$ready_to_activate || $status_activate == $done){ ?>disabled="disabled"<?php } ?> value="Activate this installation">			
+		<div class="row">
+			<div class="span12 center">
+				<br/>
+				<a href="<?php echo $this->zajlib->baseurl; ?>update/">Back to the update page</a>
+			</div>
 		</div>
 	</div>
 </body>

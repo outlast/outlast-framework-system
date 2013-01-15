@@ -435,13 +435,15 @@ class zajFetcher implements Iterator, Countable{
 				$filters_sql = '';
 				foreach($this->filters as $key=>$filter){
 					// pre-process input parameters
-						// explode my filter into a list
+						// Explode my filter into a list
 							list($field, $value, $logic, $type) = $filter;
-							// process type
-								if($type == "OR" || $type == "||") $type = "||";
-								else $type = "&&";
-							// verify logic
-								if($logic != "SOUNDS LIKE" && $logic != "LIKE" && $logic != "NOT LIKE" && $logic != "REGEXP" && $logic != "NOT REGEXP" && $logic != "!=" && $logic != "==" && $logic != "=" && $logic != "<=>" && $logic != ">" && $logic != ">=" && $logic != "<" && $logic != "<=") return $GLOBALS['zajlib']->warning("Fetcher class could not generate query. The logic parameter ($logic) specified is not valid.");
+						// Validate the field name
+							if(!$GLOBALS['zajlib']->db->verify_field($field)) return $GLOBALS['zajlib']->warning("Field '$classname.$field' contains invalid characters and did not pass safety inspection!");
+						// Now process type
+							if($type == "OR" || $type == "||") $type = "||";
+							else $type = "&&";
+						// Verify logic param
+							if($logic != "SOUNDS LIKE" && $logic != "LIKE" && $logic != "NOT LIKE" && $logic != "REGEXP" && $logic != "NOT REGEXP" && $logic != "!=" && $logic != "==" && $logic != "=" && $logic != "<=>" && $logic != ">" && $logic != ">=" && $logic != "<" && $logic != "<=") return $GLOBALS['zajlib']->warning("Fetcher class could not generate query. The logic parameter ($logic) specified is not valid.");
 						// if $value is a model object, use its id
 							if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
 

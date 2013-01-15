@@ -323,22 +323,42 @@ EOF;
 					case '$this->zajlib->variable->or':		$string .= "|| ";
 															$param_ok = true;	
 															break;
-					case '$this->zajlib->variable->gt':		$string .= "> ";
+					case '$this->zajlib->variable->gt':	
+					case '>':	
+															$string .= "> ";
 															$param_ok = true;	
 															break;
-					case '$this->zajlib->variable->lt':		$string .= "< ";
+					case '$this->zajlib->variable->lt':
+					case '<':	
+															$string .= "< ";
 															$param_ok = true;	
 															break;
-					case '$this->zajlib->variable->eq':		$string .= "== ";
+					case '$this->zajlib->variable->eq':		
+					case '=':
+					case '==':
+
+															$string .= "== ";
 															$param_ok = true;	
 															break;
-					case '$this->zajlib->variable->lteq':	$string .= "<= ";
-															$param_ok = true;	
+					case '$this->zajlib->variable->lteq':
+					case '<=':
+															$string .= "<= ";
+															$param_ok = true;
+															break;															
+					case '$this->zajlib->variable->gteq':
+					case '>=':
+															$string .= ">= ";
+															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->gteq':	$string .= ">= ";
-															$param_ok = true;	
+					case '!=':
+															$string .= "!= ";
+															$param_ok = true;
 															break;
-					default:	if(!$param_ok) $source->error("Proper operator expected! Only 'gt' and such are supported at this time!"); // fatal error!
+					case '$this->zajlib->variable->in':
+															$source->error("Use the |in filter instead!"); // fatal error
+															$param_ok = false;
+															break;
+					default:	if(!$param_ok) $source->error("Proper operator expected instead of $param!"); // fatal error
 								$string .= $param->variable.' ';
 								$param_ok = false;
 								break;

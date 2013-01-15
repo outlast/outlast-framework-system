@@ -58,7 +58,7 @@ class zajfield_serialized extends zajField {
 	 **/
 	public function get($data, &$object){
 		$result = unserialize($data);
-		if(!$result) $result = array();
+		if(!$result) $result = (object) array();
 		return $result;
 	}
 	

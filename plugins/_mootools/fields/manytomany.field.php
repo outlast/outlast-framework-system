@@ -109,8 +109,8 @@ class zajfield_manytomany extends zajField {
 	public function save($data, &$object, $additional_fields=false){
 		$field_name = $this->name;
 		
-		// is data a fetcher object? if so, add them
-			if(is_object($data) && is_a($data, 'zajFetcher')){
+		// is data a fetcher object or an array of objects? if so, add them
+			if(is_array($data) || is_object($data) && is_a($data, 'zajFetcher')){
 				foreach($data as $id=>$otherobject){					
 					// only save if not connected already (TODO: make this an option!)
 						//if(!$object->data->$field_name->is_connected($otherobject))					
@@ -122,7 +122,7 @@ class zajfield_manytomany extends zajField {
 				// add me
 					$object->data->$field_name->add($data);
 			}
-		// is data an array?
+		// is data a string of json data?
 		 	elseif(is_string($data) && !empty($data)){
 			 	$othermodel = $this->options['model'];
 		 		$data = json_decode($data);

@@ -23,7 +23,15 @@ define('regexp_zaj_onefilter', '\|(([A-z]*)([ ]*(:)[ ]*)?)?(\'(.*?)[^\\\']\'|\"(
 /**
  * Regular expression to one tag parameter (including filter support).
  */
-define('regexp_zaj_oneparam', '([A-z]*[ ]*=[ ]*)?(\'(.*?)\'|\"(.*?)\"|[A-z.\-_0-9#]*)('.regexp_zaj_onefilter.")*");
+define('regexp_zaj_oneparam', '(\'(.*?)\'|\"(.*?)\"|(<=|>=|!=|==|>|<)|[A-z.\-_0-9#]*)('.regexp_zaj_onefilter.")*");
+/**
+ * Regular expression to one tag variable.
+ */
+define('regexp_zaj_variable', '/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/');
+/**
+ * Regular expression to tag operator.
+ */
+define('regexp_zaj_operator', '/(<=|>=|!=|==|>|<)/');
 
 /**
  * One compile session, which may include several source and destination files.
@@ -254,6 +262,7 @@ class zajCompileSource {
 	// instance variables
 		private $file;					// file pointer - source file
 		private $current_line = '';		// string - contains the current line's string (or part of it)
+		private $current_tag = '';		// string - contains the current tag being processed
 		private $line_number = 0;		// int - number of the current line in this file
 		private $file_path;				// string - full path to the source file
 		private $requested_path;		// string - the relative path to the source file
@@ -303,7 +312,7 @@ class zajCompileSource {
 		// check for php related stuff (but only if parsing is on)
 			if($this->parse){
 				// disable PHP tags
-					if(preg_match("/<[\?%](php| |\\n)+/", $this->current_line) > 0) return $this->zajlib->error("cannot use PHP or ASP tags in template files: &lt;?, &lt;?php, or &lt;% are all forbidden.");
+					if(preg_match("/<[\?%](php| |\\n)+/", $this->current_line) > 0) return $this->zajlib->error("cannot use PHP or ASP tags in template file ($this->file_path): &lt;?, &lt;?php, or &lt;% are all forbidden.");
 				// now replace any other codes in line (<?xml for example)
 					$this->current_line = preg_replace("/(<[\?%][A-z]*)/", '<?php print "${1}"; ?>', $this->current_line);				
 			}
@@ -321,6 +330,7 @@ class zajCompileSource {
 					$full = trim($currentmatches[0][0], '{} ');
 					$element_name = $currentmatches[1][0];
 					$parameters = $currentmatches[2][0];
+					$this->current_tag = $element_name;
 				// calculate new offset
 					$my_offset = $currentmatches[3][1] + 2;
 				// write everything up to this tag to file
@@ -412,6 +422,10 @@ class zajCompileSource {
 	}
 	public function get_level(){
 		return $this->level;
+	}
+	public function get_current_tag(){
+		// returns the current tag being processed			
+		return $this->current_tag;
 	}
 	
 	// Read-only access to variables!
@@ -564,20 +578,22 @@ class zajCompileTag extends zajCompileElement {
 		// set paramtext & tag
 			$this->paramtext = $parameters;
 			$this->tag = $element_name;
-		// process parameters
-			// now match all the parameters
-				preg_match_all('/'.regexp_zaj_oneparam.'/', $parameters, $param_matches, PREG_PATTERN_ORDER);//PREG_SET_ORDER
-			// grab parameter plus filters (all are at odd keys (why?))
-				foreach($param_matches[0] as $param){
-					if(!empty($param)){
-						// create a compile variable
-							$pobj = new zajCompileVariable($param, $this->parent);
-						// set to parameter mode
-							$pobj->set_parameter_mode(true);
-						// set as a parameter
-							$this->parameters[$this->param_count++] = $pobj;
-					}						
-				}			
+			if(!empty($parameters)){
+				// process parameters
+					// now match all the parameters
+						preg_match_all('/'.regexp_zaj_oneparam.'/', $parameters, $param_matches, PREG_PATTERN_ORDER);//PREG_SET_ORDER
+					// grab parameter plus filters (all are at odd keys (why?))
+						foreach($param_matches[0] as $param){
+							if(!empty($param)){
+								// create a compile variable
+									$pobj = new zajCompileVariable($param, $this->parent);
+								// set to parameter mode
+									$pobj->set_parameter_mode(true);
+								// set as a parameter
+									$this->parameters[$this->param_count++] = $pobj;
+							}						
+						}
+			}
 	}
 		
 	public function write(){
@@ -747,12 +763,27 @@ class zajCompileElement{
 			else{
 				$var_elements = explode('.',$variable);
 				$new_var = '$this->zajlib->variable';
-				// run through each part
+				// Run through each variable. Variables are valid in three ways: (1) actual variable, (2) numerical, or (3) operator in if tag
 				foreach($var_elements as $element){
-					// validate each one: must start with a letter!
-						if(preg_match('/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', $element) <= 0){
-							$this->parent->warning("invalid variable found: $variable!");
-							return '$empty';
+					// (1) Is it an actual variable?
+						if(preg_match(regexp_zaj_variable, $element) <= 0){							
+							// (2) Is it an operator in an if tag
+							if(preg_match(regexp_zaj_operator, $element) <= 0){
+								// (3) Is it a numerical value
+								if(is_numeric($variable)) $new_var = $element;
+								else{
+									// Nothing worked, this is just invalid...STOP!
+									$this->parent->error("invalid variable/operator found: $variable!");
+								}
+							}
+							else{
+								// This is an operator! So now let's make sure this is an if tag
+								if($this->parent->get_current_tag() != 'if'){
+									$this->parent->warning("operator $variable is only supported for 'if' tags!");
+									return '$empty';
+								}
+								else $new_var = $element;
+							}
 						}
 						else $new_var .= '->'.$element;
 				}

@@ -55,13 +55,13 @@ EOF;
 		return true;
 	}
 	/**
-	 * Filter: count - Return the LIMITed count of a fetcher object. (This will be the number of rows returned taking into account LIMITs)
+	 * Filter: count - Return the LIMITed count of a fetcher object. (This will be the number of rows returned taking into account LIMITs). This also works on arrays (where the number of items are returned) or any other data type (where 1 will be returned).
 	 *
 	 *  <b>{{fetcher|count}}</b> See {@link zajFetcher->count} for more details.
 	 **/
 	public function filter_count($parameter, &$source){
 		// write to file
-			$this->zajlib->compile->write('if(is_object($filter_var) && !class_implements("Countable")) $filter_var = count((array) $filter_var); else $filter_var=count($filter_var);');
+			$this->zajlib->compile->write('if(is_object($filter_var) && class_implements("Countable") || is_array($filter_var)) $filter_var = count($filter_var); else $filter_var=count((array) $filter_var);');
 		return true;
 	}
 	/**
@@ -212,7 +212,7 @@ EOF;
 	/**
 	 * Filter: substr - Cuts a string at the given value. See also truncate.
 	 *
-	 *  <b>{{variable|truncate:'5'}}</b> Truncates the length of variable string to 5 characters. So 'Superdooper' will be 'Super...'
+	 *  <b>{{variable|substr:'5'}}</b> Truncates the length of variable string to 5 characters. So 'Superdooper' will be 'Super'
 	 **/
 	public function filter_substr($parameter, &$source){
 			if(!$parameter) return $source->warning('substr filter parameter required!');
@@ -245,40 +245,56 @@ EOF;
 	}
 
 	/**
-	 * Filter: translate - Allows substitution of text values with a localized string.
+	 * Filter: translate - Translate a string to another locale.
 	 *
-	 * It is important to note that models MUST support this feature in order for this to work by including a 'translation' field (right now this is a serialized field named translation).
+	 * You must use a translation field as the input such as {{product.translation.name|translate:'hu_HU'}}. A warning will be generated if you try to use product.data.name instead.
 	 *
-	 * <b>{{product|translate:'name'}}</b> Will return the localized version of the product name based on the current language.
+	 * <b>{{product.translation.name|translate:'sk_SK'}}</b> Will return the localized version of the product name. Without the filter, the current locale's value is shown.
 	 *
 	 **/
 	public function filter_translate($parameter, &$source, $counter){
 		// If parameter is not defined, then the parameter is the current locale
-			if(empty($parameter)) return $source->warning('You must specify which field you want to translate for filter "translate".');
+			if(empty($parameter)) return $source->warning('You must specify which locale you want to translate to for filter "translate".');
 		// write to file
-			$this->zajlib->compile->write('$paramval = '.$parameter.'; $translate_var = $filter_var->data->translations->$paramval; $ori_var = $filter_var; $current_locale = $this->zajlib->lang->get(); $filter_var = $translate_var->$current_locale; if(empty($filter_var)){ $filter_var = $ori_var->data->$paramval; }');
-
-
-			//$this->zajlib->compile->write('$paramval = '.$parameter.'; $default_locale = $this->zajlib->zajconf["locale_default"]; $ori_filtervar = $filter_var; $translate_var = $filter_var->data->translations->$paramval; $filter_var = $translate_var->$default_locale; if(empty($filter_var)){ $filter_var = $ori_filtervar->data->$paramval; }');
-
+			$this->zajlib->compile->write('$paramval = '.$parameter.'; $filter_var = $filter_var->get_by_locale($paramval);');
 		return true;
 	}
 
 	/**
-	 * Filter: translate|into - You can use this to force translation into a specific language.
+	 * Filter: in - You can check if an item is contained within another. This is especially useful for lists.
 	 *
-	 * You must use info with the filter translate.
+	 * If you check in a list, it will look for an object within that list. If you check in a string, it will check if the string is in the other. This is very similar to django's in operator {@link https://docs.djangoproject.com/en/1.2/ref/templates/builtins/#in-operator}
 	 *
-	 * <b>{{product|translate:'name'|into:'de_DE'}}</b> Will return the german localized version of the product name.
+	 * <b>{{product|in:topproducts}}</b> Will return true if the object product is found within the list topproducts. Also works for arrays.
+	 * <b>{{'something'|in:'A sentence about something.'}}</b> Will return true if the string is located within the string.
 	 *
 	 **/
-	public function filter_into($parameter, &$source, $counter){
-		// If not used as second filter, warn!
-			if($counter < 2) return $source->warning('The filter "into" requires use of the filter "translate" first!');
-		// write to file
-			$this->zajlib->compile->write('$paramval = '.$parameter.'; $filter_var = $translate_var->$paramval;');
+	public function filter_in($parameter, &$source, $counter){
+		// If parameter is not defined, then the parameter is the current locale
+			if(empty($parameter)) return $source->warning('You must specify which variable you want to search in.');
+		// Generate some code
+			$content = <<<EOF
+// if search in zajfetcher list
+if(is_object($parameter) && is_a($parameter, "zajFetcher")){
+	\$copy = clone {$parameter};
+	\$filter_var = \$copy->filter('id', \$filter_var)->total;
+}
+elseif(is_object($parameter)){
+	\$filter_var = in_array(\$filter_var, (array) $parameter);
+}
+elseif(is_array($parameter)){
+	\$filter_var = in_array(\$filter_var, $parameter);
+}
+else{
+	if(strstr($parameter, \$filter_var) !== false) \$filter_var = true;
+	else \$filter_var = false;
+}
+EOF;
+		$this->zajlib->compile->write($content);
 		return true;
 	}
+
+
 }
 
 

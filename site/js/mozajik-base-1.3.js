@@ -549,8 +549,11 @@ Mozajik.implement({
 	/**
 	 * Custom alerts, confirms, prompts
 	 **/
-	alert: function(message, options){
-		return alert(message);
+	alert: function(message, urlORfunction){
+		alert(message);
+		// if the passed param is a function, then return confirmation as its param
+		if(typeof urlORfunction == 'function') urlORfunction();
+		else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction);
 	},
 	confirm: function(message, urlORfunction){
 		// if the passed param is a function, then return confirmation as its param

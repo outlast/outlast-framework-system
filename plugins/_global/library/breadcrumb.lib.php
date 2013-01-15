@@ -4,6 +4,7 @@
  * @author Aron Budinszky <aron@mozajik.org>
  * @version 3.0
  * @package Library
+ * @depricated
  **/
 
 class zajlib_breadcrumb extends zajLibExtension {

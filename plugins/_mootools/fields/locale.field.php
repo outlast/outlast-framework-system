@@ -72,7 +72,7 @@ class zajfield_locale extends zajField {
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
 	public function save($data, &$object){
-		return $data;	
+		return array($data, $data);	
 	}
 
 }

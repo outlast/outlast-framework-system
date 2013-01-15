@@ -134,18 +134,32 @@ class zajlib_lang extends zajlib_config {
 			return $this->get();
 		}
 
+		/**
+		 * Get default locales.
+		 * @return string Returns the hard-coded default locale.
+		 **/
+		function get_default_locale(){
+			return $this->default_locale;
+		}
+
+		/**
+		 * Returns true if the current locale is the default locale.
+		 * @return boolean True if the current locale, false otherwise.
+		 **/
+		function is_default_locale(){
+			return ($this->default_locale == $this->get());
+		}
+
 	/**
 	 * All locales.
 	 **/
 		/**
 		 * Get all locales.
-		 * @return array Returns an array of all available locales
+		 * @return array Returns an array of all available locales.
 		 **/
 		function get_locales(){
 			return $this->available_locales;
 		}
-
-
 
 	/**
 	 * Template loading based on current locale.

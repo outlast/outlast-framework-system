@@ -109,16 +109,19 @@ class File extends zajModel {
 	 * Creates a file object from a file or url.
 	 * @param string $urlORfilename The url or file name.
 	 * @param zajObject $parent My parent object. If not specified, none will be set.
+	 * @param string $field The parent-field in which the file is to be stored.
 	 * @return Photo Returns the new photo object or false if none created.
 	 **/
-	public static function create_from_file($urlORfilename, $parent = false){
+	public static function create_from_file($urlORfilename, $parent = false, $field = false){
 		// ok, now copy it to uploads folder
 			$updest = basename($urlORfilename);
 			@mkdir($GLOBALS['zajlib']->basepath."cache/upload/", 0777, true);
 			copy($urlORfilename, $GLOBALS['zajlib']->basepath."cache/upload/".$updest);
 		// now create and set image
 			$pobj = File::create();
+			if(is_object($parent)) $parent = $parent->id;
 			if($parent !== false) $pobj->set('parent', $parent);
+			if($field !== false) $pobj->set('field', $field);
 			return $pobj->set_file($updest);
 	}
 	/**

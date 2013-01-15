@@ -42,6 +42,20 @@ class zajlib_file extends zajLibExtension {
 	}
 
 	/**
+	 * Sanitize a file name by removing all special characters.
+	 * @param string $filename The original file name.
+	 * @return string The sanitized file name.
+	 **/
+	function sanitize($filename){
+		$special_chars = array("?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", "\"", "&", "$", "#", "*", "(", ")", "|", "~", "`", "!", "{", "}");
+		$filename = str_replace($special_chars, '', $filename);
+		$filename = preg_replace('/[\s-]+/', '-', $filename);
+		$filename = $this->zajlib->lang->convert_eng($filename);
+		$filename = trim($filename, '.-_');
+		return $filename;
+	}
+
+	/**
 	 * Returns an array of files found in this folder. If set to recursive, the file paths will be returned relative to the specified path.
 	 * @param string $path The path to check for files.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.

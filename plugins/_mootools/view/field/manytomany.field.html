@@ -1,8 +1,8 @@
 <p align="center" class='{{field.name}}loading' id='{{field.name}}loading'><br/><br/>Loading selected {{field.name}}...</p>
-<p align="center" class='articleselect togglers'><a onclick="$('{{field.name}}select').getElements('div').each(function(el){ toggle_{{field.name}}(el); });">toggle</a></p>
+<p align="center" class='articleselect togglers'><a onclick="$('{{field.name}}select').getElements('div').each(function(el){ toggle_{{field.name}}(el); });">kijelölés megfordítása</a></p>
 <div class='articleselect hidden' id='{{field.name}}select'>
 	{% foreach field.choices as val %}			
-		<div class='list select {% cycle 'l1' 'l2' %}' id='{{val.id}}' onclick="toggle_{{field.name}}(this);"> {{val.name}}</div>
+		<div class='list select {% cycle 'l1' 'l2' %}' id='{{val.id}}' onclick="toggle_{{field.name}}(this);"> {{val.name}} {% if val.hierarchy %} - {% foreach val.hierarchy as parent %}{{parent.name}}/{% endforeach %}{% endif %}</div>
 	{% else %}
 		No {{field.name}}.
 	{% endfor %}

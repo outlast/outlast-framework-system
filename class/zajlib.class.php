@@ -57,12 +57,12 @@ class zajLib {
 			 **/
 			public $subdomain="";
 			/**
-			 * The currently requested app.
+			 * The currently requested app with trailing slash. Default for example will be 'default/'.
 			 * @var string
 			 **/
 			public $app;
 			/**
-			 * The currently requested mode.
+			 * The currently requested mode with trailing slash.
 			 * @var string
 			 **/
 			public $mode;
@@ -97,7 +97,7 @@ class zajLib {
 			 **/
 			public $model_autoloading = true;
 			/**
-			 * An array which stores the configuration values.
+			 * An array which stores the configuration values set in site/index.php.
 			 * @var array
 			 **/
 			public $zajconf;
@@ -267,19 +267,20 @@ class zajLib {
 
 	/**
 	 * Returns an error message and exists. Useful for fatal errors.
-	 * @param string $message
+	 * @param string $message The error message to display and/or log.
 	 **/
 	public function error($message){
 		// Load error reporting lib
 			$error = $this->load->library('error');
-		// Now report the error
+		// Now report the error and send 500 error
+			if(!$this->output_started) header('HTTP/1.1 500 Internal Server Error');
 			$error->error($message);
 			exit;
 	}
 
 	/**
 	 * Returns a warning message but continues execution.
-	 * @param string $message
+	 * @param string $message The warning message to display and/or log.
 	 **/
 	public function warning($message){
 		// Load error reporting lib
@@ -303,12 +304,12 @@ class zajLib {
 
 	/**
 	 * Displays a notice in the browser log.
-	 * @param string $message
+	 * @param string $message The notice message to log.
 	 **/
 	function notice($message){
 		// todo: log this instead of printing it?
 			if(isset($_GET['notice'])){
-				if($_GET['notice']=="screen") print "<div style='border: 2px red solid; padding: 5px;'>MOZAJIK NOTICE: $message</div>";
+				//if($_GET['notice']=="screen") print "<div style='border: 2px red solid; padding: 5px;'>MOZAJIK NOTICE: $message</div>";
 				//else $this->js_log .= " zaj.ready(function(){zaj.log('ZAJLIB NOTICE: ".str_replace("'","\\'",$message)."'); });";
 			}
 			$this->num_of_notices++;
@@ -494,6 +495,7 @@ class zajLibLoader{
 	 * @param string $file_name The relative file name of the controller to load.
 	 * @param array $optional_parameters An array or a single parameter which is passed as the first parameter to __load()
 	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
+	 * @return boolean Returns whatever the __load() method returns. This should be a boolean value. Explicit false value means trouble.
 	 * @todo Rewrite $controller_name generation to regexp
 	 **/
 	public function controller($file_name, $optional_parameters=false, $call_load_method=true){
@@ -507,9 +509,9 @@ class zajLibLoader{
 			$controller_class = 'zajapp_'.$controller_name;
 		// Create a new object
 			$cobj = new $controller_class($this->zajlib, $controller_name);
-			if($call_load_method && method_exists($cobj, "__load")) $cobj->__load($optional_parameters);
-		// Return the controller object
-			return $cobj;
+			if($call_load_method && method_exists($cobj, "__load")) return $cobj->__load($optional_parameters);
+		// Return true since no __load method
+			return true;
 	}
 
 
@@ -635,7 +637,12 @@ class zajLibLoader{
 			$app_object_name = "zajapp_".$zaj_app;
 			$my_app = new $app_object_name($this->zajlib, $zaj_app);
 		// fire __load magic method if call_load_method is true
-			if($call_load_method && method_exists($my_app, "__load")) $my_app->__load($zaj_mode, $optional_parameters);
+			$load_result = true;
+			if($call_load_method && method_exists($my_app, "__load")){
+				$load_result = $my_app->__load($zaj_mode, $optional_parameters);
+			}
+		// if __load() explicitly returns false, then do not continue with but instead return false
+			if($load_result === false) return false;
 					
 		// if method does not exist, call __error
 			// TODO: make errors go backwards as well: check child folder's default controllers first!
@@ -673,6 +680,7 @@ class zajLibLoader{
 	 * Load a js file runtime.
 	 * @param string $file_path The file path relative to the system or site folder.
 	 * @param boolean $check_if_exists Not implemented.
+	 * @depricated
 	 **/
 	public function js($file_path, $check_if_exists = false){
 		// is it loaded already?
@@ -691,6 +699,7 @@ class zajLibLoader{
 	 * Load a css file runtime.
 	 * @param string $file_path The file path relative to the system or site folder.
 	 * @param boolean $check_if_exists Not implemented.
+	 * @depricated
 	 **/
 	public function css($file_path, $check_if_exists = false){
 		// is it loaded already?

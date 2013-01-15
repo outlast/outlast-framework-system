@@ -149,6 +149,7 @@ class zajlib_filter_base extends zajElementCollection{
 	 *  1. <b>type</b> - The type of encoding to peform. Values can be: <b>html (default), htmlentities, htmlall, url, quotes, javascript, js, mail, htmlspecialchars, htmlquotes</b>
 	 * 	
 	 * 	htmlentities, htmlall: convert all applicable characters to HTML codes.
+	 *  decode: convert all html entities to characters. this is html_entity_decode().
 	 *  url: encode url entities (such as ? or &)
 	 *  quotes, javascript, js: escape new lines and quotes with \
 	 *  mail: convert the string to a user[at]domain[dot]com for some minimal spam protection
@@ -163,6 +164,8 @@ class zajlib_filter_base extends zajElementCollection{
 switch($parameter){
 	case 'htmlentities':
 	case 'htmlall': \$filter_var = htmlentities(\$filter_var, ENT_QUOTES, 'UTF-8', false);
+					break;
+	case 'decode':	\$filter_var = html_entity_decode(\$filter_var);
 					break;
 	case 'url':		\$filter_var = urlencode(\$filter_var);
 					break;
@@ -258,11 +261,20 @@ EOF;
 		return true;
 	}
 
+	/**
+	 * Filter: force_escape - Here for full compatibility with Django. Exactly the same as escape.
+	 **/
 	public function filter_force_escape($parameter, &$source){
-		// write to file
-			// TODO: add
-		return true;
+		return $this->filter_escape($parameter, $source);
 	}
+
+
+	/**
+	 * Filter: get_digit - Given a whole number, returns the requested digit, where 1 is the right-most digit, 2 is the second-right-most digit, etc. Returns the original value for invalid input (if input or argument is not an integer, or if argument is less than 1). Otherwise, output is always an integer.
+	 *
+	 *  <b>{{ value|get_digit:2 }}</b> If value is 123456789, the output will be 8.
+	 **/
+
 	public function filter_get_digit($parameter, &$source){
 		// write to file
 			// TODO: add
@@ -280,9 +292,16 @@ EOF;
 		return true;
 	}
 
+	/**
+	 * Filter: join - Joins a list with a string, like PHP's implode.
+	 *
+	 *  <b>{{ value|join:' // ' }}</b> If value is the list ['a', 'b', 'c'], the output will be the string "a // b // c".
+	 **/
 	public function filter_join($parameter, &$source){
+		// Parameter defaults to ','
+			if(!$parameter) $parameter = '","';
 		// write to file
-			// TODO: add
+			$this->zajlib->compile->write('if(is_array($filter_var) || is_a($filter_var, "zajFetcher")) $filter_var = implode($filter_var, '.$parameter.');');
 		return true;
 	}
 

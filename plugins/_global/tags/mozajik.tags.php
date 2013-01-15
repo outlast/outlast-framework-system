@@ -21,7 +21,8 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	 *  1. <b>model_field</b> - The field name defined in the model. The format is model_name.field_name.
 	 *  2. <b>default_value</b> - The default value. This will usually be the existing data of the model object.
 	 *  <b>{% input user.password user.data.password 'custom.field.html' %}</b>
-	 *  3. <b>custom_html</b> - If you want to use a custom HTML to generate your own field editor then you can specify the html relative to any of the view directories.
+	 *  3. <b>locale|custom_html</b> - If the fourth parameter is set, this field is the locale and the next is custom_html. If only three are set, this is custom_html. See next parameter for custom_html.
+	 *  4. <b>custom_html</b> - If you want to use a custom HTML to generate your own field editor then you can specify the html relative to any of the view directories.
 	 **/
 	public function tag_input($param_array, &$source){
 		// check for required param
@@ -33,11 +34,25 @@ class zajlib_tag_mozajik extends zajElementCollection{
 		// id or options
 			$id = $template = '';
 			$value = $param_array[1]->variable;
-			if(!empty($param_array[2])) $template = ', '.$param_array[2]->variable;
-		// generate content
-					
-			// get field object
-				$field_object = $classname::__field($fieldname);
+		// get field object
+			$field_object = $classname::__field($fieldname);
+		// are we in locale mode?
+			if(isset($param_array[3])){
+				// update field name with locale data
+					$fieldname = "translation[".$fieldname."][{".$param_array[2]->variable."}]";
+					// if it is a translation variable, then localize it!
+					if(strstr($param_array[1]->variable, '->translation->') !== false) $value = $param_array[1]->variable.'->get_by_locale('.$param_array[2]->variable.')';
+				// generate template based on type unless specified
+					if(!empty($param_array[3])) $template = trim($param_array[3]->variable, "'\"");
+					else $template = $field_object::edit_template;
+			}
+		// we are in compatibility mode!
+			else{
+				// generate template based on type unless specified
+					if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
+					else $template = $field_object::edit_template;
+			}
+		// generate content					
 			// generate options
 				$options_php = $this->zajlib->array->array_to_php($field_object->options);
 			// create an empty field object
@@ -48,9 +63,6 @@ class zajlib_tag_mozajik extends zajElementCollection{
 				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->name = "'.$fieldname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
 			// add set value
 				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
-			// generate template based on type unless specified
-				if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
-				else $template = $field_object::edit_template;
 			// now create form field
 				$this->zajlib->compile->compile($template);
 				//$this->zajlib->compile->write("insert file $template");
@@ -79,38 +91,17 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	public function tag_inputlocale($param_array, &$source){
 		// check for required param
 			if(empty($param_array[0])) $source->error("Tag {%inputlocale%} requires at least one parameter.");
-		// grab my class and field name
-			list($classname, $fieldname) = explode('.', $param_array[0]->vartext);
-		// check for required param
-			if(empty($classname) || empty($fieldname)) $source->error("Tag {%inputlocale%} parameter one needs to be in 'modelname.fieldname' format.");
-		// id or options
-			$id = $locale = '';
-			$value = preg_replace('/[^>]+$/', "translations->\\0", $param_array[1]->variable).'->$___locale';
-			if(!empty($param_array[2])) $locale = $param_array[2]->variable;
-			else $locale = '$this->zajlib->lang->get();';
-		// generate content
-					
-			// get field object
-				$field_object = $classname::__field($fieldname);
-			// generate options
-				$options_php = $this->zajlib->array->array_to_php($field_object->options);
-			// create an empty field object
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field = (object) array(); $___locale = '.$locale.'; ?>');
-			// callback
-				$field_object->__onInputGeneration($param_array, $source);			
-			// set stuff
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->name = "translations['.$fieldname.'][$___locale]"; $this->zajlib->variable->field->id = "field[translation]['.$fieldname.'][$___locale]"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
-			// add set value
-				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
-			// generate template based on type unless specified
-				if(!empty($param_array[3])) $template = trim($param_array[3]->variable, "'\"");
-				else $template = $field_object::edit_template;
-			// now create form field
-				$this->zajlib->compile->compile($template);
-				//$this->zajlib->compile->write("insert file $template");
-				$this->zajlib->compile->insert_file($template.'.php');		
-		// return debug_stats
-			return true;
+		// add defaults
+			if(empty($param_array[1])) $param_array[1] = '';
+			if(empty($param_array[2])) $param_array[2] = '$this->zajlib->lang->get()';
+			if(empty($param_array[3])) $param_array[3] = '';
+		// update param array and pass over to input
+			return $this->tag_input(array(
+					$param_array[0],
+					$param_array[1],
+					$param_array[2],
+					$param_array[3],
+				), $source);
 	}
 	
 	/**
@@ -277,19 +268,56 @@ EOF;
 	 * Tag: count - Loop which counts from the first value to the second and places it in the third param.
 	 *
 	 *  <b>{% count '1' '10' as counter %}{{counter}}. Commandment!{% endcount %}</b><br>
-	 *  <b>{% count from '1' to '10' as counter %}{{counter}}. Commandment!{% endcount %}</b>
+	 *  <b>{% count from '10' to '1' as counter %}{{counter}}. Countdown!{% endcount %}</b>
 	 *  1. <b>from</b> - Count from this number.
 	 *  2. <b>to</b> - Count to this number.
 	 *  3. <b>counter</b> - Use this variable to store the current counter value.
-	 * @todo Add support for counting down.
 	 **/
 	public function tag_count($param_array, &$source){
 		// pause the parsing
 			$source->add_level('count', '');
 		// generate a for loop
-			if($param_array[2]->variable == '$this->zajlib->variable->as') $contents = "<?php for({$param_array[3]->variable}={$param_array[0]->variable}; {$param_array[3]->variable}<={$param_array[1]->variable}; {$param_array[3]->variable}++){ ?>";
-			elseif($param_array[4]->variable == '$this->zajlib->variable->as') $contents = "<?php for({$param_array[5]->variable}={$param_array[1]->variable}; {$param_array[5]->variable}<={$param_array[3]->variable}; {$param_array[5]->variable}++){ ?>";
+			if($param_array[2]->variable == '$this->zajlib->variable->as'){
+				$contents = <<<EOF
+		<?php
+			if({$param_array[1]->variable} < {$param_array[0]->variable}){
+				\$count_from = {$param_array[1]->variable};
+				\$count_to = {$param_array[0]->variable};
+				\$count_reverse = true;
+			}
+			else{
+				\$count_from = {$param_array[0]->variable};
+				\$count_to = {$param_array[1]->variable};
+				\$count_reverse = false;
+			}
+			\$count_var =& {$param_array[3]->variable};	
+EOF;
+			}
+			elseif($param_array[4]->variable == '$this->zajlib->variable->as'){
+				$contents = <<<EOF
+		<?php
+			if({$param_array[3]->variable} <= {$param_array[1]->variable}){
+				\$count_from = {$param_array[3]->variable};
+				\$count_to = {$param_array[1]->variable};
+				\$count_reverse = true;
+			}
+			else{
+				\$count_from = {$param_array[1]->variable};
+				\$count_to = {$param_array[3]->variable};
+				\$count_reverse = false;
+			}
+			\$count_var =& {$param_array[5]->variable};
+EOF;
+			}
 			else $source->error("Incorrect syntax for tag {%count%}.");
+
+			$contents .= <<<EOF
+			for(\$count_var_real=\$count_from; \$count_var_real<=\$count_to; \$count_var_real++){
+				if(!\$count_reverse) \$count_var = \$count_var_real;
+				else \$count_var = \$count_to - \$count_var_real + \$count_from;
+EOF;
+			if($param_array[2]->variable == '$this->zajlib->variable->as') $contents .= "{$param_array[3]->variable} = \$count_var;?>";
+			else $contents .= "{$param_array[5]->variable} = \$count_var;?>";
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats

@@ -75,6 +75,11 @@ abstract class zajModel {
 		 **/
 		public static $in_database = true;
 		/**
+		 * Set to true if this object should have translations associated with it.
+		 * @var boolean
+		 **/
+		public static $has_translations = true;
+		/**
 		 * Set to DESC or ASC depending on the default fetch sort order.
 		 * @var string
 		 **/
@@ -113,6 +118,12 @@ abstract class zajModel {
 		 * @var zajData
 		 **/
 		private $data;
+
+		/**
+		 * Access to the database-stored translation data through the object's own {@link zajModelLocalizer} object.
+		 * @var zajModelLocalizer
+		 **/
+		private $translations;
 		
 	// Object event stack
 		/**
@@ -225,7 +236,7 @@ abstract class zajModel {
 				// first, is it already resumed? in this case let's make sure its the proper kind of object and just return it
 				if(is_object($id)){
 					// is it the proper kind of object? if not, warning, if so, return it
-						if(!is_a($id, $class_name)) return $this->zajlib->warning("You passed an object to $class_name::fetch(), but it was not a(n) $class_name object.");
+						if($class_name != $id->class_name) return $GLOBALS['zajlib']->warning("You passed an object to $class_name::fetch(), but it was not a(n) $class_name object. It is a $id->class_name instead.");
 						else return $id;
 				}
 				// not resumed, so let's assume its a string and return the cache
@@ -517,6 +528,10 @@ abstract class zajModel {
 				case "data":		if(!$this::$in_database) return false; 	// disable for non-database objects
 									if(!$this->data) return $this->data = new zajData($this);
 									return $this->data;
+				case "translation":
+				case "translations":if(!$this::$has_translations) return false; 	// disable where no translations available
+									if(!$this->translations) return $this->translations = new zajModelLocalizer($this);
+									return $this->translations;
 				case "autosave":	if(!$this::$in_database) return false; 	// disable for non-database objects
 									if(!$this->data) $this->data = new zajData($this);
 									// turn on autosave
@@ -558,7 +573,7 @@ abstract class zajModel {
 	 * @ignore
 	 */
 	public function __toString(){
-		$this->zajlib->warning("You tried using zajModel object {$this->class_name} as a string!");
+		return $this->__get('name');
 	}
 
 	/**
@@ -947,5 +962,101 @@ abstract class zajModelExtender {
 
 }
 
+/**
+ * This class allows the model data translations to be fetched easily.
+ * 
+ * @author Aron Budinszky <aron@mozajik.org>
+ * @package Model
+ * @subpackage DefaultModel
+ */
+class zajModelLocalizer {
+	/**
+	 * Create a new localizer object.
+	 **/
+	public function __construct($parent, $locale = false){
+		if($locale != false) $this->locale = $locale;
+		else $this->locale = $GLOBALS['zajlib']->lang->get();
+		$this->parent = $parent;
+	}
+
+	/**
+	 * Return data using the __get() method.
+	 **/
+	public function __get($name){
+		return new zajModelLocalizerItem($this->parent, $name, $this->locale);
+	}
+}
+
+/**
+ * Helper class for a specific localization item. You can 'print' it (__toString) to get the translation
+ * @todo Caching needs to be added to these!
+ **/
+class zajModelLocalizerItem {
+
+	/** Make all variables private **/
+	private $parent;
+	private $fieldname;
+	private $locale;
+
+	/**
+	 * Create a new localizer item.
+	 * @param zajModel $parent The parent object. This is not just the id, it's the object!
+	 * @param string $fieldname The field name of the parent object.
+	 * @param string $locale The locale of the translation.
+	 **/
+	public function __construct($parent, $fieldname, $locale){
+		$this->parent = $parent;
+		$this->fieldname = $fieldname;
+		$this->locale = $locale;
+	}
+
+	/**
+	 * Returns the translation for the object's set locale.
+	 **/
+	public function get(){
+		return $this->get_by_locale($this->locale);
+	}
+
+	/**
+	 * Returns the translation for the given locale. It can be set to another locale if desired. If nothing set, the global default value will be returned (not a translation).
+	 **/
+	public function get_by_locale($locale = false){
+		// Locale is not set or is default, so return the default value
+			if(empty($locale) || $locale == $GLOBALS['zajlib']->lang->get_default_locale()) return $this->parent->data->{$this->fieldname};
+		// A translation is requested, so let's retrieve it
+			$tobj = Translation::fetch_by_properties($this->parent->class_name, $this->parent->id, $this->fieldname, $locale);
+			if($tobj !== false) $field_value = $tobj->value;
+			else $field_value = "";
+		// check if translation filter is to be used
+			// TODO: ADD THIS!
+		// if not, filter through the usual get
+			if($this->parent->model->{$this->fieldname}->use_get){
+				// load my field object
+					$field_object = zajField::create($this->fieldname, $this->parent->model->{$this->fieldname});
+				// if no value, set to null (avoids notices)
+					if(empty($field_value)) $field_value = null;
+				// process get
+					return $field_object->get($field_value, $this->parent);
+			}
+		// otherwise, just return the unprocessed value
+		return $field_value;
+	}
+
+	/**
+	 * Invoked as an object so must return properties.
+	 **/
+	public function __get($name){
+		// Get the property of the value
+			return $this->get()->$name;
+	}
+
+	/**
+	 * Simply printing this object will result in the translation being printed.
+	 **/
+	public function __toString(){
+		// Get the value
+			return $this->get();
+	}
+}
 
 ?>

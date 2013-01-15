@@ -222,6 +222,8 @@ class Photo extends zajModel {
 		// ok, now copy it to uploads folder
 			$updest = basename($urlORfilename);
 			@mkdir($GLOBALS['zajlib']->basepath."cache/upload/", 0777, true);
+		// Verify new name is jailed
+			$GLOBALS['zajlib']->file->file_check($GLOBALS['zajlib']->basepath."cache/upload/".$updest);
 			copy($urlORfilename, $GLOBALS['zajlib']->basepath."cache/upload/".$updest);
 		// now create and set image
 			$pobj = Photo::create();
@@ -277,6 +279,8 @@ class Photo extends zajModel {
 		// Move uploaded file to tmp
 			@mkdir($GLOBALS['zajlib']->basepath.'cache/upload/');
 			$new_name = $GLOBALS['zajlib']->basepath.'cache/upload/'.$obj->id.'.tmp';
+		// Verify new name is jailed
+			$GLOBALS['zajlib']->file->file_check($new_name);
 			move_uploaded_file($tmp_name, $new_name);
 		// Now set and save
 			$obj->set('name', $orig_name);

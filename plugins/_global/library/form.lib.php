@@ -22,7 +22,7 @@ class zajlib_form extends zajLibExtension {
 				$valid_input = true;
 				foreach($arguments as $arg){
 					if(empty($_REQUEST[$arg])){
-						print "$arg is empty";
+						//print "$arg is empty";
 						$valid_input = false;
 						break;
 					}

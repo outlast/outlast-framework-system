@@ -614,6 +614,15 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				return mysql_real_escape_string($string_to_escape, $this->current_session->conn);
 		}
 
+		/**
+		 * Verify a field name.
+		 * @param string $field_name
+		 * @return boolean Returns true if success, false if not.
+		 **/
+		public function verify_field($field_name){
+			// use regexp to allow letters, numbers, and _
+				return preg_match("/[A-z0-9_]+/", $field_name);
+		}
 		
 		/**
 		 * Magic method to handle session calls to the default session.

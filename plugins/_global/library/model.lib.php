@@ -143,7 +143,7 @@ class zajlib_model extends zajLibExtension {
 									$my_difference = array_diff_assoc($field_data, $tables[$model_name][$field_name]);
 								// options available?
 									$my_option_difference = array_diff_assoc($field_data['option'], $tables[$model_name][$field_name]['option']);
-									
+
 								// if my difference exists
 									if(count($my_difference) > 0 || count($my_option_difference)){
 										/*print_r($field_data);
@@ -334,7 +334,7 @@ class zajlib_model extends zajLibExtension {
 			$remove_index = false;
 		// generate options & type declaration
 			if(is_array($field_data['option']) && count($field_data['option']) > 0){
-				foreach($field_data['option'] as $key=>$option) if(!is_numeric($option)) $field_data['option'][$key] = "'".addslashes($option)."'";
+				foreach($field_data['option'] as $key=>$option) if(!is_numeric($option) || $type == 'ENUM') $field_data['option'][$key] = "'".addslashes($option)."'";
 				$options = implode(',',$field_data['option']);
 				$type_dec = "$type($options)";
 			}
