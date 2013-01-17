@@ -13,6 +13,14 @@
 		function __load(){
 			// is update disabled?
 				if(!$this->zajlib->zajconf['update_enabled']) return exit("Update disabled.");
+
+			// check for recommended updates
+				if(defined('MOZAJIK_RECOMMENDED_HTACCESS_VERSION') && MOZAJIK_RECOMMENDED_HTACCESS_VERSION > $this->zajlib->htver) $this->zajlib->variable->htver_upgrade = MOZAJIK_RECOMMENDED_HTACCESS_VERSION;
+				if(defined('MOZAJIK_RECOMMENDED_CONFIG_VERSION') && MOZAJIK_RECOMMENDED_CONFIG_VERSION > $this->zajlib->zajconf['config_file_version']) $this->zajlib->variable->conf_upgrade = MOZAJIK_RECOMMENDED_CONFIG_VERSION;
+			// check for other stuff
+				$this->zajlib->variable->mysql_setting_enabled = $this->zajlib->zajconf['mysql_enabled'];
+
+
 			// am i not in debug mode?
 				if(!$this->zajlib->debug_mode){
 					// is my password defined?
@@ -20,11 +28,6 @@
 					// all is good, so authenticate
 						return $this->zajlib->security->protect_me($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], "Mozajik update");
 				}
-			// check for recommended updates
-				if(defined('MOZAJIK_RECOMMENDED_HTACCESS_VERSION') && MOZAJIK_RECOMMENDED_HTACCESS_VERSION > $this->zajlib->htver) $this->zajlib->variable->htver_upgrade = MOZAJIK_RECOMMENDED_HTACCESS_VERSION;
-				if(defined('MOZAJIK_RECOMMENDED_CONFIG_VERSION') && MOZAJIK_RECOMMENDED_CONFIG_VERSION > $this->zajlib->zajconf['config_file_version']) $this->zajlib->variable->conf_upgrade = MOZAJIK_RECOMMENDED_CONFIG_VERSION;
-			// check for other stuff
-				$this->zajlib->variable->mysql_setting_enabled = $this->zajlib->zajconf['mysql_enabled'];
 			return true;
 		}
 		
