@@ -41,7 +41,7 @@
 				{% block menu %}
 					<li><a href='{{baseurl}}update/test/'>Run unit test</a><br/>Run and display result of all unit tests.</li>
 					<li><a href='{{baseurl}}update/template/'>Reset template cache</a><br/>Delete and regenerate files for views, lang, and conf.</li>
-					{% if mysql_enabled %}
+					{% if mysql_setting_enabled %}
 					<li><a href='{{baseurl}}update/database/'>Database model update</a><br>Syncronizes models and database structure.</li>
 					{% elseif %}
 					<li><span style="color: silver;">Database model disabled</span><br/>You can enable via the <em>mysql_enabled</em> setting.</li>

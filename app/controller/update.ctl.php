@@ -24,8 +24,7 @@
 				if(defined('MOZAJIK_RECOMMENDED_HTACCESS_VERSION') && MOZAJIK_RECOMMENDED_HTACCESS_VERSION > $this->zajlib->htver) $this->zajlib->variable->htver_upgrade = MOZAJIK_RECOMMENDED_HTACCESS_VERSION;
 				if(defined('MOZAJIK_RECOMMENDED_CONFIG_VERSION') && MOZAJIK_RECOMMENDED_CONFIG_VERSION > $this->zajlib->zajconf['config_file_version']) $this->zajlib->variable->conf_upgrade = MOZAJIK_RECOMMENDED_CONFIG_VERSION;
 			// check for other stuff
-				$this->zajlib->variable->mysql_enabled = true; //$this->zajlib->zajconf['mysql_enabled'];
-
+				$this->zajlib->variable->mysql_setting_enabled = $this->zajlib->zajconf['mysql_enabled'];
 			return true;
 		}
 		
