@@ -183,6 +183,33 @@ EOF;
 		return true;
 	}
 	
+	/**
+	 * Filter: multiply - Multiply by the amount specified by parameter from the variable.
+	 *
+	 *  <b>{{variable|multiply:'2'}}</b> Assuming variable is 2, the returned value will be 4.
+	 **/
+	public function filter_multiply($parameter, &$source){
+		// validate parameter
+			$parameter = (trim($parameter,"'\""));
+			if(substr($parameter, 0, 1) != '$' && !is_numeric($parameter)) return $source->warning('multiply filter parameter not a variable or an integer!');
+		// write to file
+			$this->zajlib->compile->write('$filter_var=$filter_var*'.$parameter.';');
+		return true;
+	}
+
+	/**
+	 * Filter: divide - Divide by the amount specified by parameter from the variable.
+	 *
+	 *  <b>{{variable|divide:'2'}}</b> Assuming variable is 4, the returned value will be 2.
+	 **/
+	public function filter_divide($parameter, &$source){
+		// validate parameter
+			$parameter = (trim($parameter,"'\""));
+			if(substr($parameter, 0, 1) != '$' && !is_numeric($parameter)) return $source->warning('divide filter parameter not a variable or an integer!');
+		// write to file
+			$this->zajlib->compile->write('$filter_var=$filter_var/'.$parameter.';');
+		return true;
+	}	
 	
 	/**
 	 * Filter: toquerystring - Converts an array to a query string.
