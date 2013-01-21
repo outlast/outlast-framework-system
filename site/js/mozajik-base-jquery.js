@@ -242,6 +242,31 @@
 	 	};	 
 
 	/**
+	 * A function which enables sortable features on a list of items. Requires jquery-ui sortable feature.
+	 * @param target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
+	 * @param url The url which will handle this sortable request.
+	 **/
+		zaj.sortable = function(target, url){
+			// Make sortable
+			$(target).sortable({
+			    start: function(event, ui) {
+			    	ui.item.addClass('sortableinprogress');
+			    },
+			    stop: function(event, ui) {
+			    	ui.item.removeClass('sortableinprogress');
+					// Build array
+						var my_array = [];
+						$(target).children().each(function(){
+							var my_id = $(this).attr('data-sortable');
+							if(!my_id) zaj.error("Cannot sort: data-sortable not set!");
+							else my_array.push(my_id);
+						});
+						zaj.ajax.post(url+'?reorder='+JSON.stringify(my_array));
+			    }
+			});
+		};
+
+	/**
 	 * Now extend the jQuery object.
 	 **/
 	(function($){
@@ -252,6 +277,7 @@
 	  		// Get or post serialized data
 	  		get: function(url, response){ return zaj.ajax.get(url+'?'+target.serialize(), response); },
 	  		post: function(url, response){ return zaj.ajax.post(url+'?'+target.serialize(), response); },
+	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
 	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, callback: function(r){
 	  			$(receiver).html(r);
 	  		} }); }
