@@ -217,12 +217,26 @@ class zajlib_lang extends zajlib_config {
 		 * @param string $name_OR_source_path The name of the file (without locale or ini extension) or the specific ini file to load.
 		 * @param string $section The section to compile.
 		 * @param boolean $force_compile This will force recompile even if a cached version already exists.
+		 * @param boolean $fail_on_error If set to true (the default), it will fail with error. 
 		 **/
-		public function load($name_OR_source_path, $section=false, $force_compile=false){
+		public function load($name_OR_source_path, $section=false, $force_compile=false, $fail_on_error=true){
 			// First let's see if . is not found in path. If so, this is a name, so figure out what source path is based on current locale
-				if(strstr($name_OR_source_path, '.') === false) $name_OR_source_path = $name_OR_source_path.'.'.$this->get().'.lang.ini';
+				if(strstr($name_OR_source_path, '.') === false){
+					// Assemble my file
+						$original_source_path = $name_OR_source_path;
+						$name_OR_source_path = $name_OR_source_path.'.'.$this->get().'.lang.ini';
+					// First, try to load the default
+						$result = parent::load($name_OR_source_path, $section, $force_compile, false);
+					// Now if load failed, set load to the default locale
+						if(!$result){
+							// throw a warning (if not testing)
+							if(!$this->zajlib->test->is_running()) $this->zajlib->warning("The language file $name_OR_source_path was not found, reverting to default locale.");
+							$name_OR_source_path = $original_source_path.'.'.$this->get_default_locale().'.lang.ini';
+						}
+						else return true;
+				}
 			// Now just load the file as if it were a usual config and return
-				return parent::load($name_OR_source_path, $section, $force_compile);
+				return parent::load($name_OR_source_path, $section, $force_compile, $fail_on_error);
 		}
 
 
