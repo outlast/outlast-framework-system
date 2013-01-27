@@ -1,5 +1,0 @@
-{% for result in relations %}
-	<div id='{{result.id}}' class='zajsearch_result zajsearch_oneresult {%if forloop.first%}zajsearch_firstresult{%endif%}'>{{result.name}}</div>
-{% elsefor %}
-	<div id='zajsearch-result-none' class='zajsearch_cancel'>- none were found -</div>
-{% endfor %}
