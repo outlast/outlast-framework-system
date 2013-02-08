@@ -218,7 +218,8 @@ class zajLib {
 				$this->domain = join(".",array_slice($ddata, -2));
 				$this->subdomain = str_replace("www.","",join(".",array_slice($ddata, 0, -2)));		// will exclude www.!
 				if($this->subdomain == "www") $this->subdomain = "";								// if only www, then set to none!
-				$this->tld = reset(array_slice($ddata, -1));
+				$slice = array_slice($ddata, -1);
+				$this->tld = reset($slice);
 			}			
 		// loader
 			$this->load = new zajLibLoader($this);
