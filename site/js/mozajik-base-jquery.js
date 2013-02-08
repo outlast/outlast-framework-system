@@ -96,7 +96,7 @@
 			// Is facebook enabled and in canvas? (move this to fb js)
 				if(zaj.facebook){
 					FB.Canvas.getPageInfo(function(e){
-						$('#zaj_bootstrap_modal.modal.fade.in').css({top: 200 + e.scrollTop});
+						$('#zaj_bootstrap_modal').css({top: 300 + e.scrollTop});
 					});
 				}
 		}
