@@ -11,10 +11,17 @@
 	var zaj = {baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debug_mode:false,protocol:'http',jslib:'jquery',jslibver:1.7};
 	//var zaj = new Mozajik();
 
-// Pushstate support (from pjax)
+
+// Detect various fixed features (pushstate)
+	// Pushstate support (from pjax)
 	zaj.pushstate = window.history && window.history.pushState && window.history.replaceState
 					// pushState isn't reliable on iOS until 5.
 					&& !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/)
+// Detect various dynamically loaded features (bootstrap, facebook, etc.)
+	$(document).ready(function(){
+		zaj.bootstrap = (typeof $().modal == 'function');
+		zaj.facebook = (typeof FB == 'object');
+	});
 
 	/**
 	 * Backwards compatibility for mootools
@@ -69,10 +76,35 @@
 	/**
 	 * Custom alerts, confirms, prompts
 	 **/
-	zaj.alert = function(message, urlORfunction){
-		alert(message);
-		if(typeof urlORfunction == 'function') urlORfunction();
-		else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction);
+	zaj.alert = function(message, urlORfunction, buttonText){
+		if(zaj.bootstrap){
+			// Create modal if not yet available
+				if($('#zaj_bootstrap_modal').length <= 0){
+					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a class="modal-button btn btn-primary">Ok</a></div></div>');
+				}
+			// Reset and init button
+				// Set action
+				$('#zaj_bootstrap_modal a.modal-button').unbind('click');
+				if(typeof urlORfunction == 'function') $('#zaj_bootstrap_modal a.modal-button').click(urlORfunction);
+				else if(typeof urlORfunction == 'string') $('#zaj_bootstrap_modal a.modal-button').click(function(){ zaj.redirect(urlORfunction); });
+				else $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); });
+				// Set text (if needed)
+				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
+			// Set body and show it
+				$('#zaj_bootstrap_modal div.modal-body').html(message);
+				$('#zaj_bootstrap_modal').modal({backdrop: 'static', keyboard: false})
+			// Is facebook enabled and in canvas? (move this to fb js)
+				if(zaj.facebook){
+					FB.Canvas.getPageInfo(function(e){
+						$('#zaj_bootstrap_modal.modal.fade.in').css({top: 200 + e.scrollTop});
+					});
+				}
+		}
+		else{
+			alert(message);
+			if(typeof urlORfunction == 'function') urlORfunction();
+			else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction);
+		}
 	};
 	zaj.confirm = function(message, urlORfunction){
 		// if the passed param is a function, then return confirmation as its param
