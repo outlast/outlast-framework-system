@@ -136,7 +136,7 @@ abstract class zajModel {
 		 * This is an object-specific private variable which registers if any extension of $this has had its event fired. This is used to prevent infinite loops.
 		 * @var boolean
 		 **/
-		private $event_child_fired = false;
+		public $event_child_fired = false;
 
 		
 	// Model extension
@@ -912,8 +912,11 @@ abstract class zajModelExtender {
 				zajModelExtender::$event_stop_propagation = false;
 				return $return_value;
 			}
-		// Now call for parent
-			else return $this->parent->fire($event, $arguments);
+		// Now call for parent but tell them the child has been fired
+			else{
+				$this->parent->event_child_fired = true;
+				return $this->parent->fire($event, $arguments);
+			}
 	}
 	
 	/**
