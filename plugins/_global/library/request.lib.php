@@ -47,37 +47,42 @@ class zajlib_request extends zajLibExtension {
 
 	/**
 	 * Sends a POST request to a specified url, by using the query string as post data. You can also send the POST data in the second parameter. Supports HTTPS.
-	 * @param string $url The url of the desired destination. Example: post("https://www.mozajik.org/akarmi.php?asdf=1&qwerty=2");
-	 * @param string $content The content of the document to be sent.
+	 * @param string $url The url of the desired destination. Example: post("https://www.example.com/example.php?asdf=1&qwerty=2");
+	 * @param bool|string $content The content of the document to be sent.
 	 * @param bool $returnheaders If set to true, the headers will be returned as well. By default it is false, so only document content is returned.
+	 * @param bool $customheaders
 	 * @return string Returns a string with the content received.
-	 **/
+	 */
 	function post($url, $content=false, $returnheaders = false, $customheaders = false){
-		if($content == false){
-			// parse the url
-				$urldata = parse_url($url);
-				if($urldata === false) return $this->zajlib->warning("Malformed url ($url). Cannot parse.");
-			// set as content
-				$content = $urldata['query'];
-		}
-		// now send the POST request and return the result
-			return $this->get($url, $content, $returnheaders, array('Content-type'=>'application/x-www-form-urlencoded'), 'POST');
+		// Set the content based on url query string
+			if($content == false){
+				// parse the url
+					$urldata = parse_url($url);
+					if($urldata === false) return $this->zajlib->warning("Malformed url ($url). Cannot parse.");
+				// set as content
+					$content = $urldata['query'];
+			}
+		// Default header, merge my custom into it
+			$headers = array('Content-type'=>'application/x-www-form-urlencoded');
+			if(is_array($customheaders)) $headers = array_merge($headers, $customheaders);
+		// Now send the POST request and return the result
+			return $this->get($url, $content, $returnheaders, $headers, 'POST');
 	}
-	
+
 	/**
 	 * Sends a request via GET or POST method to the specified url via fsockopen. Supports HTTPS.
 	 * @param string $url The url of the desired destination.
 	 * @param string $content The content of the document to be sent.
 	 * @param bool $returnheaders If set to true, the headers will be returned as well. By default it is false, so only document content is returned.
-	 * @param array $customheaders An array of keys and values with custom headers to be sent along with the content.
+	 * @param array|bool $customheaders An array of keys and values with custom headers to be sent along with the content.
 	 * @param string $method Specifies the method by which the content is sent. Can be GET (the default) or POST.
 	 * @return string Returns a string with the content received.
 	 * @todo Optimize so that calling post() doesnt run parse_url twice.
-	 **/
+	 */
 	function get($url, $content="", $returnheaders = false, $customheaders = false, $method = 'GET'){
 		// parse the url
 			$urldata = parse_url($url);
-			if($urldata === false) return $this->zajlib->warning("Malformed url ($url). Cannot parse.");		
+			if($urldata === false) return $this->zajlib->warning("Malformed url ($url). Cannot parse.");
 		// get port
 			if($urldata['scheme'] == "https"){
 				$port = 443;
@@ -105,7 +110,7 @@ class zajlib_request extends zajLibExtension {
 			fputs($fp, "Host: ".$urldata['host']."\r\n");
 			// Send custom headers
 				foreach($customheaders as $key=>$value) fputs($fp, "$key: $value\r\n");
-		// send the content		
+		// send the content
 			fputs($fp, "Content-length: ".strlen($content)."\r\n");
 			fputs($fp, "Connection: close\r\n\r\n");
 			fputs($fp, $content."\r\n\r\n");
