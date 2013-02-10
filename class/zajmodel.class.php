@@ -833,13 +833,13 @@ abstract class zajModelExtender {
 			}
 		return $fields;
 	}
-	
+
 	/**
 	 * This helps create a model-like object which is actually an extender object.
-	 * @parameter zajModel $parent_object The parent object that I extend.
+	 * @param bool|zajModel $parent_object The parent object that I extend.
 	 * @return zajModelExtender The extended zajModel object in the form of a zajModelExtender object.
-	 **/
-	public static function create($parent_object){	
+	 */
+	public static function create($parent_object = false){
 		$class_name = get_called_class();
 		// create a new class based on my parent_object
 			$object = new $class_name($parent_object);

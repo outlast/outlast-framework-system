@@ -5,8 +5,6 @@
  * @version 3.0
  * @package Library
  **/
- 
- 
 
 class zajlib_template extends zajLibExtension {
 
@@ -18,8 +16,9 @@ class zajlib_template extends zajLibExtension {
 	/**
 	 * Compile the file specified by file_path.
 	 * @param string $source_path This is the source file's path relative to any of the active view folders.
-	 * @param string $destination_path This is the destination file's path relative to the final compiled view folder. If not specified, the destination will be the same as the source (relative), which is the preferred way of doing things. You should only specify this if you are customizing the template compilation process.
-	 **/
+	 * @param bool|string $destination_path This is the destination file's path relative to the final compiled view folder. If not specified, the destination will be the same as the source (relative), which is the preferred way of doing things. You should only specify this if you are customizing the template compilation process.
+	 * @return void
+	 */
 	private function compile($source_path, $destination_path=false){
 		// load compile library
 			$this->zajlib->compile->compile($source_path, $destination_path);

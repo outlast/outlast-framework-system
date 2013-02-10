@@ -11,6 +11,36 @@ define('MAX_GLOBAL_EVENT_STACK', 50);
 /**
  * The zajlib class is a single, global object which stores all the basic methods and variables. It is accessible from all controller and model objects.
  * @package Base
+ * @property zajlib_array $array
+ * @property zajlib_breadcrumb $breadcrumb
+ * @property zajlib_browser $browser
+ * @property zajlib_cache $cache
+ * @property zajlib_compile $compile
+ * @property zajlib_config $config
+ * @property zajlib_cookie $cookie
+ * @property zajlib_db $db
+ * @property zajlib_dom $dom
+ * @property zajlib_email $email
+ * @property zajlib_error $error
+ * @property zajlib_export $export
+ * @property zajlib_feed $feed
+ * @property zajlib_file $file
+ * @property zajlib_form $form
+ * @property zajlib_graphics $graphics
+ * @property zajlib_html $html
+ * @property zajlib_import $import
+ * @property zajlib_lang $lang
+ * @property zajlib_log $log
+ * @property zajlib_model $model
+ * @property zajlib_number $number
+ * @property zajlib_plugin $plugin
+ * @property zajlib_request $request
+ * @property zajlib_sandbox $sandbox
+ * @property zajlib_security $security
+ * @property zajlib_template $template
+ * @property zajlib_test $test
+ * @property zajlib_text $text
+ * @property zajlib_url $url
  * @todo All instance variables should be changed to read-only!
  **/
 class zajLib {
@@ -158,12 +188,11 @@ class zajLib {
 			 **/
 			public $loaded_plugins = array();
 
-		
 	/**
 	 * Creates a the zajlib object.
 	 * @param string $zaj_root_folder The root from which basepath and others are calculated.
-	 * @param array $zajconf The configuration array. This can be blank for backwards-compatible reasons.
-	 **/
+	 * @param array|string $zajconf The configuration array. This can be blank for backwards-compatible reasons.
+	 */
 	public function __construct($zaj_root_folder, $zajconf = ''){
 		// autodetect my path
 			if($zaj_root_folder) $this->basepath = realpath($zaj_root_folder)."/"; 
@@ -220,7 +249,7 @@ class zajLib {
 				if($this->subdomain == "www") $this->subdomain = "";								// if only www, then set to none!
 				$slice = array_slice($ddata, -1);
 				$this->tld = reset($slice);
-			}			
+			}
 		// loader
 			$this->load = new zajLibLoader($this);
 		// template variable object
@@ -245,8 +274,8 @@ class zajLib {
 
 	/**
 	 * Unlike load->app this actually changes the app and mode variables!
-	 * @param string $request The actual relative request.
-	 * @param boolean $request
+	 * @param string $request
+	 * @param bool $allow_magic_methods
 	 * @return mixed The value returned by the loaded app.
 	 */
 	function app_mode_redirect($request, $allow_magic_methods = true){
@@ -350,6 +379,7 @@ class zajLib {
 	/**
 	 * Send an ajax response to the browser.
 	 * @param string $message The content to send to the browser.
+	 * @return bool Does not yet return anything.
 	 **/
 	function ajax($message){
 		header("Content-Type: application/x-javascript; charset=UTF-8");
@@ -360,6 +390,7 @@ class zajLib {
 	/**
 	 * Send json data to the browser.
 	 * @param string|array|object $data This can be a json-encoded string or any other data (in this latter case it would be converted to json data).
+	 * @return bool Does not yet return anything.
 	 **/
 	function json($data){
 		// If the data is not already a string, convert it with json_encode()
