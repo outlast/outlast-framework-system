@@ -266,8 +266,9 @@ class zajLib {
 	 * Returns true or false depending on whether the external file has been loaded already. This is simply an alias of the {@link zajLibLoader->is_loaded()}.
 	 * @param string $type The type of the file (library, etc.)
 	 * @param string $name The name of the file.
+	 * @return bool Returns true if the file is loaded, false otherwise.
 	 **/
-	function is_loaded($type, $name){
+	public function is_loaded($type, $name){
 		return $this->load->is_loaded($type, $name);
 	}
 
@@ -278,7 +279,7 @@ class zajLib {
 	 * @param bool $allow_magic_methods
 	 * @return mixed The value returned by the loaded app.
 	 */
-	function app_mode_redirect($request, $allow_magic_methods = true){
+	public function app_mode_redirect($request, $allow_magic_methods = true){
 		// TODO: check - and add if needed - subfolder support!
 		// if magic methods aren't allowed
 			if(!$allow_magic_methods && strpos($request, "__") !== false) return $this->error("invalid request. invoke magic methods is not allowed here!"); 
@@ -323,7 +324,7 @@ class zajLib {
 	 * Displays a query in the browser log.
 	 * @param string $message
 	 **/
-	function query($message){
+	public function query($message){
 		// todo: log this instead of printing it?
 			if(isset($_GET['query'])){
 				$query_backtrace = debug_backtrace(false);
@@ -336,7 +337,7 @@ class zajLib {
 	 * Displays a notice in the browser log.
 	 * @param string $message The notice message to log.
 	 **/
-	function notice($message){
+	public function notice($message){
 		// todo: log this instead of printing it?
 			if(isset($_GET['notice'])){
 				//if($_GET['notice']=="screen") print "<div style='border: 2px red solid; padding: 5px;'>MOZAJIK NOTICE: $message</div>";
@@ -350,7 +351,7 @@ class zajLib {
 	/**
 	 * Custom error handler to override the PHP defaults.
 	 **/
-	function error_handler($errno, $errstr, $errfile, $errline){
+	public function error_handler($errno, $errstr, $errfile, $errline){
 		// get current error_reporting value
 			$errrep = error_reporting();
 		
@@ -381,7 +382,7 @@ class zajLib {
 	 * @param string $message The content to send to the browser.
 	 * @return bool Does not yet return anything.
 	 **/
-	function ajax($message){
+	public function ajax($message){
 		header("Content-Type: application/x-javascript; charset=UTF-8");
 		print $message;
 		exit;
@@ -392,7 +393,7 @@ class zajLib {
 	 * @param string|array|object $data This can be a json-encoded string or any other data (in this latter case it would be converted to json data).
 	 * @return bool Does not yet return anything.
 	 **/
-	function json($data){
+	public function json($data){
 		// If the data is not already a string, convert it with json_encode()
 			if(!is_string($data)) $data = json_encode($data);
 		// Now output and exit!
@@ -405,7 +406,7 @@ class zajLib {
 	 * Redirect the user to relative or absolute URL
 	 * @param string $url The specific url to redirect the user to.
 	 **/
-	function redirect($url){
+	public function redirect($url){
 		// Now redirect
 			if($this->url->is_url($url)) header("Location: ".$url);
 			else header("Location: ".$this->baseurl.$url);
@@ -415,11 +416,12 @@ class zajLib {
 	/**
 	 * Reroute processing to another app controller.
 	 * @param string $request The request relative to my baseurl.
-	 * @param $optional_parameters An array of parameters to be passed.
+	 * @param array|bool $optional_parameters An array of parameters to be passed.
 	 * @param boolean $reroute_to_error When set to true (the default), the function will reroute requests to the proper __error method.
 	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
-	 **/
-	function reroute($request, $optional_parameters = false, $reroute_to_error = true, $call_load_method = true){
+	 * @return mixed Will return whatever the app method returns.
+	 */
+	public function reroute($request, $optional_parameters = false, $reroute_to_error = true, $call_load_method = true){
 		// request must be a string
 			if(!is_string($request)) $this->warning('Invalid reroute request!');		
 		// load the app
@@ -437,16 +439,12 @@ class zajLib {
 	/**
 	 * Magic method to display error when the object is converted to string.
 	 **/
-	public function __toString(){
-		$this->error('You tried using zajLib object as a string!');
-	}
+	public function __toString(){ return "[zajlib object]"; }
 	
 	/**
 	 * Magic method to display debug information.
 	 **/
-	public function __toDebug(){
-		return "[zajlib object]";
-	}
+	public function __toDebug(){ return "[zajlib object]"; }
 
 
 }
@@ -712,6 +710,7 @@ class zajLibLoader{
 	 * Load a js file runtime.
 	 * @param string $file_path The file path relative to the system or site folder.
 	 * @param boolean $check_if_exists Not implemented.
+	 * @return void|bool Prints the string generated, returns nothing or true if already printed.
 	 * @depricated
 	 **/
 	public function js($file_path, $check_if_exists = false){
@@ -731,6 +730,7 @@ class zajLibLoader{
 	 * Load a css file runtime.
 	 * @param string $file_path The file path relative to the system or site folder.
 	 * @param boolean $check_if_exists Not implemented.
+	 * @return void|bool Prints the string generated, returns nothing or true if already printed.
 	 * @depricated
 	 **/
 	public function css($file_path, $check_if_exists = false){
@@ -819,13 +819,13 @@ class zajLibLoader{
 		if(isset($this->loaded[$type][$name]) && $this->loaded[$type][$name]) return true;
 		else return false;
 	}
-	
+
 	/**
 	 * Does a security check to see if the given path is valid and is chrooted.
-	 * @param string $path The path to check.
+	 * @param string $file_path The path to check.
 	 * @return boolean Returns true if the path is valid and ready to be used. False otherwise.
 	 * @todo Add more checks!
-	 **/
+	 */
 	public static function check_path($file_path){
 		if(substr_count($file_path, "..") > 0) return false;
 		// todo: do some more checks here!
@@ -892,7 +892,7 @@ class zajField {
 
 	/**
 	 * Check to see if input data is valid.
-	 * @param $input The input data.
+	 * @param $input mixed The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){
@@ -901,9 +901,9 @@ class zajField {
 
 	/**
 	 * Preprocess the data before returning the data from the database.
-	 * @param $data The first parameter is the input data.
-	 * @param zajObject $object This parameter is a pointer to the actual object which is being modified here.
-	 * @return Return the data that should be in the variable.
+	 * @param $data mixed The first parameter is the input data.
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
 		return $data;
@@ -911,8 +911,8 @@ class zajField {
 
 	/**
 	 * Preprocess the data before saving to the database.
-	 * @param $data The first parameter is the input data.
-	 * @param zajObject $object This parameter is a pointer to the actual object which is being modified here.
+	 * @param $data mixed The first parameter is the input data.
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 **/
 	public function save($data, &$object){
@@ -922,15 +922,16 @@ class zajField {
 	/**
 	 * This is called when a filter() or exclude() methods are run on this field. It is actually executed only when the query is being built.
 	 * @param zajFetcher $fetcher A pointer to the "parent" fetcher which is being filtered.
-	 * @param array $filter An array of values specifying what type of filter this is.
-	 **/
+	 * @param array $value An array of values specifying what type of filter this is.
+	 * @return bool Returns false by default.
+	 */
 	public function filter(&$fetcher, $value){
 		return false;	
 	}
 
 	/**
 	 * This method allows you to create a subtable which is associated with this field.
-	 * @return Return the table definition. False if no table.
+	 * @return bool Return the table definition. False if no table.
 	 **/
 	public function table(){
 		return false;
@@ -972,6 +973,7 @@ class zajField {
 	 * This method is called just before the input field is generated. Here you can set specific variables and such that are needed by the field's GUI control.
 	 * @param array $param_array The array of parameters passed by the input field tag. This is the same as for tag definitions.
 	 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
+	 * @return bool Returns true by default.
 	 **/
 	public function __onInputGeneration($param_array, &$source){
 		// does not do anything by default
@@ -1008,8 +1010,12 @@ class zajVariable {
 
 	/**
 	 * Magic method to return debug information
+	 * @return string Returns some nice debug info.
 	 **/
 	public function __toDebug(){
+		// Init the string
+		$str = "";
+		// Generate output
 		foreach($this->data as $name=>$value){
 			if(is_array($value) || is_object($value)){
 				foreach($value as $k=>$v){
