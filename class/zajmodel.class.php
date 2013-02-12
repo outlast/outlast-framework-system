@@ -155,6 +155,7 @@ abstract class zajModel {
 	 * @return zajModel
 	 */
 	public function __construct($id, $class_name){
+		$class_name = get_called_class();
 		// check for errors
 		if($id && !is_string($id)) $GLOBALS['zajlib']->error("Invalid ID value given as parameter for model constructor! You probably tried to use an object instead of a string!");
 		// set class and table names
@@ -246,7 +247,7 @@ abstract class zajModel {
 				else return $id;
 			}
 			// not resumed, so let's assume its a string and return the cache
-			else return $class_name::get_cache($class_name, $id);
+			else return $class_name::get_cache($id);
 		}
 	}
 
@@ -362,7 +363,7 @@ abstract class zajModel {
 	/**
 	 * Fire an event.
 	 * @param string Event name.
-	 * @param array Array of parameters. Leave empty if no params.
+	 * @param array|bool Array of parameters. Leave empty if no params.
 	 * @return mixed Returns the value returned by the event method.
 	 * @todo Somehow disable event methods from being declared public. They should be private or protected!
 	 * @todo Make this static-compatible (though you cannot do event stack in that case! or can you?)
@@ -587,16 +588,15 @@ abstract class zajModel {
 
 	/**
 	 * Gets the cached version of an object.
-	 *
-	 * @param string $class_name The name of child class (model class). You should omit this when calling the method from outside its private zone.
 	 * @param string $id. The id of the object.
 	 * @return zajModel Returns the object.
 	 * @ignore
 	 * @todo Disable get_cache from being called outside. Events should be used instead of overriding...
 	 */
-	private static function get_cache($class_name, $id){
+	public static function get_cache($id){
+		// get current class
+		$class_name = get_called_class();
 		// return the resumed class
-		$GLOBALS['zajlib']->load->library("file");
 		$filename = $GLOBALS['zajlib']->file->get_id_path($GLOBALS['zajlib']->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
 		// try opening the file
 		$item_cached = false;
@@ -682,7 +682,9 @@ abstract class zajModel {
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// reorder support, PHP 5.3+ version (TODO: move this to a lib)
-	protected static function reorder($class_name, $reorder_array, $reverse_order = false){
+	public static function reorder($reorder_array, $reverse_order = false){
+		// get current class
+		$class_name = get_called_class();
 		// this supports JSON input from a Sortables.serialize method of mootools, always returns true
 		if(is_string($reorder_array)) $reorder_data = json_decode($reorder_array);
 		else $reorder_data = $reorder_array;
