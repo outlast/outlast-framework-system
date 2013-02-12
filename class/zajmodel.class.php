@@ -37,6 +37,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @method void __onFetch() EVENT. Executed when a fetch method is requested.
  * @method void __onCreate() EVENT. Executed when a create method is requested.
  * @method zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when an auto-search is running on the class.
+ * @property zajLib $zajlib A pointer to the global object.
  */
 abstract class zajModel {
 	// Instance variables

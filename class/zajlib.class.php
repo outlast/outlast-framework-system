@@ -446,7 +446,13 @@ class zajLib {
 	 **/
 	public function __toDebug(){ return "[zajlib object]"; }
 
-
+	/**
+	 * Get the global object and return it statically.
+	 * @return zajLib Return me.
+	 **/
+	public static function me(){
+		return $GLOBALS['zajlib'];
+	}
 }
 
 /** 
