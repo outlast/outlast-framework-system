@@ -7,7 +7,7 @@
  **/
 
 // Load config file
-	$GLOBALS['zajlib']->load->library('config');
+	zajLib::me()->load->library('config');
 
 
 class zajlib_lang extends zajlib_config {
@@ -113,16 +113,16 @@ class zajlib_lang extends zajlib_config {
 			// Check if already done...
 				if(!empty($this->auto_done)) return $this->get();
 			// Do I have Wordpress enabled?
-				if($GLOBALS['zajlib']->plugin->is_enabled('wordpress')){
+				if(zajLib::me()->plugin->is_enabled('wordpress')){
 					if(!empty($_GET['language'])) $language = $_GET['language'];
 					if(!empty($_COOKIE['_icl_current_language'])) $language = $_COOKIE['_icl_current_language'];
 				}
 				else{			
 					// Fetch current setting based on cookie or some other
-					if(!empty($GLOBALS['zajlib']->subdomain)) $language = $GLOBALS['zajlib']->subdomain;
+					if(!empty(zajLib::me()->subdomain)) $language = zajLib::me()->subdomain;
 					elseif(!empty($_GET['language'])) $language = $_GET['language'];
 					elseif(!empty($_COOKIE['language'])) $language = $_COOKIE['language'];
-					else $language = $GLOBALS['zajlib']->tld;
+					else $language = zajLib::me()->tld;
 				}
 			// Set by code
 				$this->set_by_code($language);
@@ -130,7 +130,7 @@ class zajlib_lang extends zajlib_config {
 				$this->auto_done = true;
 			// Now set cookie and global var
 				setcookie('language', $language, time()+60*60*24*7, '/');
-				$GLOBALS['zajlib']->variable->language = $language;
+				zajLib::me()->variable->language = $language;
 			return $this->get();
 		}
 

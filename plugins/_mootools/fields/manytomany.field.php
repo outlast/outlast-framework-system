@@ -19,13 +19,13 @@ class zajfield_manytomany extends zajField {
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
 		// set default options
-				if(empty($options[0])) return $GLOBALS['zajlib']->error("Required parameter 1 missing for field $name!");
+				if(empty($options[0])) return zajLib::me()->error("Required parameter 1 missing for field $name!");
 			// passed as an array of options
 				if(is_array($options[0])){
 					$options = $options[0];
 					// set defaults
 					// model
-						if(empty($options['model'])) return $GLOBALS['zajlib']->error("Required parameter 'model' missing for field $name!");
+						if(empty($options['model'])) return zajLib::me()->error("Required parameter 'model' missing for field $name!");
 					// field (optional)
 						if(empty($options['field'])) $options['field'] = false;
 					// create (optional, false by default)

@@ -51,7 +51,7 @@ class MozajikError extends zajModel {
 			if($backtrace[1]['class'] == 'MozajikError') exit('Could not log error: '.$errortext);
 			
 		// check if db connection is ok, if so, log to db!
-			if($GLOBALS['zajlib']->zajconf['error_log_file'] == 'MYSQL' && $GLOBALS['zajlib']->zajconf['mysql_enabled'] && is_object($GLOBALS['zajlib']->db) && !$GLOBALS['zajlib']->db->get_error()) $log_mode = 'db';
+			if(zajLib::me()->zajconf['error_log_file'] == 'MYSQL' && zajLib::me()->zajconf['mysql_enabled'] && is_object(zajLib::me()->db) && !zajLib::me()->db->get_error()) $log_mode = 'db';
 			else $log_mode = 'file';
 		
 		// now create array
@@ -86,15 +86,15 @@ class MozajikError extends zajModel {
 		
 		// is it db write mode? or file mode?
 			// DB mode is disabled while I figure out how to handle it...
-			//if($log_mode == 'db') $GLOBALS['zajlib']->db->add('mozajikerror', $error_details);
+			//if($log_mode == 'db') zajLib::me()->db->add('mozajikerror', $error_details);
 			//else error_log("Mozajik $errorlevel at ".date("Y.m.d. G:i:s")." - ".$errortext);
 			
 			error_log("Mozajik $errorlevel at ".date("Y.m.d. G:i:s")." - ".$errortext);
 		// log the backtrace?
-			if($GLOBALS['zajlib']->zajconf['error_log_backtraces']) error_log("Backtrace:".print_r($backtrace, true));
+			if(zajLib::me()->zajconf['error_log_backtraces']) error_log("Backtrace:".print_r($backtrace, true));
 
 		// print it to screen
-			if($GLOBALS['zajlib']->debug_mode){
+			if(zajLib::me()->debug_mode){
 				// display the error?
 					$uid = $error_details['id'];
 					print "<div style='border: 2px red solid; padding: 5px; font-family: Arial; font-size: 13px;'>MOZAJIK ".strtoupper($errorlevel).": ".$errortext;

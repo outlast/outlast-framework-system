@@ -596,7 +596,7 @@ class Test
         $testClass = new $this->ClassName();
 
         /** added by mozajik **/
-        $testClass->zajlib = $GLOBALS['zajlib'];
+        $testClass->zajlib = zajLib::me();
 
         try {
             if (is_callable($this->SetUpMethod)) {

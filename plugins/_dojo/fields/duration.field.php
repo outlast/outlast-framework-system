@@ -4,7 +4,7 @@
  * @package Fields
  * @subpackage BuiltinFields
  **/
- $GLOBALS['zajlib']->load->file('/fields/time.field.php');
+ zajLib::me()->load->file('/fields/time.field.php');
 
 class zajfield_duration extends zajfield_time {
 

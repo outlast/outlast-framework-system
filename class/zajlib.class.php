@@ -299,9 +299,11 @@ class zajLib {
 	/**
 	 * Returns an error message and exists. Useful for fatal errors.
 	 * @param string $message The error message to display and/or log.
+	 * @return bool Does not return anything.
 	 **/
 	public function error($message){
-		// Load error reporting lib
+		// Manually load error reporting lib
+			/* @var zajlib_error $error */
 			$error = $this->load->library('error');
 		// Now report the error and send 500 error
 			if(!$this->output_started) header('HTTP/1.1 500 Internal Server Error');
@@ -312,9 +314,11 @@ class zajLib {
 	/**
 	 * Returns a warning message but continues execution.
 	 * @param string $message The warning message to display and/or log.
+	 * @return bool Always returns false.
 	 **/
 	public function warning($message){
-		// Load error reporting lib
+		// Manually load error reporting lib
+			/* @var zajlib_error $error */
 			$error = $this->load->library('error');
 		// Now report the error
 			return $error->warning($message);
@@ -380,7 +384,7 @@ class zajLib {
 	/**
 	 * Send an ajax response to the browser.
 	 * @param string $message The content to send to the browser.
-	 * @return bool Does not yet return anything.
+	 * @return bool Does not return anything.
 	 **/
 	public function ajax($message){
 		header("Content-Type: application/x-javascript; charset=UTF-8");
@@ -529,7 +533,7 @@ class zajLibLoader{
 	/**
 	 * Load a controller file.
 	 * @param string $file_name The relative file name of the controller to load.
-	 * @param array $optional_parameters An array or a single parameter which is passed as the first parameter to __load()
+	 * @param array|bool $optional_parameters An array or a single parameter which is passed as the first parameter to __load()
 	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
 	 * @return boolean Returns whatever the __load() method returns. This should be a boolean value. Explicit false value means trouble.
 	 * @todo Rewrite $controller_name generation to regexp
@@ -554,8 +558,9 @@ class zajLibLoader{
 	/**
 	 * Load a library file.
 	 * @param string $name The name of the library to load.
-	 * @param array $optional_parameters An array of optional parameters which are stored in {@link zajLibExtension->options}
-	 **/
+	 * @param array|bool $optional_parameters An array of optional parameters which are stored in {@link zajLibExtension->options}
+	 * @return zajLibExtension|bool Returns a zajlib object or false if fails.
+	 */
 	public function library($name, $optional_parameters=false){
 		// is it loaded already?
 			if(isset($this->loaded['library'][$name])) return $this->loaded['library'][$name];
@@ -856,8 +861,8 @@ class zajDb {
 				$zdb->options = $args;
 			// Now load my settings file
 				$cname = 'zajfield_'.$method;
-				$result = $GLOBALS['zajlib']->load->file("fields/$method.field.php", false);
-				if(!$result) $GLOBALS['zajlib']->error("Field type '$method' is not defined. Was there a typo? Are you missing the field definition plugin file?");
+				$result = zajLib::me()->load->file("fields/$method.field.php", false);
+				if(!$result) zajLib::me()->error("Field type '$method' is not defined. Was there a typo? Are you missing the field definition plugin file?");
 			// Set my settings
 				$zdb->in_database = $cname::in_database;
 				$zdb->use_validation = $cname::use_validation;
@@ -969,10 +974,10 @@ class zajField {
 			$options = $field_def->options;
 			$type = $field_def->type;
 		// load field object file
-			$GLOBALS['zajlib']->load->file('/fields/'.$type.'.field.php');
+			zajLib::me()->load->file('/fields/'.$type.'.field.php');
 			$field_class = 'zajfield_'.$type;
 		// create and return
-			return new $field_class($name, $options, $class_name, $GLOBALS['zajlib']);
+			return new $field_class($name, $options, $class_name, zajLib::me());
 	}
 
 	/**
@@ -1041,11 +1046,11 @@ class zajVariable {
  **/
 function __autoload($class_name){	
 	// If autoloading enabled or not
-		if(!$GLOBALS['zajlib']->model_autoloading) return false;
+		if(!zajLib::me()->model_autoloading) return false;
 	// check if models enabled
-		if(!$GLOBALS['zajlib']->zajconf['mysql_enabled']) $GLOBALS['zajlib']->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
+		if(!zajLib::me()->zajconf['mysql_enabled']) zajLib::me()->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
 	// load the model
-		return $GLOBALS['zajlib']->load->model($class_name);
+		return zajLib::me()->load->model($class_name);
 }
 
 

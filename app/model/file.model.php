@@ -115,8 +115,8 @@ class File extends zajModel {
 	public static function create_from_file($urlORfilename, $parent = false, $field = false){
 		// ok, now copy it to uploads folder
 			$updest = basename($urlORfilename);
-			@mkdir($GLOBALS['zajlib']->basepath."cache/upload/", 0777, true);
-			copy($urlORfilename, $GLOBALS['zajlib']->basepath."cache/upload/".$updest);
+			@mkdir(zajLib::me()->basepath."cache/upload/", 0777, true);
+			copy($urlORfilename, zajLib::me()->basepath."cache/upload/".$updest);
 		// now create and set image
 			$pobj = File::create();
 			if(is_object($parent)) $parent = $parent->id;
@@ -138,7 +138,7 @@ class File extends zajModel {
 	 **/
 	public static function create_from_stream($parent_field = false, $parent = false){
 		// tmp folder
-			$folder = $GLOBALS['zajlib']->basepath.'/cache/upload/';
+			$folder = zajLib::me()->basepath.'/cache/upload/';
 			$filename = uniqid().'.upload';
 		// make temporary folder
 			@mkdir($folder, 0777, true);
@@ -171,8 +171,8 @@ class File extends zajModel {
 		// Now create photo object and set me
 			$obj = File::create();
 		// Move uploaded file to tmp
-			@mkdir($GLOBALS['zajlib']->basepath.'cache/upload/');
-			move_uploaded_file($tmp_name, $GLOBALS['zajlib']->basepath.'cache/upload/'.$obj->id.'.tmp');
+			@mkdir(zajLib::me()->basepath.'cache/upload/');
+			move_uploaded_file($tmp_name, zajLib::me()->basepath.'cache/upload/'.$obj->id.'.tmp');
 		// Now set and save
 			$obj->set('name', $orig_name);
 			if($parent !== false){

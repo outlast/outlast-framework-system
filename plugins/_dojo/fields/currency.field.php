@@ -18,7 +18,7 @@ class zajfield_currency extends zajField {
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
 		// set default options
-			//if(empty($options[0])) return $GLOBALS['zajlib']->error("Required parameter 1 missing for field $name! Must specify currency (ex: USD).");
+			//if(empty($options[0])) return zajLib::me()->error("Required parameter 1 missing for field $name! Must specify currency (ex: USD).");
 			$options['currency'] = strtoupper($options[0]);
 			unset($options[0]);
 

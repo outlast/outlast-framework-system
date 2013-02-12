@@ -454,19 +454,19 @@ class zajCompileSource {
 			// if type is plugin_apps, then it is special!
 				if($type == 'plugin_apps' && $path){
 					// run through all of my registered plugin apps' views and return if one found!
-						foreach($GLOBALS['zajlib']->loaded_plugins as $plugin_app){
-							$path = $GLOBALS['zajlib']->basepath.'plugins/'.$plugin_app.'/view/'.$source_file;
+						foreach(zajLib::me()->loaded_plugins as $plugin_app){
+							$path = zajLib::me()->basepath.'plugins/'.$plugin_app.'/view/'.$source_file;
 							if(file_exists($path)) return $path;
 						}
 				}
 				elseif($type == 'system_apps' && $path){
 					// run through all of my registered system apps' views and return if one found!
-						foreach($GLOBALS['zajlib']->zajconf['system_apps'] as $plugin_app){
-							$path = $GLOBALS['zajlib']->basepath.'system/plugins/'.$plugin_app.'/view/'.$source_file;
+						foreach(zajLib::me()->zajconf['system_apps'] as $plugin_app){
+							$path = zajLib::me()->basepath.'system/plugins/'.$plugin_app.'/view/'.$source_file;
 							if(file_exists($path)) return $path;
 						}
 				}
-				else $path = $GLOBALS['zajlib']->basepath.$path.$source_file;
+				else $path = zajLib::me()->basepath.$path.$source_file;
 			if(file_exists($path)) return $path;
 		}
 		// no existing files found

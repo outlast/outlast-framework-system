@@ -9,6 +9,9 @@
 $GLOBALS['regexp_config_variable'] = "";
 $GLOBALS['regexp_config_comment'] = "//";
 
+/**
+ * @property stdClass $variable The config variables.
+ */
 class zajlib_config extends zajLibExtension{
 	protected $dest_path = 'cache/conf/';		// string - subfolder where compiled conf files are stored (cannot be changed)
 	protected $conf_path = 'conf/';			// string - default subfolder where uncompiled conf files are stored
@@ -24,10 +27,11 @@ class zajlib_config extends zajLibExtension{
 	/**
 	 * Loads a configuration or language file at runtime.
 	 * @param string $source_path The source of the configuration file relative to the conf folder.
-	 * @param string $section The section to compile.
+	 * @param string|bool $section The section to compile.
 	 * @param boolean $force_compile This will force recompile even if a cached version already exists.
-	 * @param boolean $fail_on_error If set to true (the default), it will fail with error. 
-	 **/
+	 * @param boolean $fail_on_error If set to true (the default), it will fail with error.
+	 * @return bool Returns true if successful, false otherwise.
+	 */
 	public function load($source_path, $section=false, $force_compile=false, $fail_on_error = true){
 		// check chroot
 			if(strpos($source_path, '..') !== false) return $this->zajlib->error($this->type_of_file.' source file must be relative to conf path.');
@@ -62,8 +66,9 @@ class zajlib_config extends zajLibExtension{
 
 	/**
 	 * Compiles a configuration file. Source_path should be relative to the conf path set by set_folder (conf/ by default). You should not call this method manually.
-	 * @param $source_path The source of the configuration file relative to the conf folder.
+	 * @param string $source_path The source of the configuration file relative to the conf folder.
 	 * @param boolean $fail_on_error If set to true (the default), it will fail with error.
+	 * @return boolean Returns true if successful, false otherwise.
 	 * @todo Make this private?
 	 **/
 	public function compile($source_path, $fail_on_error = true){

@@ -256,7 +256,7 @@
 		 **/
 		function javascript_error(){
 			// Check if logging is enabled
-				if(empty($GLOBALS['zajlib']->zajconf['jserror_log_enabled']) || empty($GLOBALS['zajlib']->zajconf['jserror_log_file'])) return $this->zajlib->ajax('not logged');
+				if(empty(zajLib::me()->zajconf['jserror_log_enabled']) || empty(zajLib::me()->zajconf['jserror_log_file'])) return $this->zajlib->ajax('not logged');
 			// Defaults
 				if(empty($_REQUEST['line'])) $_REQUEST['line'] = 0;
 				if(empty($_SERVER['HTTP_USER_AGENT'])) $_SERVER['HTTP_USER_AGENT'] = "";
@@ -266,7 +266,7 @@
 				$errordata = "\n".$_REQUEST['message'].' in file '.$_REQUEST['url'].' on line '.$_REQUEST['line'];
 				$errordata .= "\nPage: ".$_REQUEST['location']."\n\n";
 			// Now write to javascript error log
-				file_put_contents($GLOBALS['zajlib']->zajconf['jserror_log_file'], $intro.$errordata, FILE_APPEND);
+				file_put_contents(zajLib::me()->zajconf['jserror_log_file'], $intro.$errordata, FILE_APPEND);
 			// Return ok
 				return $this->zajlib->ajax('logged');
 		}		

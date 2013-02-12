@@ -80,7 +80,7 @@
 	// create a new zajlib object
 		$zajlib = new zajLib($zajconf['root_folder'], $zajconf);
 	// set internal error handler
-		set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext){ if(!is_object($GLOBALS['zajlib'])){ print "FATAL ERROR: Check error log."; } else $GLOBALS['zajlib']->error_handler($errno, $errstr, $errfile, $errline, $errcontext);});			
+		set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext){ if(!is_object(zajLib::me())){ print "FATAL ERROR: Check error log."; } else zajLib::me()->error_handler($errno, $errstr, $errfile, $errline, $errcontext);});
 	// set shutdown error handler (fatal)
 		register_shutdown_function(function(){
 			// Get error info (if there is one)
@@ -88,7 +88,7 @@
 				// Is there an error? Is it fatal or is it a parse error
 				if($error !== NULL && ($error['type'] == 4 || $error['type'] == 1)){
 					// Try to log it to file
-						$GLOBALS['zajlib']->error_handler(E_USER_ERROR, $error['message'], $error['file'], $error['line']);
+						zajLib::me()->error_handler(E_USER_ERROR, $error['message'], $error['file'], $error['line']);
 				}
 		});			
 	// debug mode needed?

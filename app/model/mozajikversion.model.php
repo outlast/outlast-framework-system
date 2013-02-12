@@ -54,9 +54,9 @@ class MozajikVersion extends zajModel {
 	 **/
 	public static function install(){
 		// If database enable
-		if($GLOBALS['zajlib']->zajconf['mysql_enabled']){
+		if(zajLib::me()->zajconf['mysql_enabled']){
 			// set all installed to false
-				$GLOBALS['zajlib']->db->query("UPDATE `mozajikversion` SET `installed`='';");
+				zajLib::me()->db->query("UPDATE `mozajikversion` SET `installed`='';");
 			// now create the new version
 				$new_installation = MozajikVersion::create();
 				$new_installation->set('major', MozajikVersion::$major);
@@ -75,7 +75,7 @@ class MozajikVersion extends zajModel {
 			);
 		// save to install.dat
 			$install_object = (object) $install_array;
-			file_put_contents($GLOBALS['zajlib']->basepath.'cache/install.dat', serialize($install_object));
+			file_put_contents(zajLib::me()->basepath.'cache/install.dat', serialize($install_object));
 		return $install_object;
 	}
 
@@ -85,9 +85,9 @@ class MozajikVersion extends zajModel {
 	 **/
 	public static function check(){
 		// if no installation or db is too old return 0
-			if(!is_object($GLOBALS['zajlib']->mozajik) || MozajikVersion::$major > $GLOBALS['zajlib']->mozajik->major || MozajikVersion::$minor > $GLOBALS['zajlib']->mozajik->minor || MozajikVersion::$build > $GLOBALS['zajlib']->mozajik->build) return 0;
+			if(!is_object(zajLib::me()->mozajik) || MozajikVersion::$major > zajLib::me()->mozajik->major || MozajikVersion::$minor > zajLib::me()->mozajik->minor || MozajikVersion::$build > zajLib::me()->mozajik->build) return 0;
 		// if db is too new (less likely) return 1
-			if(MozajikVersion::$major < $GLOBALS['zajlib']->mozajik->major || MozajikVersion::$minor < $GLOBALS['zajlib']->mozajik->minor || MozajikVersion::$build < $GLOBALS['zajlib']->mozajik->build) return -1;
+			if(MozajikVersion::$major < zajLib::me()->mozajik->major || MozajikVersion::$minor < zajLib::me()->mozajik->minor || MozajikVersion::$build < zajLib::me()->mozajik->build) return -1;
 		// all is good
 			return 1;
 	}

@@ -88,7 +88,7 @@ class zajlib_error extends zajLibExtension {
 			$error_details['id'] = uniqid("");
 		
 		// which protocol?
-			if($GLOBALS['zajlib']->https) $protocol = 'https:';
+			if(zajLib::me()->https) $protocol = 'https:';
 			else $protocol = 'http:';
 		// anything POSTed?
 			if(!empty($_POST)) $post_data = "[POST]";
@@ -97,24 +97,24 @@ class zajlib_error extends zajLibExtension {
 			if(!empty($_SERVER['HTTP_REFERER'])) $referer = " [REFERER: ".$_SERVER['HTTP_REFERER']."]";
 			else $referer = " [direct]";
 		// are we in debug mode?
-			if($GLOBALS['zajlib']->debug_mode) $debug_mode = " [DEBUG_MODE]";
+			if(zajLib::me()->debug_mode) $debug_mode = " [DEBUG_MODE]";
 			else $debug_mode = "";
 		// write to error_log			
-			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.$GLOBALS['zajlib']->fullrequest."] $post_data [Mozajik $errorlevel - ".$errortext."]".$referer.$debug_mode);
+			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.zajLib::me()->fullrequest."] $post_data [Mozajik $errorlevel - ".$errortext."]".$referer.$debug_mode);
 			
 		// log the backtrace?
-			if($GLOBALS['zajlib']->zajconf['error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
+			if(zajLib::me()->zajconf['error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
 
 		// only print if it is fatal error or debug mode
-			if($errorlevel == 'error' || $GLOBALS['zajlib']->debug_mode){		
+			if($errorlevel == 'error' || zajLib::me()->debug_mode){
 				// print it to screen
-					if(!$GLOBALS['zajlib']->debug_mode) $errortext = "Sorry, there has been a system error. The webmaster has been notified of the issue.";
+					if(!zajLib::me()->debug_mode) $errortext = "Sorry, there has been a system error. The webmaster has been notified of the issue.";
 					else "MOZAJIK ".strtoupper($errorlevel).": ".$errortext;
 		
 						// display the error?
 							$uid = $error_details['id'];
 							print "<div style='border: 2px red solid; padding: 5px; font-family: Arial; font-size: 13px;'>$errortext";
-					if($GLOBALS['zajlib']->debug_mode){
+					if(zajLib::me()->debug_mode){
 								print " <a href='#' onclick=\"document.getElementById('error_$uid').style.display='block';\">details</a><pre id='error_$uid' style='width: 98%; font-size: 13px; border: 1px solid black; overflow: scroll; display: none;'>";
 								print_r($backtrace);//print substr(debug_backtrace(), 0, 1000);
 								print "</pre>";
@@ -133,7 +133,7 @@ class zajlib_error extends zajLibExtension {
 	 **/ 
 	private function file_log($message){
 		// Is logging to a specific file enabled?
-			if($GLOBALS['zajlib']->zajconf['error_log_enabled'] && !empty($GLOBALS['zajlib']->zajconf['error_log_file']) && $GLOBALS['zajlib']->zajconf['error_log_file'] != 'MYSQL') return @error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, $GLOBALS['zajlib']->zajconf['error_log_file']);
+			if(zajLib::me()->zajconf['error_log_enabled'] && !empty(zajLib::me()->zajconf['error_log_file']) && zajLib::me()->zajconf['error_log_file'] != 'MYSQL') return @error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, zajLib::me()->zajconf['error_log_file']);
 			else return @error_log($message);
 	}
 

@@ -4,7 +4,7 @@
  * @package Fields
  * @subpackage BuiltinFields
  **/
-$GLOBALS['zajlib']->load->file('/fields/text.field.php');
+zajLib::me()->load->file('/fields/text.field.php');
 
 class zajfield_id extends zajField {
 	// name, options - these are passed to constructor and available here!

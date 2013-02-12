@@ -4,7 +4,7 @@
  * @package Fields
  * @subpackage BuiltinFields
  **/
-$GLOBALS['zajlib']->load->file('/fields/textarea.field.php');
+zajLib::me()->load->file('/fields/textarea.field.php');
 
 class zajfield_tinymce extends zajfield_textarea {
 	const edit_template = 'field/tinymce.field.html';	// string - the edit template, false if not used

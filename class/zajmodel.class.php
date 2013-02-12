@@ -158,7 +158,7 @@ abstract class zajModel {
 	public function __construct($id, $class_name){
 		$class_name = get_called_class();
 		// check for errors
-		if($id && !is_string($id)) $GLOBALS['zajlib']->error("Invalid ID value given as parameter for model constructor! You probably tried to use an object instead of a string!");
+		if($id && !is_string($id)) zajLib::me()->error("Invalid ID value given as parameter for model constructor! You probably tried to use an object instead of a string!");
 		// set class and table names
 		$this->table_name = strtolower($class_name);
 		$this->class_name = $class_name;
@@ -212,11 +212,11 @@ abstract class zajModel {
 		/* @var string|zajModel $class_name */
 		$class_name = get_called_class();
 		// make sure $field is chrooted
-		if(strpos($field_name, '.')) return $GLOBALS['zajlib']->error('Invalid field name "'.$field_name.'" used in model "'.$class_name.'".');
+		if(strpos($field_name, '.')) return zajLib::me()->error('Invalid field name "'.$field_name.'" used in model "'.$class_name.'".');
 		// TODO: can I create a version where $this is set?
 		// get model
 		$field_def = $class_name::__model()->$field_name;
-		if(empty($field_def)) return $GLOBALS['zajlib']->error('Undefined field name "'.$field_name.'" used in model "'.$class_name.'".');
+		if(empty($field_def)) return zajLib::me()->error('Undefined field name "'.$field_name.'" used in model "'.$class_name.'".');
 		// create my field object
 		$field_object = zajField::create($field_name, $field_def, $class_name);
 		return $field_object;
@@ -244,7 +244,7 @@ abstract class zajModel {
 			// first, is it already resumed? in this case let's make sure its the proper kind of object and just return it
 			if(is_object($id)){
 				// is it the proper kind of object? if not, warning, if so, return it
-				if($class_name != $id->class_name) return $GLOBALS['zajlib']->warning("You passed an object to $class_name::fetch(), but it was not a(n) $class_name object. It is a $id->class_name instead.");
+				if($class_name != $id->class_name) return zajLib::me()->warning("You passed an object to $class_name::fetch(), but it was not a(n) $class_name object. It is a $id->class_name instead.");
 				else return $id;
 			}
 			// not resumed, so let's assume its a string and return the cache
@@ -413,9 +413,9 @@ abstract class zajModel {
 		// Get my class_name
 		$class_name = get_called_class();
 		// Add event to stack
-		$GLOBALS['zajlib']->event_stack++;
+		zajLib::me()->event_stack++;
 		// Check stack size
-		if($GLOBALS['zajlib']->event_stack > MAX_GLOBAL_EVENT_STACK) $GLOBALS['zajlib']->error("Exceeded maximum global event stack size of ".MAX_GLOBAL_EVENT_STACK.". Possible infinite loop?");
+		if(zajLib::me()->event_stack > MAX_GLOBAL_EVENT_STACK) zajLib::me()->error("Exceeded maximum global event stack size of ".MAX_GLOBAL_EVENT_STACK.". Possible infinite loop?");
 		// If no arguments specified
 		if($arguments === false) $arguments = array();
 		// Do I have an extension? If so, go down one level...
@@ -424,14 +424,14 @@ abstract class zajModel {
 		// Check to see if stop propagation, if so, return the return_value
 		if(zajModelExtender::$event_stop_propagation){
 			zajModelExtender::$event_stop_propagation = false;
-			$GLOBALS['zajlib']->event_stack--;
+			zajLib::me()->event_stack--;
 			return $return_value;
 		}
 		// Call my version
 		if(method_exists($class_name, '__'.$event)) $return_value = call_user_func_array("$class_name::__".$event, $arguments);
 		else $return_value = false;
 		// Remove from stack
-		$GLOBALS['zajlib']->event_stack--;
+		zajLib::me()->event_stack--;
 		// Return value
 		return $return_value;
 	}
@@ -504,13 +504,13 @@ abstract class zajModel {
 		// any specific static?
 		switch($name){
 			// Validation
-			case 'validate':			return $GLOBALS['zajlib']->form->validate($class_name, $arguments);
-			case 'check':				return $GLOBALS['zajlib']->form->check($class_name, $arguments);
-			case 'filled':				return $GLOBALS['zajlib']->form->filled($arguments);
+			case 'validate':			return zajLib::me()->form->validate($class_name, $arguments);
+			case 'check':				return zajLib::me()->form->check($class_name, $arguments);
+			case 'filled':				return zajLib::me()->form->filled($arguments);
 			// Extending
 			case 'extend':
 			case 'extension_of':
-				$GLOBALS['zajlib']->error("The class $arguments[0] is not a child of zajModelExtender. Check the valid syntax for extending classes!");
+				zajLib::me()->error("The class $arguments[0] is not a child of zajModelExtender. Check the valid syntax for extending classes!");
 				return false;
 		}
 		// do I have an extension? if so, these override my own settings but only if method is not __model() as that is special!
@@ -525,7 +525,7 @@ abstract class zajModel {
 			else  $extended_but_does_not_exist = true;
 		}
 		// redirect static method calls to local private ones
-		if(!method_exists($arguments[0], $name)) $GLOBALS['zajlib']->error("called undefined method '$name'!"); return call_user_func_array("$arguments[0]::$name", $arguments);
+		if(!method_exists($arguments[0], $name)) zajLib::me()->error("called undefined method '$name'!"); return call_user_func_array("$arguments[0]::$name", $arguments);
 	}
 	/**
 	 * Shortcuts to private variables (lazy loading)
@@ -535,7 +535,7 @@ abstract class zajModel {
 	public function __get($name){
 		// the zajlib
 		switch($name){
-			case "zajlib": 		return $GLOBALS['zajlib'];
+			case "zajlib": 		return zajLib::me();
 			case "data":		if(!$this::$in_database) return false; 	// disable for non-database objects
 				if(!$this->data) return $this->data = new zajData($this);
 				return $this->data;
@@ -598,7 +598,7 @@ abstract class zajModel {
 		// get current class
 		$class_name = get_called_class();
 		// return the resumed class
-		$filename = $GLOBALS['zajlib']->file->get_id_path($GLOBALS['zajlib']->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
+		$filename = zajLib::me()->file->get_id_path(zajLib::me()->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
 		// try opening the file
 		$item_cached = false;
 		if(!file_exists($filename)){
@@ -609,7 +609,7 @@ abstract class zajModel {
 		}
 		else{
 			$new_object = unserialize(file_get_contents($filename));
-			$new_object->zajlib = $GLOBALS['zajlib'];
+			$new_object->zajlib = zajLib::me();
 			$item_cached = true;
 		}
 		// this is resumed from the db, so load the data
@@ -669,13 +669,13 @@ abstract class zajModel {
 		$model = $this->model;
 		$this->data=$this->model=$this->zajlib="";
 		// check for objects
-		foreach($this as $varname=>$varval) if(is_object($varval) && is_a($varval, 'zajModel')){ $GLOBALS['zajlib']->warning("You cannot cache a Model object! Found at variable $this->class_name / $varname."); $this->$varname = "[Cache error: $this->class_name / $varname]"; }
+		foreach($this as $varname=>$varval) if(is_object($varval) && is_a($varval, 'zajModel')){ zajLib::me()->warning("You cannot cache a Model object! Found at variable $this->class_name / $varname."); $this->$varname = "[Cache error: $this->class_name / $varname]"; }
 		// now serialize and save to file
 		file_put_contents($filename, serialize($this));
 		// now bring back data
 		$this->data = $data;
 		$this->model = $model;
-		$this->zajlib = $GLOBALS['zajlib'];
+		$this->zajlib = zajLib::me();
 		// call the callback function
 		$this->fire('afterCache');
 		return $this;
@@ -695,7 +695,7 @@ abstract class zajModel {
 			foreach($reorder_data as $oneid){
 				$obj = $class_name::fetch($class_name, $oneid);
 				// if failed to find, issue warning
-				if(!is_object($obj) || !is_a($obj, 'zajModel')) $GLOBALS['zajlib']->warning("Tried to reorder non-existant object!");
+				if(!is_object($obj) || !is_a($obj, 'zajModel')) zajLib::me()->warning("Tried to reorder non-existant object!");
 				// all is okay
 				else{
 					// TODO: fix, but for now explicitly load data class, because autoload won't work in current scope
@@ -781,25 +781,25 @@ abstract class zajModelExtender {
 	 **/
 	public static function extend($parentmodel, $known_as, $parentmodel_source_file = false){
 		// Check to see if already extended (this will never run because once it is extended the parent class will exist, and any additional iterations will not autoload the other model file! fix this somehow to warn the user!)
-		// if(!empty(zajModel::${extensions}[$parentmodel])) return $GLOBALS['zajlib']->error("Could not extend $parentmodel with $childmodel because the class $parentmodel was already extended by ".zajModel::${extensions}[$parentmodel].".");
+		// if(!empty(zajModel::${extensions}[$parentmodel])) return zajLib::me()->error("Could not extend $parentmodel with $childmodel because the class $parentmodel was already extended by ".zajModel::${extensions}[$parentmodel].".");
 		// Determine where the user called from
 		$childmodel = get_called_class();
 		// If a specific parentmodel source file was specified, use that!
-		if(!class_exists($parentmodel, false) && $parentmodel_source_file) $GLOBALS['zajlib']->load->file($parentmodel_source_file, true, true, "specific");
+		if(!class_exists($parentmodel, false) && $parentmodel_source_file) zajLib::me()->load->file($parentmodel_source_file, true, true, "specific");
 		// If the current class does not exist, try to load it from all files in the plugin app hierarchy
 		if(!class_exists($parentmodel, false)){
-			foreach($GLOBALS['zajlib']->loaded_plugins as $plugin_app){
+			foreach(zajLib::me()->loaded_plugins as $plugin_app){
 				// Attempt to load file
-				$result = $GLOBALS['zajlib']->load->file('plugins/'.$plugin_app.'/model/'.strtolower($known_as).'.model.php', false, true, "specific");
+				$result = zajLib::me()->load->file('plugins/'.$plugin_app.'/model/'.strtolower($known_as).'.model.php', false, true, "specific");
 				// If successful, break
 				if($result && class_exists($parentmodel, false)) break;
 			}
 		}
 		// If the current class does not exist, try to load it from all files in the system app hierarchy
 		if(!class_exists($parentmodel, false)){
-			foreach($GLOBALS['zajlib']->zajconf['system_apps'] as $system_app){
+			foreach(zajLib::me()->zajconf['system_apps'] as $system_app){
 				// Attempt to load file
-				$result = $GLOBALS['zajlib']->load->file('system/plugins/'.$system_app.'/model/'.strtolower($parentmodel).'.model.php', false, true, "specific");
+				$result = zajLib::me()->load->file('system/plugins/'.$system_app.'/model/'.strtolower($parentmodel).'.model.php', false, true, "specific");
 				// If successful, break
 				if($result && class_exists($parentmodel, false)) break;
 			}
@@ -812,7 +812,7 @@ abstract class zajModelExtender {
 			zajModelExtender::${'parents'}[$childmodel] = $parentmodel;
 			return true;
 		}
-		else return $GLOBALS['zajlib']->error("Could not extend $parentmodel with $childmodel because the class $parentmodel was not found in any plugin or system apps.");
+		else return zajLib::me()->error("Could not extend $parentmodel with $childmodel because the class $parentmodel was not found in any plugin or system apps.");
 	}
 
 	/**
@@ -945,9 +945,9 @@ abstract class zajModelExtender {
 		// Get my class_name
 		$class_name = get_called_class();
 		// Add event to stack
-		$GLOBALS['zajlib']->event_stack++;
+		zajLib::me()->event_stack++;
 		// Check stack size
-		if($GLOBALS['zajlib']->event_stack > MAX_GLOBAL_EVENT_STACK) $GLOBALS['zajlib']->error("Exceeded maximum global event stack size of ".MAX_GLOBAL_EVENT_STACK.". Possible infinite loop?");
+		if(zajLib::me()->event_stack > MAX_GLOBAL_EVENT_STACK) zajLib::me()->error("Exceeded maximum global event stack size of ".MAX_GLOBAL_EVENT_STACK.". Possible infinite loop?");
 		// If no arguments specified
 		if($arguments === false) $arguments = array();
 		// Do I have an extension? If so, go down one level...
@@ -955,14 +955,14 @@ abstract class zajModelExtender {
 		if($ext) $return_value = $ext::fire_static($event, $arguments);
 		// Check to see if stop propagation, if so, return the return_value
 		if(zajModelExtender::$event_stop_propagation){
-			$GLOBALS['zajlib']->event_stack--;
+			zajLib::me()->event_stack--;
 			return $return_value;
 		}
 		// Call my version
 		if(method_exists($class_name, '__'.$event)) $return_value = call_user_func_array("$class_name::__".$event, $arguments);
 		else $return_value = false;
 		// Remove from stack
-		$GLOBALS['zajlib']->event_stack--;
+		zajLib::me()->event_stack--;
 		// Return value
 		return $return_value;
 	}
@@ -990,7 +990,7 @@ class zajModelLocalizer {
 	 **/
 	public function __construct($parent, $locale = false){
 		if($locale != false) $this->locale = $locale;
-		else $this->locale = $GLOBALS['zajlib']->lang->get();
+		else $this->locale = zajLib::me()->lang->get();
 		$this->parent = $parent;
 	}
 
@@ -1037,7 +1037,7 @@ class zajModelLocalizerItem {
 	 **/
 	public function get_by_locale($locale = false){
 		// Locale is not set or is default, so return the default value
-		if(empty($locale) || $locale == $GLOBALS['zajlib']->lang->get_default_locale()) return $this->parent->data->{$this->fieldname};
+		if(empty($locale) || $locale == zajLib::me()->lang->get_default_locale()) return $this->parent->data->{$this->fieldname};
 		// A translation is requested, so let's retrieve it
 		$tobj = Translation::fetch_by_properties($this->parent->class_name, $this->parent->id, $this->fieldname, $locale);
 		if($tobj !== false) $field_value = $tobj->value;

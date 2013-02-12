@@ -4,7 +4,7 @@
  * @package Fields
  * @subpackage BuiltinFields
  **/
-$GLOBALS['zajlib']->load->file('/fields/text.field.php');
+zajLib::me()->load->file('/fields/text.field.php');
 
 class zajfield_name extends zajfield_text {
 	// exactly the same as text, but override the save method

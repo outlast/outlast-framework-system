@@ -19,16 +19,16 @@ class zajfield_onetomany extends zajField {
 	public function __construct($name, $options, $class_name, &$zajlib){
 		// set default options
 			// relation fields dont really have options, they're parameters
-			if(empty($options[0])) return $GLOBALS['zajlib']->error("Required parameter 1 missing for field $name!");
+			if(empty($options[0])) return zajLib::me()->error("Required parameter 1 missing for field $name!");
 		
 			// array parameters
 			if(is_array($options[0])){
 				$options = $options[0];
-				if(empty($options['model'])) return $GLOBALS['zajlib']->error("Required parameter 'model' missing for field $name!");
-				if(empty($options['field'])) return $GLOBALS['zajlib']->error("Required parameter 'field' missing for field $name!");
+				if(empty($options['model'])) return zajLib::me()->error("Required parameter 'model' missing for field $name!");
+				if(empty($options['field'])) return zajLib::me()->error("Required parameter 'field' missing for field $name!");
 			}
 			else{	// depricated
-				if(empty($options[1])) return $GLOBALS['zajlib']->error("Required parameter 2 missing for field $name!");
+				if(empty($options[1])) return zajLib::me()->error("Required parameter 2 missing for field $name!");
 				$options['model'] = $options[0];
 				$options['field'] = $options[1];
 				unset($options[0], $options[1]);

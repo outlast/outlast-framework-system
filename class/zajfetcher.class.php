@@ -66,7 +66,7 @@ class zajFetcher implements Iterator, Countable{
 		// generate query defaults
 			$this->add_source('`'.$this->table_name.'`', "model");
 			$this->add_field_source('model.id');
-			$this->db = $GLOBALS['zajlib']->db->create_session();		// create my own database session
+			$this->db = zajLib::me()->db->create_session();		// create my own database session
 		// default order and pagination (defined by model)
 			if($classname::$fetch_paginate > 0) $this->paginate($classname::$fetch_paginate);
 			$this->ordermode = $classname::$fetch_order;
@@ -103,12 +103,12 @@ class zajFetcher implements Iterator, Countable{
 				$this->pagination->pagefirstitem = ($page-1)*$perpage+1;
 				$this->pagination->nextpage = $page+1;	// nextpage is reset to false if not enough object (done after query)
 				$this->pagination->prevpage = $page-1;
-				$this->pagination->prevurl = $GLOBALS['zajlib']->fullrequest."&zajpagination[{$this->class_name}]={$this->pagination->prevpage}";
+				$this->pagination->prevurl = zajLib::me()->fullrequest."&zajpagination[{$this->class_name}]={$this->pagination->prevpage}";
 				if($this->pagination->prevpage > 0) $this->pagination->prev = "<a href='".$this->pagination->prevurl."'>&lt;&lt;&lt;&lt;</a>";
 				else $this->pagination->prev = '';
-				$this->pagination->nexturl = $GLOBALS['zajlib']->fullrequest."&zajpagination[{$this->class_name}]={$this->pagination->nextpage}";
+				$this->pagination->nexturl = zajLib::me()->fullrequest."&zajpagination[{$this->class_name}]={$this->pagination->nextpage}";
 				$this->pagination->next = "<a href='".$this->pagination->nexturl."'>&gt;&gt;&gt;&gt;</a>";
-				$this->pagination->pageurl = $GLOBALS['zajlib']->fullrequest."&zajpagination[{$this->class_name}]=";
+				$this->pagination->pageurl = zajLib::me()->fullrequest."&zajpagination[{$this->class_name}]=";
 				$this->pagination->pagecount = 1;		// pagecount is reset to actual number (after query)
 			}
 		// changes query, so reset me
@@ -438,12 +438,12 @@ class zajFetcher implements Iterator, Countable{
 						// Explode my filter into a list
 							list($field, $value, $logic, $type) = $filter;
 						// Validate the field name
-							if(!$GLOBALS['zajlib']->db->verify_field($field)) return $GLOBALS['zajlib']->warning("Field '$classname.$field' contains invalid characters and did not pass safety inspection!");
+							if(!zajLib::me()->db->verify_field($field)) return zajLib::me()->warning("Field '$classname.$field' contains invalid characters and did not pass safety inspection!");
 						// Now process type
 							if($type == "OR" || $type == "||") $type = "||";
 							else $type = "&&";
 						// Verify logic param
-							if($logic != "SOUNDS LIKE" && $logic != "LIKE" && $logic != "NOT LIKE" && $logic != "REGEXP" && $logic != "NOT REGEXP" && $logic != "!=" && $logic != "==" && $logic != "=" && $logic != "<=>" && $logic != ">" && $logic != ">=" && $logic != "<" && $logic != "<=") return $GLOBALS['zajlib']->warning("Fetcher class could not generate query. The logic parameter ($logic) specified is not valid.");
+							if($logic != "SOUNDS LIKE" && $logic != "LIKE" && $logic != "NOT LIKE" && $logic != "REGEXP" && $logic != "NOT REGEXP" && $logic != "!=" && $logic != "==" && $logic != "=" && $logic != "<=>" && $logic != ">" && $logic != ">=" && $logic != "<" && $logic != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($logic) specified is not valid.");
 						// if $value is a model object, use its id
 							if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
 
@@ -456,7 +456,7 @@ class zajFetcher implements Iterator, Countable{
 						}
 						else{
 							// check if it is a string
-								if(is_object($value)) $GLOBALS['zajlib']->error("Invalid filter/exclude value on fetcher object for $classname/$field! Value cannot be an object since this is not a special field!");
+								if(is_object($value)) zajLib::me()->error("Invalid filter/exclude value on fetcher object for $classname/$field! Value cannot be an object since this is not a special field!");
 							// allow subquery
 								if($logic != 'IN' && $logic != 'NOT IN') $filters_sql .= " $type model.`$field` $logic '".$this->db->escape($value)."'";
 								else $filters_sql .= " $type model.`$field` $logic ($value)";
@@ -672,7 +672,7 @@ class zajFetcher implements Iterator, Countable{
 							if(!$this->query_done) $this->query();
 							return $this->pagination;
 			
-			default: 		$GLOBALS['zajlib']->warning("Attempted to access inaccessible variable ($name) for zajFetcher class!");
+			default: 		zajLib::me()->warning("Attempted to access inaccessible variable ($name) for zajFetcher class!");
 		}
 	}	
 
@@ -804,8 +804,8 @@ class zajFetcher implements Iterator, Countable{
 	 **/	
 	public function add($object, $mode = 'add', $additional_fields = false){
 		// if not an object
-			if(!is_object($object)) $GLOBALS['zajlib']->error('tried to edit a relationship with something that is not a model or fetcher object.');
-			//if(!$object->exists) $GLOBALS['zajlib']->error('tried to add a relationship that was not an object');
+			if(!is_object($object)) zajLib::me()->error('tried to edit a relationship with something that is not a model or fetcher object.');
+			//if(!$object->exists) zajLib::me()->error('tried to add a relationship that was not an object');
 		// if manytomany, write in separate table
 			if($this->connection_type == 'manytomany'){
 				$row = array('time_create'=>time());
@@ -831,16 +831,16 @@ class zajFetcher implements Iterator, Countable{
 					$row['id'] = uniqid("");
 					$row['order1'] = MYSQL_MAX_PLUS;
 					$row['order2'] = MYSQL_MAX_PLUS;
-					$db = $GLOBALS['zajlib']->db->create_session();
+					$db = zajLib::me()->db->create_session();
 					if($mode == 'add') $db->add($table_name, $row);
 					if($mode == 'delete') $db->query("DELETE FROM `$table_name` WHERE `id1`='".$row['id1']."' && `id2`='".$row['id2']."' && `field`='".$row['field']."' LIMIT 1");
 					// @todo: destroy db session
 			}
 			elseif($this->connection_type == 'manytoone' || $this->connection_type == 'onetoone'){
-				$GLOBALS['zajlib']->warning('Using add is only necessary on manytomany fields.');
+				zajLib::me()->warning('Using add is only necessary on manytomany fields.');
 			}
 			elseif($this->connection_type == 'onetomany'){
-				$GLOBALS['zajlib']->warning('Using add is only necessary on manytomany fields. On onetomany fields, you should try setting up the relationship from the manytoone direction.');
+				zajLib::me()->warning('Using add is only necessary on manytomany fields. On onetomany fields, you should try setting up the relationship from the manytoone direction.');
 			}
 		// Update other object (if needed)! Since the save() method is only called on $connection_parent and not on $object, the appropriate magic methods
 		//			need to be called here....

@@ -4,7 +4,7 @@
  * @package Fields
  * @subpackage BuiltinFields
  **/
-$GLOBALS['zajlib']->load->file('/fields/textarea.field.php');
+zajLib::me()->load->file('/fields/textarea.field.php');
 
 class zajfield_textbox extends zajfield_textarea {
 	// alias of textarea
