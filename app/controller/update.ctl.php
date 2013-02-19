@@ -7,6 +7,7 @@
  	define('ZAJ_INSTALL_DONTCHECK', 'dont_check_install');
 
 	class zajapp_update extends zajController{
+
 		/**
 		 * Authenticate the request if not in debug mode
 		 **/
