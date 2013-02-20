@@ -409,6 +409,7 @@ class zajLib {
 	/**
 	 * Redirect the user to relative or absolute URL
 	 * @param string $url The specific url to redirect the user to.
+	 * @return bool Does not yet return anything.
 	 **/
 	public function redirect($url){
 		// Now redirect
