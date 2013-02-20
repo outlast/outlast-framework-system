@@ -80,7 +80,7 @@
 		if(zaj.bootstrap){
 			// Create modal if not yet available
 				if($('#zaj_bootstrap_modal').length <= 0){
-					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a class="modal-button btn btn-primary">Ok</a></div></div>');
+					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn btn-primary">Ok</a></div></div>');
 				}
 			// Reset and init button
 				// Set action
