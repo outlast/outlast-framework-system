@@ -170,7 +170,7 @@ class zajLib {
 		// template variables
 			/**
 			 * An object which stores the template variables.
-			 * @var zajVariable
+			 * @var stdClass|zajVariable
 			 **/
 			public $variable;
 
