@@ -3,13 +3,19 @@
 if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'small'=>300,'normal'=>700,'large'=>2000,'full'=>true);
 
 /**
- * A built-in model to handle photos.
+ * A built-in model to store photos.
  *
- * You should not directly use this model unless you are developing extensions.
- *
- * @package Model
- * @subpackage BuiltinModels
- * @todo Add saving of 'imagetype' and 'class' - this is delayed for a later version to ensure database updates on all projects...
+ * This is a pointer to the data items in this model...
+ * @property zajDataPhoto $data
+ * And here are the cached fields...
+ * @property string $status
+ * @property string $class The class of the parent.
+ * @property string $parent The id of the parent.
+ * @property string $field The field name of the parent.
+ * @property boolean $timepath If the new time-based path is used.
+ * @property integer $time_create
+ * @property string $extension
+ * @property string $imagetype Can be IMAGETYPE_PNG, IMAGETYPE_GIF, or IMAGETYPE_JPG constant.
  **/
 class Photo extends zajModel {
 
@@ -21,18 +27,18 @@ class Photo extends zajModel {
 	///////////////////////////////////////////////////////////////
 	public static function __model(){	
 		// define custom database fields
-			$fields = (object) array();
-			$fields->class = zajDb::text();
-			$fields->parent = zajDb::text();
-			$fields->field = zajDb::text();
-			$fields->name = zajDb::name();
-			$fields->imagetype = zajDb::integer();
-			$fields->original = zajDb::text();
-			$fields->description = zajDb::textbox();
-			$fields->timepath = zajDb::boolean();
-			$fields->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
+			$f = (object) array();
+			$f->class = zajDb::text();
+			$f->parent = zajDb::text();
+			$f->field = zajDb::text();
+			$f->name = zajDb::name();
+			$f->imagetype = zajDb::integer();
+			$f->original = zajDb::text();
+			$f->description = zajDb::textbox();
+			$f->timepath = zajDb::boolean();
+			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
 		// do not modify the line below!
-			$fields = parent::__model(__CLASS__, $fields); return $fields;
+			$f = parent::__model(__CLASS__, $f); return $f;
 	}
 	///////////////////////////////////////////////////////////////
 	// !Construction and other required methods
@@ -46,6 +52,7 @@ class Photo extends zajModel {
 	public function __afterFetch(){
 		// Set status and parents
 			$this->status = $this->data->status;
+			$this->class = $this->data->class;
 			$this->parent = $this->data->parent;
 			$this->field = $this->data->field;
 			$this->timepath = $this->data->timepath;
@@ -245,6 +252,7 @@ class Photo extends zajModel {
 			zajLib::me()->file->file_check(zajLib::me()->basepath."cache/upload/".$updest);
 			copy($urlORfilename, zajLib::me()->basepath."cache/upload/".$updest);
 		// now create and set image
+			/** @var Photo $pobj **/
 			$pobj = Photo::create();
 			if($parent !== false) $pobj->set('parent', $parent);
 			return $pobj->set_image($updest);
@@ -253,7 +261,7 @@ class Photo extends zajModel {
 	 * Included for backwards-compatibility. Will be removed. Alias of create_from_file.
 	 * @todo Remove from version release.
 	 **/
-	public static function import($urlORfilename){ return $this->create_from_file($urlORfilename); }
+	public static function import($urlORfilename){ return self::create_from_file($urlORfilename); }
 	
 	/**
 	 * Creates a photo object from php://input stream.
@@ -275,6 +283,7 @@ class Photo extends zajModel {
 				return false;
 			}
 		// now create object and return the object
+			/** @var Photo $pobj **/
 			$pobj = Photo::create();
 		 	$pobj->set_image($filename);
 			@unlink($folder.$filename);
@@ -295,6 +304,7 @@ class Photo extends zajModel {
 		// If no file, return false
 			if(empty($tmp_name)) return false;
 		// Now create photo object and set me
+			/** @var Photo $obj **/
 			$obj = Photo::create();
 		// Move uploaded file to tmp
 			@mkdir(zajLib::me()->basepath.'cache/upload/');
