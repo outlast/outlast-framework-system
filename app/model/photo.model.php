@@ -57,15 +57,12 @@ class Photo extends zajModel {
 			$this->field = $this->data->field;
 			$this->timepath = $this->data->timepath;
 			$this->time_create = $this->data->time_create;
-		// If timepath, then use the creation time
-			if($this->timepath) $function = 'get_time_path';
-			else $function = 'get_id_path';
 		// See which file exists
-			if(file_exists($this->zajlib->file->$function($this->zajlib->basepath."data/Photo", $this->id."-normal.png", $this->time_create))){
+			if(file_exists($this->zajlib->basepath.$this->get_file_path($this->id."-normal.png"))){
 				$this->extension = 'png';
 				$this->imagetype = IMAGETYPE_PNG;
 			}
-			elseif(file_exists($this->zajlib->file->$function($this->zajlib->basepath."data/Photo", $this->id."-normal.gif", $this->time_create))){
+			elseif(file_exists($this->zajlib->basepath.$this->get_file_path($this->id."-normal.gif"))){
 				$this->extension = 'gif';
 				$this->imagetype = IMAGETYPE_GIF;
 			}
@@ -85,12 +82,26 @@ class Photo extends zajModel {
 			$relname = str_ireplace('rel_', '', $name);
 			if(!empty($GLOBALS['photosizes'][$name])) return $this->get_image($name);
 			else{
-				if(!empty($GLOBALS['photosizes'][$relname])) return $this->zajlib->file->get_id_path("data/Photo", $this->id."-$relname.".$this->extension);
+				if(!empty($GLOBALS['photosizes'][$relname])) return $this->get_file_path($this->id."-$relname.".$this->extension);
 				else return parent::__get($name);
 			}
 	}
 
-
+	/**
+	 * Helper function which returns the path based on the current settings.
+	 * @param string $filename Can be thumb, small, normal, etc.
+	 * @param bool $create_folders Create the subfolders if needed.
+	 * @return string Returns the file path.
+	 **/
+	public function get_file_path($filename, $create_folders = false){
+		// First, let's determine which function to use
+			if($this->timepath) $path = $this->zajlib->file->get_time_path("data/Photo", $filename, $this->time_create, false);
+			else $path = $this->zajlib->file->get_id_path("data/Photo", $filename, false);
+		// Create folders if requested
+			if($create_folders) $this->zajlib->file->create_path_for($path);
+		// Now call and return!
+			return $path;
+	}
 
 	///////////////////////////////////////////////////////////////
 	// !Model methods
@@ -124,17 +135,20 @@ class Photo extends zajModel {
 			if($image_type == IMAGETYPE_PNG) $extension = 'png';
 			elseif($image_type == IMAGETYPE_GIF) $extension = 'gif';
 			else $extension = 'jpg';
+		// now enable time-based folders
+			$this->set('timepath', true);
+			$this->timepath = true;
 		// no errors, resize and save
 			foreach($GLOBALS['photosizes'] as $key => $size){
 				if($size !== false){
 					// save resized images perserving extension
-						$new_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$key.".$extension);
+						$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-$key.".$extension, true);
 					// resize it now!
 						$this->zajlib->graphics->resize($file_path, $new_path, $size);
 				}
 			}
 		// now remove the original or copy to full location
-			if($GLOBALS['photosizes']['full']) copy($file_path, $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-full.".$extension));
+			if($GLOBALS['photosizes']['full']) copy($file_path, $this->zajlib->basepath.$this->get_file_path($this->id."-full.".$extension, true));
 			else unlink($file_path);
 		// Remove temporary location flag
 			$this->temporary = false;
@@ -152,7 +166,7 @@ class Photo extends zajModel {
 	public function get_image($size = 'normal'){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
-		return $this->zajlib->baseurl.$this->zajlib->file->get_id_path("data/Photo", $this->id."-$size.".$this->extension);
+		return $this->zajlib->baseurl.$this->get_file_path($this->id."-$size.".$this->extension);
 	}
 
 	/**
@@ -163,7 +177,7 @@ class Photo extends zajModel {
 	public function get_path($size = 'normal'){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
-		return $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$size.".$this->extension);
+		return $this->zajlib->basepath.$this->get_file_path($this->id."-$size.".$this->extension);
 	}
 
 	/**
@@ -184,15 +198,15 @@ class Photo extends zajModel {
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
 		// look for bad characters in $size
-			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0) return false;
+			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0)  $this->zajlib->error("File could not be found.");
 			if(!$this->temporary && $size == "preview") $size = 'normal';
 		// generate path
-			$file_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$size.".$this->extension);
+			$file_path = $this->zajlib->basepath.$this->get_file_path($this->id."-$size.".$this->extension);
 		// if it is in preview mode (only if not yet finalized)
 			$preview_path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
 			if($this->temporary && $size == "preview") $file_path = $preview_path;
 		// final test, if file exists
-			if(!file_exists($file_path)) exit("File could not be found.");
+			if(!file_exists($file_path)) $this->zajlib->error("File could not be found.");
 		// pass file thru to user
 			if($force_download) header('Content-Disposition: attachment; filename="'.$this->data->name.'"');
 		// create header
@@ -201,8 +215,7 @@ class Photo extends zajModel {
 				case 'gif': header('Content-Type: image/gif;'); break;
 				default: header('Content-Type: image/jpeg;'); break;
 			}
-
-			
+		// open and pass through
 			$f = fopen($file_path, "r");
 				fpassthru($f);
 			fclose($f);
@@ -219,9 +232,8 @@ class Photo extends zajModel {
 			if(empty($this->extension)) $this->extension = 'jpg';
 		// remove photo files
 			if($complete){
-				$this->zajlib->load->library('file');
 				foreach($GLOBALS['photosizes'] as $name=>$size){
-					if($size) @unlink($this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-$name.".$this->extension));
+					if($size) @unlink($this->zajlib->basepath.$this->get_file_path($this->id."-$name.".$this->extension));
 				}
 			}
 		// call parent
