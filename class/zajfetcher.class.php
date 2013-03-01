@@ -78,7 +78,7 @@ class zajFetcher implements Iterator, Countable{
 	/**
 	 * Paginate results by a specific number.
 	 * @param integer $perpage The number of items to list per page.
-	 * @param integer $page The current page number. This is normally controlled automatically via the created template variables. See docs for details.
+	 * @param integer|bool $page The current page number. This is normally controlled automatically via the created template variables. See docs for details.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function paginate($perpage=10, $page = false){
@@ -98,6 +98,7 @@ class zajFetcher implements Iterator, Countable{
 			// set the limit values
 				$this->limit($startat, $perpage);
 			// now set pagination variables
+				$this->pagination = (object) array();
 				$this->pagination->page = $page;
 				$this->pagination->perpage = $perpage;
 				$this->pagination->pagefirstitem = ($page-1)*$perpage+1;

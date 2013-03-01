@@ -99,6 +99,19 @@ EOF;
 	}
 
 	/**
+	 * Filter: pagination - Displays the pagination widget.
+	 *
+	 *  <b>{{fetcher|pagination:'items'}}</b> You can optionally pass a parameter which will be the descriptor of the items. Defaults to 'items'.
+	 **/
+	public function filter_pagination($parameter, &$source){
+		// default for parameter
+		if(empty($parameter)) $parameter = '"items"';
+		// write to file
+		$this->zajlib->compile->write('if(!$filter_var->pagination->prevpage) $prevdisabled = "disabled"; if(!$filter_var->pagination->nextpage) $nextdisabled = "disabled"; $filter_var="<div class=\'pagination pagination-small pagination-centered\'><ul><li class=\'$prevdisabled\'><a href=\'{$filter_var->pagination->prevurl}\'>«</a></li><li class=\'disabled active\'><a href=\'#\'>{$filter_var->pagination->page} / {$filter_var->pagination->pagecount} ({$filter_var->total} ".'.$parameter.'.")</a></li><li class=\'$nextdisabled\'><a href=\'{$filter_var->pagination->nexturl}\'>»</a></li></ul></div>";');
+		return true;
+	}
+
+	/**
 	 * Filter: sort - Same as {@link zajlib_filter_base->filter_dictsort()
 	 **/
 	public function filter_sort($parameter, &$source){
