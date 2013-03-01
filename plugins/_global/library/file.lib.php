@@ -111,14 +111,15 @@ class zajlib_file extends zajLibExtension {
 	 **/
 	function get_extension($filename){
 		$path_parts = pathinfo($filename);
-		$path_parts[extension] = mb_strtolower($path_parts[extension]);
-		return $path_parts[extension];
+		$path_parts['extension'] = mb_strtolower($path_parts['extension']);
+		return $path_parts['extension'];
 	}
 	
 	/**
 	 * Creates folders and subfolders for the specified file name.
 	 * @param string $filename The full filename, including extension.
-	 **/
+	 * @return bool
+	 */
 	function create_path_for($filename){
 		// get folder
 			$path = dirname($filename);
@@ -127,13 +128,13 @@ class zajlib_file extends zajLibExtension {
 		// all ok, create
 		return @mkdir($path, 0777, true);
 	}
-	
+
 	/**
 	 * Checks if the extension is valid.
 	 * @param string $filename The full filename, including extension.
-	 * @param string|array $extension A single extension (string) or an array of extensions (array of strings). Defaults to an array of image extensions (jpg, jpeg, png, gif)
+	 * @param array|string $extORextarray A single extension (string) or an array of extensions (array of strings). Defaults to an array of image extensions (jpg, jpeg, png, gif)
 	 * @return boolean True if the file extension is valid according to the specified list.
-	 **/
+	 */
 	function is_correct_extension($filename, $extORextarray = ""){
 		// set default (for images)
 			if($extORextarray == "") $extORextarray = array("jpg", "jpeg", "png", "gif");
@@ -144,16 +145,16 @@ class zajlib_file extends zajLibExtension {
 		// is it in the array?
 			return in_array($ext, $extORextarray);
 	}
-	
+
 	/**
 	 * Generate a list of subfolders based on the timestamp. So for example: 2010/Jan/3/example.txt could be created.
 	 * @param string $basepath The base path of the file (this will not use the global base path!)
 	 * @param string $filename The full filename, including extension.
 	 * @param integer $timestamp The UNIX time stamp to use for generating the folders. The current timestamp will be used by default.
 	 * @param boolean $create_folders_if_they_dont_exist If set to true, the folders will not only be calculated, but also created.
-	 * @param integer $level The number of levels of subfolders to calculate with.
+	 * @param bool $include_day Whether to include the day level as well.
 	 * @return string The new full path of the file.
-	 **/
+	 */
 	function get_time_path($basepath,$filename,$timestamp = 0,$create_folders_if_they_dont_exist = true,$include_day=true){
 		// Validate path
 			$basepath = $this->folder_check($basepath, "Invalid path requested for get_time_path.");

@@ -12,12 +12,16 @@ if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'sm
  * @todo Add saving of 'imagetype' and 'class' - this is delayed for a later version to ensure database updates on all projects...
  **/
 class Photo extends zajModel {
+
+	/* If set to true, the file is not yet saved to the db. */
+	public $temporary = false;
 		
 	///////////////////////////////////////////////////////////////
 	// !Model design
 	///////////////////////////////////////////////////////////////
 	public static function __model(){	
 		// define custom database fields
+			$fields = (object) array();
 			$fields->class = zajDb::text();
 			$fields->parent = zajDb::text();
 			$fields->field = zajDb::text();
@@ -25,6 +29,7 @@ class Photo extends zajModel {
 			$fields->imagetype = zajDb::integer();
 			$fields->original = zajDb::text();
 			$fields->description = zajDb::textbox();
+			$fields->timepath = zajDb::boolean();
 			$fields->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
 		// do not modify the line below!
 			$fields = parent::__model(__CLASS__, $fields); return $fields;
@@ -43,12 +48,17 @@ class Photo extends zajModel {
 			$this->status = $this->data->status;
 			$this->parent = $this->data->parent;
 			$this->field = $this->data->field;
+			$this->timepath = $this->data->timepath;
+			$this->time_create = $this->data->time_create;
+		// If timepath, then use the creation time
+			if($this->timepath) $function = 'get_time_path';
+			else $function = 'get_id_path';
 		// See which file exists
-			if(file_exists($this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-normal.png"))){
+			if(file_exists($this->zajlib->file->$function($this->zajlib->basepath."data/Photo", $this->id."-normal.png", $this->time_create))){
 				$this->extension = 'png';
 				$this->imagetype = IMAGETYPE_PNG;
 			}
-			elseif(file_exists($this->zajlib->file->get_id_path($this->zajlib->basepath."data/Photo", $this->id."-normal.gif"))){
+			elseif(file_exists($this->zajlib->file->$function($this->zajlib->basepath."data/Photo", $this->id."-normal.gif", $this->time_create))){
 				$this->extension = 'gif';
 				$this->imagetype = IMAGETYPE_GIF;
 			}
@@ -86,8 +96,9 @@ class Photo extends zajModel {
 
 	/**
 	 * Resizes and saves the image. The status is always changed to saved and this method automatically saves changes to the database. Only call this when you are absolutely ready to commit the photo for public use.
-	 * @param $filename The name of the file within the cache upload folder.
-	 **/
+	 * @param string $filename The name of the file within the cache upload folder.
+	 * @return bool|Photo Returns the Photo object, false if error.
+	 */
 	public function set_image($filename = ""){
 		// if filename is empty, use default tempoary name
 			if(empty($filename)) $filename = $this->id.".tmp";
@@ -129,7 +140,8 @@ class Photo extends zajModel {
 	/**
 	 * Returns an image url based on the requested size.
 	 * @param string $size One of the standard photo sizes.
-	 **/
+	 * @return string Image url.
+	 */
 	public function get_image($size = 'normal'){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
@@ -139,6 +151,7 @@ class Photo extends zajModel {
 	/**
 	 * Returns an image path based on the requested size.
 	 * @param string $size One of the standard photo sizes.
+	 * @return string Image path.
 	 **/
 	public function get_path($size = 'normal'){
 		// Default the extension to jpg if not defined (backwards compatibility)
@@ -158,7 +171,8 @@ class Photo extends zajModel {
 	 * Forces a download dialog for the browser.
 	 * @param string $size One of the standard photo sizes.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
-	 **/
+	 * @return void This will force a download and exit.
+	 */
 	public function download($size = "normal", $force_download = true){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
@@ -188,6 +202,11 @@ class Photo extends zajModel {
 		// now exit
 		exit;
 	}
+	/**
+	 * Overrides the global delete.
+	 * @param bool $complete If set to true, the file will be deleted too and the full entry will be removed.
+	 * @return bool Returns true if successful.
+	 **/
 	public function delete($complete = false){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
@@ -199,7 +218,7 @@ class Photo extends zajModel {
 				}
 			}
 		// call parent
-			parent::delete($complete);
+			return parent::delete($complete);
 	}
 
 
@@ -212,7 +231,7 @@ class Photo extends zajModel {
 	/**
 	 * Creates a photo object from a file or url. Will return false if it is not an image or not found.
 	 * @param string $urlORfilename The url or file name.
-	 * @param zajObject $parent My parent object. If not specified, none will be set.
+	 * @param zajModel|bool $parent My parent object. If not specified, none will be set.
 	 * @return Photo Returns the new photo object or false if none created.
 	 **/
 	public static function create_from_file($urlORfilename, $parent = false){
@@ -266,7 +285,8 @@ class Photo extends zajModel {
 	 * Creates a photo object from a standard upload HTML4
 	 * @param string $field_name The name of the file input field.
 	 * @param boolean $save_now If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
-	 * @param zajObject $parent My parent object.
+	 * @param zajModel|bool $parent My parent object.
+	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
 	public static function create_from_upload($field_name, $parent = false, $save_now = true){
 		// File names
