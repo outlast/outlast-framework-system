@@ -41,9 +41,10 @@
 
 	/**
 	 * Logs a message to the console. Ingored if console not available.
-	 * @param string message The message to log.
-	 * @param string type Can be notice, warning, or error
-	 * @param string context The context is any other element or object which will be logged.
+	 * @param message The message to log.
+	 * @param type Can be notice, warning, or error
+	 * @param context The context is any other element or object which will be logged.
+	 * @return bool Returns true or console.log.
 	 **/
 	zaj.log = function(message, type, context){
 		if(typeof console != 'undefined' && typeof(console) == 'object'){
