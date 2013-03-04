@@ -436,8 +436,21 @@ EOF;
 		// return debug_stats
 			return true;
 	}
-	
-	
+
+	/**
+	 * Tag: cachebuster - Generates a seconds-based timestamp (s after 2013.03.04. when this feature was developed) which you can place after files like so: style.css?{% cachebuster %}. This will only regenerate when the template cache is reset.
+	 *
+	 * Because the query string is different after each template cache reset, the browser will be forced to reload the file. This is useful since the cache will be reset when the page is in active development but will stay static when it is not. For optimization you should remove it though from files that are no longer being changed often.
+	 *  <b>style.css?{% cachebuster %}</b>
+	 **/
+	public function tag_cachebuster($param_array, &$source){
+		$my_fixed_timestamp = time() - 1362430170;
+		// write to file
+		$this->zajlib->compile->write("<?php print '?v{$my_fixed_timestamp}';?>");
+		// return debug_stats
+		return true;
+	}
+
 }
 
 ?>
