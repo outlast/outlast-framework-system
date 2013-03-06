@@ -18,8 +18,12 @@
 			filelist_{{field.uid}} = new Mozajik.FileList("{{field.id}}-filelist");
 			$('{{field.uid}}-pickfiles').setStyle('display', 'inline');
 
+			var runtime = 'html5,flash,html4';
+			if(Browser.ie) runtime = 'flash';
+
+
 			var uploader_{{field.uid}} = new plupload.Uploader({
-				runtimes : 'html5,flash,html4',
+				runtimes : runtime,
 				browse_button : '{{field.uid}}-pickfiles',
 				max_file_size : '100mb',
 				url : '{% block upload_url %}{{baseurl}}system/plupload/upload/file/{% endblock upload_url %}',
