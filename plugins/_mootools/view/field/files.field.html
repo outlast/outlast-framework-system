@@ -13,7 +13,7 @@
 		alert("content is ready!");
 	});**/
 	
-	window.addEvent('domready', function(){ (function(){
+	window.addEvent('domready', function(){ setTimeout(function(){
 		// create objects
 			filelist_{{field.uid}} = new Mozajik.FileList("{{field.id}}-filelist");
 			$('{{field.uid}}-pickfiles').setStyle('display', 'inline');
@@ -25,14 +25,6 @@
 				url : '{% block upload_url %}{{baseurl}}system/plupload/upload/file/{% endblock upload_url %}',
 				flash_swf_url : '{{baseurl}}system/js/plupload/plupload.flash.swf'
 			});
-
-				/*filters : [
-					{title : "Image files", extensions : "jpg,gif,png"},
-					{title : "Zip files", extensions : "zip"}
-				]*/
-				//resize : {width : 320, height : 240, quality : 90}
-
-			
 		// Add event to upload files button
 			uploadgo_{{field.uid}} = function(){
 				uploader_{{field.uid}}.start();
@@ -101,7 +93,7 @@
 				// Recalc json
 					$("{{field.id}}").value = JSON.encode(file_upload_changes_{{field.uid}});
 			});		
-	}).delay(500); });
+	}, 500); });
 	//http://dojotoolkit.org/reference-guide/dojox/form/Uploader.html
 </script>
 
