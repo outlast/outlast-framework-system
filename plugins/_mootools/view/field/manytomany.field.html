@@ -17,15 +17,15 @@
 
 <script language="javascript">
 window.addEvent('domready',function(){
-	$(function(){
-	{{field.name}}['existing'] = new Hash();
-	{{field.name}}['create'] = new Hash();
-	{{field.name}}['new'] = new Hash();
-	{{field.name}}['delete'] = new Hash();
-	{{field.name}}['order'] = new Hash();			
-	save_{{field.name}}_fields();
-	load_{{field.name}}();
-	}).delay(1000);
+	setTimeout(function(){
+		{{field.name}}['existing'] = new Hash();
+		{{field.name}}['create'] = new Hash();
+		{{field.name}}['new'] = new Hash();
+		{{field.name}}['delete'] = new Hash();
+		{{field.name}}['order'] = new Hash();
+		save_{{field.name}}_fields();
+		load_{{field.name}}();
+	}, 1000);
 });
 
 var {{field.name}} = new Hash();
