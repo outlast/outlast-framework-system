@@ -693,7 +693,7 @@ abstract class zajModel {
 		if((is_object($reorder_data) || is_array($reorder_data)) && count($reorder_data) > 0){
 			// get the order num of each
 			foreach($reorder_data as $oneid){
-				$obj = $class_name::fetch($class_name, $oneid);
+				$obj = $class_name::fetch($oneid);
 				// if failed to find, issue warning
 				if(!is_object($obj) || !is_a($obj, 'zajModel')) zajLib::me()->warning("Tried to reorder non-existant object!");
 				// all is okay
