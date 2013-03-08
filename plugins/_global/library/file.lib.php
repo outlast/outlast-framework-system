@@ -166,7 +166,7 @@ class zajlib_file extends zajLibExtension {
 		// Get timestamp based subfolder: /year/month/
 			$timedata = localtime($timestamp, true);
 			$sub1 = $timedata["tm_year"]+1900;
-			$sub2 = date("M", $timestamp);
+			$sub2 = date("m", $timestamp);
 			if($include_day) $sub3 = date("d", $timestamp);
 		// Generate full string and return
 			$fullpath = $basepath."/".$sub1."/".$sub2."/".$sub3."/".$filename;
