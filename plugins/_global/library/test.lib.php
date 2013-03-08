@@ -96,6 +96,7 @@ class zajlib_test extends zajLibExtension {
 
 /**
  * Provide non-namespaced class name for unit testing.
+ * @property zajLib $zajlib A pointer to the global zajlib object.
  **/
 class zajTest extends \Enhance\TestFixture{
 	public $zajlib = '';
