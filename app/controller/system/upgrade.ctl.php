@@ -35,8 +35,8 @@
 						// If size is valid!
 						if($size){
 							$rel = 'rel_'.$key;
-							// If force is on, act like timepath is false
-							if(!empty($_GET['force'])) $op->timepath = false;
+							// Make sure timepath is false to get the correct FROM path
+							$op->timepath = false;
 							$from_path = $this->zajlib->basepath.$op->$rel;
 							$to_path = $this->zajlib->file->get_time_path($this->zajlib->basepath."data/Photo", $op->id.'-'.$key.'.'.$op->extension, $op->time_create, true);
 							if(!file_exists($from_path)){
