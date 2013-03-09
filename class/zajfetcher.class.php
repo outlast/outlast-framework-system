@@ -19,17 +19,23 @@
 define('RANDOM', 'RANDOM');
 define('RAND', 'RANDOM');
 
+/**
+ * Additional magic methods.
+ * @property integer $total The total number of items on all pages.
+ * @property integer $count The number of items in the current limit / page.
+ * @property integer $affected The number affected items.
+ **/
 class zajFetcher implements Iterator, Countable{
 	// create a fetch class
 		public $class_name;									// the class name
 		public $table_name;									// the table name
-		public $count = false;								// the instance count (limit included)
 	// public settings
 		public $distinct = false;							// distinct is false by default
 	// private vars
 		private $db;										// my private db instance
 		private $query_done = false;						// true if query has been run already
 		private $total = false;								// the total count (limit not taken into account)
+		private $count = false;								// the instance count (limit included)
 		private $affected = false;							// the number returned (limit is taken into account)
 	// instance variables needed for generating the sql
 		private $select_what = array();					// what to select from db
@@ -144,7 +150,7 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * This allows you to group items by whatever field you prefer. Only one field can be specified for now.
-	 * @param string $by The fetcher results will be grouped by this field.
+	 * @param string|bool $by The fetcher results will be grouped by this field.
 	 * @return zajFetcher This method can be chained.
 	 */
 	public function group($by = false){
@@ -158,8 +164,8 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * Use this method to specify a custom WHERE clause. Begin with either || or && to continue the query! This is different from {@link zajFetcher->full_query()} because it is appended to the existing query. You should however use this only when necessary as it may cause unexpected behavior.
-	 * @param $wherestr The customized portion of the WHERE clause. Since it is appended to the existing query, begin with || or && to produce a valid query.
-	 * @param $append If set to true (the detault), the string will be appended to any existing custom WHERE clause.
+	 * @param string $wherestr The customized portion of the WHERE clause. Since it is appended to the existing query, begin with || or && to produce a valid query.
+	 * @param bool $append If set to true (the detault), the string will be appended to any existing custom WHERE clause.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function where($wherestr, $append=true){
@@ -203,8 +209,8 @@ class zajFetcher implements Iterator, Countable{
 	/**
 	 * This method adds a field to be selected from a joined source. This is mostly for internal use.
 	 * @param string $source_field The name of the field to select.
-	 * @param string $as_name The name of the field as referenced within the sql query (SELECT field_name AS as_name)
-	 * @param boolean $replace If set to true, this will remove all other joined fields before adding this new one.
+	 * @param string|bool $as_name The name of the field as referenced within the sql query (SELECT field_name AS as_name)
+	 * @param bool $replace If set to true, this will remove all other joined fields before adding this new one.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function add_field_source($source_field, $as_name=false, $replace = false){
@@ -233,6 +239,7 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * Create a fetcher object from an array of ids.
+	 * @param array $id_array An array of ids to search for.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function from_array($id_array){
@@ -246,6 +253,7 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * Toggle whether or not to show deleted items. By default, Mozajik will not delete rows you remove, but simply put them in a 'deleted' status. However, {@link zajFetcher} will not show these unless you toggle this option.
+	 * @param bool $default If set to true (the default), it will show deleted items for this query. If set to false, it will turn this feature off.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function show_deleted($default = true){
@@ -359,8 +367,8 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * Limits the results of the query using LIMIT in MySQL.
-	 * @param integer $startat The first object to take.
-	 * @param integer $limitto The number of objects to take.
+	 * @param integer $startat This can be either startat or it can be the limit itself.
+	 * @param integer|bool $limitto The number of objects to take. Leave empty if the first parameter is used as the limit.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function limit($startat, $limitto=false){
@@ -664,7 +672,10 @@ class zajFetcher implements Iterator, Countable{
 			case "total":	// if total not yet loaded, then retrieve and return it...otherwise just return it
 							if($this->total === false) return $this->count_total();
 							return $this->total;
-			case "affected":	// if total not yet loaded, then retrieve and return it...otherwise just return it
+			case "count":	// if count not yet loaded, then retrieve and return it...otherwise just return it
+							if($this->count === false) $this->count_total();
+							return $this->count;
+			case "affected":// if total not yet loaded, then retrieve and return it...otherwise just return it
 							if($this->total === false) $this->count_total();
 							return $this->total;
 			case "paginate":
@@ -675,9 +686,7 @@ class zajFetcher implements Iterator, Countable{
 			
 			default: 		zajLib::me()->warning("Attempted to access inaccessible variable ($name) for zajFetcher class!");
 		}
-	}	
-
-
+	}
 
 	/****************************************************************************************
 	 *	!Multiple object connections

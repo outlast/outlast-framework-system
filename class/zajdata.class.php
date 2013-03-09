@@ -11,6 +11,14 @@
  * @subpackage Database
  */
 
+/**
+ * The basic fields that all zajModel objects have.
+ * @property string $name The name of the object.
+ * @property string $id The id of the object.
+ * @property integer $ordernum The order number (autoincremented).
+ * @property integer $time_create The time when the object was created.
+ * @property integer $time_edit The time when the object was modified.
+ **/
 class zajData {
 	// Instance variables
 		/**
@@ -170,7 +178,7 @@ class zajData {
 		/**
 		 * Return all or a specific field's unprocessed data.
 		 * @param string $field_name If field_name is specified, only that field name will be returned.
-		 * @return Returns the data or an array of data.
+		 * @return mixed Returns the data or an array of data.
 		 **/
 		public function get_unprocessed($field_name=''){
 			if($field_name) return $this->data[$field_name];
@@ -219,13 +227,15 @@ class zajData {
 		/**
 		 * Magic method used for modifying the data in specific fields. This is most often accessed via {@link zajModel->set()} method.
 		 * @param string $name The name of the field to set.
-		 * @param variable $value Any kind of variable that the field accepts.
+		 * @param mixed $value Any kind of variable that the field accepts.
+		 * @return bool Returns true if successul, false otherwise.
 		 **/		
 		public function __set($name, $value){
 			// check for error
 				if(!$this->zajobject->model->$name) return $this->zajobject->zajlib->warning("cannot set value of '$name'. field '$name' does not exist in model '{$this->zajobject->class_name}'!");
 			// set the data
 				$this->modified[$name] = $value;
+			return true;
 		}
 		
 		/**
@@ -239,7 +249,7 @@ class zajData {
 
 		/**
 		 * Get the array of modified fields (or a specific field).
-		 * @param string $specific_field If not set, this method will return an array of data fields. Otherwise, it will return the specific field in question.
+		 * @param string|bool $specific_field If not set, this method will return an array of data fields. Otherwise, it will return the specific field in question.
 		 * @return array The array of modified fields or a specific modified field.
 		 **/		
 		public function get_modified($specific_field = false){
@@ -252,7 +262,8 @@ class zajData {
 		/**
 		 * Returns true or false depending on whether the specified field has been modified. Modification means that set() has been used, but it has not yet been saved.
 		 * @param string $specific_field This is a string representing the name of the field in question.
-		 **/		
+		 * @return bool
+		 */
 		public function is_modified($specific_field){
 			return array_key_exists($specific_field, $this->modified);
 		}

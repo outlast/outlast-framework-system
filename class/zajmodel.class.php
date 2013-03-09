@@ -37,7 +37,9 @@ define('CACHE_DIR_LEVEL', 4);
  * @method void __onFetch() EVENT. Executed when a fetch method is requested.
  * @method void __onCreate() EVENT. Executed when a create method is requested.
  * @method zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when an auto-search is running on the class.
+ * Properties...
  * @property zajLib $zajlib A pointer to the global object.
+ * @property string $name The name of the object.
  */
 abstract class zajModel {
 	// Instance variables
@@ -225,7 +227,7 @@ abstract class zajModel {
 	/**
 	 * Fetch a single or multiple existing object(s) of this class.
 	 * @param bool|string|zajModel $id OPTIONAL. The id of the object. Leave empty if you want to fetch multiple objects. You can also pass an existing zajModel object in which case it will simply pass through the function without change - this is useful so you can easily support both id's and existing objects in a function.
-	 * @return zajFetcher|zajModel Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
+	 * @return zajFetcher|self Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
 	 */
 	public static function fetch($id=false){
 		// Get my class_name

@@ -49,5 +49,11 @@ class zajDb{}
  * @property string $original Depricated.
  * @property string $description Description.
  **/
-class zajDataPhoto {}
+class zajDataPhoto extends zajData{}
 
+/**
+ * Adds some dynamic properties
+ * @property float $lat
+ * @property float $lng
+ **/
+class zajDataMap {}
