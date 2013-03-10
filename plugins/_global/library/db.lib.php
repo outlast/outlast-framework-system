@@ -82,7 +82,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * @param string $user The mysql user name.
 		 * @param string $pass The mysql password.
 		 * @param string $db The name of the database to use for this connection
-		 * @param boolean $fatal_error If set to true (the default) a failed connection will result in a fatal error.
+		 * @param bool $fatal_error If set to true (the default) a failed connection will result in a fatal error.
+		 * @return bool Returns true on success, false otherwise.
 		 **/
 		public function connect($server="", $user="", $pass="", $db="", $fatal_error = true){
 			// connect to server
@@ -108,8 +109,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 
 		/**
 		 * Creates a new database session which allows managing several queries without several connections.
-		 * @param string $id The id does not need to be specified, but you can choose any string if you wish.
-		 * @param resource $connection The connection resource to mysql database.
+		 * @param string|bool $id The id does not need to be specified, but you can choose any string if you wish.
+		 * @param resource|bool $connection The connection resource to mysql database.
 		 * @return zajlib_db_session A new session will be returned.
 		 **/
 		public function create_session($id = false, $connection = false){
@@ -123,10 +124,13 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 
 		/**
 		 * Creates a new database connection. This is only needed if you need to connect to a separate database. If you need seperate queries, use sessions.
-		 * @param resource $connection The connection resource to mysql database.
-		 * @param string $id The id does not need to be specified, but you can choose any string if you wish.
+		 * @param string $server
+		 * @param string $user
+		 * @param string $pass
+		 * @param string $db
+		 * @param bool|string $id The id does not need to be specified, but you can choose any string if you wish.
 		 * @return zajlib_db_session A new session will be returned.
-		 **/
+		 */
 		public function create_connection($server="", $user="", $pass="", $db="", $id = false){
 			// connect to server
 				$conn = mysql_connect($server, $user, $pass, true) or $this->zajlib->error("Unable to connect to sql server. Disable sql or correct the server/user/pass!");
@@ -139,7 +143,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		/**
 		 * Sets the session to whatever is specified by the parameter.
 		 * @param string $id The id of the session you wish to use. Default will be chosen if none specified.
-		 * @return zajlib_db_session The current session will be returned.
+		 * @return zajlib_db_session Returns current session.
 		 **/
 		public function set_session($id = ''){
 			// if id is empty, then default session!
@@ -154,7 +158,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		/**
 		 * Removes the session and it's result set from memory.
 		 * @param string $id The id of the session you wish to remove.
-		 **/
+		 * @return bool Always returns true.
+		 */
 		public function delete_session($id){
 			// remove the result set
 				mysql_free_result($this->sessions[$id]->query);
@@ -191,8 +196,9 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		/**
 		 * Add a row to a table using an associative array.
 		 * @param string $table The table to add to.
-		 * @param array An associative array where the keys are the field names and the values are the field values.
-		 **/
+		 * @param array $array An associative array where the keys are the field names and the values are the field values.
+		 * @return zajlib_db_session Ready for chaining.
+		 */
 		private function add($table, $array){
 			// Check for errors
 				if(count($array) == 0)return false;
@@ -205,13 +211,13 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 								// this is needed since false is otherwise sent to the MAX (why?)
 								case false:			$value = "'".addslashes($value)."'";
 													break;
-								case MYSQL_MAX:		$value = "MAX($key)";
+								case MYSQL_MAX:		$value = "MAX(".addslashes($key).")";
 													$function = true;
 													break;
-								case MYSQL_MAX_PLUS:$value = "MAX($key) +1";
+								case MYSQL_MAX_PLUS:$value = "MAX(".addslashes($key).") +1";
 													$function = true;
 													break;
-								case MYSQL_AVG:		$value = "AVG($key)";
+								case MYSQL_AVG:		$value = "AVG(".addslashes($key).")";
 													$function = true;
 													break;
 								default:			$value = "'".addslashes($value)."'";
@@ -220,15 +226,15 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 						$field[] = "$value as `$key`";
 					}
 				// check if no functions (TODO: fix this in a future release to allow!)
-					if($function) $fromtable = "FROM `$table` LIMIT 1";
+					if($function) $fromtable = "FROM `".addslashes($table)."` LIMIT 1";
 					else $fromtable = "";
 				// join the fieldnames
 					$keys = array_keys($array);
-					$fieldnames = "`".join("`,`", $keys)."`";
+					$fieldnames = "`".join("`,`", addslashes($keys))."`";
 				// join the values
 					$values = join(",", $field);	
 			// execute sql (use SELECT to enable functions)
-				$sql = "INSERT INTO `$table` ($fieldnames) SELECT $values $fromtable";
+				$sql = "INSERT INTO `".addslashes($table)."` ($fieldnames) SELECT $values $fromtable";
 				return $this->query($sql);
 		}
 
@@ -237,12 +243,20 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * @param string $table The table to edit in.
 		 * @param string|array $column The name of the column to use as the condition in the WHERE clause. If an array is specified, multiple values are used in the WHERE clause (key/value).
 		 * @param string $condition When $column is just a single value, condition specifies the value to which the field must be equal to.
-		 * @param array An associative array where the keys are the field names and the values are the field values. The fields will be modified according to this array.
+		 * @param array $array An associative array where the keys are the field names and the values are the field values. The fields will be modified according to this array.
 		 * @param string $conditionType Can have a value of AND or OR. This only matters if $column is an array, and there are multiple key/value pairs to use in the WHERE clause.
-		 **/
+		 * @return zajlib_db_session This is to be chained.
+		 */
 		private function edit($table, $column, $condition, $array, $conditionType = "AND"){
+			// Escape values
+				$column = $this->escape($column);
+				$table = $this->escape($table);
+				$condition = $this->escape($condition);
 			// Generate data to add
 				foreach($array as $key => $value){
+					// Escape value and key
+						$value = $this->escape($value);
+						$key = $this->escape($key);
 					// special functions
 						switch($value){
 							// this is needed since false is otherwise sent to the MAX (why?)
@@ -283,14 +297,15 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$sql = "UPDATE LOW_PRIORITY `$table` SET $newfielddata WHERE $whereStr";
 				return $this->query($sql);
 		}
-		
+
 		/**
 		 * Delete a row from a table.
 		 * @param string $table The table to edit in.
 		 * @param string $column The name of the column to use as the condition in the WHERE clause.
 		 * @param string $condition Condition specifies the value to which the field must be equal to.
-		 * @param string $limit The maximum number of items to delete. By default, this is one to safeguard against accidental deletes.
-		 **/
+		 * @param int|string $limit The maximum number of items to delete. By default, this is one to safeguard against accidental deletes.
+		 * @return zajlib_db_session Chained.
+		 */
 		private function delete($table, $column, $condition, $limit = 1){
 			// Generate sql
 				$condition = addslashes($condition);
@@ -307,7 +322,9 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * @param integer $num The number of rows to retrieve. This is depricated, and only the default value should be used.
 		 * @param integer $startat The number of rows to skip. This is depricated, and only the default value should be used.
 		 * @param string $column_as_key Use a specific column as key. This is depricated, and only the default value should be used.
-		 **/
+		 * @param string $one_dimensional_by_key ???
+		 * @return array|bool
+		 */
 		private function get($num = 1, $startat = 0, $column_as_key = '', $one_dimensional_by_key = ''){
 			// set as array
 				$result_set = array();
@@ -349,21 +366,28 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 
 		/**
 		 * Get all of the remaining rows. This is depricated. Use iterator methods instead.
+		 * @param int $startat The starting point.
+		 * @param string $column_as_key The column key.
+		 * @param string $one_dimensional_by_key If it is to be returned as a single-dimentional array. (????)
 		 * @return array A multi-dimensional associative array is returned.
-		 **/
+		 */
 		private function get_all($startat = 0, $column_as_key = '', $one_dimensional_by_key = ''){
 			return $this->get(-1, $startat,$column_as_key,$one_dimensional_by_key);
 		}
 
 		/**
 		 * Get all of the remaining rows as objects. This is depricated. Use iterator methods instead.
+		 * @param string $class_name The class name
+		 * @param int $startat The startat point.
+		 * @param string $id_column The id column name.
+		 * @param bool $include_deleted If set to true, deleted objects will be included.
 		 * @return array A multi-dimensional associative array is returned.
-		 **/
+		 */
 		private function get_all_objects($class_name, $startat = 0, $id_column = 'id', $include_deleted = false){
 			$my_results = $this->get(-1, $startat);
 			$my_objects = array();
 			foreach($my_results as $result){
-				// only if not deleted (TODO: remove this)
+				// only if not deleted
 				$cobj = new $class_name($result[$id_column]);
 				if($include_deleted || $cobj->data->status != 'deleted') $my_objects[] = $cobj;
 			}
@@ -489,8 +513,6 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		private function search($table, $query, $columns, $max_results = 5, $return_columns="", $similarity_search = true){
  			// TODO: implement $similarity_search = false
-			
-						
  			// generate where string
 				// query should be escaped
 					$condition = addslashes($query);
@@ -582,7 +604,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * Send an error to the user or to the log.
 		 * @param boolean $display_warning Will display the warning even if debug mode is off. When debug mode is on, the warning is displayed regardless of this setting.
 		 * @param string $error_text This is the error string.
-		 **/
+		 * @return bool Will return false always.
+		 */
 		private function send_error($display_warning = false, $error_text = ""){
 			// set all the necessary variables
 				if(!empty($error_text)) $this->current_session->last_error = $error_text;
@@ -628,6 +651,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * Magic method to handle session calls to the default session.
 		 * @param string $name The name of the method to call.
 		 * @param array $arguments An array of arguments to pass to the session.
+		 * @return mixed Returns whatever the parent function returns.
 		 **/
 		public function __call($name, $arguments){
 			// get current session
@@ -647,7 +671,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * Magic method to handle session calls. This will set the current session and execute the method.
 		 * @param string $name The name of the method to call.
 		 * @param array $arguments An array of arguments to pass to the session.
-		 * @param string $id The session id to use.
+		 * @param string $sessionid The session id to use.
+		 * @return mixed Returns whatever the parent function returns.
 		 **/
 		public function __call_session($name, $arguments, $sessionid){
 			// set to default session
