@@ -151,7 +151,7 @@ class zajData {
 		 * @param boolean $permanent Set to true if the delete should be permanent. Otherwise, by default, it will set the status to deleted.
 		 **/
 		public function delete($permanent = false){
-			if($permanent) mysql_query("DELETE FROM `{$this->zajobject->table_name}` WHERE `{$this->zajobject->id_column}`='{$this->zajobject->id}' LIMIT 1");
+			if($permanent) $this->db->delete($this->zajobject->table_name, $this->zajobject->id_column, $this->zajobject->id);
 			else{
 				$this->__set("status","deleted");
 				$this->save();
