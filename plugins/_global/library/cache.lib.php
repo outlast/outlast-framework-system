@@ -15,7 +15,7 @@ class zajlib_cache extends zajLibExtension{
 	 */
 	public function clear_objects($class=false){
 			// check to see if $class is valid
-				if($class && (!class_exists($class) || strstr($class, '.') !== false || strstr($class, '/') !== false)) return $this->zajlib->error("Invalid class name given while trying to clear the cache!");
+				if($class && (!class_exists($class) || strstr($class, '.') !== false || strstr($class, '/') !== false)) return $this->zajlib->warning("Invalid class name given while trying to clear the cache!");
 			// load file handler
 				system("rm -R ".$this->zajlib->basepath."cache/object/".$class."/");
 		return true;
@@ -29,7 +29,7 @@ class zajlib_cache extends zajLibExtension{
 	 */
 	public function clear_object($class_name, $id){
 		// check to see if $class is valid
-			if($class_name && (!class_exists($class_name) || strstr($class_name, '.') !== false || strstr($class_name, '/') !== false)) return $this->zajlib->error("Invalid class name given while trying to clear an object from the cache!");
+			if($class_name && (!class_exists($class_name) || strstr($class_name, '.') !== false || strstr($class_name, '/') !== false)) return $this->zajlib->warning("Invalid class name given while trying to clear an object from the cache!");
 			if(strstr($id, '.') !== false) return $this->zajlib->warning("Could not delete cache file. Invalid characters detected in file name.");
 		// Generate my path
 			$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
