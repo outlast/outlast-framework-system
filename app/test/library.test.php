@@ -4,6 +4,8 @@
  **/
 class OfwLibraryTest extends zajTest {
 
+	private $hardcoded_locale;
+
 	/**
 	 * Set up stuff.
 	 **/
@@ -31,6 +33,20 @@ class OfwLibraryTest extends zajTest {
 			$this->zajlib->lang->set('xx_XX');
 			$this->zajlib->lang->load('system/update');
 			zajTestAssert::areIdentical('english', $this->zajlib->lang->variable->system_update_lang);
+		// We're done...
+	}
+
+	/**
+	 * Check browser library.
+	 */
+	public function system_library_browser(){
+		// Test that any string is retuned
+			zajTestAssert::isString($this->zajlib->browser->browser);
+		// Test a specific string (mobile friendly for ipad)
+			$data = $this->zajlib->browser->get('Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A403 Safari/8536.25');
+			zajTestAssert::areIdentical('iOS', $data->platform);
+			zajTestAssert::isFalse($data->issyndicationreader);
+			zajTestAssert::isTrue($data->ismobiledevice);
 		// We're done...
 	}
 
