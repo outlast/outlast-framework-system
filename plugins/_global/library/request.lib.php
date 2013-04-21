@@ -34,7 +34,7 @@ class zajlib_request extends zajLibExtension {
 				if($params) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
 			}
 		// Set any other options?
-			if(is_array($additional_options)) foreach($additional_options as $key=>$value) curl_setopt($curl, $key, $url);		
+			if(is_array($additional_options)) foreach($additional_options as $key=>$value) curl_setopt($curl, $key, $value);
 		// Send and close
 			$ret = curl_exec($curl);
 		// Check to see if an error occurred
