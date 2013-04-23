@@ -108,7 +108,7 @@ class zajlib_email extends zajLibExtension {
 				$email = $email_data->email;
 			}
 		// Now check and return 
-			return (boolean) preg_match('/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,10})$/', $email);
+			return (boolean) preg_match('/^[_A-z0-9-]+(\.[_A-z0-9-]+)*@[A-z0-9-]+(\.[A-z0-9-]+)*(\.[A-z]{2,10})$/', $email);
 	}
 }
 
