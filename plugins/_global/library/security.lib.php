@@ -52,6 +52,16 @@ class zajlib_security extends zajLibExtension {
 			return $pass;
 	}
 
+	/**
+	 * Uses CORS to allows ajax requests from cross-domain origins. Sends headers so it must be called before any output.
+	 * @param string $allow_origin The domain to allow, or * to whitelist everything. Defaults to *.
+	 **/
+	public function cors($allow_origin = '*'){
+		// Enable cross-domain access
+			header('Access-Control-Allow-Origin: '.$allow_origin);
+			header('Access-Control-Allow-Credentials: true');
+			header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+	}
 	
 	/**
 	 * Checks if an IP address is within the specified range.
@@ -117,7 +127,3 @@ class zajlib_security extends zajLibExtension {
 		}
 	}
 }
-
-
-
-?>
