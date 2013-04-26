@@ -40,7 +40,13 @@ class zajfield_photos extends zajField {
 	 * @return Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
-		return Photo::fetch()->filter('parent',$object->id)->sort('ordernum', 'ASC');
+		// Compatibility mode? Remove this eventually, it's because of a bug earlier.
+		if(!defined('OFW_PHOTO_COMPATIBILTY_MODE') || OFW_PHOTO_COMPATIBILTY_MODE === true){
+			return Photo::fetch()->filter('parent',$object->id)->sort('ordernum', 'ASC');
+		}
+		else{
+			return Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
+		}
 	}
 	
 	/**
@@ -57,7 +63,7 @@ class zajfield_photos extends zajField {
 					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
 				// now set parent
 					$data->set('parent', $object->id);
-					$pobj->set('field', $this->name);
+					$data->set('field', $this->name);
 					$data->set('status', 'saved');
 					$data->save();
 			}
