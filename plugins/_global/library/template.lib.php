@@ -88,10 +88,6 @@ class zajlib_template extends zajLibExtension {
 			// now include the file
 				include($include_file);
 			// verify validity
-				if(!$this->template_valid){
-					$this->zajlib->warning("Invalid template cache file found: $included_file. File was reset.");
-					// TODO: add code for template reset
-				}
 				if($return_contents){ 				// end output buffer
 					$contents = ob_get_contents();
 					ob_end_clean();
