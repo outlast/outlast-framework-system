@@ -285,6 +285,8 @@ class zajlib_template_zajvariables {
 				case 'platform': return $this->zajlib->browser->platform;
 			// Server-side browser detection. Returns parameters from browser.lib.php.
 				case 'browser': return $this->zajlib->browser->get();
+			// Return the current time
+				case 'now': return time();
 			// Referer
 				case 'referer': if(!empty($_SERVER['HTTP_REFERER'])) return $_SERVER['HTTP_REFERER']; else return '';
 			// User-agent
@@ -309,5 +311,3 @@ class zajlib_template_zajvariables {
 	}
 
 }
-
-?>
