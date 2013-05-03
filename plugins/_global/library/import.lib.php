@@ -23,7 +23,7 @@ class zajlib_import extends zajLibExtension {
 
 	/**
 	 * Reads a CSV document and returns an array of objects.
-	 * @param string $urlORfile A CSV-formatted file (relative to basepath) or URL.
+	 * @param string $url A CSV-formatted file (relative to basepath) or URL.
 	 * @param boolean $first_row_is_header If set to true, the values of the first row will be used as keys (converted to compatible chars).
 	 * @param string $delimiter Set the field delimiter (one character only).
 	 * @param string $enclosure Set the field enclosure character (one character only).
@@ -37,11 +37,11 @@ class zajlib_import extends zajLibExtension {
 			$return_data = array();
 			if (($handle = fopen($url, "r")) !== FALSE) {
 				// Use first row as header?
-					if($first_row_is_header) $first_row = fgetcsv($handle);
+					if($first_row_is_header) $first_row = fgetcsv($handle, 0, $delimiter, $enclosure, $escape);
 				// Now while not feof add a row to object
 					while(!feof($handle)){
 						$current_data = array();
-						$current_row = fgetcsv($handle);
+						$current_row = fgetcsv($handle, 0, $delimiter, $enclosure, $escape);
 						foreach($current_row as $key => $value){
 							if($first_row_is_header) $current_data[$first_row[$key]] = $value;
 							else $current_data[$key] = $value;
