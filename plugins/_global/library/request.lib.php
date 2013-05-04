@@ -49,7 +49,7 @@ class zajlib_request extends zajLibExtension {
 	 * @param string $url The url of the desired destination. Example: post("https://www.example.com/example.php?asdf=1&qwerty=2");
 	 * @param bool|string $content The content of the document to be sent.
 	 * @param bool $returnheaders If set to true, the headers will be returned as well. By default it is false, so only document content is returned.
-	 * @param bool $customheaders
+	 * @param array|bool $customheaders
 	 * @return string Returns a string with the content received.
 	 */
 	function post($url, $content=false, $returnheaders = false, $customheaders = false){
