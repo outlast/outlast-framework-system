@@ -83,6 +83,8 @@ class zajlib_lang extends zajlib_config {
 				if($this->zajlib->plugin->is_enabled('wordpress') && !empty($GLOBALS['sitepress']) && !is_admin()){
 					$GLOBALS['sitepress']->switch_lang(substr($this->current_locale, 0, 2), true);
 				}
+			// Set locale
+				setlocale(LC_TIME, $this->current_locale);
 	 		// Return new locale
 	 			return $this->current_locale;
 		}
