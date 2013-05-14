@@ -134,6 +134,21 @@ EOF;
 	}
 
 	/**
+	 * Filter: strftime -  Format a local time/date according to locale settings
+	 * @link http://www.php.net/manual/en/function.strftime.php
+	 *
+	 *  <b>{{user.data.time_create|strftime:'%V,%G,%Y'}}</b> = 1/3/2005
+	 *  1. <b>format</b> - Uses the format of PHP's {@link http://www.php.net/manual/en/function.strftime.php strftime function}.
+	 **/
+	public function filter_strftime($parameter, &$source){
+		// default parameter
+			if(empty($parameter)) $parameter = "'%F'";
+		// write to file
+			$this->zajlib->compile->write('if(is_numeric($filter_var)) $filter_var=strftime('.$parameter.', $filter_var); else $filter_var=false;');
+		return true;
+	}
+
+	/**
 	 * Filter: print_r - Returns the value of PHP's print_r() function. Useful for debugging.
 	 *
 	 *  <b>{{variable|print_r}}</b> This is like running print_r(variable); in php.
