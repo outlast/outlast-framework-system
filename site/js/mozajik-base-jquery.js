@@ -163,23 +163,25 @@
 						datarequest = rdata[1];
 					}
 					else datarequest = '';
+				// Add baseurl if not protocol. If not on current url, you must enable CORS on server.
+					if(request.substr(0, 5) != 'http:' && request.substr(0, 6) != 'https:') request = zaj.baseurl+request;
 				// Now send request and call callback function, set callback element, or alert
-				$.ajax(zaj.baseurl+request, {
-					success: function(data, textStatus, jqXHR){
-						if(typeof result == "function") result(data);
-						else if(typeof result == "object") $(result).html(data);
-						else{
-							if(data == 'ok') zaj.redirect(result);
-							else zaj.alert(data);
-						}
-					},
-					complete: function(jqXHR, textStatus){
-						if(textStatus != "success") console.log("Ajax request failed with status ".textStatus);
-					},
-					data: datarequest,
-					dataType: 'html',
-					type: mode
-				});				
+					$.ajax(request, {
+						success: function(data, textStatus, jqXHR){
+							if(typeof result == "function") result(data);
+							else if(typeof result == "object") $(result).html(data);
+							else{
+								if(data == 'ok') zaj.redirect(result);
+								else zaj.alert(data);
+							}
+						},
+						complete: function(jqXHR, textStatus){
+							if(textStatus != "success") console.log("Ajax request failed with status ".textStatus);
+						},
+						data: datarequest,
+						dataType: 'html',
+						type: mode
+					});
 			};
 
 		/**
