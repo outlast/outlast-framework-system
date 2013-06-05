@@ -86,7 +86,7 @@ class zajfield_manytoone extends zajField {
 		// accept as object
 		if(is_object($data)){
 			// check to see if zajModel
-				if(!is_a($data, 'zajModel')) $this->zajlib->error('Manytoone connections only accept single model objects!');
+				if(!is_a($data, 'zajModel') && !is_a($data, 'zajModelExtender')) $this->zajlib->error('Manytoone connections only accept single model objects!');
 			// return my id and me as an object
 				return array($data->id, $data);
 		}
