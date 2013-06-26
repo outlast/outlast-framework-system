@@ -50,7 +50,10 @@
 
 			$zajconf['config_file_version'] = $GLOBALS['zaj_config_file_version'];
 		}	
-	
+
+	// set timezone default
+		if(!empty($zajconf['timezone'])) date_default_timezone_set($zajconf['timezone']);
+		else date_default_timezone_set('Europe/Budapest');
 	// start execution
 		$GLOBALS['execute_start'] = microtime(true);
 	// set default encoding to unicode
