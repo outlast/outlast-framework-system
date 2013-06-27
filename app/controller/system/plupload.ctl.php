@@ -16,7 +16,7 @@
 		public function __load(){
 			// Set defaults
 				if(empty($this->zajlib->zajconf['plupload_photo_maxwidth'])) $this->zajlib->zajconf['plupload_photo_maxwidth'] = 5000;
-				if(empty($this->zajlib->zajconf['plupload_photo_maxfilesize'])) $this->zajlib->zajconf['plupload_photo_maxfilesize'] = 5000000;
+				if(empty($this->zajlib->zajconf['plupload_photo_maxfilesize'])) $this->zajlib->zajconf['plupload_photo_maxfilesize'] = 10000000;
 				if(empty($this->zajlib->zajconf['plupload_photo_maxuploadwidth'])) $this->zajlib->zajconf['plupload_photo_maxuploadwidth'] = 5000;
 		}
 		
