@@ -12,6 +12,8 @@
 		 * Set up stuff.
 		 **/
 		public function setUp(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Create a mock photo object
 				$this->photo = Photo::create('mockid');
 				$this->photo->set('name', 'mock!');
@@ -23,6 +25,8 @@
 		 * Verify that I could indeed save stuff
 		 */
 		public function verifyIfSaveWasSuccessful(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Fetch and test!
 				$p = Photo::fetch('mockid');
 				zajTestAssert::areIdentical('mock!', $p->name);
@@ -34,6 +38,8 @@
 		 * Check the duplication feature
 		 */
 		public function checkDuplicationFeature(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Let's try to duplicate the Photo object
 				$p = $this->photo->duplicate('mock2');
 				$p->save();
@@ -51,6 +57,8 @@
 		 * Reset stuff, cleanup.
 		 **/
 		public function tearDown(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Remove permanently my mock photo
 				$this->photo->delete(true);
 			// Remove my mock2
