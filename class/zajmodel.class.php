@@ -640,6 +640,20 @@ abstract class zajModel {
 			$new_object->zajlib = zajLib::me();
 			$item_cached = true;
 		}
+		if(!method_exists($new_object, 'fire') ||
+			$new_object->class_name != $class_name){
+			zajLib::me()->warning("Class mismatch for cache: ".$class_name." / ".$new_object->class_name." / $id / ".$new_object->id);
+
+
+			// Refetch from db
+			// create object
+			$new_object = new $class_name($id);
+			// get my name (this will grab the db)
+			if($new_object::$in_database) $new_object->__get('name');
+			$item_cached = false;
+		}
+
+
 		// this is resumed from the db, so load the data
 		if(!$new_object->exists && !$item_cached){
 			// if in database load data
@@ -655,11 +669,6 @@ abstract class zajModel {
 			$new_object->cache();
 		}
 		// end of db fetch
-
-		if(!method_exists($new_object, 'fire') ||
-			$new_object->class_name != $class_name){
-			zajLib::me()->warning("Class mismatch for cache: ".$class_name." / ".$new_object->class_name." / ".$new_object->id);
-		}
 
 		// one more callback, before finishing and returning
 		$new_object->fire('afterFetchCache');
