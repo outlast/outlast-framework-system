@@ -229,10 +229,17 @@ class zajLib {
 				$this->https = true;
 				$this->protocol = 'https:';
 			}
+		// disable empty hosts
+			if(empty($_SERVER['HTTP_HOST'])){
+				print "Invalid request. Please contact site administrator.";
+				$this->error("Empty host detected. Request denied.");
+			}
+		// save host
+			else $this->host = $_SERVER['HTTP_HOST'];
 		// base url detection
-			$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($_SERVER['HTTP_HOST']).addslashes($_SERVER['REQUEST_URI'])).'/');
+			$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($this->host).addslashes($_SERVER['REQUEST_URI'])).'/');
 			$this->subfolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
-			$this->baseurl = "//".$_SERVER['HTTP_HOST'].$this->subfolder.'/';
+			$this->baseurl = "//".$this->host.$this->subfolder.'/';
 		// full request detection (includes query string)
 			if(!empty($_GET)) $this->fullrequest = $this->fullurl.'?'.http_build_query($_GET);
 			else $this->fullrequest = $this->fullurl.'?';
@@ -240,10 +247,9 @@ class zajLib {
 			$this->app = trim($this->app, '/').'/';
 			$this->mode = trim($this->mode, '/').'/';
 		// autodetect my domain (todo: optimize this part with regexp!)
-			$this->host = $_SERVER['HTTP_HOST'];
 			// if not an ip address
-			if(!preg_match('/^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/', $_SERVER['HTTP_HOST'])){
-				$ddata = explode(".",$_SERVER['HTTP_HOST']);
+			if(!preg_match('/^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/', $this->host)){
+				$ddata = explode(".",$this->host);
 				$this->domain = join(".",array_slice($ddata, -2));
 				$this->subdomain = str_replace("www.","",join(".",array_slice($ddata, 0, -2)));		// will exclude www.!
 				if($this->subdomain == "www") $this->subdomain = "";								// if only www, then set to none!

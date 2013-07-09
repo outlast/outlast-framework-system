@@ -266,6 +266,7 @@ class zajlib_template_zajvariables {
 			// The current protocol (HTTP/HTTPS)
 				case 'protocol': return $this->zajlib->protocol;
 			// Domain and top level domain
+				case 'host': return $this->zajlib->host;
 				case 'subdomain': return $this->zajlib->subdomain;
 				case 'domain': return $this->zajlib->domain;
 				case 'tld': return $this->zajlib->tld;
