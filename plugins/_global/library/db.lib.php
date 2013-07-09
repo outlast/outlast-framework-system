@@ -608,6 +608,13 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		}
 
 		/**
+		 * Get the last run query and return it.
+		 * @return string The last query.
+		 **/
+		public function get_last_query(){
+			return $this->last_query;
+		}
+		/**
 		 * Escape a string using the current connection.
 		 * @param string $string_to_escape
 		 * @return string $escaped_string

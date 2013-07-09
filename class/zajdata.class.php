@@ -173,7 +173,7 @@ class zajData {
 				$this->data['id'] = $this->zajobject->id;
 			// save to db
 				$result = $this->db->add($this->zajobject->table_name, $this->data);
-				if(!$result) $this->zajobject->zajlib->warning("SQL SAVE ERROR: ".$this->db->get_error()." <a href='{$this->zajobject->zajlib->baseurl}update/database/'>Update needed?</a>");
+				if(!$result) $this->zajobject->zajlib->warning("SQL SAVE ERROR: ".$this->db->get_error()." / ".$this->db->get_last_query()." <a href='{$this->zajobject->zajlib->baseurl}update/database/'>Update needed?</a>");
 			// set that i exist
 				$this->exists = true;
 			return $result;
