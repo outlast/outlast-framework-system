@@ -670,11 +670,6 @@ abstract class zajModel {
 		}
 		// end of db fetch
 
-		if(!method_exists($new_object, 'fire') ||
-			$new_object->class_name != $class_name){
-			zajLib::me()->warning("Class mismatch for cache: ".$class_name." / ".$new_object->class_name." / ".$new_object->id);
-		}
-
 		// one more callback, before finishing and returning
 		$new_object->fire('afterFetchCache');
 		return $new_object;
