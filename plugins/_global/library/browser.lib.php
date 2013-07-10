@@ -83,8 +83,8 @@ class zajlib_browser extends zajLibExtension {
 		// Get with my own user agent
 			$this->get();
 		// Make sure boolean is returned as boolean
-			if($this->data->$name == 'false') return false;
-			if($this->data->$name == 'true') return true;
+			if($this->data->$name === 'false' || $this->data->$name === '0') return false;
+			if($this->data->$name === 'true') return true;
 		return $this->data->$name;
 	}
 
