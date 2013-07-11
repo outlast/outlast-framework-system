@@ -47,6 +47,7 @@
 	 * @return bool Returns true or console.log.
 	 **/
 	zaj.log = function(message, type, context){
+		if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'LogMessage', type, message]);
 		if(typeof console != 'undefined' && typeof(console) == 'object'){
 			if(typeof context == 'undefined') context = '';
 			switch(type){
@@ -79,6 +80,8 @@
 	 **/
 	zaj.alert = function(message, urlORfunction, buttonText){
 		if(zaj.bootstrap){
+			// Alert sent via bootstrap
+				if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'Alert', 'Bootstrap', message]);
 			// Create modal if not yet available
 				if($('#zaj_bootstrap_modal').length <= 0){
 					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn btn-primary">Ok</a></div></div>');
@@ -102,9 +105,12 @@
 				}
 		}
 		else{
-			alert(message);
-			if(typeof urlORfunction == 'function') urlORfunction();
-			else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction);
+			// Alert sent via bootstrap
+				if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'Alert', 'Standard', message]);
+			// Send alert
+				alert(message);
+				if(typeof urlORfunction == 'function') urlORfunction();
+				else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction);
 		}
 	};
 	zaj.confirm = function(message, urlORfunction){
@@ -155,8 +161,12 @@
 				zaj.ajax.request('post', request, result);
 			};
 			zaj.ajax.request = function(mode,request,result){
+				// Send to Analytics
+					if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'Ajax', mode, request]);
 				// Figure out query string
 					if(mode == 'post'){
+						// Send to Analytics
+							if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'AjaxError', 'MultipleQueryStrings', request]);
 						var rdata = request.split('?');
 						if(rdata.length > 2) zaj.warning("Found multiple question marks in query string!");
 						request = rdata[0];
@@ -168,6 +178,8 @@
 				// Now send request and call callback function, set callback element, or alert
 					$.ajax(request, {
 						success: function(data, textStatus, jqXHR){
+							// Send to Analytics
+								if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'AjaxSuccess', mode, request]);
 							if(typeof result == "function") result(data);
 							else if(typeof result == "object") $(result).html(data);
 							else{
@@ -176,7 +188,12 @@
 							}
 						},
 						complete: function(jqXHR, textStatus){
-							if(textStatus != "success") console.log("Ajax request failed with status ".textStatus);
+							if(textStatus != "success"){
+								// Send to Analytics
+									if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'AjaxError', 'RequestFailed', textStatus]);
+								// Send a log
+									zaj.log("Ajax request failed with status ".textStatus);
+							}
 						},
 						data: datarequest,
 						dataType: 'html',
