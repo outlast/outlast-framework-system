@@ -32,6 +32,16 @@
 	 };
 
 /**
+ * Enable JS error logging to Analytics.
+ **/
+	window.onerror=function(message, url, line){
+		// log JS errors to Analytics
+			if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'JavascriptError', 'Error', 'Line: '+line+': '+message]);
+		// Allow event to propogate by returning false
+			return false;
+	}
+
+/**
  * Mozajik zaj object implementations.
  **/
 	/**
