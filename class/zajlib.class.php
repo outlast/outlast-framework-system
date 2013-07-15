@@ -434,7 +434,7 @@ class zajLib {
 	 */
 	public function reroute($request, $optional_parameters = false, $reroute_to_error = true, $call_load_method = true){
 		// request must be a string
-			if(!is_string($request)) $this->warning('Invalid reroute request!');		
+			if(!is_string($request)) $this->warning('Invalid reroute request!');
 		// load the app
 			return $this->load->app($request, $optional_parameters, $reroute_to_error, $call_load_method);
 	}
@@ -607,20 +607,23 @@ class zajLibLoader{
 					$this->loaded['model'][$name] = true;			
 				return true;
 			}
-	}	
+	}
 
 	/**
 	 * Load an app file and call the appropriate method.
 	 * @param string $request The application request.
-	 * @param array $optional_parameters An array of parameters passed to the request method.
+	 * @param array|bool $optional_parameters An array of parameters passed to the request method.
 	 * @param boolean $reroute_to_error When set to true (the default), the function will reroute requests to the proper __error method.
 	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
-	 **/
+	 * @return bool|mixed
+	 */
 	public function app($request, $optional_parameters=false, $reroute_to_error=true, $call_load_method=true){
 		// check for security
 			if(substr_count($request, "..") > 0) $this->zajlib->error("application request ($request) could not be processed: illegal characters!");
 		// remove the starting and trailing slash
 			$request = trim($request, '/\\');
+		// remove double-slashes - @todo remove multiple slashes? - its slower and do we need it? not really...
+			$request = str_ireplace('//','/',$request);
 		// set defaults
 			$result = false;
 			$fnum = 1;
@@ -676,7 +679,6 @@ class zajLibLoader{
 		// set zajlib's app and mode
 			$this->app = $zaj_app;
 			$this->mode = $zaj_mode;
-		
 
 		// assemble optional parameters
 			if(!$optional_parameters) $optional_parameters = array();
