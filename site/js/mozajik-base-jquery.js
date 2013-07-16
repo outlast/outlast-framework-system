@@ -57,7 +57,7 @@
 	 * @return bool Returns true or console.log.
 	 **/
 	zaj.log = function(message, type, context){
-		if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'LogMessage', type, message]);
+		zaj.track('LogMessage', type, message);
 		if(typeof console != 'undefined' && typeof(console) == 'object'){
 			if(typeof context == 'undefined') context = '';
 			switch(type){
@@ -91,7 +91,7 @@
 	zaj.alert = function(message, urlORfunction, buttonText){
 		if(zaj.bootstrap){
 			// Alert sent via bootstrap
-				if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'Alert', 'Bootstrap', message]);
+				zaj.track('Alert', 'Bootstrap', message);
 			// Create modal if not yet available
 				if($('#zaj_bootstrap_modal').length <= 0){
 					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn btn-primary">Ok</a></div></div>');
@@ -116,7 +116,7 @@
 		}
 		else{
 			// Alert sent via bootstrap
-				if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'Alert', 'Standard', message]);
+				zaj.track('Alert', 'Standard', message);
 			// Send alert
 				alert(message);
 				if(typeof urlORfunction == 'function') urlORfunction();
@@ -137,7 +137,15 @@
 	zaj.prompt = function(message){
 		return prompt(message);
 	};
-	
+
+	/**
+	 * Track visits and events.
+	 **/
+		zaj.track = function(name, event, details){
+			// Track via Google Analytics
+				if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', name, event, details]);
+		};
+
 	/**
 	 * Reload the current url.
 	 **/
@@ -172,13 +180,16 @@
 			};
 			zaj.ajax.request = function(mode,request,result){
 				// Send to Analytics
-					if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'Ajax', mode, request]);
+					zaj.track('Ajax', mode, request);
 				// Figure out query string
 					if(mode == 'post'){
-						// Send to Analytics
-							if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'AjaxError', 'MultipleQueryStrings', request]);
 						var rdata = request.split('?');
-						if(rdata.length > 2) zaj.warning("Found multiple question marks in query string!");
+						if(rdata.length > 2){
+							// Display warning
+								zaj.warning("Found multiple question marks in query string!");
+							// Send to Analytics
+								zaj.track('AjaxError', 'MultipleQueryStrings', request);
+						}
 						request = rdata[0];
 						datarequest = rdata[1];
 					}
@@ -189,7 +200,7 @@
 					$.ajax(request, {
 						success: function(data, textStatus, jqXHR){
 							// Send to Analytics
-								if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'AjaxSuccess', mode, request]);
+								zaj.track('AjaxSuccess', mode, request);
 							if(typeof result == "function") result(data);
 							else if(typeof result == "object") $(result).html(data);
 							else{
@@ -200,7 +211,7 @@
 						complete: function(jqXHR, textStatus){
 							if(textStatus != "success"){
 								// Send to Analytics
-									if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'AjaxError', 'RequestFailed', textStatus]);
+									zaj.track('AjaxError', 'RequestFailed', textStatus);
 								// Send a log
 									zaj.log("Ajax request failed with status ".textStatus);
 							}
