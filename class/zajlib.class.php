@@ -388,25 +388,30 @@ class zajLib {
 	}
 	
 	/**
-	 * Send an ajax response to the browser.
+	 * Send an ajax response to the browser or return if test.
 	 * @param string $message The content to send to the browser.
 	 * @return bool Does not return anything.
 	 **/
 	public function ajax($message){
-		header("Content-Type: application/x-javascript; charset=UTF-8");
-		print $message;
+		// If test
+			if($this->test->is_running()) return $message;
+		// If actual
+			header("Content-Type: application/x-javascript; charset=UTF-8");
+			print $message;
 		exit;
 	}
 
 	/**
-	 * Send json data to the browser.
+	 * Send json data to the browser or return if test.
 	 * @param string|array|object $data This can be a json-encoded string or any other data (in this latter case it would be converted to json data).
 	 * @return bool Does not yet return anything.
 	 **/
 	public function json($data){
 		// If the data is not already a string, convert it with json_encode()
 			if(!is_string($data)) $data = json_encode($data);
-		// Now output and exit!
+		// If test
+			if($this->test->is_running()) return $data;
+		// If real, output and exit!
 			header("Content-Type: application/json; charset=UTF-8");
 			print $data;
 		exit;
@@ -418,7 +423,9 @@ class zajLib {
 	 * @return bool Does not yet return anything.
 	 **/
 	public function redirect($url){
-		// Now redirect
+		// If test return url
+			if($this->test->is_running()) return $url;
+		// Now redirect if real
 			if($this->url->is_url($url)) header("Location: ".$url);
 			else header("Location: ".$this->baseurl.$url);
 		exit;
