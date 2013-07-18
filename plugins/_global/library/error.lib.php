@@ -8,12 +8,35 @@
 
 class zajlib_error extends zajLibExtension {
 
-	private $error_count = 0;
-	
+	/**
+	 * @var int The total number of errors
+	 */
+	private $num_of_error = 0;
+
+	/**
+	 * @var string The last error's text.
+	 */
+	private $last_error_text = '';
+
+	/**
+	 * @var string The last warning's text.
+	 */
+	private $last_warning_text = '';
+
+	/**
+	 * @var string The last notice's text.
+	 */
+	private $last_notice_text = '';
+
+	/**
+	 * @var bool You can disable the errors temporarily, but only during testing.
+	 */
+	private $errors_disabled_during_test = false;
+
+
 	/**
 	 * Send a fatal error message.
 	 * @param string $message The reported message.
-	 * @param string $type Can be 'error', 'warning', or 'notice' to specify the mode of reporting.
 	 **/
 	public function error($message){
 		// Log my error
@@ -25,7 +48,7 @@ class zajlib_error extends zajLibExtension {
 	/**
 	 * Sends a warning message.
 	 * @param string $message The reported message.
-	 * @return Always returns false.
+	 * @return boolean Always returns false.
 	 **/
 	public function warning($message){
 		// Log my error
@@ -36,15 +59,44 @@ class zajlib_error extends zajLibExtension {
 	/**
 	 * Sends a notice message.
 	 * @param string $message The reported message.
-	 * @return Always returns false.
+	 * @return boolean Always returns false.
 	 **/
 	public function notice($message){
 		// Log my error
 			$this->log($message, 'notice');
 		return false;	
 	}
-	
-	
+
+	/**
+	 * Get the last text.
+	 * @param string $errorlevel Can be 'error', 'warning', or 'notice' to specify the mode of reporting.
+	 * @return string The last error, warning, or notice string.
+	 */
+	public function get_last($errorlevel = 'error'){
+		switch($errorlevel){
+			case 'notice':
+				return $this->last_notice_text;
+			case 'warning':
+				return $this->last_warning_text;
+			case 'error':
+			default:
+				return $this->last_error_text;
+		}
+	}
+
+	/**
+	 * Set error reporting during a test.
+	 * @param boolean $errors_disabled_during_test If set to true, errors and warnings will not be displayed or logged.
+	 * @return boolean The previous errors_disabled_during_test value.
+	 */
+	public function surpress_errors_during_test($errors_disabled_during_test){
+		// Save current value for return
+			$current_value = $this->errors_disabled_during_test;
+		// Set to new
+			$this->errors_disabled_during_test = $errors_disabled_during_test;
+		return $current_value;
+	}
+
 	/**
 	 * Log the error to the database and to the screen (if in debug mode)
 	 * @param string $errortext 
@@ -52,6 +104,21 @@ class zajlib_error extends zajLibExtension {
 	 * @return boolean Will return true if logging was successful.
 	 */
 	private function log($errortext, $errorlevel='error'){		
+		// Save my text
+			switch($errorlevel){
+				case 'notice':
+					$this->last_notice_text = $errortext;
+					break;
+				case 'warning':
+					$this->last_warning_text = $errortext;
+					break;
+				case 'error':
+				default:
+					$this->last_error_text = $errortext;
+					break;
+			}
+		// If errors are disabled
+			if($this->errors_disabled_during_test && $this->zajlib->test->is_running()) return true;
 		// generate a backtrace
 			$backtrace = debug_backtrace(false);
 		// increment number of errors
@@ -151,4 +218,3 @@ class zajlib_error extends zajLibExtension {
 		return $backtrace;
 	}	
 }
-?>
