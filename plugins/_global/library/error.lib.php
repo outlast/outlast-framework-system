@@ -148,7 +148,7 @@ class zajlib_error extends zajLibExtension {
 					if(is_array($element['args'])) $backtrace[$key]['args'] = $this->clean_backtrace($element['args']);
 			}
 		// now serialize and set full backtrace
-			$error_details['backtrace'] = serialize($backtrace);
+			$error_details['backtrace'] = @serialize($backtrace);
 			
 		// now add to file or db
 			$error_details['time_create'] = time();
