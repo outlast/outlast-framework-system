@@ -275,6 +275,7 @@ class zajlib_template_zajvariables {
 			// Return the current locale
 				case 'locale': return $this->zajlib->lang->get();
 			// Mozajik version info and other stuff
+				case 'ofw': return $this->zajlib->mozajik;
 				case 'mozajik': return $this->zajlib->mozajik;
 			// Mobile detection (uses server-side detection)
 				case 'mobile': return $this->zajlib->browser->ismobiledevice;
