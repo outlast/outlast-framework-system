@@ -291,9 +291,8 @@ class zajlib_template_zajvariables {
 				case 'useragent': if(!empty($_SERVER['HTTP_USER_AGENT'])) return $_SERVER['HTTP_USER_AGENT']; else return '';
 			// Return which plugins are loaded
 				case 'plugin':
-					$my_plugins = $this->zajlib->loaded_plugins;
-					array_unshift($my_plugins, '');
-					return (object) array_flip($my_plugins);
+					$array = $this->zajlib->plugin->get_plugins();
+					return (object) array_combine($array, $array);
 			// JS layer init script
 				case 'js':
 					if($this->zajlib->https) $protocol = 'https'; else $protocol = 'http';
