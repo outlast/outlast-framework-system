@@ -33,12 +33,15 @@ class zajlib_test extends zajLibExtension {
 	/**
 	 * Prepare a specific test for running by including it.
 	 * @param string $file The include path is relative to basepath.
+	 * @param string $only_extension Only include files with this extension.
 	 * @return int Returns the current file count.
 	 */
-	public function prepare($file){
+	public function prepare($file, $only_extension = 'php'){
 		// Verify that the file is sandboxed within the project
 			$file = $this->zajlib->file->file_check($file);
-		// Now include it!
+		// Now include it (if it is PHP)!
+			if($only_extension !== false && $this->zajlib->file->get_extension($file) != $only_extension) return $this->filecount;
+		// Otherwise, go ahead and include!
 			include($this->zajlib->basepath.$file);
 		// Add one to filecount
 		return ++$this->filecount;
