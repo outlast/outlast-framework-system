@@ -8,9 +8,19 @@
  **/
  
 // Create a new class which will contain the sections
-	var zaj = {baseurl:'',fullrequest:'',fullurl:'',app:'',mode:'',debug_mode:false,protocol:'http',jslib:'jquery',jslibver:1.7};
-	//var zaj = new Mozajik();
-
+	var zaj = {
+		baseurl:'',
+		fullrequest:'',
+		fullurl:'',
+		app:'',
+		mode:'',
+		debug_mode:false,
+		protocol:'http',
+		jslib:'jquery',
+		jslibver:1.7,
+		trackevents_analytics:true,
+		trackevents_local:false
+	};
 
 // Detect various fixed features (pushstate)
 	// Pushstate support (from pjax)
@@ -138,12 +148,24 @@
 		return prompt(message);
 	};
 
-	/**
-	 * Track visits and events.
-	 **/
-		zaj.track = function(name, event, details){
+		/**
+		 * Track events in GA and/or locally. Event labels/etc are whatever you want them to be.
+		 * @param category A category.
+		 * @param action An action.
+		 * @param label A label.
+		 * @param value A value.
+		 */
+		zaj.track = function(category, action, label, value){
 			// Track via Google Analytics
-				if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', name, event, details]);
+				if(zaj.trackevents_analytics && typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
+			// Track to local database
+				if(zaj.trackevents_local){
+					// Don't use zaj.ajax.get because that tracks events, so we'd get into loop
+					$.ajax(zaj.baseurl+'system/track/?category='+zaj.urlencode(category)+'&action='+zaj.urlencode(action)+'&label='+zaj.urlencode(label)+'&value='+zaj.urlencode(value), {
+						dataType: 'html',
+						type: 'GET'
+					});
+				}
 		};
 
 	/**

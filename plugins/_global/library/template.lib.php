@@ -298,10 +298,13 @@ class zajlib_template_zajvariables {
 					if($this->zajlib->https) $protocol = 'https'; else $protocol = 'http';
 					if($this->zajlib->debug_mode) $debug_mode = 'true';
 					else $debug_mode = 'false';
-					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$this->zajlib->baseurl}'; zaj.fullrequest = '{$protocol}:{$this->zajlib->fullrequest}'; zaj.fullurl = '{$protocol}:{$this->zajlib->fullurl}'; zaj.app = '{$this->zajlib->app}'; zaj.mode = '{$this->zajlib->mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; }</script>";
-		
-			
-			
+					// Get my event track settings
+						if($this->zajlib->zajconf['trackevents_analytics'] === false) $trackevents_analytics = 'false';
+						else $trackevents_analytics = 'true';
+						if($this->zajlib->zajconf['trackevents_local'] === true) $trackevents_local = 'true';
+						else $trackevents_local = 'false';
+					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$this->zajlib->baseurl}'; zaj.fullrequest = '{$protocol}:{$this->zajlib->fullrequest}'; zaj.fullurl = '{$protocol}:{$this->zajlib->fullurl}'; zaj.app = '{$this->zajlib->app}'; zaj.mode = '{$this->zajlib->mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; zaj.trackevents_local = $trackevents_local; zaj.trackevents_analytics = $trackevents_analytics; }</script>";
+
 			// By default return nothing.
 				default: return '';
 		}
