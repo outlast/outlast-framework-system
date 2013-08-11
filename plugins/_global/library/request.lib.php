@@ -131,5 +131,12 @@ class zajlib_request extends zajLibExtension {
 		else return $content;
 	}
 
-
+	/**
+	 * Is the current request an ajax request? Requires a Javascript library to work properly cross-browser (jquery, moo, etc.)
+	 * @return boolean Return true if ajax request, false otherwise.
+	 */
+	public function is_ajax(){
+		if(empty($_SERVER['HTTP_X_REQUESTED_WITH'])) return false;
+		else return true;
+	}
 }
