@@ -420,14 +420,17 @@ class zajLib {
 	/**
 	 * Redirect the user to relative or absolute URL
 	 * @param string $url The specific url to redirect the user to.
+	 * @param boolean $frame_breakout If set to true, it will use javascript redirect to break out of iframe.
 	 * @return bool Does not yet return anything.
 	 **/
-	public function redirect($url){
+	public function redirect($url, $frame_breakout = false){
 		// If test return url
 			if($this->test->is_running()) return $url;
 		// Now redirect if real
-			if($this->url->valid($url)) header("Location: ".$url);
-			else header("Location: ".$this->baseurl.$url);
+			if(!$this->url->valid($url)) $url = $this->baseurl.$url;
+		// Frame breakout or standard?
+			if($frame_breakout) exit("<script>window.top.location='".addslashes($url)."';</script>");
+			else header("Location: ".$url);
 		exit;
 	}
 
