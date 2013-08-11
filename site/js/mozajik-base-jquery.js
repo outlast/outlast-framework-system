@@ -150,10 +150,10 @@
 
 		/**
 		 * Track events in GA and/or locally. Event labels/etc are whatever you want them to be.
-		 * @param category A category.
-		 * @param action An action.
-		 * @param label A label.
-		 * @param value A value.
+		 * @param {string} category  A category.
+		 * @param {string} action  An action.
+		 * @param {string} label  A label.
+		 * @param {string} [value] A value.
 		 */
 		zaj.track = function(category, action, label, value){
 			// Track via Google Analytics
