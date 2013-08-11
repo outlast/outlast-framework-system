@@ -249,8 +249,40 @@ class OfwLibraryTest extends zajTest {
 	 * Check url file.
 	 */
 	public function system_library_url(){
-		// Just load it up and do nothing
-		$this->zajlib->url;
+		// Let's test some valid urls
+			// Simple urls
+				$r = $this->zajlib->url->valid('http://www.google.com/');
+				zajTestAssert::isTrue($r);
+				$r = $this->zajlib->url->valid('http://www.example.com/something.php');
+				zajTestAssert::isTrue($r);
+				$r = $this->zajlib->url->valid('http://www.example.com/something.php?example=sdf%20asd');
+				zajTestAssert::isTrue($r);
+			// HTTP with user/pass, port, and query string
+				$r = $this->zajlib->url->valid('http://ofw:ofw@example.com:1234/asdf/asdf/?example=true&something=false');
+				zajTestAssert::isTrue($r);
+			// A complex url with multiple urlencode levels
+				$r = $this->zajlib->url->valid('https://www.facebook.com/dialog/oauth?client_id=12123123123345456890&redirect_uri=%2F%2Flocal.asdf.com%2Fapp.asdf.com%2Fapp%2F%3Fid%3D51e7ab32ead09%26page%3Dauthenticate%26redirect%3Dapp%252F%253Fid%253D51e7ab32ead09%2526%2526page%253Df');
+				zajTestAssert::isTrue($r);
+			// A url with accent marks in query string
+				//$r = $this->zajlib->url->valid('http://www.google.com/?search=példa');
+				//zajTestAssert::isTrue($r);
+			// A url with accent marks in address
+				//$r = $this->zajlib->url->valid('http://www.áccént.com/');
+				//zajTestAssert::isTrue($r);
+			// Some localhost, and ip examples
+				$r = $this->zajlib->url->valid('http://localhost/asdf/example.php');
+				zajTestAssert::isTrue($r);
+				$r = $this->zajlib->url->valid('http://127.0.0.1/asdf/example.php');
+				zajTestAssert::isTrue($r);
+				$r = $this->zajlib->url->valid('http://127.0.0.1:1000/asdf/example.php');
+				zajTestAssert::isTrue($r);
+		// Let's test some invalid urls
+				$r = $this->zajlib->url->valid('/asdf/example.php');
+				zajTestAssert::isFalse($r);
+				$r = $this->zajlib->url->valid('chat://asdf/asdf/example.php');
+				zajTestAssert::isFalse($r);
+				$r = $this->zajlib->url->valid('//localhost/asdf/example.php');
+				zajTestAssert::isFalse($r);
 	}
 
 

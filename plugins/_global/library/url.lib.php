@@ -67,28 +67,16 @@ class zajlib_url extends zajLibExtension {
 	}
 
 	/**
-	 * Returns true or false depending on whether the passed string is a valid URL.
+	 * Returns true or false depending on whether the passed string is a valid http URL.
 	 * @param string $url The url to be parsed
 	 * @return bool True if a valid url. False otherwise.
 	 * @todo Move this to validation lib.
+	 * @todo Add accent-mark support (see tests)
 	 **/
 	function valid($url){
-	 	return preg_match('|^http(s)?://[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(/.*)?$|i', $url);
+	 	return (boolean) preg_match('/^(https?|ftp):\/\/[[:alpha:]\s-0-9+&@#\/%?=~_|!:,.;]*[[:alpha:]\s-0-9+&@#\/%=~_|]$/i', $url);
 	}
-	// Depricated!
-	function is_url($url){ return $this->valid($url); }
 
-	/**
-	 * Returns true or false depending on whether the passed string is a valid email address.
-	 * @param string $email The email to be parsed
-	 * @return bool True if a valid email. False otherwise.
-	 * @todo Move this to validation lib.
-	 **/
-	function is_email($email){
-		return $this->zajlib->email->valid($email);
-	 	//return preg_match("/\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/", $email);
-	}
-		
 	/**
 	 * Redirects to a URL based on the current subdomain.
 	 * @param string $from The subdomain to check for.
@@ -96,7 +84,7 @@ class zajlib_url extends zajLibExtension {
 	 * @return bool Redirects or returns false.
 	 **/
 	function redirect_from_subdomain_to_url($from,$to){
-		$subdomaindata = explode(".",$_SERVER[HTTP_HOST]);
+		$subdomaindata = explode(".",$_SERVER['HTTP_HOST']);
 		if($subdomaindata[0]==$from || $subdomaindata[1]==$from){
 			// redirect me!
 			header("Location: $to");
@@ -106,22 +94,43 @@ class zajlib_url extends zajLibExtension {
 	}
 
 
+
+
 	/**
-	 * Depricated. Use {@link zajlib_request->post()} instead.
+	 * @deprecated
+	 * @ignore
+	 **/
+	function is_url($url){ return $this->valid($url); }
+
+	/**
+	 * Returns true or false depending on whether the passed string is a valid email address.
+	 * @param string $email The email to be parsed
+	 * @return bool True if a valid email. False otherwise.
+	 * @ignore
+	 * @deprecated
+	 **/
+	function is_email($email){
+		return $this->zajlib->email->valid($email);
+	 	//return preg_match("/\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/", $email);
+	}
+
+
+	/**
+	 * Deprecated. Use {@link zajlib_request->post()} instead.
+	 * @ignore
+	 * @deprecated
 	 **/
 	function send_post($url, $returnheaders = false){
 		return $this->zajlib->request->post($url, '', $returnheaders);
 	}
 	
 	/**
-	 * Depricated. Use {@link zajlib_request->get()} instead.
+	 * Deprecated. Use {@link zajlib_request->get()} instead.
+	 * @ignore
+	 * @deprecated
 	 **/
 	function send_request($url, $content='', $method = 'GET', $customheaders = false, $returnheaders = false){
 		return $this->zajlib->request->get($url, $content, $returnheaders, $customheaders, $method);
 	}
 
 }
-
-
-
-?>

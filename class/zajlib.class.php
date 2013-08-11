@@ -426,7 +426,7 @@ class zajLib {
 		// If test return url
 			if($this->test->is_running()) return $url;
 		// Now redirect if real
-			if($this->url->is_url($url)) header("Location: ".$url);
+			if($this->url->valid($url)) header("Location: ".$url);
 			else header("Location: ".$this->baseurl.$url);
 		exit;
 	}
