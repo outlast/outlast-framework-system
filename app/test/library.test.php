@@ -276,6 +276,10 @@ class OfwLibraryTest extends zajTest {
 				zajTestAssert::isTrue($r);
 				$r = $this->zajlib->url->valid('http://127.0.0.1:1000/asdf/example.php');
 				zajTestAssert::isTrue($r);
+				$r = $this->zajlib->url->valid('http://colorvive.cz/?message=Děkujeme%20za%20Vaši%20registraci!%20Během%20krátké%20doby%20obdrž%C3%ADte%20potvrzovac%C3%AD%20e-mail%20na%20Vámi%20zadanou%20adresu.%20Pokud%20tento%20e-mail%20neobdrž%C3%ADte%20během%2024%20hodin,%20pros%C3%ADm%20kontaktujte%20nás%20na%20admin@lorealparis.cz');
+				zajTestAssert::isTrue($r);
+				$r = $this->zajlib->redirect('http://colorvive.cz/?message=Děkujeme%20za%20Vaši%20registraci!%20Během%20krátké%20doby%20obdrž%C3%ADte%20potvrzovac%C3%AD%20e-mail%20na%20Vámi%20zadanou%20adresu.%20Pokud%20tento%20e-mail%20neobdrž%C3%ADte%20během%2024%20hodin,%20pros%C3%ADm%20kontaktujte%20nás%20na%20admin@lorealparis.cz');
+				zajTestAssert::areIdentical('http://colorvive.cz/?message=Děkujeme%20za%20Vaši%20registraci!%20Během%20krátké%20doby%20obdrž%C3%ADte%20potvrzovac%C3%AD%20e-mail%20na%20Vámi%20zadanou%20adresu.%20Pokud%20tento%20e-mail%20neobdrž%C3%ADte%20během%2024%20hodin,%20pros%C3%ADm%20kontaktujte%20nás%20na%20admin@lorealparis.cz', $r);
 		// Let's test some invalid urls
 				$r = $this->zajlib->url->valid('/asdf/example.php');
 				zajTestAssert::isFalse($r);

@@ -424,10 +424,10 @@ class zajLib {
 	 * @return bool Does not yet return anything.
 	 **/
 	public function redirect($url, $frame_breakout = false){
-		// If test return url
-			if($this->test->is_running()) return $url;
 		// Now redirect if real
 			if(!$this->url->valid($url)) $url = $this->baseurl.$url;
+		// If test return url
+			if($this->test->is_running()) return $url;
 		// Frame breakout or standard?
 			if($frame_breakout) exit("<script>window.top.location='".addslashes($url)."';</script>");
 			else header("Location: ".$url);
