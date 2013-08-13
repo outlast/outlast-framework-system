@@ -155,10 +155,10 @@ abstract class zajModel {
 	 * Constructor for model object. You should never directly call this. Use {@link: create()} instead.
 	 *
 	 * @param string $id The id of the object.
-	 * @param string $class_name The name of child class (model class).
+	 * @param string $class_name The name of child class (model class). This is deprecated and overridden anyway.
 	 * @return zajModel
 	 */
-	public function __construct($id, $class_name){
+	public function __construct($id, $class_name = ''){
 		$class_name = get_called_class();
 		// check for errors
 		if($id && !is_string($id)) zajLib::me()->error("Invalid ID value given as parameter for model constructor! You probably tried to use an object instead of a string!");
@@ -631,7 +631,7 @@ abstract class zajModel {
 		$item_cached = false;
 		if(!file_exists($filename)){
 			// create object
-			$new_object = new $class_name($id);
+			$new_object = new $class_name($id, $class_name);
 			// get my name (this will grab the db)
 			if($new_object::$in_database) $new_object->__get('name');
 		}
@@ -647,7 +647,7 @@ abstract class zajModel {
 
 			// Refetch from db
 			// create object
-			$new_object = new $class_name($id);
+			$new_object = new $class_name($id, $class_name);
 			// get my name (this will grab the db)
 			if($new_object::$in_database) $new_object->__get('name');
 			$item_cached = false;
@@ -914,7 +914,7 @@ abstract class zajModelExtender {
 			/* @var zajModel|zajModelExtender $ext_of */
 			if($parent_object === false) $parent_object = $ext_of::create($id);
 		// create a new class based on my parent_object
-			$object = new $class_name($parent_object);
+			$object = new $class_name($parent_object, $class_name);
 			$object->class_name = $class_name;
 		// do i have an extension? then create that too...
 			/* @var zajModelExtender $ext */
