@@ -69,11 +69,13 @@ class zajlib_url extends zajLibExtension {
 	/**
 	 * Returns true or false depending on whether the passed string is a valid http URL.
 	 * @param string $url The url to be parsed
+	 * @param boolean $allow_spaces Allow spaces in query string. This will allow spaces in query string, but also in the url. True url-encoded strings should not require this since spaces are %20.
 	 * @return bool True if a valid url. False otherwise.
 	 * @todo Move this to validation lib.
 	 **/
-	function valid($url){
-	 	return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[^\s]*$/i', $url);
+	function valid($url, $allow_spaces = true){
+	 	if($allow_spaces) return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[\S ]*$/i', $url);
+		else return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[^\s]*$/i', $url);
 	}
 
 	/**
