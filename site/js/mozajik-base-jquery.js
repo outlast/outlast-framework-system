@@ -94,11 +94,14 @@
 	// Go back!
 	zaj.back = function(){ history.back(); };
 
-
 	/**
-	 * Custom alerts, confirms, prompts
-	 **/
-	zaj.alert = function(message, urlORfunction, buttonText){
+	 * Custom alerts, confirms, prompts. If bootstrap is enabled, it wil use that. Otherwise the standard blocking alert() will be used.
+ 	 * @param {string} message The message to alert.
+ 	 * @param {string|function} urlORfunction A callback url or function on button push.
+	 * @param {string} buttonText The text of the button.
+	 * @param {boolean} top Set to true if you want the url to load in window.top.location. Defaults to false.
+ 	 */
+	zaj.alert = function(message, urlORfunction, buttonText, top){
 		if(zaj.bootstrap){
 			// Alert sent via bootstrap
 				zaj.track('Alert', 'Bootstrap', message);
@@ -110,7 +113,7 @@
 				// Set action
 				$('#zaj_bootstrap_modal a.modal-button').unbind('click');
 				if(typeof urlORfunction == 'function') $('#zaj_bootstrap_modal a.modal-button').click(urlORfunction);
-				else if(typeof urlORfunction == 'string') $('#zaj_bootstrap_modal a.modal-button').click(function(){ zaj.redirect(urlORfunction); });
+				else if(typeof urlORfunction == 'string') $('#zaj_bootstrap_modal a.modal-button').click(function(){ zaj.redirect(urlORfunction, top); });
 				else $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); });
 				// Set text (if needed)
 				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
@@ -130,7 +133,7 @@
 			// Send alert
 				alert(message);
 				if(typeof urlORfunction == 'function') urlORfunction();
-				else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction);
+				else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction, top);
 		}
 	};
 	zaj.confirm = function(message, urlORfunction){
@@ -178,12 +181,16 @@
 			
 	/**
 	 * Redirect to a page relative to baseurl or absolute.
-	 * @param relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
+	 * @param {string} relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
+	 * @param {boolean} [top=false] Set this to true if you want it to load in the top iframe.
 	 **/
-		zaj.redirect = function(relative_or_absolute_url){
+		zaj.redirect = function(relative_or_absolute_url, top){
 			if(typeof relative_or_absolute_url == 'undefined' || !relative_or_absolute_url) return false;
+			if(typeof top == 'undefined') top = false;
 			// Is it relative?
-			if(relative_or_absolute_url.substr(0,2) != '//' && relative_or_absolute_url.substr(4, 3) != "://" && relative_or_absolute_url.substr(5, 3) != "://") window.location = zaj.baseurl+relative_or_absolute_url;
+			if(relative_or_absolute_url.substr(0,2) != '//' && relative_or_absolute_url.substr(4, 3) != "://" && relative_or_absolute_url.substr(5, 3) != "://") relative_or_absolute_url = zaj.baseurl+relative_or_absolute_url;
+			// Top or window
+			if(top) window.top.location = relative_or_absolute_url;
 			else window.location = relative_or_absolute_url;
 			return true;
 		};
