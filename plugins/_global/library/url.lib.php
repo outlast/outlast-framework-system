@@ -11,10 +11,10 @@ class zajlib_url extends zajLibExtension {
 	/**
 	 * Reroutes the user to a specified controller. This is depricated and will be removed in 1.0. Use $this->zajlib->reroute() instead.
 	 * @param string $request A url-like request to a controller.
-	 * @param array $optional_parameters An array of parameters passed to the controller method.
+	 * @param array|bool $optional_parameters An array of parameters passed to the controller method.
 	 * @return Returns whatever the rerouted method returns.
 	 * @todo Remove this in 1.0.
-	 **/
+	 */
 	function redirect($request, $optional_parameters = false){
 		return $this->zajlib->reroute($request, $optional_parameters);
 	}
@@ -71,10 +71,9 @@ class zajlib_url extends zajLibExtension {
 	 * @param string $url The url to be parsed
 	 * @return bool True if a valid url. False otherwise.
 	 * @todo Move this to validation lib.
-	 * @todo Add accent-mark support (see tests)
 	 **/
 	function valid($url){
-	 	return (boolean) preg_match('/^(https?|ftp):\/\/[[:alpha:]\s-0-9+&@#\/%?=~_|!:,.;]*[[:alpha:]\s-0-9+&@#\/%=~_|]$/i', $url);
+	 	return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[^\s]*$/i', $url);
 	}
 
 	/**
