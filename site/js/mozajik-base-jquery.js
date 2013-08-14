@@ -388,6 +388,7 @@
 	})(jQuery);
 
 
+
 	/**
 	 * Now add some attribute sniffer helpers
 	 **/
@@ -408,6 +409,6 @@
 				el.addClass('single-click');
 				setTimeout(function(){ el.removeClass('single-click'); }, delay);
 				// Execute javascript
-				eval(el.attr('data-single-click'));
+				return (function(){ eval(el.attr('data-single-click')); }).call(el);
 			});
 	});
