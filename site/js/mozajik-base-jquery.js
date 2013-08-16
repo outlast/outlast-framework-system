@@ -19,7 +19,8 @@
 		jslib:'jquery',
 		jslibver:1.7,
 		trackevents_analytics:true,
-		trackevents_local:false
+		trackevents_local:false,
+		fields: {}
 	};
 
 // Detect various fixed features (pushstate)
