@@ -62,10 +62,10 @@
 
 	/**
 	 * Logs a message to the console. Ingored if console not available.
-	 * @param message The message to log.
-	 * @param type Can be notice, warning, or error
-	 * @param context The context is any other element or object which will be logged.
-	 * @return bool Returns true or console.log.
+	 * @param {string} message The message to log.
+	 * @param {string} type Can be notice, warning, or error
+	 * @param {string} context The context is any other element or object which will be logged.
+	 * @return {boolean} Returns true or console.log.
 	 **/
 	zaj.log = function(message, type, context){
 		zaj.track('LogMessage', type, message);
@@ -82,17 +82,41 @@
 		}
 		return true;
 	};
+
+	/**
+	 * Logs an error message to the console.
+	 * @param {string} message The message to log.
+	 * @param {string} context The context is any other element or object which will be logged.
+	 * @return {boolean} Returns true or console.log.
+	 **/
 	zaj.error = function(message, context){
 		return zaj.log(message, 'error', context);
 	};
+
+	/**
+	 * Logs a warning message to the console.
+	 * @param {string} message The message to log.
+	 * @param {string} context The context is any other element or object which will be logged.
+	 * @return {boolean} Returns true or console.log.
+	 **/
 	zaj.warning = function(message, context){
 		return zaj.log(message, 'warning', context);
 	};
+
+	/**
+	 * Logs a notice message to the console.
+	 * @param {string} message The message to log.
+	 * @param {string} context The context is any other element or object which will be logged.
+	 * @return {boolean} Returns true or console.log.
+	 **/
 	zaj.notice = function(message, context){
 		return zaj.log(message, 'notice', context);
 	};
 
-	// Go back!
+	/**
+	 * Go back in history.
+	 * @deprecated
+	 **/
 	zaj.back = function(){ history.back(); };
 
 	/**
@@ -202,13 +226,57 @@
 	 * Ajax methods.
 	 **/
 		zaj.ajax = {};
+
+			/**
+			 * Helper for zaj.ajax.request.
+			 */
+			zaj.ajax.submitting = false;
+
+			/**
+			 * Send AJAX request via GET.
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 */
 			zaj.ajax.get = function(request,result){
 				zaj.ajax.request('get', request, result);
 			};
+
+			/**
+			 * Send AJAX request via POST.
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 */
 			zaj.ajax.post = function(request,result){
 				zaj.ajax.request('post', request, result);
 			};
-			zaj.ajax.request = function(mode,request,result){
+
+			/**
+			 * Sends a blocked AJAX request via POST.
+			 * @link http://framework.outlast.hu/api/javascript-api/ajax-requests/#docs-blocking-form-requests
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 */
+			zaj.ajax.submit = function(request,result){
+				// if submitting already, just block!
+					if(zaj.ajax.submitting) return false;
+				// toggle submitting status
+					zaj.ajax.submitting = true;
+					var el = $('[data-submit-toggle-class]');
+					if(el.length > 0){
+						el.toggleClass(el.attr('data-submit-toggle-class'));
+					}
+				return zaj.ajax.request('post', request, result, true);
+			};
+
+			/**
+			 * Send an AJAX request via POST or GET.
+			 * @param {string} mode Can be post or get.
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {boolean} set_submitting If set to true, it will set zaj.ajax.submitting when the request returns with a response.
+			 * @return {string} Returns the request url as sent.
+			 */
+			zaj.ajax.request = function(mode,request,result,set_submitting){
 				// Send to Analytics
 					zaj.track('Ajax', mode, request);
 				// Figure out query string
@@ -231,25 +299,40 @@
 						success: function(data, textStatus, jqXHR){
 							// Send to Analytics
 								zaj.track('AjaxSuccess', mode, request);
-							if(typeof result == "function") result(data);
-							else if(typeof result == "object") $(result).html(data);
-							else{
-								if(data == 'ok') zaj.redirect(result);
-								else zaj.alert(data);
-							}
+							// Set my submitting to false
+								if(set_submitting){
+									zaj.ajax.submitting = false;
+									var el = $('[data-submit-toggle-class]');
+									if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
+								}
+							// Handle my results
+								if(typeof result == "function") result(data);
+								else if(typeof result == "object") $(result).html(data);
+								else{
+									if(data == 'ok') zaj.redirect(result);
+									else zaj.alert(data);
+								}
 						},
 						complete: function(jqXHR, textStatus){
-							if(textStatus != "success"){
-								// Send to Analytics
-									zaj.track('AjaxError', 'RequestFailed', textStatus);
-								// Send a log
-									zaj.log("Ajax request failed with status ".textStatus);
-							}
+							// Set error msgs
+								if(textStatus != "success"){
+									// Set my submitting to false
+										if(set_submitting){
+											zaj.ajax.submitting = false;
+											var el = $('[data-submit-toggle-class]');
+											if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
+										}
+									// Send to Analytics
+										zaj.track('AjaxError', 'RequestFailed', textStatus);
+									// Send a log
+										zaj.log("Ajax request failed with status ".textStatus);
+								}
 						},
 						data: datarequest,
 						dataType: 'html',
 						type: mode
 					});
+				return request;
 			};
 
 		/**
@@ -321,10 +404,11 @@
 			};
 	/**
 	 * A function which opens up a new window with the specified properties
-	 * @param url The url of the window
-	 * @param width The width in pixels.
-	 * @param height The height in pixels
-	 * @param options All other options as an object.
+	 * @param {string} url The url of the window
+	 * @param {integer} width The width in pixels.
+	 * @param {integer} height The height in pixels
+	 * @param {string} options All other options as an object.
+	 * @return {window} Returns the window object.
 	 **/
 		zaj.window = function(url, width, height, options){
 			// Default options!
@@ -337,8 +421,8 @@
 
 	/**
 	 * URLencodes a string so that it can safely be submitted in a GET query.
-	 * @param url The url to encode.
-	 * @return The url in encoded form.
+	 * @param {string} url The url to encode.
+	 * @return {string} The url in encoded form.
 	 **/
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
@@ -346,8 +430,8 @@
 
 	/**
 	 * A function which enables sortable features on a list of items. Requires jquery-ui sortable feature.
-	 * @param target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
-	 * @param url The url which will handle this sortable request.
+	 * @param {string} target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
+	 * @param {string} url The url which will handle this sortable request.
 	 **/
 		zaj.sortable = function(target, url){
 			// Make sortable
@@ -373,21 +457,21 @@
 	 * Now extend the jQuery object.
 	 **/
 	(function($){
-	   $.fn.$zaj = $.fn.zaj = function(){
+	   $.fn.$zaj = $.fn.zaj = $.fn.$ofw = function(){
 	  	var target = this;
 	  	// Create my object and return
-	  	return {
+		return {
 	  		// Get or post serialized data
 	  		get: function(url, response){ return zaj.ajax.get(url+'?'+target.serialize(), response); },
 	  		post: function(url, response){ return zaj.ajax.post(url+'?'+target.serialize(), response); },
+	  		submit: function(url, response){ return zaj.ajax.submit(url+'?'+target.serialize(), response); },
 	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
 	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, callback: function(r){
 	  			$(receiver).html(r);
 	  		} }); }
-	  	}
+	  	};
 	  };
 	})(jQuery);
-
 
 
 	/**
@@ -400,7 +484,7 @@
 		 * @attr data-single-click Defines any javascript that is to be executed once even if the user double clicks.
 		 * @attr data-single-click-delay Defines the number of ms before the user can click again. Defaults to 1500. (optional)
 		 **/
-			$('a[data-single-click]').click(function(){
+			$('[data-single-click]').click(function(){
 				var el =  $(this);
 				var delay = el.attr('data-single-click-delay');
 				if(!delay) delay = 1500;
