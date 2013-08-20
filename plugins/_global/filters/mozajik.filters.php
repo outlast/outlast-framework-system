@@ -280,10 +280,13 @@ EOF;
 	 * Filter: querymode - Adds a ? or & to the end of the URL...whichever is needed.
 	 *
 	 *  <b>{{url|querymode}}</b> Assuming url is http://www.example.com/?q=1, it will return http://www.example.com/?q=1& and assuming URL is http://www.example.com/ it will return http://www.example.com/?
+	 *  <b>{{url|querymode:'some=more&parameters=gohere'}}</b> Assuming url is http://www.example.com/?q=1, it will return http://www.example.com/?q=1&some=more&parameters=gohere and assuming URL is http://www.example.com/ it will return http://www.example.com/?some=more&parameters=gohere
 	 **/
 	public function filter_querymode($parameter, &$source){
+		// parameter defaults to empty string
+			if(!$parameter) $parameter = '""';
 		// write to file
-			$this->zajlib->compile->write('if(strstr($filter_var, "?") === false) $filter_var.="?"; else $filter_var.="&";');
+			$this->zajlib->compile->write('if(strstr($filter_var, "?") === false) $filter_var.="?".'.$parameter.'; else $filter_var.="&".'.$parameter.';');
 		return true;
 	}
 	
