@@ -281,11 +281,17 @@ class Photo extends zajModel {
 	
 	/**
 	 * Creates a photo object from php://input stream.
+	 * @param zajModel|bool $parent My parent object.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
-	public static function create_from_stream(){
+	public static function create_from_stream($parent = false, $save_now_to_final_destination = true){
+		// Create a Photo object
+			/** @var Photo $pobj **/
+			$pobj = Photo::create();
 		// tmp folder
 			$folder = zajLib::me()->basepath.'/cache/upload/';
-			$filename = uniqid().'.upload';
+			$filename = $pobj->id.'.tmp';
 		// make temporary folder
 			@mkdir($folder, 0777, true);
 		// write to temporary file in upload folder
@@ -298,19 +304,21 @@ class Photo extends zajModel {
 				@unlink($folder.$filename);
 				return false;
 			}
-		// now create object and return the object
-			/** @var Photo $pobj **/
-			$pobj = Photo::create();
-		 	$pobj->set_image($filename);
-			@unlink($folder.$filename);
+		// Now set stuff
+			$pobj->set('name', 'Upload');
+			if($parent !== false) $pobj->set('parent', $parent);
+			//$obj->set('status', 'saved'); (done by set_image)
+			if($save_now_to_final_destination) $pobj->set_image($filename);
+			else $pobj->temporary = true;
+			$pobj->save();
 			return $pobj;
 	}
 	
 	/**
 	 * Creates a photo object from a standard upload HTML4
 	 * @param string $field_name The name of the file input field.
-	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @param zajModel|bool $parent My parent object.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
 	public static function create_from_upload($field_name, $parent = false, $save_now_to_final_destination = true){
