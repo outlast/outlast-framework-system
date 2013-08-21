@@ -132,7 +132,7 @@
 				zaj.track('Alert', 'Bootstrap', message);
 			// Create modal if not yet available
 				if($('#zaj_bootstrap_modal').length <= 0){
-					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn btn-primary">Ok</a></div></div>');
+					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"><p></p></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn btn-primary">Ok</a></div></div>');
 				}
 			// Reset and init button
 				// Set action
@@ -143,7 +143,7 @@
 				// Set text (if needed)
 				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
 			// Set body and show it
-				$('#zaj_bootstrap_modal div.modal-body').html(message);
+				$('#zaj_bootstrap_modal div.modal-body p').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: 'static', keyboard: false})
 			// Is facebook enabled and in canvas? (move this to fb js)
 				if(zaj.facebook){
