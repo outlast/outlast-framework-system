@@ -28,6 +28,9 @@
 	zaj.pushstate = window.history && window.history.pushState && window.history.replaceState
 					// pushState isn't reliable on iOS until 5.
 					&& !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/)
+	// Mobile
+	zaj.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+
 // Detect various dynamically loaded features (bootstrap, facebook, etc.)
 	$(document).ready(function(){
 		zaj.bootstrap = (typeof $().modal == 'function');
@@ -142,9 +145,17 @@
 				else $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); });
 				// Set text (if needed)
 				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
+			// Backdrop closes on mobile
+				var backdrop = 'static';
+				if(zaj.mobile){
+					backdrop = true;
+					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').remove(); })
+				}
+
 			// Set body and show it
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
-				$('#zaj_bootstrap_modal').modal({backdrop: 'static', keyboard: false})
+				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false})
+
 			// Is facebook enabled and in canvas? (move this to fb js)
 				if(zaj.facebook){
 					FB.Canvas.getPageInfo(function(e){
