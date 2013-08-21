@@ -149,9 +149,8 @@
 				var backdrop = 'static';
 				if(zaj.mobile){
 					backdrop = true;
-					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').remove(); })
+					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
 				}
-
 			// Set body and show it
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false})
