@@ -193,13 +193,13 @@ class Photo extends zajModel {
 	 * Forces a download dialog for the browser.
 	 * @param string $size One of the standard photo sizes.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
-	 * @return void This will force a download and exit.
+	 * @return void|boolean This will force a download and exit. May return false if it fails.
 	 */
 	public function download($size = "normal", $force_download = true){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
 		// look for bad characters in $size
-			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0)  $this->zajlib->error("File could not be found.");
+			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0)  return $this->zajlib->error("File could not be found.");
 			if(!$this->temporary && $size == "preview") $size = 'normal';
 		// generate path
 			$file_path = $this->zajlib->basepath.$this->get_file_path($this->id."-$size.".$this->extension);
@@ -207,7 +207,7 @@ class Photo extends zajModel {
 			$preview_path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
 			if($this->temporary && $size == "preview") $file_path = $preview_path;
 		// final test, if file exists
-			if(!file_exists($file_path)) $this->zajlib->error("File could not be found.");
+			if(!file_exists($file_path)) return $this->zajlib->error("File could not be found.");
 		// pass file thru to user
 			if($force_download) header('Content-Disposition: attachment; filename="'.$this->data->name.'"');
 		// create header
