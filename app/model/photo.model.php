@@ -36,6 +36,8 @@ class Photo extends zajModel {
 			$f->imagetype = zajDb::integer();
 			$f->original = zajDb::text();
 			$f->description = zajDb::textbox();
+			$f->filesizes = zajDb::json();
+			$f->dimensions = zajDb::json();
 			$f->timepath = zajDb::boolean();
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
 		// do not modify the line below!
@@ -139,6 +141,7 @@ class Photo extends zajModel {
 		// now enable time-based folders
 			$this->set('timepath', true);
 			$this->timepath = true;
+			$filesizes = $dimensions = array();
 		// no errors, resize and save
 			foreach($GLOBALS['photosizes'] as $key => $size){
 				if($size !== false){
@@ -146,14 +149,27 @@ class Photo extends zajModel {
 						$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-$key.".$extension, true);
 					// resize it now!
 						$this->zajlib->graphics->resize($file_path, $new_path, $size);
+					// let's get the new file size
+						$filesizes[$key] = @filesize($new_path);
+						$my_image_data = @getimagesize($new_path);
+						$dimensions[$key] = array('w'=>$my_image_data[0], 'h'=>$my_image_data[1]);
+
 				}
 			}
 		// now remove the original or copy to full location
-			if($GLOBALS['photosizes']['full']) copy($file_path, $this->zajlib->basepath.$this->get_file_path($this->id."-full.".$extension, true));
+			if($GLOBALS['photosizes']['full']){
+				$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-full.".$extension, true);
+				copy($file_path, $new_path);
+				// @todo Shouldn't this be move?
+				$filesizes['full'] = @filesize($new_path);
+				$my_image_data = @getimagesize($new_path);
+				$dimensions['full'] = array('w'=>$my_image_data[0], 'h'=>$my_image_data[1]);
+			}
 			else unlink($file_path);
 		// Remove temporary location flag
 			$this->temporary = false;
-			//$this->set('imagetype', $image_type);
+			$this->set('dimensions', $dimensions);
+			$this->set('filesizes', $filesizes);
 			$this->set('status', 'saved');
 			$this->save();
 		return $this;
