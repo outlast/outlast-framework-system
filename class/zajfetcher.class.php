@@ -118,7 +118,8 @@ class zajFetcher implements Iterator, Countable{
 				$this->pagination->nexturl = zajLib::me()->fullrequest."&zajpagination[{$this->class_name}]={$this->pagination->nextpage}";
 				$this->pagination->next = "<a href='".$this->pagination->nexturl."'>&gt;&gt;&gt;&gt;</a>";
 				$this->pagination->pageurl = zajLib::me()->fullrequest."&zajpagination[{$this->class_name}]=";
-				$this->pagination->pagecount = 1;		// pagecount is reset to actual number (after query)
+				$this->pagination->pagecount = 1;			// pagecount is reset to actual number (after query)
+				$this->pagination->autopagination = false;	// autopagination is set after query
 			}
 		// changes query, so reset me
 			// done by limit
@@ -507,6 +508,15 @@ class zajFetcher implements Iterator, Countable{
 					$this->pagination->nextpage = false;
 					$this->pagination->next = '';
 				}
+				// Set autopagination data
+				$this->pagination->autopagination = htmlspecialchars(
+					json_encode(array(
+						'model'=>$this->class_name,
+						'url'=>zajLib::me()->protocol.$this->pagination->pageurl,
+						'startPage'=>$this->pagination->page,
+						'pageCount'=>$this->pagination->pagecount,
+					))
+				);
 			}
 		// query is done
 			$this->query_done = true;
