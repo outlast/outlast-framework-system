@@ -404,7 +404,6 @@
 							if(this.last_query == this.element.val()) return false;
 							else this.last_query = this.element.val();
 						// now send via the appropriate method
-							console.log(url);
 							if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
 							else zaj.ajax.post(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
 					}
