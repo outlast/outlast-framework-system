@@ -35,6 +35,10 @@
 	$(document).ready(function(){
 		zaj.bootstrap = (typeof $().modal == 'function');
 		zaj.facebook = (typeof FB == 'object');
+		zaj.fbcanvas = false;
+		if(zaj.facebook){
+			FB.Canvas.getPageInfo(function(info){ zaj.fbcanvas = info; });
+		}
 	});
 
 	/**
@@ -473,7 +477,7 @@
 			// Jquery or non-jquery works
 			el = $(el)[0];
 			if(typeof partially == 'undefined') partially = true;
-			// Calculate!
+			// Calculate element offsets!
 			var top = el.offsetTop;
 			var left = el.offsetLeft;
 			var width = el.offsetWidth;
@@ -483,20 +487,37 @@
 				top += el.offsetTop;
 				left += el.offsetLeft;
 			}
+			// Facebook iframe or document info
+			var iw, ih, st, sl;
+			if(zaj.facebook && zaj.fbcanvas){
+				FB.Canvas.getPageInfo(function(info) { zaj.fbcanvas = info; } );
+				// IMPORTANT: here we may still be using previous fbcanvas info! Unreliable!
+				iw = zaj.fbcanvas.clientWidth;
+				ih = zaj.fbcanvas.clientHeight;
+				st = zaj.fbcanvas.scrollTop;
+				sl = zaj.fbcanvas.scrollLeft;
+			}
+			else{
+				iw = window.innerWidth;
+				ih = window.innerHeight;
+				st = document.body.scrollTop;
+				sl = document.body.scrollLeft;
+			}
+			// Now do it!
 			if(partially){
 				return (
-					top < (window.pageYOffset + window.innerHeight) &&
-					left < (window.pageXOffset + window.innerWidth) &&
-					(top + height) > window.pageYOffset &&
-					(left + width) > window.pageXOffset
+					top < (st + ih) &&
+					left < (sl + iw) &&
+					(top + height) > st &&
+					(left + width) > sl
 				);
 			}
 			else{
 				return (
-					top >= window.pageYOffset &&
-					left >= window.pageXOffset &&
-					(top + height) <= (window.pageYOffset + window.innerHeight) &&
-					(left + width) <= (window.pageXOffset + window.innerWidth)
+					top >= st &&
+					left >= sl &&
+					(top + height) <= (st + ih) &&
+					(left + width) <= (sl + iw)
 				);
 			}
 		};
