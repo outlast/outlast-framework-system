@@ -60,6 +60,7 @@
  **/
 	/**
 	 * Layer for onready functions.
+	 * @param {function} func The callback function.
 	 **/
  	zaj.ready = function(func){ $(document).ready(func); };
 
@@ -439,7 +440,7 @@
 	 	};	 
 
 	/**
-	 * A function which enables sortable features on a list of items. Requires jquery-ui sortable feature.
+	 * Enables sortable features on a list of items. Requires jquery-ui sortable feature.
 	 * @param {string} target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
 	 * @param {string} url The url which will handle this sortable request.
 	 **/
@@ -464,6 +465,44 @@
 		};
 
 	/**
+	 * Checks to see if an element is in the viewport.
+	 * @param {string|object} el A DOM element, jQuery object, or selector string.
+	 * @param {boolean} [partially=true] If set to true (default), it will return true if element is at least in part visible.
+	 * @return {boolean} Returns true if element is in viewport, false if it is not.
+	 */
+		zaj.inviewport = function(el, partially){
+			// Jquery so take first element
+			el = el[0];
+			if(typeof partially == 'undefined') partially = true;
+			// Calculate!
+			var top = el.offsetTop;
+			var left = el.offsetLeft;
+			var width = el.offsetWidth;
+			var height = el.offsetHeight;
+			while(el.offsetParent) {
+				el = el.offsetParent;
+				top += el.offsetTop;
+				left += el.offsetLeft;
+			}
+			if(partially){
+				return (
+					top < (window.pageYOffset + window.innerHeight) &&
+					left < (window.pageXOffset + window.innerWidth) &&
+					(top + height) > window.pageYOffset &&
+					(left + width) > window.pageXOffset
+				);
+			}
+			else{
+				return (
+					top >= window.pageYOffset &&
+					left >= window.pageXOffset &&
+					(top + height) <= (window.pageYOffset + window.innerHeight) &&
+					(left + width) <= (window.pageXOffset + window.innerWidth)
+				);
+			}
+		};
+
+	/**
 	 * Now extend the jQuery object.
 	 **/
 	(function($){
@@ -475,6 +514,7 @@
 	  		get: function(url, response){ return zaj.ajax.get(url+'?'+target.serialize(), response); },
 	  		post: function(url, response){ return zaj.ajax.post(url+'?'+target.serialize(), response); },
 	  		submit: function(url, response){ return zaj.ajax.submit(url+'?'+target.serialize(), response); },
+	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
 	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
 	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, callback: function(r){
 	  			$(receiver).html(r);
