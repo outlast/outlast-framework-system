@@ -471,8 +471,8 @@
 	 * @return {boolean} Returns true if element is in viewport, false if it is not.
 	 */
 		zaj.inviewport = function(el, partially){
-			// Jquery so take first element
-			el = el[0];
+			// Jquery or non-jquery works
+			el = $(el)[0];
 			if(typeof partially == 'undefined') partially = true;
 			// Calculate!
 			var top = el.offsetTop;
@@ -499,6 +499,77 @@
 					(top + height) <= (window.pageYOffset + window.innerHeight) &&
 					(left + width) <= (window.pageXOffset + window.innerWidth)
 				);
+			}
+		};
+
+	/**
+	 * Enable auto pagination
+	 */
+		zaj.autopagination = {
+			/** Default options **/
+			defaultOptions: {
+				model: '',				// Name of the model
+				url: zaj.fullrequest, 	// The pagination url (pagination url, without number)
+				startPage: 1, 			// The start page
+				pageCount: 2,			// The total number of pages
+				watchElement: false,	// The element to watch. If it enters viewport, next page is loaded.
+				watchInterval: 500,		// The ms time to watch element.
+				targetBlock: false,		// The block to use for the data
+				targetElement: false	// The target element to use (where the paginated html should be appended)
+			},
+			/** An array of autopagination objects on this page **/
+			objects: [],
+
+			/**
+			 * Init the autopagination object
+			 * @param {object} _options An object of options. See above.
+			 * @return {object} Returns an autopagination instance.
+			 */
+			initialize: function(_options){
+				// Merge options
+				_options = $.extend(this.defaultOptions, _options);
+				// Create local vars
+				var _loading = false, _target = false, _currentPage = parseInt(_options.startPage), _watchElement;
+				// My target element
+				_target = $(_options.targetElement);
+				// Create my bottom element (if not specified in options) and make invisible
+				if(!_options.watchElement){
+					_watchElement = $('<div class="ofw-watchelement '+_options.model+'"></div>');
+					_target.append(_watchElement);
+				}
+				else _watchElement = $(_options.watchElement);
+				_watchElement.css('visibility', 'hidden');
+
+				// Define public interface
+				var pub = {
+					/**
+					 * Load up the next items.
+					 */
+					next: function(){
+						// Check if loading or already at max page count
+						if(_loading || _currentPage >= _options.pageCount) return false;
+						// Load page
+						zaj.log("Loading next page. Current "+_currentPage);
+						_loading = true;
+						_currentPage += 1;
+						// Set as visible
+						_watchElement.css('visibility', 'visible');
+						// Get next data
+						zaj.ajax.get(_options.url+_currentPage+'&zaj_pushstate_block='+_options.targetBlock, function(res){
+							_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
+							_loading = false;
+							zaj.log("Done loading.");
+						});
+						return true;
+					}
+				};
+
+				// Check in intervals to see if element is in viewport
+				setInterval(function(){
+					 if(!_loading && zaj.inviewport(_watchElement)) pub.next();
+				}, _options.watchInterval);
+
+				return pub;
 			}
 		};
 
@@ -546,4 +617,31 @@
 				// Execute javascript
 				return (function(){ eval(el.attr('data-single-click')); }).call(el);
 			});
+
+		/**
+		 * Autopagination handler
+		 * @attr data-autopagination-block The block name of the pagination content.
+		 * @attr data-autopagination-model The OFW model name of the pagination data.
+		 * @attr data-autopagination-pagecount The number of pages in total.
+		 **/
+			$('[data-autopagination-block]').each(function(){
+				var el =  $(this);
+				var block = el.attr('data-autopagination-block');
+				var model = el.attr('data-autopagination-model');
+				var pagecount = el.attr('data-autopagination-pagecount');
+				// Remove pagination data from fullrequest
+				var url = zaj.fullrequest.replace(/zajpagination\[OaQuizResponse\]=[0-9]*/, '');
+				// Create my autopagination object
+				zaj.autopagination.objects.push(zaj.autopagination.initialize({
+					model: model,
+					url: url+'&zajpagination['+model+']=',
+					startPage: 1,
+					pageCount: pagecount,
+					watchElement: false,
+					watchInterval: 500,
+					targetBlock: block,
+					targetElement: this
+				}));
+			});
+
 	});
