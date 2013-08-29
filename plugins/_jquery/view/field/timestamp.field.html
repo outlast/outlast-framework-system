@@ -1,17 +1,34 @@
-<script language="javascript">
-	zaj.loader.javascript('system/js/forms/timestamp.js');
-	zaj.loader.css('system/css/forms/timestamp.css?v2');
-	zaj.loader.addEvent('load', function(){
-		Timestamp_{{field.name}} = new Picker.Date($('{{field.id}}[display]'),{
-			positionOffset: {x: -10, y: 20},
-			draggable: false,
-			onSelect: function(date){
-				$('{{field.id}}[value]').value = date.format('%Y.%m.%d.');
-			}
-		});
-	});
-	zaj.loader.start();
-</script>
+
+<!--
 <input class='field date' type='text' id='{{field.id}}[display]' name='{{field.name}}[display]' value='{%if field.value gt '1'%}{{field.value|date:'Y.m.d.'}}{%endif%}'>
+-->
+
+
+
+<script src="{{baseurl}}system/js/bootstrap/2.3.1/bootstrap-picker.min.js?1.1"></script>
+<script src="{{baseurl}}system/js/bootstrap/2.3.1/bootstrap-picker-locale.js?1.1"></script>
+<link rel="stylesheet" href="{{baseurl}}system/css/bootstrap/2.3.1/bootstrap-picker.min.css"/>
+
+<div class="input-append bootstrap-datepicker">
+	<input name="{{field.id}}[date]" class="input-small" type="text" id="{{field.id}}[date]">
+	<span class="add-on" onclick="jQuery('#date').datepicker('show');"><i class="icon-th"></i></span>
+</div>
+<div class="input-append bootstrap-timepicker"><div class="bootstrap-timepicker-widget dropdown-menu"><table><tbody><tr><td><a href="#" data-action="incrementHour"><i class="icon-chevron-up"></i></a></td><td class="separator">&nbsp;</td><td><a href="#" data-action="incrementMinute"><i class="icon-chevron-up"></i></a></td></tr><tr><td><input type="text" name="hour" class="bootstrap-timepicker-hour" maxlength="2"></td> <td class="separator">:</td><td><input type="text" name="minute" class="bootstrap-timepicker-minute" maxlength="2"></td> </tr><tr><td><a href="#" data-action="decrementHour"><i class="icon-chevron-down"></i></a></td><td class="separator"></td><td><a href="#" data-action="decrementMinute"><i class="icon-chevron-down"></i></a></td></tr></tbody></table></div>
+	<input name="{{field.id}}[time]" class="input-small" id="{{field.id}}[time]" type="text">
+	<span class="add-on"><i class="icon-time"></i></span>
+</div>
+
 <input type='hidden' id='{{field.id}}[format]' name='{{field.name}}[format]' value='Y.m.d.'>
 <input type='hidden' id='{{field.id}}[value]' name='{{field.name}}[value]' value='{{field.value}}'>
+<script>
+	$("#{{field.id}}[date]").datepicker({
+		format: 'YYYY.MM.DD.',
+		autoclose: true,
+		language: 'hu'
+	});
+	$('#{{field.id}}[time]').timepicker({
+		minuteStep: 1,
+		template: 'dropdown',
+		showMeridian: false
+	});
+</script>
