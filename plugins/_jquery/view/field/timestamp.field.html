@@ -7,26 +7,26 @@
 
 <script src="{{baseurl}}system/js/bootstrap/2.3.1/bootstrap-picker.min.js?1.1"></script>
 <script src="{{baseurl}}system/js/bootstrap/2.3.1/bootstrap-picker-locale.js?1.1"></script>
-<link rel="stylesheet" href="{{baseurl}}system/css/bootstrap/2.3.1/bootstrap-picker.min.css"/>
+<link rel="stylesheet" href="{{baseurl}}system/css/bootstrap/2.3.1/css/bootstrap-picker.min.css"/>
 
 <div class="input-append bootstrap-datepicker">
-	<input name="{{field.id}}[date]" class="input-small" type="text" id="{{field.id}}[date]">
+	<input name="{{field.id}}[date]" class="input-small" type="text" id="{{field.uid}}-date">
 	<span class="add-on" onclick="jQuery('#date').datepicker('show');"><i class="icon-th"></i></span>
 </div>
 <div class="input-append bootstrap-timepicker"><div class="bootstrap-timepicker-widget dropdown-menu"><table><tbody><tr><td><a href="#" data-action="incrementHour"><i class="icon-chevron-up"></i></a></td><td class="separator">&nbsp;</td><td><a href="#" data-action="incrementMinute"><i class="icon-chevron-up"></i></a></td></tr><tr><td><input type="text" name="hour" class="bootstrap-timepicker-hour" maxlength="2"></td> <td class="separator">:</td><td><input type="text" name="minute" class="bootstrap-timepicker-minute" maxlength="2"></td> </tr><tr><td><a href="#" data-action="decrementHour"><i class="icon-chevron-down"></i></a></td><td class="separator"></td><td><a href="#" data-action="decrementMinute"><i class="icon-chevron-down"></i></a></td></tr></tbody></table></div>
-	<input name="{{field.id}}[time]" class="input-small" id="{{field.id}}[time]" type="text">
+	<input name="{{field.id}}[time]" class="input-small" id="{{field.uid}}-time" type="text">
 	<span class="add-on"><i class="icon-time"></i></span>
 </div>
 
 <input type='hidden' id='{{field.id}}[format]' name='{{field.name}}[format]' value='Y.m.d.'>
 <input type='hidden' id='{{field.id}}[value]' name='{{field.name}}[value]' value='{{field.value}}'>
 <script>
-	$("#{{field.id}}[date]").datepicker({
-		format: 'YYYY.MM.DD.',
+	$("#{{field.uid}}-date").datepicker({
+		format: 'yyyy.mm.dd.',
 		autoclose: true,
 		language: 'hu'
 	});
-	$('#{{field.id}}[time]').timepicker({
+	$('#{{field.uid}}-time').timepicker({
 		minuteStep: 1,
 		template: 'dropdown',
 		showMeridian: false
