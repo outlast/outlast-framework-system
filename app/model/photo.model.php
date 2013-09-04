@@ -341,7 +341,10 @@ class Photo extends zajModel {
 	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
 	public static function create_from_base64($base64_data, $parent = false, $save_now_to_final_destination = true){
-		return self::create_from_stream($parent, $save_now_to_final_destination, $base64_data);
+		// Allow data-urls with base64 data
+			$base64_data = preg_replace("|data:[A-z0-9/]+;base64,|", "", $base64_data);
+		// Now create from stream!
+			return self::create_from_stream($parent, $save_now_to_final_destination, $base64_data);
 	}
 
 	/**
