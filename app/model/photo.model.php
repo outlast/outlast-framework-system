@@ -299,19 +299,22 @@ class Photo extends zajModel {
 	 * Creates a photo object from php://input stream.
 	 * @param zajModel|bool $parent My parent object.
 	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @param string|boolean $base64_data If specified, this will be used instead of input stream data.
 	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
-	public static function create_from_stream($parent = false, $save_now_to_final_destination = true){
+	public static function create_from_stream($parent = false, $save_now_to_final_destination = true, $base64_data = false){
 		// Create a Photo object
 			/** @var Photo $pobj **/
 			$pobj = Photo::create();
 		// tmp folder
 			$folder = zajLib::me()->basepath.'/cache/upload/';
 			$filename = $pobj->id.'.tmp';
+		// base64 data or stream?
+			if($base64_data !== false) $photofile = base64_decode($base64_data);
+			else $photofile = file_get_contents("php://input");
 		// make temporary folder
 			@mkdir($folder, 0777, true);
 		// write to temporary file in upload folder
-			$photofile = file_get_contents("php://input");
 			@file_put_contents($folder.$filename, $photofile);
 		// is photo an image
 			$image_data = getimagesize($folder.$filename);
@@ -330,6 +333,17 @@ class Photo extends zajModel {
 			return $pobj;
 	}
 	
+	/**
+	 * Creates a photo object from base64 data.
+	 * @param string $base64_data This is the photo file data, base64-encoded.
+	 * @param zajModel|bool $parent My parent object.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return Photo|bool Returns the Photo object on success, false if not.
+	 **/
+	public static function create_from_base64($base64_data, $parent = false, $save_now_to_final_destination = true){
+		return self::create_from_stream($parent, $save_now_to_final_destination, $base64_data);
+	}
+
 	/**
 	 * Creates a photo object from a standard upload HTML4
 	 * @param string $field_name The name of the file input field.
