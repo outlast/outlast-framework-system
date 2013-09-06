@@ -391,8 +391,18 @@ EOF;
 		return true;
 	}
 
+	/**
+	 * Filter: gravatar - Returns the gravatar
+	 *
+	 * <b>{{list|gravatar:size}}</b> Returns the full url of the user’s Gravatar image with a pixel width size of 'size'. Size will default to 50.
+	 *
+	 **/
+	public function filter_gravatar($parameter, &$source){
+		// If parameter is not defined, then the parameter is the current locale
+		if(empty($parameter)) $parameter = 50;
+		// write to file
+		$this->zajlib->compile->write('$filter_var = "http://www.gravatar.com/avatar/" . md5( strtolower( trim( $filter_var ) ) ) . "?d=" . urlencode("") . "&s=" . '.$parameter.';');
+		return true;
+	}
 
 }
-
-
-?>
