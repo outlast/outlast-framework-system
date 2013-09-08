@@ -251,27 +251,30 @@
 			 * Send AJAX request via GET.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
 			 */
-			zaj.ajax.get = function(request,result){
-				zaj.ajax.request('get', request, result);
+			zaj.ajax.get = function(request,result, pushstate){
+				zaj.ajax.request('get', request, result, pushstate);
 			};
 
 			/**
 			 * Send AJAX request via POST.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
 			 */
-			zaj.ajax.post = function(request,result){
-				zaj.ajax.request('post', request, result);
+			zaj.ajax.post = function(request,result, pushstate){
+				zaj.ajax.request('post', request, result, pushstate);
 			};
 
 			/**
 			 * Sends a blocked AJAX request via POST.
 			 * @link http://framework.outlast.hu/api/javascript-api/ajax-requests/#docs-blocking-form-requests
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
 			 */
-			zaj.ajax.submit = function(request,result){
+			zaj.ajax.submit = function(request,result,pushstate){
 				// if submitting already, just block!
 					if(zaj.ajax.submitting) return false;
 				// toggle submitting status
@@ -280,7 +283,7 @@
 					if(el.length > 0){
 						el.toggleClass(el.attr('data-submit-toggle-class'));
 					}
-				return zaj.ajax.request('post', request, result, true);
+				return zaj.ajax.request('post', request, result, pushstate, true);
 			};
 
 			/**
@@ -328,8 +331,6 @@
 							// Handle my results
 								if(typeof result == "function") result(data);
 								else if(typeof result == "object"){
-									// get old div contents
-									if(psused && !psdata) psdata = $(result).html();
 									$(result).html(data);
 								}
 								else{
@@ -338,14 +339,15 @@
 								}
 							// pushState actions
 								if(psused){
+									// if psdata not specified
+										if(psdata == false) psdata = {url: window.location.href};
 									// string mode - convert to object
-										if(typeOf(pushstate) == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
+										if(typeof pushstate == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
 									// now set everything and fire event
 										pushstate = $.extend({}, {'title': false}, pushstate);	// default title is false
+										console.log(pushstate);
 										if(pushstate.url) window.history.pushState(psdata, pushstate.title, pushstate.url);
 										if(pushstate.title) document.title = pushstate.title;
-									// trigger pushstate event
-										this.trigger('pushState', pushstate);
 								}
 						},
 						complete: function(jqXHR, textStatus){
@@ -382,11 +384,9 @@
 				url: false,						// The url to send the request to. This should be relative. &query=your+query will be appended. If no url (false), it will not be submitted anywhere.
 				callback: false,				// A function or an element.
 				callback_bind: false,			// The callback function's 'this' will bind to whatever is specified here.
+				receiver: false,				// The selector or jQuery object that will receive the content
 				method: 'get',					// The method to send by. Values can be 'post' (default) or 'get'.
-				allow_empty_query: true,		// If set to true, an empty query will also execute
-				pushstate_url: false,			// You can use pushState to change the url and data of the site after the search is done
-				pushstate_data: false,			// You can use pushState to change the url and data of the site after the search is done
-				pushstate_name: false			// You can use pushState to change the url and data of the site after the search is done
+				allow_empty_query: true			// If set to true, an empty query will also execute
 			},
 			
 			/**
@@ -423,14 +423,14 @@
 							var url = this.options.url;
 							if(this.options.url.indexOf('?') >= 0) url += '&query='+this.element.val();
 							else url += '?query='+this.element.val();
-							// @todo Deprecated, remove this
+							// @todo Deprecated, remove this querystring item:
 							url += '&mozajik-tool-search=true';
 						// check if the current query is like last query
 							if(this.last_query == this.element.val()) return false;
 							else this.last_query = this.element.val();
 						// now send via the appropriate method
-							if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
-							else zaj.ajax.post(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
+							if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, zaj.baseurl+url, this.options.callback_bind);
+							else zaj.ajax.post(url, this.options.callback, zaj.baseurl+url, this.options.callback_bind);
 					}
 					else{
 						this.options.callback(this.element.val());
@@ -616,6 +616,16 @@
 		};
 
 	/**
+	 * Pushstate excitement
+	 */
+	window.onpopstate = function(event) {
+			console.log(event);
+		/**if(event && event.state) {
+			console.log(event);
+		}**/
+	};
+
+	/**
 	 * Now extend the jQuery object.
 	 **/
 	(function($){
@@ -629,7 +639,7 @@
 	  		submit: function(url, response){ return zaj.ajax.submit(url+'?'+target.serialize(), response); },
 	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
 	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
-	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, callback: function(r){
+	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, receiver: $(receiver), callback: function(r){
 	  			$(receiver).html(r);
 	  		} }); }
 	  	};
