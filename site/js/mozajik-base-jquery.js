@@ -288,10 +288,15 @@
 			 * @param {string} mode Can be post or get.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
 			 * @param {boolean} set_submitting If set to true, it will set zaj.ajax.submitting when the request returns with a response.
 			 * @return {string} Returns the request url as sent.
 			 */
-			zaj.ajax.request = function(mode,request,result,set_submitting){
+			zaj.ajax.request = function(mode,request,result,pushstate,set_submitting){
+				// is pushstate used now
+					var psused = zaj.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object');
+					var psdata = false;
+					if(typeof pushstate == 'object' && pushstate.data) psdata = pushstate.data;
 				// Send to Analytics
 					zaj.track('Ajax', mode, request);
 				// Figure out query string
@@ -322,10 +327,25 @@
 								}
 							// Handle my results
 								if(typeof result == "function") result(data);
-								else if(typeof result == "object") $(result).html(data);
+								else if(typeof result == "object"){
+									// get old div contents
+									if(psused && !psdata) psdata = $(result).html();
+									$(result).html(data);
+								}
 								else{
 									if(data == 'ok') zaj.redirect(result);
 									else zaj.alert(data);
+								}
+							// pushState actions
+								if(psused){
+									// string mode - convert to object
+										if(typeOf(pushstate) == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
+									// now set everything and fire event
+										pushstate = $.extend({}, {'title': false}, pushstate);	// default title is false
+										if(pushstate.url) window.history.pushState(psdata, pushstate.title, pushstate.url);
+										if(pushstate.title) document.title = pushstate.title;
+									// trigger pushstate event
+										this.trigger('pushState', pushstate);
 								}
 						},
 						complete: function(jqXHR, textStatus){
@@ -403,6 +423,7 @@
 							var url = this.options.url;
 							if(this.options.url.indexOf('?') >= 0) url += '&query='+this.element.val();
 							else url += '?query='+this.element.val();
+							// @todo Deprecated, remove this
 							url += '&mozajik-tool-search=true';
 						// check if the current query is like last query
 							if(this.last_query == this.element.val()) return false;
@@ -414,6 +435,7 @@
 					else{
 						this.options.callback(this.element.val());
 					}
+					return true;
 				}
 			};
 	/**
