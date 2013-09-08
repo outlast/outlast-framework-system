@@ -181,6 +181,26 @@ class zajFetcher implements Iterator, Countable{
 	}
 
 	/**
+	 * Set filter deleted to 0, 1, or the default.
+	 * @param string|integer $filter_deleted Takes 0, 1, or 'default'.
+	 * @return string Returns the actual value it was set to.
+	 */
+	public function set_filter_deleted($filter_deleted = 'default'){
+		switch($filter_deleted){
+			case 1:
+				$this->filter_deleted = "1";
+				break;
+			case 0:
+				$this->filter_deleted = "0";
+				break;
+			default:
+				$this->filter_deleted = "model.status!='deleted'";
+				break;
+		}
+		return $this->filter_deleted;
+	}
+
+	/**
 	 * This method adds a joined source to the query. This is mostly for internal use.
 	 * @param string $db_table The name of the table to select from.
 	 * @param string $as_name The name of the table as referenced within the sql query (SELECT .... FROM table_name AS as_name)
@@ -261,8 +281,8 @@ class zajFetcher implements Iterator, Countable{
 	 **/
 	public function show_deleted($default = true){
 		// i want to hide them!
-			if(!$default) $this->filter_deleted = "model.status!='deleted'";
-			else $this->filter_deleted = "1";
+			if(!$default) $this->set_filter_deleted();
+			else $this->set_filter_deleted(1);
 		// changes query, so reset me
 			$this->reset();		
 		return $this;
