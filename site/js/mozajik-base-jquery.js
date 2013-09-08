@@ -345,7 +345,6 @@
 										if(typeof pushstate == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
 									// now set everything and fire event
 										pushstate = $.extend({}, {'title': false}, pushstate);	// default title is false
-										console.log(pushstate);
 										if(pushstate.url) window.history.pushState(psdata, pushstate.title, pushstate.url);
 										if(pushstate.title) document.title = pushstate.title;
 								}
@@ -619,7 +618,6 @@
 	 * Pushstate excitement
 	 */
 	window.onpopstate = function(event) {
-			console.log(event);
 		/**if(event && event.state) {
 			console.log(event);
 		}**/
