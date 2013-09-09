@@ -8,24 +8,34 @@
  * @subpackage BuiltinModels
  * @todo Can this be created on-the-fly like many-to-many field tables?
  */
- 
+
+/**
+ * Class File
+ * @property string $mime
+ * @property string $size
+ * @property string $status
+ * @property string $relative
+ * @property string $time_create
+ * @property string $timepath
+ */
 class File extends zajModel {
 	///////////////////////////////////////////////////////////////
 	// !Model design
 	///////////////////////////////////////////////////////////////
 	public static function __model(){	
 		// define custom database fields
-			$fields = (object) array();
-			$fields->parent = zajDb::text();
-			$fields->field = zajDb::text();
-			$fields->name = zajDb::name();
-			$fields->mime = zajDb::text();
-			$fields->size = zajDb::integer();
-			$fields->original = zajDb::text();
-			$fields->description = zajDb::textbox();
-			$fields->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
+			$f = (object) array();
+			$f->parent = zajDb::text();
+			$f->field = zajDb::text();
+			$f->name = zajDb::name();
+			$f->mime = zajDb::text();
+			$f->size = zajDb::integer();
+			$f->original = zajDb::text();
+			$f->description = zajDb::textbox();
+			$f->timepath = zajDb::boolean();
+			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
 		// do not modify the line below!
-			$fields = parent::__model(__CLASS__, $fields); return $fields;
+			$f = parent::__model(__CLASS__, $f); return $f;
 	}
 	///////////////////////////////////////////////////////////////
 	// !Construction and other required methods
@@ -41,16 +51,36 @@ class File extends zajModel {
 		$this->mime = $this->data->mime;
 		$this->size = $this->data->size;
 		$this->status = $this->data->status;
+		$this->relative = $this->get_file_path($this->id);
+		$this->time_create = $this->data->time_create;
+		$this->timepath = $this->data->timepath;
 	}
-	
-	
-	///////////////////////////////////////////////////////////////
-	// !Model methods
-	///////////////////////////////////////////////////////////////
+
+	/**
+	 * Helper function which returns the path based on the current settings.
+	 * @param string $filename Can be thumb, small, normal, etc.
+	 * @param bool $create_folders Create the subfolders if needed.
+	 * @return string Returns the file path.
+	 **/
+	public function get_file_path($filename, $create_folders = false){
+		// First, let's determine which function to use
+			if($this->timepath) $path = $this->zajlib->file->get_time_path("data/private/File", $filename, $this->time_create, false);
+			else $path = $this->zajlib->file->get_id_path("data/private/File", $filename, false);
+		// Create folders if requested
+			if($create_folders) $this->zajlib->file->create_path_for($this->zajlib->basepath.$path);
+		// Now call and return!
+			return $path;
+	}
+
+
+	/**
+	 * Download an item.
+	 * @param bool $force_download
+	 */
 	public function download($force_download=true){
 		// generate path
-			$this->zajlib->load->library('file');
-			$file_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/private/File", $this->id, true);
+			// dont use cache because that's new
+			$file_path = $this->zajlib->basepath.$this->get_file_path($this->id);
 		// pass file thru to user			
 			header('Content-Type: '.$this->data->mime);
 			header('Content-Length: '.filesize($file_path));
@@ -67,14 +97,16 @@ class File extends zajModel {
 	 * This is an alias to set_file, because Photo also has one like it.
 	 **/
 	public function upload($filename = ""){ return $this->set_file($filename); }
-	
 	public function set_file($filename=""){
 		// if filename is empty, use default tempoary name
 			if(empty($filename)) $filename = $this->id.".tmp";
 		// get tmpname
 			$tmpname = $this->zajlib->basepath."cache/upload/".$filename;
+		// now enable time-based folders
+			$this->set('timepath', true);
+			$this->timepath = true;
 		// generate new path
-			$new_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/private/File", $this->id, true);
+			$new_path = $this->zajlib->basepath.$this->get_file_path($this->id, true);
 			//@mkdir($this->zajlib->basepath."data/private/File/");
 		// move tmpname to new location
 			rename($tmpname, $new_path);
@@ -88,12 +120,18 @@ class File extends zajModel {
 			$this->save();
 		return $this;
 	}
+
+	/**
+	 * Override the delete method.
+	 * @param bool $complete
+	 * @return bool|void Return true if successful.
+	 */
 	public function delete($complete = false){
 		// remove photo files
 			if($complete){
 				// generate path
 					$this->zajlib->load->library('file');
-					$file_path = $this->zajlib->file->get_id_path($this->zajlib->basepath."data/private/File", $this->id, true);
+					$file_path = $this->zajlib->basepath.$this->get_file_path($this->id);
 				// delete file
 					@unlink($file_path);
 			}
@@ -101,17 +139,12 @@ class File extends zajModel {
 			parent::delete($complete);
 	}
 
-
-	///////////////////////////////////////////////////////////////
-	// !Static methods
-	///////////////////////////////////////////////////////////////
-
 	/**
 	 * Creates a file object from a file or url.
 	 * @param string $urlORfilename The url or file name.
-	 * @param zajModel $parent My parent object. If not specified, none will be set.
-	 * @param string $field The parent-field in which the file is to be stored.
-	 * @return Photo Returns the new photo object or false if none created.
+	 * @param zajModel|boolean $parent My parent object. If not specified, none will be set.
+	 * @param string|boolean $field The parent-field in which the file is to be stored.
+	 * @return File Returns the new file object or false if none created.
 	 **/
 	public static function create_from_file($urlORfilename, $parent = false, $field = false){
 		// ok, now copy it to uploads folder
@@ -134,8 +167,9 @@ class File extends zajModel {
 	
 	/**
 	 * Creates a photo object from php://input stream.
-	 * @param string $parent_field The name of the field in the parent model. Defaults to $field_name.
-	 * @param zajModel $parent My parent object.
+	 * @param string|boolean $parent_field The name of the field in the parent model. Defaults to $field_name.
+	 * @param zajModel|boolean $parent My parent object.
+	 * @return File Returns the file.
 	 **/
 	public static function create_from_stream($parent_field = false, $parent = false){
 		// tmp folder
@@ -160,8 +194,9 @@ class File extends zajModel {
 	/**
 	 * Creates a file object from a standard upload HTML4
 	 * @param string $field_name The name of the file input field.
-	 * @param zajModel $parent My parent object.
-	 * @param string $parent_field The name of the field in the parent model. Defaults to $field_name.
+	 * @param zajModel|boolean $parent My parent object.
+	 * @param string|boolean $parent_field The name of the field in the parent model. Defaults to $field_name.
+	 * @return File Returns the file.
 	 **/
 	public static function create_from_upload($field_name, $parent = false, $parent_field = false){
 		// File names
@@ -187,4 +222,3 @@ class File extends zajModel {
 	}	
 
 }
-?>
