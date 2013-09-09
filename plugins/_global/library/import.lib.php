@@ -6,6 +6,9 @@
  * @package Library
  **/
 
+define("OFW_IMPORT_PHPEXCEL_PATH", "/var/www/_scripts/PHPExcel/PHPExcel.php");
+define("OFW_IMPORT_MAX_EXECUTION_TIME", 300);
+
 class zajlib_import extends zajLibExtension {
 
 	/**
@@ -23,7 +26,7 @@ class zajlib_import extends zajLibExtension {
 
 	/**
 	 * Reads a CSV document and returns an array of objects.
-	 * @param string $url A CSV-formatted file (relative to basepath) or URL.
+	 * @param string $urlORfile A CSV-formatted file (relative to basepath) or URL.
 	 * @param boolean $first_row_is_header If set to true, the values of the first row will be used as keys (converted to compatible chars).
 	 * @param string $delimiter Set the field delimiter (one character only).
 	 * @param string $enclosure Set the field enclosure character (one character only).
@@ -32,7 +35,10 @@ class zajlib_import extends zajLibExtension {
 	 */
 	public function csv($urlORfile, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
 		// If it is not a url, then check sandbox
-			if(!$this->zajlib->url->is_url($urlORfile)) $this->zajlib->sandbox->check($urlORfile);
+			if(!$this->zajlib->url->valid($urlORfile)){
+				$this->zajlib->file->file_check($urlORfile);
+				$urlORfile = $this->zajlib->basepath.$urlORfile;
+			}
 		// Open the url
 			$return_data = array();
 			if (($handle = fopen($urlORfile, "r")) !== FALSE) {
@@ -53,6 +59,50 @@ class zajlib_import extends zajLibExtension {
 			else return $this->zajlib->warning("Could not open CSV for importing: $urlORfile");
 		// Now return my data
 			return $return_data;
+	}
+
+	/**
+	 * Reads an Excel document and returns an array of objects.
+	 * @param string $urlORfile A CSV-formatted file (relative to basepath) or URL.
+	 * @param boolean $first_row_is_header If set to true, the values of the first row will be used as keys (converted to compatible chars).
+	 * @param string $delimiter Set the field delimiter (one character only).
+	 * @param string $enclosure Set the field enclosure character (one character only).
+	 * @param string $escape Set the escape character (one character only). Defaults as a backslash (\).
+	 * @return array An array of objects where the keys are either numbers or taken from the header row.
+	 */
+	public function xls($urlORfile, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
+		// If it is not a url, then check sandbox
+			if(!$this->zajlib->url->valid($urlORfile)){
+				$this->zajlib->file->file_check($urlORfile);
+				$urlORfile = $this->zajlib->basepath.$urlORfile;
+			}
+		// No more autoloading for OFW
+			zajLib::me()->model_autoloading = false;
+		// Create the PHPExcel input
+			/** Load data into a PHPExcel Object  **/
+			include_once(OFW_IMPORT_PHPEXCEL_PATH);
+			/**  Identify the type of $inputFileName  **/
+			$inputFileType = PHPExcel_IOFactory::identify($urlORfile);
+			/**  Create a new Reader of the type that has been identified  **/
+			$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+			/**  Load $inputFileName to a PHPExcel Object  **/
+			$objPHPExcelReader = $objReader->load($urlORfile);
+		// Create the PHPExcel output
+			$sheetData = $objPHPExcelReader->getActiveSheet()->toArray('',true,true,true);
+		// Turn autoloading back on
+			zajLib::me()->model_autoloading = true;
+		// If no need to for keys just return
+			if(!$first_row_is_header) return $sheetData;
+			else{
+				// Open the url
+					$return_data = array();
+				// Run through my results
+					$key = array_shift($sheetData);
+					foreach($sheetData as $data){
+						$return_data[] = array_combine($key, $data);
+					}
+				return $return_data;
+			}
 	}
 
 }
