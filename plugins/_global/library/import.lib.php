@@ -65,12 +65,9 @@ class zajlib_import extends zajLibExtension {
 	 * Reads an Excel document and returns an array of objects.
 	 * @param string $urlORfile A CSV-formatted file (relative to basepath) or URL.
 	 * @param boolean $first_row_is_header If set to true, the values of the first row will be used as keys (converted to compatible chars).
-	 * @param string $delimiter Set the field delimiter (one character only).
-	 * @param string $enclosure Set the field enclosure character (one character only).
-	 * @param string $escape Set the escape character (one character only). Defaults as a backslash (\).
 	 * @return array An array of objects where the keys are either numbers or taken from the header row.
 	 */
-	public function xls($urlORfile, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
+	public function xls($urlORfile, $first_row_is_header = true){
 		// If it is not a url, then check sandbox
 			if(!$this->zajlib->url->valid($urlORfile)){
 				$this->zajlib->file->file_check($urlORfile);
