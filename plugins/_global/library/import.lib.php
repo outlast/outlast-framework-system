@@ -23,7 +23,7 @@ class zajlib_import extends zajLibExtension {
 
 	/**
 	 * Reads a CSV document and returns an array of objects.
-	 * @param string $url A CSV-formatted file (relative to basepath) or URL.
+	 * @param string $urlORfile A CSV-formatted file (relative to basepath) or URL.
 	 * @param boolean $first_row_is_header If set to true, the values of the first row will be used as keys (converted to compatible chars).
 	 * @param string $delimiter Set the field delimiter (one character only).
 	 * @param string $enclosure Set the field enclosure character (one character only).
@@ -32,7 +32,7 @@ class zajlib_import extends zajLibExtension {
 	 */
 	public function csv($urlORfile, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
 		// If it is not a url, then check sandbox
-			if(!$this->zajlib->url->is_url($urlORfile)) $this->zajlib->sandbox->check($urlORfile);
+			if(!$this->zajlib->url->valid($urlORfile)) $this->zajlib->sandbox->check($urlORfile);
 		// Open the url
 			$return_data = array();
 			if (($handle = fopen($urlORfile, "r")) !== FALSE) {
