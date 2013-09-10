@@ -521,8 +521,8 @@
 			else{
 				iw = window.innerWidth;
 				ih = window.innerHeight;
-				st = document.body.scrollTop;
-				sl = document.body.scrollLeft;
+				st = $(window).scrollTop();
+				sl = $(window).scrollLeft();
 			}
 			// Now do it!
 			if(partially){
