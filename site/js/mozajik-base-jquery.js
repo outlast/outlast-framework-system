@@ -34,7 +34,7 @@
 // Detect various dynamically loaded features (bootstrap, facebook, etc.)
 	$(document).ready(function(){
 		zaj.bootstrap = (typeof $().modal == 'function');
-		zaj.facebook = (typeof FB == 'object');
+		zaj.facebook = (window.parent != window) && FB && FB.Canvas;
 		zaj.fbcanvas = false;
 		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(info){ zaj.fbcanvas = info; });
@@ -57,7 +57,7 @@
 			if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'JavascriptError', 'Error', 'Line: '+line+': '+message]);
 		// Allow event to propogate by returning false
 			return false;
-	}
+	};
 
 /**
  * Mozajik zaj object implementations.
