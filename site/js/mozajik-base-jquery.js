@@ -519,8 +519,8 @@
 				sl = zaj.fbcanvas.scrollLeft;
 			}
 			else{
-				iw = window.innerWidth;
-				ih = window.innerHeight;
+				iw = window.innerWidth || document.documentElement.clientWidth;
+				ih = window.innerHeight || document.documentElement.clientHeight;
 				st = $(window).scrollTop();
 				sl = $(window).scrollLeft();
 			}
