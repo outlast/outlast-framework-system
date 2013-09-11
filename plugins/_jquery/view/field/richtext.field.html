@@ -1,1 +1,28 @@
-<textarea class='field textarea' id='{{field.id}}' name='{{field.name}}'>{{field.value|escape:'htmlall'}}</textarea>
+<!-- load up outlast rte -->
+<link rel="stylesheet" href="{{baseurl}}plugins/outlast/css/outlast-rte.css{% cachebuster %}"/>
+<script src="{{baseurl}}plugins/outlast/js/outlast-rte.js{% cachebuster %}"></script>
+
+
+
+<div class="ol-rte well" id="{{field.uid}}-rte">
+    <ul class="menu">
+        <li><a class="bold"></a></li>
+        <li><a class="italic"></a></li>
+        <li><a class="underline"></a></li>
+        <li><a class="link"></a></li>
+        <li><a class="unlink"></a></li>
+    </ul>
+    <div class='text' contenteditable="true" spellcheck="false">
+        {{field.value}}
+    </div>
+	<textarea class='field textarea hide' id='{{field.uid}}' name='{{field.name}}'>{{field.value|escape:'htmlall'}}</textarea>
+</div>
+
+<script>
+	zaj.ready(function () {
+		var $rte = $('#{{field.uid}}-rte');
+		$rte.olrte();
+		$rte.bind('ol.rte.blur', function(ev, content){ $('#{{field.uid}}').html(content); });
+
+	});
+</script>
