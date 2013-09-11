@@ -11,6 +11,7 @@ die("This file is for documentation.");
  * @method static zajDb float
  * @method static zajDb id
  * @method static zajDb integer
+ * @method static zajDb json
  * @method static zajDb locale
  * @method static zajDb locales
  * @method static zajDb manytomany
