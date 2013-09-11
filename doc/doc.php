@@ -20,6 +20,7 @@ die("This file is for documentation.");
  * @method static zajDb onetomany
  * @method static zajDb ordernum
  * @method static zajDb password
+ * @method static zajDb photo
  * @method static zajDb photos
  * @method static zajDb rating
  * @method static zajDb richtext

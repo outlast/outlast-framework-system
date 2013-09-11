@@ -64,7 +64,7 @@ class zajfield_photo extends zajField {
 					$data->set('parent', $object->id);
 					$data->set('field', $this->name);
 					$data->set('status', 'saved');
-					$data->save();
+					$data->upload();
 				return array(false, false);
 			}
 		return array(false, false);
