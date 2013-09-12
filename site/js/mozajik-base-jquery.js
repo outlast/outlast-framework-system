@@ -157,11 +157,11 @@
 				var backdrop = 'static';
 				if(zaj.mobile){
 					backdrop = true;
-					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
+					$modal.click(function(){ $modal.modal('hide'); })
 				}
-			// Set body and show it
+			// Set body and show it (requires selector again)
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
-				$modal.modal({backdrop: backdrop, keyboard: false})
+				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
 			// Reposition the modal if needed
 				zaj.alert_reposition($modal);
 		}
@@ -182,9 +182,11 @@
 					// Calculate max height
 					var maxheight = e.clientHeight - e.offsetTop;
 					// If at top
-					if(e.scrollTop < fb_top_bar) maxheight -= fb_top_bar;
+					//if(e.scrollTop < fb_top_bar) maxheight -= fb_top_bar;
 					// If at bottom
-					//if(e.clientHeight - )
+					// ADD THIS!
+					// Just always limit size now
+					maxheight -= fb_top_bar;
 					// Set the modal body to autosize
 					$modal.find('.modal-body').css({width:'auto', height:'auto', 'max-height': maxheight - 50});
 					// Set modal height
@@ -195,7 +197,7 @@
 					if(e.scrollTop < fb_top_bar) topoffset += fb_top_bar;
 					// If at bottom
 					if(e.scrollTop + e.offsetTop + fb_top_bar > $(window).height()){
-						FB.Canvas.scrollTo(0, e.scrollTop - 10);
+						FB.Canvas.scrollTo(0, e.scrollTop - fb_bottom_bar);
 						return zaj.alert_reposition($modal);
 					}
 					$modal.css({top: topoffset});
