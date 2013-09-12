@@ -139,10 +139,10 @@
 			// Alert sent via bootstrap
 				zaj.track('Alert', 'Bootstrap', message);
 			// Cache my jquery selectors
-				var $modal = $('#zaj_bootstrap_modal');
+				// DON't do this, as it causes problems!
 
 			// Create modal if not yet available
-				if($modal.length <= 0){
+				if($('#zaj_bootstrap_modal').length <= 0){
 					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn btn-primary">Ok</a></div></div>');
 				}
 			// Reset and init button
@@ -157,13 +157,13 @@
 				var backdrop = 'static';
 				if(zaj.mobile){
 					backdrop = true;
-					$modal.click(function(){ $modal.modal('hide'); })
+					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
 				}
 			// Set body and show it (requires selector again)
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
 			// Reposition the modal if needed
-				zaj.alert_reposition($modal);
+				zaj.alert_reposition($('#zaj_bootstrap_modal'));
 		}
 		else{
 			// Alert sent via bootstrap
