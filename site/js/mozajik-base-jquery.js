@@ -163,7 +163,12 @@
 			// Is facebook enabled and in canvas? (move this to fb js)
 				if(zaj.facebook){
 					FB.Canvas.getPageInfo(function(e){
-						$('#zaj_bootstrap_modal').css({top: 300 + e.scrollTop});
+						// My default top offset
+							var topoffset = 300 + e.scrollTop;
+						// If it would be higher than canvas height, then move to scrollTop
+							if(e.clientHeight < $('#zaj_bootstrap_modal').height() + topoffset) topoffset = e.scrollTop + 5;
+						// Set the topoffset
+							$('#zaj_bootstrap_modal').css({top: topoffset});
 					});
 				}
 		}
