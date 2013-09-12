@@ -314,3 +314,12 @@
 	.nihilo .dijitTimePickerTick .dijitTimePickerItemInner{ font-size: 0.8em; }
 	.nihilo .dijitTimePickerItem.dijitTimePickerMarker .dijitTimePickerItemInner { font-size: 1em; }
 	.nihilo .dijitDialogPaneContent { color: black; }
+
+
+/* add my paginator thinking */
+	.ofw-watchelement{
+		width: 100%;
+		height: 20px;
+		background: url(../img/assets/ajax-loader.gif) no-repeat 50% 50%;
+		position: absolute;
+	}

@@ -19,7 +19,8 @@
 		jslib:'jquery',
 		jslibver:1.7,
 		trackevents_analytics:true,
-		trackevents_local:false
+		trackevents_local:false,
+		fields: {}
 	};
 
 // Detect various fixed features (pushstate)
@@ -27,10 +28,17 @@
 	zaj.pushstate = window.history && window.history.pushState && window.history.replaceState
 					// pushState isn't reliable on iOS until 5.
 					&& !navigator.userAgent.match(/((iPod|iPhone|iPad).+\bOS\s+[1-4]|WebApps\/.+CFNetwork)/)
+	// Mobile
+	zaj.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+
 // Detect various dynamically loaded features (bootstrap, facebook, etc.)
 	$(document).ready(function(){
 		zaj.bootstrap = (typeof $().modal == 'function');
-		zaj.facebook = (typeof FB == 'object');
+		zaj.facebook = (window.parent != window) && FB && FB.Canvas;
+		zaj.fbcanvas = false;
+		if(zaj.facebook){
+			FB.Canvas.getPageInfo(function(info){ zaj.fbcanvas = info; });
+		}
 	});
 
 	/**
@@ -49,22 +57,23 @@
 			if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'JavascriptError', 'Error', 'Line: '+line+': '+message]);
 		// Allow event to propogate by returning false
 			return false;
-	}
+	};
 
 /**
  * Mozajik zaj object implementations.
  **/
 	/**
 	 * Layer for onready functions.
+	 * @param {function} func The callback function.
 	 **/
  	zaj.ready = function(func){ $(document).ready(func); };
 
 	/**
 	 * Logs a message to the console. Ingored if console not available.
-	 * @param message The message to log.
-	 * @param type Can be notice, warning, or error
-	 * @param context The context is any other element or object which will be logged.
-	 * @return bool Returns true or console.log.
+	 * @param {string} message The message to log.
+	 * @param {string} type Can be notice, warning, or error
+	 * @param {string} context The context is any other element or object which will be logged.
+	 * @return {boolean} Returns true or console.log.
 	 **/
 	zaj.log = function(message, type, context){
 		zaj.track('LogMessage', type, message);
@@ -81,17 +90,41 @@
 		}
 		return true;
 	};
+
+	/**
+	 * Logs an error message to the console.
+	 * @param {string} message The message to log.
+	 * @param {string} context The context is any other element or object which will be logged.
+	 * @return {boolean} Returns true or console.log.
+	 **/
 	zaj.error = function(message, context){
 		return zaj.log(message, 'error', context);
 	};
+
+	/**
+	 * Logs a warning message to the console.
+	 * @param {string} message The message to log.
+	 * @param {string} context The context is any other element or object which will be logged.
+	 * @return {boolean} Returns true or console.log.
+	 **/
 	zaj.warning = function(message, context){
 		return zaj.log(message, 'warning', context);
 	};
+
+	/**
+	 * Logs a notice message to the console.
+	 * @param {string} message The message to log.
+	 * @param {string} context The context is any other element or object which will be logged.
+	 * @return {boolean} Returns true or console.log.
+	 **/
 	zaj.notice = function(message, context){
 		return zaj.log(message, 'notice', context);
 	};
 
-	// Go back!
+	/**
+	 * Go back in history.
+	 * @deprecated
+	 **/
 	zaj.back = function(){ history.back(); };
 
 	/**
@@ -117,9 +150,16 @@
 				else $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); });
 				// Set text (if needed)
 				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
+			// Backdrop closes on mobile
+				var backdrop = 'static';
+				if(zaj.mobile){
+					backdrop = true;
+					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
+				}
 			// Set body and show it
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
-				$('#zaj_bootstrap_modal').modal({backdrop: 'static', keyboard: false})
+				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false})
+
 			// Is facebook enabled and in canvas? (move this to fb js)
 				if(zaj.facebook){
 					FB.Canvas.getPageInfo(function(e){
@@ -201,13 +241,65 @@
 	 * Ajax methods.
 	 **/
 		zaj.ajax = {};
-			zaj.ajax.get = function(request,result){
-				zaj.ajax.request('get', request, result);
+
+			/**
+			 * Helper for zaj.ajax.request.
+			 */
+			zaj.ajax.submitting = false;
+
+			/**
+			 * Send AJAX request via GET.
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
+			 */
+			zaj.ajax.get = function(request,result, pushstate){
+				zaj.ajax.request('get', request, result, pushstate);
 			};
-			zaj.ajax.post = function(request,result){
-				zaj.ajax.request('post', request, result);
+
+			/**
+			 * Send AJAX request via POST.
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
+			 */
+			zaj.ajax.post = function(request,result, pushstate){
+				zaj.ajax.request('post', request, result, pushstate);
 			};
-			zaj.ajax.request = function(mode,request,result){
+
+			/**
+			 * Sends a blocked AJAX request via POST.
+			 * @link http://framework.outlast.hu/api/javascript-api/ajax-requests/#docs-blocking-form-requests
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
+			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 */
+			zaj.ajax.submit = function(request,result,pushstate){
+				// if submitting already, just block!
+					if(zaj.ajax.submitting) return false;
+				// toggle submitting status
+					zaj.ajax.submitting = true;
+					var el = $('[data-submit-toggle-class]');
+					if(el.length > 0){
+						el.toggleClass(el.attr('data-submit-toggle-class'));
+					}
+				return zaj.ajax.request('post', request, result, pushstate, true);
+			};
+
+			/**
+			 * Send an AJAX request via POST or GET.
+			 * @param {string} mode Can be post or get.
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
+			 * @param {boolean} set_submitting If set to true, it will set zaj.ajax.submitting when the request returns with a response.
+			 * @return {string} Returns the request url as sent.
+			 */
+			zaj.ajax.request = function(mode,request,result,pushstate,set_submitting){
+				// is pushstate used now
+					var psused = zaj.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object');
+					var psdata = false;
+					if(typeof pushstate == 'object' && pushstate.data) psdata = pushstate.data;
 				// Send to Analytics
 					zaj.track('Ajax', mode, request);
 				// Figure out query string
@@ -230,25 +322,53 @@
 						success: function(data, textStatus, jqXHR){
 							// Send to Analytics
 								zaj.track('AjaxSuccess', mode, request);
-							if(typeof result == "function") result(data);
-							else if(typeof result == "object") $(result).html(data);
-							else{
-								if(data == 'ok') zaj.redirect(result);
-								else zaj.alert(data);
-							}
+							// Set my submitting to false
+								if(set_submitting){
+									zaj.ajax.submitting = false;
+									var el = $('[data-submit-toggle-class]');
+									if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
+								}
+							// Handle my results
+								if(typeof result == "function") result(data);
+								else if(typeof result == "object"){
+									$(result).html(data);
+								}
+								else{
+									if(data == 'ok') zaj.redirect(result);
+									else zaj.alert(data);
+								}
+							// pushState actions
+								if(psused){
+									// if psdata not specified
+										if(psdata == false) psdata = {url: window.location.href};
+									// string mode - convert to object
+										if(typeof pushstate == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
+									// now set everything and fire event
+										pushstate = $.extend({}, {'title': false}, pushstate);	// default title is false
+										if(pushstate.url) window.history.pushState(psdata, pushstate.title, pushstate.url);
+										if(pushstate.title) document.title = pushstate.title;
+								}
 						},
 						complete: function(jqXHR, textStatus){
-							if(textStatus != "success"){
-								// Send to Analytics
-									zaj.track('AjaxError', 'RequestFailed', textStatus);
-								// Send a log
-									zaj.log("Ajax request failed with status ".textStatus);
-							}
+							// Set error msgs
+								if(textStatus != "success"){
+									// Set my submitting to false
+										if(set_submitting){
+											zaj.ajax.submitting = false;
+											var el = $('[data-submit-toggle-class]');
+											if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
+										}
+									// Send to Analytics
+										zaj.track('AjaxError', 'RequestFailed', textStatus);
+									// Send a log
+										zaj.log("Ajax request failed with status ".textStatus);
+								}
 						},
 						data: datarequest,
 						dataType: 'html',
 						type: mode
 					});
+				return request;
 			};
 
 		/**
@@ -263,11 +383,9 @@
 				url: false,						// The url to send the request to. This should be relative. &query=your+query will be appended. If no url (false), it will not be submitted anywhere.
 				callback: false,				// A function or an element.
 				callback_bind: false,			// The callback function's 'this' will bind to whatever is specified here.
+				receiver: false,				// The selector or jQuery object that will receive the content
 				method: 'get',					// The method to send by. Values can be 'post' (default) or 'get'.
-				allow_empty_query: true,		// If set to true, an empty query will also execute
-				pushstate_url: false,			// You can use pushState to change the url and data of the site after the search is done
-				pushstate_data: false,			// You can use pushState to change the url and data of the site after the search is done
-				pushstate_name: false			// You can use pushState to change the url and data of the site after the search is done
+				allow_empty_query: true			// If set to true, an empty query will also execute
 			},
 			
 			/**
@@ -304,26 +422,28 @@
 							var url = this.options.url;
 							if(this.options.url.indexOf('?') >= 0) url += '&query='+this.element.val();
 							else url += '?query='+this.element.val();
+							// @todo Deprecated, remove this querystring item:
 							url += '&mozajik-tool-search=true';
 						// check if the current query is like last query
 							if(this.last_query == this.element.val()) return false;
 							else this.last_query = this.element.val();
 						// now send via the appropriate method
-							console.log(url);
-							if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
-							else zaj.ajax.post(url, this.options.callback, {'data': this.options.pushstate_data, 'title': this.options.pushstate_title, 'url': this.options.pushstate_url}, this.options.callback_bind);
+							if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, zaj.baseurl+url, this.options.callback_bind);
+							else zaj.ajax.post(url, this.options.callback, zaj.baseurl+url, this.options.callback_bind);
 					}
 					else{
 						this.options.callback(this.element.val());
 					}
+					return true;
 				}
 			};
 	/**
 	 * A function which opens up a new window with the specified properties
-	 * @param url The url of the window
-	 * @param width The width in pixels.
-	 * @param height The height in pixels
-	 * @param options All other options as an object.
+	 * @param {string} url The url of the window
+	 * @param {integer} width The width in pixels.
+	 * @param {integer} height The height in pixels
+	 * @param {string} options All other options as an object.
+	 * @return {window} Returns the window object.
 	 **/
 		zaj.window = function(url, width, height, options){
 			// Default options!
@@ -336,17 +456,17 @@
 
 	/**
 	 * URLencodes a string so that it can safely be submitted in a GET query.
-	 * @param url The url to encode.
-	 * @return The url in encoded form.
+	 * @param {string} url The url to encode.
+	 * @return {string} The url in encoded form.
 	 **/
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
 	 	};	 
 
 	/**
-	 * A function which enables sortable features on a list of items. Requires jquery-ui sortable feature.
-	 * @param target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
-	 * @param url The url which will handle this sortable request.
+	 * Enables sortable features on a list of items. Requires jquery-ui sortable feature.
+	 * @param {string} target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
+	 * @param {string} url The url which will handle this sortable request.
 	 **/
 		zaj.sortable = function(target, url){
 			// Make sortable
@@ -369,21 +489,158 @@
 		};
 
 	/**
+	 * Checks to see if an element is in the viewport.
+	 * @param {string|object} el A DOM element, jQuery object, or selector string.
+	 * @param {boolean} [partially=true] If set to true (default), it will return true if element is at least in part visible.
+	 * @return {boolean} Returns true if element is in viewport, false if it is not.
+	 */
+		zaj.inviewport = function(el, partially){
+			// Jquery or non-jquery works
+			el = $(el)[0];
+			if(typeof partially == 'undefined') partially = true;
+			// Calculate element offsets!
+			var top = el.offsetTop;
+			var left = el.offsetLeft;
+			var width = el.offsetWidth;
+			var height = el.offsetHeight;
+			while(el.offsetParent) {
+				el = el.offsetParent;
+				top += el.offsetTop;
+				left += el.offsetLeft;
+			}
+			// Facebook iframe or document info
+			var iw, ih, st, sl;
+			if(zaj.facebook && zaj.fbcanvas){
+				FB.Canvas.getPageInfo(function(info) { zaj.fbcanvas = info; } );
+				// IMPORTANT: here we may still be using previous fbcanvas info! Unreliable!
+				iw = zaj.fbcanvas.clientWidth;
+				ih = zaj.fbcanvas.clientHeight;
+				st = zaj.fbcanvas.scrollTop;
+				sl = zaj.fbcanvas.scrollLeft;
+			}
+			else{
+				iw = window.innerWidth || document.documentElement.clientWidth;
+				ih = window.innerHeight || document.documentElement.clientHeight;
+				st = $(window).scrollTop();
+				sl = $(window).scrollLeft();
+			}
+			// Now do it!
+			if(partially){
+				return (
+					top < (st + ih) &&
+					left < (sl + iw) &&
+					(top + height) > st &&
+					(left + width) > sl
+				);
+			}
+			else{
+				return (
+					top >= st &&
+					left >= sl &&
+					(top + height) <= (st + ih) &&
+					(left + width) <= (sl + iw)
+				);
+			}
+		};
+
+	/**
+	 * Enable auto pagination
+	 */
+		zaj.autopagination = {
+			/** Default options **/
+			defaultOptions: {
+				model: '',				// Name of the model
+				url: zaj.fullrequest, 	// The pagination url (pagination url, without number)
+				startPage: 1, 			// The start page
+				pageCount: 2,			// The total number of pages
+				watchElement: false,	// The element to watch. If it enters viewport, next page is loaded.
+				watchInterval: 500,		// The ms time to watch element.
+				targetBlock: false,		// The block to use for the data
+				targetElement: false	// The target element to use (where the paginated html should be appended)
+			},
+			/** An array of autopagination objects on this page **/
+			objects: [],
+
+			/**
+			 * Init the autopagination object
+			 * @param {object} _options An object of options. See above.
+			 * @return {object} Returns an autopagination instance.
+			 */
+			initialize: function(_options){
+				// Merge options
+				_options = $.extend(this.defaultOptions, _options);
+				// Create local vars
+				var _loading = false, _target = false, _currentPage = parseInt(_options.startPage), _watchElement;
+				// My target element
+				_target = $(_options.targetElement);
+				// Create my bottom element (if not specified in options) and make invisible
+				if(!_options.watchElement){
+					_watchElement = $('<div class="ofw-watchelement '+_options.model+'"></div>');
+					_target.append(_watchElement);
+				}
+				else _watchElement = $(_options.watchElement);
+				_watchElement.css('visibility', 'hidden');
+
+				// Define public interface
+				var pub = {
+					/**
+					 * Load up the next items.
+					 */
+					next: function(){
+						// Check if loading or already at max page count
+						if(_loading || _currentPage >= _options.pageCount) return false;
+						// Load page
+						zaj.log("Loading next page. Current "+_currentPage);
+						_loading = true;
+						_currentPage += 1;
+						// Set as visible
+						_watchElement.css('visibility', 'visible');
+						// Get next data
+						zaj.ajax.get(_options.url+_currentPage+'&zaj_pushstate_block='+_options.targetBlock, function(res){
+							_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
+							_loading = false;
+							zaj.log("Done loading.");
+						});
+						return true;
+					}
+				};
+
+				// Check in intervals to see if element is in viewport
+				setInterval(function(){
+					 if(!_loading && zaj.inviewport(_watchElement)) pub.next();
+				}, _options.watchInterval);
+
+				return pub;
+			}
+		};
+
+	/**
+	 * Pushstate excitement
+	 */
+	window.onpopstate = function(event) {
+		/**if(event && event.state) {
+			console.log(event);
+		}**/
+	};
+
+	/**
 	 * Now extend the jQuery object.
 	 **/
 	(function($){
-	   $.fn.$zaj = $.fn.zaj = function(){
+	   $.fn.$zaj = $.fn.zaj = $.fn.$ofw = function(){
 	  	var target = this;
 	  	// Create my object and return
-	  	return {
+		return {
 	  		// Get or post serialized data
 	  		get: function(url, response){ return zaj.ajax.get(url+'?'+target.serialize(), response); },
 	  		post: function(url, response){ return zaj.ajax.post(url+'?'+target.serialize(), response); },
+	  		submit: function(url, response){ return zaj.ajax.submit(url+'?'+target.serialize(), response); },
+	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
 	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
-	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, callback: function(r){
+	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, receiver: $(receiver), callback: function(r){
 	  			$(receiver).html(r);
 	  		} }); }
-	  	}
+	  	};
 	  };
 	})(jQuery);
 
@@ -398,7 +655,7 @@
 		 * @attr data-single-click Defines any javascript that is to be executed once even if the user double clicks.
 		 * @attr data-single-click-delay Defines the number of ms before the user can click again. Defaults to 1500. (optional)
 		 **/
-			$('a[data-single-click]').click(function(){
+			$('[data-single-click]').click(function(){
 				var el =  $(this);
 				var delay = el.attr('data-single-click-delay');
 				if(!delay) delay = 1500;
@@ -408,6 +665,31 @@
 				el.addClass('single-click');
 				setTimeout(function(){ el.removeClass('single-click'); }, delay);
 				// Execute javascript
-				eval(el.attr('data-single-click'));
+				return (function(){ eval(el.attr('data-single-click')); }).call(el);
 			});
+
+		/**
+		 * Autopagination handler
+		 * @attr data-autopagination The data need for autopagination. This is generated by {{list.pagination.autopagination}}.
+		 * @attr data-autopagination-block You can override the default 'autopagination' block name by specifying this attribute.
+		 **/
+			$('[data-autopagination]').each(function(){
+				// Set defaults and data
+				var el =  $(this);
+				var data = JSON.parse(el.attr('data-autopagination'));
+				var block = el.attr('data-autopagination-block');
+				if(typeof block == 'undefined') block = 'autopagination';
+				// Create my autopagination object
+				zaj.autopagination.objects.push(zaj.autopagination.initialize({
+					model: data.model,
+					url: data.url,
+					startPage: data.startPage,
+					pageCount: data.pageCount,
+					watchElement: false,
+					watchInterval: 500,
+					targetBlock: block,
+					targetElement: this
+				}));
+			});
+
 	});

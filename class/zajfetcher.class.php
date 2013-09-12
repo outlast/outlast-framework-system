@@ -118,7 +118,8 @@ class zajFetcher implements Iterator, Countable{
 				$this->pagination->nexturl = zajLib::me()->fullrequest."&zajpagination[{$this->class_name}]={$this->pagination->nextpage}";
 				$this->pagination->next = "<a href='".$this->pagination->nexturl."'>&gt;&gt;&gt;&gt;</a>";
 				$this->pagination->pageurl = zajLib::me()->fullrequest."&zajpagination[{$this->class_name}]=";
-				$this->pagination->pagecount = 1;		// pagecount is reset to actual number (after query)
+				$this->pagination->pagecount = 1;			// pagecount is reset to actual number (after query)
+				$this->pagination->autopagination = false;	// autopagination is set after query
 			}
 		// changes query, so reset me
 			// done by limit
@@ -177,6 +178,26 @@ class zajFetcher implements Iterator, Countable{
 		// changes query, so reset me
 			$this->reset();
 		return $this;
+	}
+
+	/**
+	 * Set filter deleted to 0, 1, or the default.
+	 * @param string|integer $filter_deleted Takes 0, 1, or 'default'.
+	 * @return string Returns the actual value it was set to.
+	 */
+	public function set_filter_deleted($filter_deleted = 'default'){
+		switch($filter_deleted){
+			case 1:
+				$this->filter_deleted = "1";
+				break;
+			case 0:
+				$this->filter_deleted = "0";
+				break;
+			default:
+				$this->filter_deleted = "model.status!='deleted'";
+				break;
+		}
+		return $this->filter_deleted;
 	}
 
 	/**
@@ -260,8 +281,8 @@ class zajFetcher implements Iterator, Countable{
 	 **/
 	public function show_deleted($default = true){
 		// i want to hide them!
-			if(!$default) $this->filter_deleted = "model.status!='deleted'";
-			else $this->filter_deleted = "1";
+			if(!$default) $this->set_filter_deleted();
+			else $this->set_filter_deleted(1);
 		// changes query, so reset me
 			$this->reset();		
 		return $this;
@@ -507,6 +528,15 @@ class zajFetcher implements Iterator, Countable{
 					$this->pagination->nextpage = false;
 					$this->pagination->next = '';
 				}
+				// Set autopagination data
+				$this->pagination->autopagination = htmlspecialchars(
+					json_encode(array(
+						'model'=>$this->class_name,
+						'url'=>zajLib::me()->protocol.$this->pagination->pageurl,
+						'startPage'=>$this->pagination->page,
+						'pageCount'=>$this->pagination->pagecount,
+					))
+				);
 			}
 		// query is done
 			$this->query_done = true;

@@ -24,7 +24,7 @@
 		/**
 		 * Verify that I could indeed save stuff
 		 */
-		public function verifyIfSaveWasSuccessful(){
+		public function system_verify_if_save_was_successful(){
 			// Disabled if mysql not enabled
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Fetch and test!
@@ -37,7 +37,7 @@
 		/**
 		 * Check the duplication feature
 		 */
-		public function checkDuplicationFeature(){
+		public function system_check_duplocation_feature(){
 			// Disabled if mysql not enabled
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Let's try to duplicate the Photo object

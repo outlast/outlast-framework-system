@@ -36,6 +36,8 @@ class Photo extends zajModel {
 			$f->imagetype = zajDb::integer();
 			$f->original = zajDb::text();
 			$f->description = zajDb::textbox();
+			$f->filesizes = zajDb::json();
+			$f->dimensions = zajDb::json();
 			$f->timepath = zajDb::boolean();
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
 		// do not modify the line below!
@@ -139,6 +141,7 @@ class Photo extends zajModel {
 		// now enable time-based folders
 			$this->set('timepath', true);
 			$this->timepath = true;
+			$filesizes = $dimensions = array();
 		// no errors, resize and save
 			foreach($GLOBALS['photosizes'] as $key => $size){
 				if($size !== false){
@@ -146,14 +149,27 @@ class Photo extends zajModel {
 						$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-$key.".$extension, true);
 					// resize it now!
 						$this->zajlib->graphics->resize($file_path, $new_path, $size);
+					// let's get the new file size
+						$filesizes[$key] = @filesize($new_path);
+						$my_image_data = @getimagesize($new_path);
+						$dimensions[$key] = array('w'=>$my_image_data[0], 'h'=>$my_image_data[1]);
+
 				}
 			}
 		// now remove the original or copy to full location
-			if($GLOBALS['photosizes']['full']) copy($file_path, $this->zajlib->basepath.$this->get_file_path($this->id."-full.".$extension, true));
+			if($GLOBALS['photosizes']['full']){
+				$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-full.".$extension, true);
+				copy($file_path, $new_path);
+				// @todo Shouldn't this be move?
+				$filesizes['full'] = @filesize($new_path);
+				$my_image_data = @getimagesize($new_path);
+				$dimensions['full'] = array('w'=>$my_image_data[0], 'h'=>$my_image_data[1]);
+			}
 			else unlink($file_path);
 		// Remove temporary location flag
 			$this->temporary = false;
-			//$this->set('imagetype', $image_type);
+			$this->set('dimensions', $dimensions);
+			$this->set('filesizes', $filesizes);
 			$this->set('status', 'saved');
 			$this->save();
 		return $this;
@@ -193,13 +209,13 @@ class Photo extends zajModel {
 	 * Forces a download dialog for the browser.
 	 * @param string $size One of the standard photo sizes.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
-	 * @return void This will force a download and exit.
+	 * @return void|boolean This will force a download and exit. May return false if it fails.
 	 */
 	public function download($size = "normal", $force_download = true){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
 		// look for bad characters in $size
-			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0)  $this->zajlib->error("File could not be found.");
+			if(($size != "preview" && empty($GLOBALS['photosizes'][$size])) || substr_count($size, "..") > 0)  return $this->zajlib->error("File could not be found.");
 			if(!$this->temporary && $size == "preview") $size = 'normal';
 		// generate path
 			$file_path = $this->zajlib->basepath.$this->get_file_path($this->id."-$size.".$this->extension);
@@ -207,7 +223,7 @@ class Photo extends zajModel {
 			$preview_path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
 			if($this->temporary && $size == "preview") $file_path = $preview_path;
 		// final test, if file exists
-			if(!file_exists($file_path)) $this->zajlib->error("File could not be found.");
+			if(!file_exists($file_path)) return $this->zajlib->error("File could not be found.");
 		// pass file thru to user
 			if($force_download) header('Content-Disposition: attachment; filename="'.$this->data->name.'"');
 		// create header
@@ -281,15 +297,24 @@ class Photo extends zajModel {
 	
 	/**
 	 * Creates a photo object from php://input stream.
+	 * @param zajModel|bool $parent My parent object.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @param string|boolean $base64_data If specified, this will be used instead of input stream data.
+	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
-	public static function create_from_stream(){
+	public static function create_from_stream($parent = false, $save_now_to_final_destination = true, $base64_data = false){
+		// Create a Photo object
+			/** @var Photo $pobj **/
+			$pobj = Photo::create();
 		// tmp folder
 			$folder = zajLib::me()->basepath.'/cache/upload/';
-			$filename = uniqid().'.upload';
+			$filename = $pobj->id.'.tmp';
+		// base64 data or stream?
+			if($base64_data !== false) $photofile = base64_decode($base64_data);
+			else $photofile = file_get_contents("php://input");
 		// make temporary folder
 			@mkdir($folder, 0777, true);
 		// write to temporary file in upload folder
-			$photofile = file_get_contents("php://input");
 			@file_put_contents($folder.$filename, $photofile);
 		// is photo an image
 			$image_data = getimagesize($folder.$filename);
@@ -298,19 +323,35 @@ class Photo extends zajModel {
 				@unlink($folder.$filename);
 				return false;
 			}
-		// now create object and return the object
-			/** @var Photo $pobj **/
-			$pobj = Photo::create();
-		 	$pobj->set_image($filename);
-			@unlink($folder.$filename);
+		// Now set stuff
+			$pobj->set('name', 'Upload');
+			if($parent !== false) $pobj->set('parent', $parent);
+			//$obj->set('status', 'saved'); (done by set_image)
+			if($save_now_to_final_destination) $pobj->set_image($filename);
+			else $pobj->temporary = true;
+			$pobj->save();
 			return $pobj;
 	}
 	
 	/**
+	 * Creates a photo object from base64 data.
+	 * @param string $base64_data This is the photo file data, base64-encoded.
+	 * @param zajModel|bool $parent My parent object.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return Photo|bool Returns the Photo object on success, false if not.
+	 **/
+	public static function create_from_base64($base64_data, $parent = false, $save_now_to_final_destination = true){
+		// Allow data-urls with base64 data
+			$base64_data = preg_replace("|data:[A-z0-9/]+;base64,|", "", $base64_data);
+		// Now create from stream!
+			return self::create_from_stream($parent, $save_now_to_final_destination, $base64_data);
+	}
+
+	/**
 	 * Creates a photo object from a standard upload HTML4
 	 * @param string $field_name The name of the file input field.
-	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @param zajModel|bool $parent My parent object.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
 	public static function create_from_upload($field_name, $parent = false, $save_now_to_final_destination = true){

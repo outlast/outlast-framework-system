@@ -26,8 +26,11 @@
 				if(!$this->zajlib->debug_mode){
 					// is my password defined?
 						if(!$this->zajlib->zajconf['update_user'] || !$this->zajlib->zajconf['update_password']) return $this->install();
+					// realm
+						if(!empty($this->zajlib->zajconf['update_realm'])) $realm = $this->zajlib->zajconf['update_realm'];
+						else $realm = "Outlast Framework Update";
 					// all is good, so authenticate
-						return $this->zajlib->security->protect_me($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], "Mozajik update");
+						return $this->zajlib->security->protect_me($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm);
 				}
 			return true;
 		}
@@ -95,7 +98,8 @@
 
 		/**
 		 * Run all the unit tests.
-		 * @param boolean $show_results If set to true, it will display results.
+		 * @param boolean $show_result If set to true, it will display results.
+		 * @return boolean
 		 **/
 		function test($show_result = true){
 			// Prepare the tests

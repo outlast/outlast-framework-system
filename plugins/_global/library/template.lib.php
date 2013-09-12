@@ -118,7 +118,8 @@ class zajlib_template extends zajLibExtension {
 	
 	/**
 	 * Extracts a specific block from a template and displays only that. This is useful for ajax requests.
-	 * @param string $source_path The path to the template to be compiled relative to the active view folders. 
+	 * If the request contains zaj_pushstate_block, it will display that block. See Mozajik pushState support for more info.
+	 * @param string $source_path The path to the template to be compiled relative to the active view folders.
 	 * @param string $block_name The name of the block within the template.
 	 * @param boolean $recursive If set to true (false by default), all parent files will be checked for this block as well.
 	 * @param boolean $force_recompile If set to true, the template file will be recompiled even if a cached version already exists. (False by default.)
@@ -126,6 +127,8 @@ class zajlib_template extends zajLibExtension {
 	 * @return bool|string Returns the contents if requested or false if failure.
 	 */
 	function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
+		// do i need to show by block (if pushState request detected)
+			if(!empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
 		// first do a show to compile (if needed)
 			$this->prepare($source_path, $force_recompile);
 		// set that we have started the output
@@ -303,7 +306,9 @@ class zajlib_template_zajvariables {
 						else $trackevents_analytics = 'true';
 						if($this->zajlib->zajconf['trackevents_local'] === true) $trackevents_local = 'true';
 						else $trackevents_local = 'false';
-					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$this->zajlib->baseurl}'; zaj.fullrequest = '{$protocol}:{$this->zajlib->fullrequest}'; zaj.fullurl = '{$protocol}:{$this->zajlib->fullurl}'; zaj.app = '{$this->zajlib->app}'; zaj.mode = '{$this->zajlib->mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; zaj.trackevents_local = $trackevents_local; zaj.trackevents_analytics = $trackevents_analytics; var ofw = zaj; }</script>";
+					// Locale
+						$locale = $this->zajlib->lang->get();
+					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$this->zajlib->baseurl}'; zaj.fullrequest = '{$protocol}:{$this->zajlib->fullrequest}'; zaj.fullurl = '{$protocol}:{$this->zajlib->fullurl}'; zaj.app = '{$this->zajlib->app}'; zaj.mode = '{$this->zajlib->mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; zaj.trackevents_local = $trackevents_local; zaj.trackevents_analytics = $trackevents_analytics; zaj.locale = '$locale'; var ofw = zaj; }</script>";
 
 			// By default return nothing.
 				default: return '';

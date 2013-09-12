@@ -127,22 +127,11 @@ class zajlib_config extends zajLibExtension{
 													$this->add_file($section_file, $global_scope);
 											break;
 							default:		// it's a variable line
-												// separate by =
-													list($varname, $varcontent) = explode('=', $line, 2);
-													$varname = trim($varname);
-													$varcontent = trim($varcontent);
-												// is varname not valid?
-													if(preg_replace('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', '', $varname) != ''){
-														$this->error('Invalid variable found!');
-														break;
-													}
-												// check for other malicious stuff (php tags)
-													if(strpos($varcontent,'?>') !== false) $this->error('Illegal characters found in variable content');
-													if(strpos($varcontent,'<?') !== false) $this->error('Illegal characters found in variable content');
-												// generate variable
-													// treat booleans and numbers separately
-														if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n";
-														else $current_line = '$this->zajlib->config->variable->'.$varname.' = \''.addslashes($varcontent)."';\n";
+												// process it as a standard line
+													$current_line = $this->process_standard_line($line);
+												// check if problems
+													if($current_line === false) break;
+												// write this data
 													$this->write_line($current_line);
 												// while not in any section, add the current line to the "global" scope
 													if(!$section_file) $global_scope .= $current_line;
@@ -154,7 +143,32 @@ class zajlib_config extends zajLibExtension{
 			$this->remove_all_files();
 			return true;
 	}
-	
+
+	/**
+	 * Process a standard variable line for a configuration input file.
+	 * @param string $line The line data.
+	 * @return string|boolean Returns the new data or boolean false if error.
+	 */
+	public function process_standard_line($line){
+		// separate by =
+			list($varname, $varcontent) = explode('=', $line, 2);
+			$varname = trim($varname);
+			$varcontent = trim($varcontent);
+		// is varname not valid?
+			if(preg_replace('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', '', $varname) != ''){
+				$this->error('Invalid variable found!');
+				return false;
+			}
+		// check for other malicious stuff (php tags)
+			if(strpos($varcontent,'?>') !== false) $this->error('Illegal characters found in variable content');
+			if(strpos($varcontent,'<?') !== false) $this->error('Illegal characters found in variable content');
+		// generate variable
+			// treat booleans and numbers separately
+				if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n";
+				else $current_line = '$this->zajlib->config->variable->'.$varname.' = \''.addslashes($varcontent)."';\n";
+		return $current_line;
+	}
+
 	/**
 	 * Adds a configuration output file.
 	 * @param string $file_name The name of the file.
