@@ -55,7 +55,15 @@ class OfwFieldsTest extends zajTest {
 		// Display!
 			$this->system_field_view($fieldobj);
 	}
-
+	public function system_fields_email(){
+		// Create a field object
+			$fieldobj = $this->system_fields_create("email");
+		// Test validation
+			$res = $fieldobj->validation('asdf');
+			zajTestAssert::isFalse($res);
+			$res = $fieldobj->validation('ofw@example.com');
+			zajTestAssert::isTrue($res);
+	}
 
 	/**
 	 * Creates a field object for testing.
@@ -87,7 +95,3 @@ class OfwFieldsTest extends zajTest {
 		return true;
 	}
 }
-
-
-
-?>

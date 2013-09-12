@@ -932,6 +932,15 @@ class zajDb {
 		}
 
 		/**
+		 * This method creates a zajField object for this db field and returns it.
+		 * @param string $class_name The model name for which you want to create this zajField object.
+		 * @return zajField Will return the zajField object for this.
+		 **/
+		public function get_field($class_name){
+			return zajField::create($this->type, $this, $class_name);
+		}
+
+		/**
 		 * The call magic method can be used to set all other options specific to fields.
 		 * The method name ends up being used as an option. Single arguments are set as values. Multiple arguments are set as stdClass objects. If no parameters are sent, the value defaults to true.
 		 **/

@@ -7,6 +7,7 @@ die("This file is for documentation.");
 /**
  * @method static zajDb boolean
  * @method static zajDb date
+ * @method static zajDb email
  * @method static zajDb files
  * @method static zajDb float
  * @method static zajDb id
