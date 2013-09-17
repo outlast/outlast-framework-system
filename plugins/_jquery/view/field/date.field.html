@@ -1,1 +1,23 @@
-{% extends 'field/timestamp.field.html' %}
+
+<!--
+<input class='field date' type='text' id='{{field.id}}[display]' name='{{field.name}}[display]' value='{%if field.value gt '1'%}{{field.value|date:'Y.m.d.'}}{%endif%}'>
+-->
+
+<script src="{{baseurl}}system/js/bootstrap/2.3.1/bootstrap-picker.min.js?1.1"></script>
+<script src="{{baseurl}}system/js/bootstrap/2.3.1/bootstrap-picker-locale.js?1.1"></script>
+<link rel="stylesheet" href="{{baseurl}}system/css/bootstrap/2.3.1/css/bootstrap-picker.min.css"/>
+
+<div class="input-append bootstrap-datepicker">
+	<input name="{{field.id}}[date]" class="input-small" type="text" id="{{field.uid}}-date" value="{{field.value|date:'Y.m.d.'}}">
+	<span class="add-on" onclick="jQuery('#date').datepicker('show');"><i class="icon-th"></i></span>
+</div>
+
+<input type='hidden' id='{{field.id}}[format]' name='{{field.name}}[format]' value='Y.m.d.'>
+<input type='hidden' id='{{field.id}}[value]' name='{{field.name}}[value]' value='{{field.value}}'>
+<script>
+	$("#{{field.uid}}-date").datepicker({
+		format: 'yyyy.mm.dd.',
+		autoclose: true,
+		language: 'hu'
+	});
+</script>

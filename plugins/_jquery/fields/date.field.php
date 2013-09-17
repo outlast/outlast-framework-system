@@ -13,6 +13,7 @@ class zajfield_date extends zajfield_time {
 	const use_save = true;			// boolean - true if preprocessing required before saving data
 	const use_filter = false;			// boolean - true if fetcher needs to be modified
 	const search_field = false;		// boolean - true if this field is used during search()
+	const edit_template = 'field/date.field.html';	// string - the edit template, false if not used
 
 	/**
 	 * Check to see if input data is valid.
