@@ -177,8 +177,22 @@ class OfwLibraryTest extends zajTest {
 	 * Check form library.
 	 */
 	public function system_library_form(){
-		// Just load it up and do nothing
-		$this->zajlib->form;
+		// Create some fake REQUEST vars
+			$_REQUEST['something'] = "myvalue";
+			$_REQUEST['something_arr']['var'] = "myvalue2";
+		// Let's verify they are filled
+			// Standard
+			$result = $this->zajlib->form->filled('something');
+			zajTestAssert::isTrue($result);
+			// Array has any elements
+			$result = $this->zajlib->form->filled('something', 'something_arr');
+			zajTestAssert::isTrue($result);
+			// Array has specific elements
+			$result = $this->zajlib->form->filled('something', 'something_arr[var]');
+			zajTestAssert::isTrue($result);
+
+
+
 	}
 
 	/**

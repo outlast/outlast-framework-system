@@ -138,6 +138,9 @@
 		if(zaj.bootstrap){
 			// Alert sent via bootstrap
 				zaj.track('Alert', 'Bootstrap', message);
+			// Cache my jquery selectors
+				// DON't do this, as it causes problems!
+
 			// Create modal if not yet available
 				if($('#zaj_bootstrap_modal').length <= 0){
 					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn btn-primary">Ok</a></div></div>');
@@ -156,16 +159,11 @@
 					backdrop = true;
 					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
 				}
-			// Set body and show it
+			// Set body and show it (requires selector again)
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
-				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false})
-
-			// Is facebook enabled and in canvas? (move this to fb js)
-				if(zaj.facebook){
-					FB.Canvas.getPageInfo(function(e){
-						$('#zaj_bootstrap_modal').css({top: 300 + e.scrollTop});
-					});
-				}
+				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
+			// Reposition the modal if needed
+				zaj.alert_reposition($('#zaj_bootstrap_modal'));
 		}
 		else{
 			// Alert sent via bootstrap
@@ -174,6 +172,36 @@
 				alert(message);
 				if(typeof urlORfunction == 'function') urlORfunction();
 				else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction, top);
+		}
+	};
+	zaj.alert_reposition = function($modal){
+		if(zaj.facebook){
+			var fb_top_bar = 115, fb_bottom_bar = 100;
+			FB.Canvas.getPageInfo(function(e){
+				// Set height
+					// Calculate max height
+					var maxheight = e.clientHeight - e.offsetTop;
+					// If at top
+					//if(e.scrollTop < fb_top_bar) maxheight -= fb_top_bar;
+					// If at bottom
+					// ADD THIS!
+					// Just always limit size now
+					maxheight -= fb_top_bar;
+					// Set the modal body to autosize
+					$modal.find('.modal-body').css({width:'auto', height:'auto', 'max-height': maxheight - 50});
+					// Set modal height
+					$modal.css('max-height', maxheight);
+				// Set position
+					var topoffset = e.scrollTop - fb_top_bar + 50;
+					// If at top
+					if(e.scrollTop < fb_top_bar) topoffset += fb_top_bar;
+					// If at bottom
+					if(e.scrollTop + e.offsetTop + fb_top_bar > $(window).height()){
+						FB.Canvas.scrollTo(0, e.scrollTop - fb_bottom_bar);
+						return zaj.alert_reposition($modal);
+					}
+					$modal.css({top: topoffset});
+			});
 		}
 	};
 	zaj.confirm = function(message, urlORfunction){

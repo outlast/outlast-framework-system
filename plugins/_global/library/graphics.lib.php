@@ -11,9 +11,10 @@ class zajlib_graphics extends zajLibExtension {
 	/**
 	 * Return true if the specified file is actually an image file.
 	 * @param string $path The path to the image file.
-	 * @param array $allowed_formats An array of extensions to allow (not yet implemented)
+	 * @param array|string $allowed_formats An array of extensions to allow (not yet implemented)
 	 * @todo Implement allowed_formats!
-	 **/
+	 * @return boolean Return true if image is indeed an image. Return false if it is not.
+	 */
 	function is_image($path, $allowed_formats=""){
 		// TODO: implement allowed_formats
 		return getimagesize($path);
@@ -47,6 +48,8 @@ class zajlib_graphics extends zajLibExtension {
 		// Execute resize
 			$width = imagesx($im);
 			$height = imagesy($im);
+			$RESIZEWIDTH=false;
+			$RESIZEHEIGHT=false;
 			if(($maxwidth && $width > $maxwidth) || ($maxheight && $height > $maxheight)){
 				if($maxwidth && $width > $maxwidth){
 					$widthratio = $maxwidth/$width;
@@ -137,6 +140,7 @@ class zajlib_graphics extends zajLibExtension {
 	/**
 	 * Take the old path and create an image object from it.
 	 * @param string $oldpath The path to the original file. Path is a full path (for backwards compatibility).
+	 * @return resource Return the image resource.
 	 **/
 	private function prepare_image($oldpath){	   
 		// Check for GD library
@@ -149,8 +153,3 @@ class zajlib_graphics extends zajLibExtension {
 	}
 
 }
-
-
-
-
-?>
