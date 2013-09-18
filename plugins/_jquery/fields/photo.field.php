@@ -52,7 +52,7 @@ class zajfield_photo extends zajField {
 	 **/
 	public function save($data, &$object){
 		// if it is a string (form field input where it's the id), convert to an object first
-			if(is_string($data)){
+			if(is_string($data) || is_integer($data)){
 				$pobj = Photo::fetch($data);
 				if(is_object($pobj)) $data = $pobj;
 			}

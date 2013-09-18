@@ -173,6 +173,3 @@ class zajfield_manytoone extends zajField {
 
 
 }
-
-
-?>

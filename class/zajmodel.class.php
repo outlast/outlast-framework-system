@@ -161,7 +161,7 @@ abstract class zajModel {
 	public function __construct($id, $class_name = ''){
 		$class_name = get_called_class();
 		// check for errors
-		if($id && !is_string($id)) zajLib::me()->error("Invalid ID value given as parameter for model constructor! You probably tried to use an object instead of a string!");
+		if($id && !is_string($id) && !is_integer($id)) zajLib::me()->error("Invalid ID value given as parameter for model constructor! You probably tried to use an object instead of a string or integer!");
 		// set class and table names
 		$this->table_name = strtolower($class_name);
 		$this->class_name = $class_name;
