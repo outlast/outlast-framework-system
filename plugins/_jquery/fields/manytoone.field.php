@@ -151,7 +151,7 @@ class zajfield_manytoone extends zajField {
 				// Possible values: object, string, boolean false
 					if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
 					elseif($value === false) return "0"; // Return no filter if boolean false
-					elseif(!is_string($value)) return $this->zajlib->error("Invalid value given for filter/exclude of fetcher object for $this->class_name/$field! Must be a string, a model object, or a fetcher object!");
+					elseif(!is_string($value) && !is_integer($value)) return $this->zajlib->error("Invalid value given for filter/exclude of fetcher object for $this->class_name/$field! Must be a string, a model object, or a fetcher object!");
 				// All is ok, now simply return
 					return "model.`$field` $logic '".$this->zajlib->db->escape($value)."'";				
 			}
