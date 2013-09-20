@@ -588,6 +588,8 @@
 			},
 			/** An array of autopagination objects on this page **/
 			objects: [],
+			/** An array of ready functions added **/
+			readyFunctions: [],
 
 			/**
 			 * Init the autopagination object
@@ -598,7 +600,7 @@
 				// Merge options
 				_options = $.extend(this.defaultOptions, _options);
 				// Create local vars
-				var _loading = false, _target = false, _currentPage = parseInt(_options.startPage), _watchElement;
+				var _loading = false, _target, _currentPage = parseInt(_options.startPage), _watchElement, _this = this;
 				// My target element
 				_target = $(_options.targetElement);
 				// Create my bottom element (if not specified in options) and make invisible
@@ -627,7 +629,9 @@
 						zaj.ajax.get(_options.url+_currentPage+'&zaj_pushstate_block='+_options.targetBlock, function(res){
 							_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
 							_loading = false;
-							zaj.log("Done loading.");
+							zaj.log("Done loading, running callbacks.");
+							// Call all of my readyFunctions
+							$.each(_this.readyFunctions, function(i, func){ func(); });
 						});
 						return true;
 					}
@@ -639,6 +643,14 @@
 				}, _options.watchInterval);
 
 				return pub;
+			},
+
+			/**
+			 * Adds a function that is to be executed after pagination completes.
+			 * @param {function} func The function to be executed. You can add several.
+			 */
+			ready: function(func){
+				this.readyFunctions.push(func);
 			}
 		};
 
