@@ -299,8 +299,8 @@
 			 * Sends a blocked AJAX request via POST.
 			 * @link http://framework.outlast.hu/api/javascript-api/ajax-requests/#docs-blocking-form-requests
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
-			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
 			 */
 			zaj.ajax.submit = function(request,result,pushstate){
 				// if submitting already, just block!
@@ -588,6 +588,8 @@
 			},
 			/** An array of autopagination objects on this page **/
 			objects: [],
+			/** An array of ready functions added **/
+			readyFunctions: [],
 
 			/**
 			 * Init the autopagination object
@@ -598,7 +600,7 @@
 				// Merge options
 				_options = $.extend(this.defaultOptions, _options);
 				// Create local vars
-				var _loading = false, _target = false, _currentPage = parseInt(_options.startPage), _watchElement;
+				var _loading = false, _target, _currentPage = parseInt(_options.startPage), _watchElement, _this = this;
 				// My target element
 				_target = $(_options.targetElement);
 				// Create my bottom element (if not specified in options) and make invisible
@@ -627,7 +629,9 @@
 						zaj.ajax.get(_options.url+_currentPage+'&zaj_pushstate_block='+_options.targetBlock, function(res){
 							_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
 							_loading = false;
-							zaj.log("Done loading.");
+							zaj.log("Done loading, running callbacks.");
+							// Call all of my readyFunctions
+							$.each(_this.readyFunctions, function(i, func){ func(); });
 						});
 						return true;
 					}
@@ -639,6 +643,14 @@
 				}, _options.watchInterval);
 
 				return pub;
+			},
+
+			/**
+			 * Adds a function that is to be executed after pagination completes.
+			 * @param {function} func The function to be executed. You can add several.
+			 */
+			ready: function(func){
+				this.readyFunctions.push(func);
 			}
 		};
 

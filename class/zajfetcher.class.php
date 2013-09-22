@@ -733,6 +733,8 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * This method returns the connected fetcher object. This will be a collection of {@link zajModel} objects.
+	 * @param string $field The field name.
+	 * @param zajModel $object The object.
 	 * @return zajModel
 	 **/
 	public static function manytomany($field, &$object){
@@ -781,6 +783,8 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * This method returns the connected fetcher object. This will be a collection of {@link zajModel} objects.
+	 * @param string $field The field name.
+	 * @param zajModel $object The object.
 	 * @return zajModel
 	 **/
 	public static function onetomany($field, &$object){
@@ -811,6 +815,9 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * This method returns the connected fetcher object (which actually translates to a single zajModel object).
+	 * @param string $class_name The class name.
+	 * @param string $field The field name.
+	 * @param string $id The id.
 	 * @return zajModel
 	 **/
 	public static function manytoone($class_name, $field, $id){
@@ -826,10 +833,14 @@ class zajFetcher implements Iterator, Countable{
 			if(is_object($fetcher)) $fetcher->connection_type = 'manytoone';
 			return $fetcher;
 	}
+
 	/**
 	 * This method returns the connected fetcher object (which actually translates to a single zajModel object).
+	 * @param string $class_name The class name.
+	 * @param string $field The field name.
+	 * @param string $id The id.
 	 * @return zajModel
-	 **/
+	 */
 	public static function onetoone($class_name, $field, $id){
 		// return the one object
 			$fetcher = zajFetcher::manytoone($class_name, $field, $id);
@@ -844,11 +855,11 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * This method adds $object to the manytomany relationship.
-	 * @param zajModel $object 
+	 * @param zajModel $object
 	 * @param string $mode Can be add or delete. This will add or remove the relationship. Defaults to add.
-	 * @param array $additonal_fields An assoc array with key/value pairs of additional columns to save to the relationship connection table.
+	 * @param bool|array $additional_fields  An assoc array with key/value pairs of additional columns to save to the relationship connection table.
 	 * @return zajFetcher Returns the zajFetcher object, so it can be chained.
-	 **/	
+	 */
 	public function add($object, $mode = 'add', $additional_fields = false){
 		// if not an object
 			if(!is_object($object)) zajLib::me()->error('tried to edit a relationship with something that is not a model or fetcher object.');
@@ -924,7 +935,5 @@ class zajFetcher implements Iterator, Countable{
 		// secondary connection
 			else return $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
 	}
-	
-	
+
 }
-?>
