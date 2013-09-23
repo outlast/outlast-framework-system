@@ -388,7 +388,8 @@
 						},
 						data: datarequest,
 						dataType: 'html',
-						type: mode
+						type: mode,
+						cache: false
 					});
 				return request;
 			};
