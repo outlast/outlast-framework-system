@@ -182,13 +182,9 @@
 					// Calculate max height
 					var maxheight = e.clientHeight - e.offsetTop;
 					// If at top
-					//if(e.scrollTop < fb_top_bar) maxheight -= fb_top_bar;
-					// If at bottom
-					// ADD THIS!
-					// Just always limit size now
-					maxheight -= fb_top_bar;
+					if(e.scrollTop < fb_top_bar) maxheight -= fb_top_bar;
 					// Set the modal body to autosize
-					$modal.find('.modal-body').css({width:'auto', height:'auto', 'max-height': maxheight - 50});
+					$modal.find('.modal-body').css({width:'auto', height:'auto'});
 					// Set modal height
 					$modal.css('max-height', maxheight);
 				// Set position
@@ -200,7 +196,7 @@
 						FB.Canvas.scrollTo(0, e.scrollTop - fb_bottom_bar);
 						return zaj.alert_reposition($modal);
 					}
-					$modal.css({top: topoffset});
+					$modal.css({top: topoffset, 'margin-top': 0});
 			});
 		}
 	};
