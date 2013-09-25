@@ -19,7 +19,7 @@
 </div>
 
 <script>
-	zaj.ready(function () {
+	$(window).load(function () {
 		var $rte = $('#{{field.uid}}-rte');
 		$rte.olrte();
 		$rte.bind('ol.rte.blur', function(ev, content){ $('#{{field.uid}}').html(content); });
