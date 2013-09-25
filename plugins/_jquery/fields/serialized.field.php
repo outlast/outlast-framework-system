@@ -79,6 +79,14 @@ class zajfield_serialized extends zajField {
 				}
 				$data = $sdata;
 			}
+		// Now let's check if this is a special array coming from a key/value form
+			if(is_array($data) && is_array($data['key']) && is_array($data['value'])){
+				$sdata = array();
+				foreach($data['key'] as $key=>$value){
+					$sdata[$value] = $data['value'][$key];
+				}
+				$data = $sdata;
+			}
 		// Standard array, so serialize
 			if($data && is_array($data)) $newdata = serialize($this->zajlib->array->array_to_object($data));
 			elseif($data && is_object($data)) $newdata = serialize($data);
