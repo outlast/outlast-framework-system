@@ -209,9 +209,10 @@ class Photo extends zajModel {
 	 * Forces a download dialog for the browser.
 	 * @param string $size One of the standard photo sizes.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
+	 * @param string|boolean $file_name The file name to download as. Defaults to the uploaded file name.
 	 * @return void|boolean This will force a download and exit. May return false if it fails.
 	 */
-	public function download($size = "normal", $force_download = true){
+	public function download($size = "normal", $force_download = true, $file_name = false){
 		// Default the extension to jpg if not defined (backwards compatibility)
 			if(empty($this->extension)) $this->extension = 'jpg';
 		// look for bad characters in $size
@@ -224,8 +225,10 @@ class Photo extends zajModel {
 			if($this->temporary && $size == "preview") $file_path = $preview_path;
 		// final test, if file exists
 			if(!file_exists($file_path)) return $this->zajlib->error("File could not be found.");
+		// file name default
+			if($file_name === false) $file_name = $this->data->name;
 		// pass file thru to user
-			if($force_download) header('Content-Disposition: attachment; filename="'.$this->data->name.'"');
+			if($force_download) header('Content-Disposition: attachment; filename="'.$file_name.'"');
 		// create header
 			switch ($this->extension){
 				case 'png': header('Content-Type: image/png;'); break;
