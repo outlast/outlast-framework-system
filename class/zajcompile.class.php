@@ -127,8 +127,7 @@ class zajCompileSession {
 
 	/**
 	 * Inserts a file at current destination file location. The file will not be parsed.
-	 *
-	 * @param string $source_file Relative path of source file.
+	 * @param string $source_path Relative path of source file.
 	 * @return boolean Always returns true.
 	 */
 	public function insert_file($source_path){
@@ -145,8 +144,7 @@ class zajCompileSession {
 
 	/**
 	 * Add a source to this compile session. You should not call methods of this object directly, but instead use the compile library.
-	 *
-	 * @param string $source_file Relative path of source file.
+	 * @param string $source_path Relative path of source file.
 	 * @return boolean Always returns true.
 	 */
 	public function add_source($source_path){
@@ -234,9 +232,8 @@ class zajCompileSession {
 
 	/**
 	 * Sets a destination object to be deleted upon completion.
-	 *
+	 * @param zajCompileDestination $object Add to array of files to delete.
 	 * @todo Shouldn't this be private?
-	 * @param zajCompileDestination $bool True if you want this file to be deleted, false otherwise.
 	 * @return void
 	 */
 	public function unlink($object){
@@ -447,6 +444,7 @@ class zajCompileSource {
 	/**
 	 * Check if template file exists in any of the paths. Returns path if yes, false if no.
 	 * @param string $source_file The path to the source file.
+	 * @return string|boolean Returns the full path or false if it does not exist.
 	 **/
 	public static function file_exists($source_file){
 		// run through all the paths
@@ -793,5 +791,3 @@ class zajCompileElement{
 
 
 }
-
-?>
