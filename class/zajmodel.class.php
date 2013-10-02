@@ -511,8 +511,11 @@ abstract class zajModel {
 		$my_extension = $child_class_name::extension();
 		while($my_extension){
 			// Let's check to see if the method exists here
-			if(method_exists($child_class_name, $name)) return call_user_func_array("$child_class_name->$name", $arguments);
-			// Not found, now go up one level
+			//print "Trying in $child_class_name / $my_extension";
+			// @todo ADD SUPPORT FOR OVERRIDDEN OBJECT METHODS. NEED TO CREATE A MOCK OBJECT HERE THAT EXTENDS ME. See user extention in project.
+			//if(method_exists($my_extension, $name)) return call_user_func_array("$my_extension->$name", $arguments);
+            if(method_exists($child_class_name, $name)) return call_user_func_array("$child_class_name->$name", $arguments);
+            // Not found, now go up one level
 			else $child_class_name = $my_extension;
 			// Set my extension
 			$my_extension = $child_class_name::extension();
@@ -520,6 +523,7 @@ abstract class zajModel {
 		// Not found anywhere, return error!
 		$this->zajlib->warning("Method $name not found in model '$class_name' or any of it's child models.");
 	}
+
 	/**
 	 * Shortcuts to static events and actions.
 	 *
@@ -855,6 +859,12 @@ abstract class zajModelExtender {
 				if($result && class_exists($parentmodel, false)) break;
 			}
 		}
+		// If the current class still does not exist, try the system itself
+		if(!class_exists($parentmodel, false)){
+			// Attempt to load file
+			zajLib::me()->load->file('system/app/model/'.strtolower($parentmodel).'.model.php', false, true, "specific");
+		}
+
 		// See if successful
 		if(class_exists($parentmodel, false)){
 			// Add to my extensions
@@ -939,9 +949,6 @@ abstract class zajModelExtender {
 	 * Redirect inaccessible method calls to my parent.
 	 **/
 	public function __call($name, $arguments){
-		// redirect method calls to the parent object
-		$parent_class = $this->parent->class_name;
-		$my_class = $this->class_name;
 		// call the method whether-or-not it exists, parent should handle errors...
 		return call_user_func_array(array($this->parent, $name), $arguments);
 	}

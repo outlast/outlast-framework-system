@@ -37,7 +37,7 @@
 		/**
 		 * Check the duplication feature
 		 */
-		public function system_check_duplocation_feature(){
+		public function system_check_duplication_feature(){
 			// Disabled if mysql not enabled
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Let's try to duplicate the Photo object
@@ -52,6 +52,45 @@
 				zajTestAssert::areNotIdentical($this->photo->data->ordernum, $p->data->ordernum);
 		}
 
+		/**
+		 * Let's test model extensions (and dynamic plugin loading)
+		 */
+		public function system_check_model_extending(){
+			// Load up my _test plugin (if not already done)
+				$load_test = $this->zajlib->plugin->load('_test', true, true);
+				zajTestAssert::areIdentical('__plugin working!', $load_test);
+			// Let's try some OfwTest action before it is extended!
+				$result = OfwTest::just_a_test_static();
+				zajTestAssert::areIdentical('just_a_test_static', $result);
+				$ofwtest = OfwTest::create();
+				$result = $ofwtest->just_a_test();
+				zajTestAssert::areIdentical('just_a_test', $result);
+			// Let's try some File action! But first run the autoload manually...
+				// @todo When dynamically loading models, plugin/load should check to see if any overriding models are introduced - these need to load up
+				include $this->zajlib->basepath.'system/plugins/_test/model/file.model.php';
+				$result = File::just_a_test_static();
+				zajTestAssert::areIdentical('just_a_test_static', $result);
+				$filetest = File::create();
+				$result = $filetest->just_a_test();
+				zajTestAssert::areIdentical('just_a_test', $result);
+			// Now dynamically extend OfwTest and see what happens
+				OfwTestExt::extend('OfwTest');
+				$result = OfwTest::only_in_ext_static();
+			// Call stuff only in extension
+				zajTestAssert::areIdentical('only_in_ext_static', $result);
+				$result = OfwTest::just_a_test_static();
+				zajTestAssert::areIdentical('just_a_test_static', $result);
+				$ofwtest2 = OfwTest::create();
+				$result = $ofwtest2->only_in_ext();
+				zajTestAssert::areIdentical('only_in_ext', $result);
+				$result = $ofwtest2->just_a_test();
+				zajTestAssert::areIdentical('just_a_test_extended', $result);
+			// Now call stuff that is NOT in extension but only in parent
+				$result = OfwTest::only_in_parent_static();
+				zajTestAssert::areIdentical('only_in_parent_static', $result);
+				$result = $ofwtest2->only_in_parent();
+				zajTestAssert::areIdentical('only_in_parent', $result);
+		}
 
 		/**
 		 * Reset stuff, cleanup.
