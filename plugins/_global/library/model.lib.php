@@ -323,7 +323,8 @@ class zajlib_model extends zajLibExtension {
 	 * @param array $field_data The field's database definition array.
 	 * @param string $mode The mode specifies whether it is added or editted. Values are 'add' or 'edit'.
 	 * @param string $old_name The old name of the table, used during renames.
-	 **/
+	 * @return bool Returns true if success, false otherwise.
+	 */
 	private function edit_column($table, $field_data, $mode = 'edit', $old_name = ''){
 		// create options, make sure sql safe!
 			$table = addslashes($table);
