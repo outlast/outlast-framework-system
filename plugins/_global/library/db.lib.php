@@ -205,23 +205,24 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				// add slashes to avoid problems with quotes
 					$function = false;
 					foreach($array as $key => $value){
-						// special functions
-							switch($value){
-								// this is needed since false is otherwise sent to the MAX (why?)
-								case false:			$value = "'".addslashes($value)."'";
-													break;
-								case MYSQL_MAX:		$value = "MAX($key)";
-													$function = true;
-													break;
-								case MYSQL_MAX_PLUS:$value = "MAX($key) +1";
-													$function = true;
-													break;
-								case MYSQL_AVG:		$value = "AVG($key)";
-													$function = true;
-													break;
-								default:			$value = "'".addslashes($value)."'";
-													break;
-							}
+		            // special functions
+						switch($value){
+							// this is needed since false is otherwise sent to the MAX (why?)
+							case false:			$value = "'".addslashes($value)."'";
+												break;
+							case MYSQL_MAX:		$value = "COALESCE(MAX($key), 0)";
+												$function = true;
+												break;
+							case MYSQL_MAX_PLUS:$value = "COALESCE(MAX($key), 0)+1";
+												$function = true;
+												break;
+							case MYSQL_AVG:		$value = "COALESCE(AVG($key), 0)";
+												$function = true;
+												break;
+							default:			$value = "'".addslashes($value)."'";
+												break;
+						}
+
 						$field[] = "$value as `$key`";
 					}
 				// check if no functions (TODO: fix this in a future release to allow!)

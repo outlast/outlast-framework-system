@@ -35,7 +35,7 @@ class zajfield_json extends zajField {
 					'type' => 'text',
 					'option' => array(),
  					'key' => '',
-					'default' => $this->options['default'],
+					'default' => false,
 					'extra' => '',
 					'comment' => 'json',
 			);
