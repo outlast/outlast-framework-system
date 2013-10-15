@@ -274,50 +274,52 @@ EOF;
 	 *  3. <b>counter</b> - Use this variable to store the current counter value.
 	 **/
 	public function tag_count($param_array, &$source){
-		// pause the parsing
+		// add level
 			$source->add_level('count', '');
+		// create a unique var
+			$uid = '_'.uniqid('');
 		// generate a for loop
 			if($param_array[2]->variable == '$this->zajlib->variable->as'){
 				$contents = <<<EOF
 		<?php
 			if({$param_array[1]->variable} < {$param_array[0]->variable}){
-				\$count_from = {$param_array[1]->variable};
-				\$count_to = {$param_array[0]->variable};
-				\$count_reverse = true;
+				\$count_from{$uid} = {$param_array[1]->variable};
+				\$count_to{$uid} = {$param_array[0]->variable};
+				\$count_reverse{$uid} = true;
 			}
 			else{
-				\$count_from = {$param_array[0]->variable};
-				\$count_to = {$param_array[1]->variable};
-				\$count_reverse = false;
+				\$count_from{$uid} = {$param_array[0]->variable};
+				\$count_to{$uid} = {$param_array[1]->variable};
+				\$count_reverse{$uid} = false;
 			}
-			\$count_var =& {$param_array[3]->variable};	
+			\$count_var{$uid} =& {$param_array[3]->variable};
 EOF;
 			}
 			elseif($param_array[4]->variable == '$this->zajlib->variable->as'){
 				$contents = <<<EOF
 		<?php
 			if({$param_array[3]->variable} <= {$param_array[1]->variable}){
-				\$count_from = {$param_array[3]->variable};
-				\$count_to = {$param_array[1]->variable};
-				\$count_reverse = true;
+				\$count_from{$uid} = {$param_array[3]->variable};
+				\$count_to{$uid} = {$param_array[1]->variable};
+				\$count_reverse{$uid} = true;
 			}
 			else{
-				\$count_from = {$param_array[1]->variable};
-				\$count_to = {$param_array[3]->variable};
-				\$count_reverse = false;
+				\$count_from{$uid} = {$param_array[1]->variable};
+				\$count_to{$uid} = {$param_array[3]->variable};
+				\$count_reverse{$uid} = false;
 			}
-			\$count_var =& {$param_array[5]->variable};
+			\$count_var{$uid} =& {$param_array[5]->variable};
 EOF;
 			}
 			else $source->error("Incorrect syntax for tag {%count%}.");
 
 			$contents .= <<<EOF
-			for(\$count_var_real=\$count_from; \$count_var_real<=\$count_to; \$count_var_real++){
-				if(!\$count_reverse) \$count_var = \$count_var_real;
-				else \$count_var = \$count_to - \$count_var_real + \$count_from;
+			for(\$count_var_real{$uid}=\$count_from{$uid}; \$count_var_real{$uid}<=\$count_to{$uid}; \$count_var_real{$uid}++){
+				if(!\$count_reverse{$uid}) \$count_var{$uid} = \$count_var_real{$uid};
+				else \$count_var{$uid} = \$count_to{$uid} - \$count_var_real{$uid} + \$count_from{$uid};
 EOF;
-			if($param_array[2]->variable == '$this->zajlib->variable->as') $contents .= "{$param_array[3]->variable} = \$count_var;?>";
-			else $contents .= "{$param_array[5]->variable} = \$count_var;?>";
+			if($param_array[2]->variable == '$this->zajlib->variable->as') $contents .= "{$param_array[3]->variable} = \$count_var{$uid};?>";
+			else $contents .= "{$param_array[5]->variable} = \$count_var{$uid};?>";
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats
