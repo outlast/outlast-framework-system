@@ -167,7 +167,7 @@ EOF;
 	public function filter_round($parameter, &$source){
 			if(!$parameter) $parameter = 2;
 		// write to file
-			$this->zajlib->compile->write('$filter_var=round($filter_var, '.$parameter.');');
+			$this->zajlib->compile->write('$filter_var=number_format($filter_var, '.$parameter.', ".", "");');
 		return true;
 	}
 
