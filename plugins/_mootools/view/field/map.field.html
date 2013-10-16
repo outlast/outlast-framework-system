@@ -20,14 +20,16 @@
 		scrollwheel: false,
 		click: function(e) {
 			// set new input values
-			$$('input[name="{{field.name}}[lat]"]')[0].value = e.latLng.jb;
-			$$('input[name="{{field.name}}[lng]"]')[0].value = e.latLng.kb;
+			$$('input[name="{{field.name}}[lat]"]')[0].value = e.latLng.lb;
+			$$('input[name="{{field.name}}[lng]"]')[0].value = e.latLng.mb;
 			// set marker position
 			map_{{field.uid}}.removeMarkers();
 			map_{{field.uid}}.addMarker({
-				lat: e.latLng.jb,
-				lng: e.latLng.kb,
+				lat: e.latLng.lb,
+				lng: e.latLng.mb,
 			});
+			console.log(e);
+
 		},
 		dragend: function(e) {
 		}
