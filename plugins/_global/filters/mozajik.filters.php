@@ -165,7 +165,7 @@ EOF;
 	 *  <b>{{variable|round:'2'}}</b> Assuming variable is 3.12355, the returned value will be 3.12.
 	 **/
 	public function filter_round($parameter, &$source){
-			if(!$parameter) $parameter = 2;
+			if(!$parameter && $parameter != '0' && $parameter != 0) $parameter = 2;
 		// write to file
 			$this->zajlib->compile->write('$filter_var=number_format($filter_var, '.$parameter.', ".", "");');
 		return true;
