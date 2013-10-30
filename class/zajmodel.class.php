@@ -648,6 +648,7 @@ abstract class zajModel {
 			$new_object->class_name != $class_name){
 			zajLib::me()->warning("Class mismatch for cache ($item_cached): ".$class_name." / ".$new_object->class_name." / $id / ".$new_object->id);
 			copy($filename, zajLib::me()->basepath.'cache/_mismatched/'.$class_name.'-'.$id.'.cache');
+			file_put_contents(zajLib::me()->basepath.'cache/_mismatched/printr_'.$class_name.'-'.$id.'.cache', print_r($new_object, true));
 
 			// Refetch from db
 			// create object
