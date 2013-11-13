@@ -265,6 +265,17 @@ EOF;
 	}
 
 	/**
+	 * Filter: toserialized - Converts a variable or object to its PHP-serialized value.
+	 *
+	 *  <b>{{variable|toserialized}}</b> Assuming variable is an array ['red', 'white', 'blue'], the returned value will be its PHP-serialized value. This is the same as using serialize() function in native PHP.
+	 **/
+	public function filter_toserialized($parameter, &$source){
+		// write to file
+			$this->zajlib->compile->write('$filter_var = serialize($filter_var);');
+		return true;
+	}
+
+	/**
 	 * Filter: substr - Cuts a string at the given value. See also truncate.
 	 *
 	 *  <b>{{variable|substr:'5'}}</b> Truncates the length of variable string to 5 characters. So 'Superdooper' will be 'Super'
