@@ -711,7 +711,9 @@
 			$('[data-autopagination]').each(function(){
 				// Set defaults and data
 				var el =  $(this);
-				var data = JSON.parse(el.attr('data-autopagination'));
+				var rawdata = el.attr('data-autopagination');
+				if(rawdata == '') return true;
+				var data = JSON.parse(rawdata);
 				var block = el.attr('data-autopagination-block');
 				if(typeof block == 'undefined') block = 'autopagination';
 				// Create my autopagination object
