@@ -254,7 +254,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 						switch($value){
 							// this is needed since false is otherwise sent to the MAX (why?)
 							case false:
-												if(!is_string($value) && !is_bool($value)) $this->zajlib->warning("Value for $table.$column not valid: ".print_r($value, true));
+												if(is_array($value)) $this->zajlib->warning("Value for $table.$column not valid: ".print_r($value, true));
 												$value = "'".addslashes($value)."'";
 												break;
 							case MYSQL_MAX:		//print $value.'*'.MYSQL_MAX.'<br/>';
