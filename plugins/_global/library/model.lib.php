@@ -248,15 +248,17 @@ class zajlib_model extends zajLibExtension {
 
 	/**
 	 * Convert models to table definitions.
-	 * @param $models An array of models database definitions.
+	 * @param array $models An array of models database definitions.
 	 * @return array An array of tables with definitions.
 	 **/
 	private function models_to_tables($models){
 		// create field_tables array
-			$field_tables = array();
+			$field_tables = $model_tables = array();
 			$not_in_db = 0;
 		// run through each model def (which is an array of field objects)
 			foreach($models as $model_name=>$model){
+				// get model table name
+					// @todo Add support for tables named differently
 				// by going through each field we will create an array which is equivalent to $tables in structure
 				$model_tables[$model_name] = array();
 				foreach($model as $field_name=>$field_object){
@@ -295,6 +297,7 @@ class zajlib_model extends zajLibExtension {
 	/**
 	 * Create a new table with this name.
 	 * @param string $name The name of the table created.
+	 * @return bool Always returns true.
 	 **/
 	private function add_table($name){
 		// execute adding of this table
@@ -310,6 +313,7 @@ class zajlib_model extends zajLibExtension {
 	 * Add a column to a table.
 	 * @param string $table The name of the table.
 	 * @param array $field_data The field's database definition array.
+	 * @return bool Returns true if success, false otherwise.
 	 **/
 	private function add_column($table, $field_data){
 		// Id columns can only be edited, not added, since they already exist when the table is created!
@@ -398,6 +402,7 @@ class zajlib_model extends zajLibExtension {
 	 * @param string $table The name of the table.
 	 * @param string $old_name The old name of the table, used during renames.
 	 * @param array $new_field_data The field's database definition array.
+	 * @return bool Returns true if success, false otherwise.
 	 **/
 	private function rename_column($table, $old_name, $new_field_data){
 		// send to rename
@@ -408,6 +413,7 @@ class zajlib_model extends zajLibExtension {
 	 * Remove column from the table. This is not actually performed, but added to the sql todo.
 	 * @param string $table The name of the table.
 	 * @param string $name The column to remove.
+	 * @return boolean Always returns true.
 	 **/
 	private function remove_column($table, $name){
 		// add todo sql
@@ -421,6 +427,7 @@ class zajlib_model extends zajLibExtension {
 	/**
 	 * Remove a table from the database. This is not actually performed, but added to the sql todo.
 	 * @param string $name The table to remove.
+	 * @return boolean Always returns true.
 	 **/
 	private function remove_table($name){
 		// add todo sql
@@ -438,8 +445,9 @@ class zajlib_model extends zajLibExtension {
 	/**
 	 * Add an index to the table.
 	 * @param string $table The name of the table.
-	 * @param string $name The column to index.
+	 * @param string $column The column to index.
 	 * @param string $index The type of index to add.
+	 * @return boolean Returns true if successful.
 	 **/
 	private function add_index($table, $column, $index){
 		// add index
@@ -463,9 +471,10 @@ class zajlib_model extends zajLibExtension {
 	/**
 	 * Remove a certain type of index from a column.
 	 * @param string $table The name of the table.
-	 * @param string $name The column to index.
+	 * @param string $column The column to index.
 	 * @param string $index The type of index to remove.
-	 **/
+	 * @return boolean Always returns true.
+	 */
 	private function remove_index($table, $column, $index){
 		// execute a removal of the index
 			switch($index){
@@ -478,6 +487,7 @@ class zajlib_model extends zajLibExtension {
 			$this->log("Dropping index from $table.$column.", true);
 			$this->num_of_changes++;
 			$this->num_of_queries++;
+		return true;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -511,7 +521,8 @@ class zajlib_model extends zajLibExtension {
 	/**
 	 * Get the table columns as currently in the database.
 	 * @param string $table The name of the table to retrieve.
-	 **/
+	 * @return array Returns an array of column data.
+	 */
 	private function get_columns($table){
 		$columns = array();
 		// Get database name from settings
@@ -579,6 +590,7 @@ class zajlib_model extends zajLibExtension {
 	/**
 	 * Get a specific model's definition.
 	 * @param string $model_name The name of the model to get.
+	 * @return array Returns an array of model data with keys as field names.
 	 **/
 	private function get_model($model_name){
 		$model = array();
@@ -602,12 +614,7 @@ class zajlib_model extends zajLibExtension {
 	 * @param boolean $is_change If set to true, the message will be displayed as a change.
 	 **/
 	private function log($message, $is_change = false){
-		if($is_change) $this->log .= "<li><font color='red'>$message</font></li>";
+		if($is_change) $this->log .= "<li style='color: red;'>$message</font></li>";
 		else $this->log .= "<li>$message</li>";
 	}
 }
-
-
-
-
-?>
