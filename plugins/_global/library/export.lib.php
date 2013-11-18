@@ -123,6 +123,7 @@ class zajlib_export extends zajLibExtension {
 			// Get fields of db object if fields not passed (the property names of the object)
 				if(!is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
 					// Get the first row and create $fields[] array from it
+					// @todo Check to see if 0 rows in result set for each of these!
 						if(is_a($fetcher, 'Iterator')) $my_fields = $fetcher->rewind();
 						else $my_fields = reset($fetcher);
 					// Make sure that it is an object or array

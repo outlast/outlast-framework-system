@@ -138,6 +138,20 @@ class zajlib_lang extends zajlib_config {
 			return $this->available_locales;
 		}
 
+		/**
+		 * Get all the available two-letter language codes.
+		 * @return array Returns an array of all available codes.
+		 **/
+		function get_codes(){
+			// Run through
+				$codes = array();
+				foreach($this->available_locales as $al){
+					$code = substr($al, 0, 2);
+					$codes[$code] = $code;
+				}
+			return $codes;
+		}
+
 	/**
 	 * Template loading based on current locale.
 	 **/

@@ -143,7 +143,7 @@
 
 			// Create modal if not yet available
 				if($('#zaj_bootstrap_modal').length <= 0){
-					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn btn-primary">Ok</a></div></div>');
+					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
 				}
 			// Reset and init button
 				// Set action
@@ -711,7 +711,9 @@
 			$('[data-autopagination]').each(function(){
 				// Set defaults and data
 				var el =  $(this);
-				var data = JSON.parse(el.attr('data-autopagination'));
+				var rawdata = el.attr('data-autopagination');
+				if(rawdata == '') return true;
+				var data = JSON.parse(rawdata);
 				var block = el.attr('data-autopagination-block');
 				if(typeof block == 'undefined') block = 'autopagination';
 				// Create my autopagination object
