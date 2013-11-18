@@ -238,21 +238,24 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				return $this->query($sql);
 		}
 
-		/**
-		 * Edit a row in a table using an associative array.
-		 * @param string $table The table to edit in.
-		 * @param string|array $column The name of the column to use as the condition in the WHERE clause. If an array is specified, multiple values are used in the WHERE clause (key/value).
-		 * @param string $condition When $column is just a single value, condition specifies the value to which the field must be equal to.
-		 * @param array An associative array where the keys are the field names and the values are the field values. The fields will be modified according to this array.
-		 * @param string $conditionType Can have a value of AND or OR. This only matters if $column is an array, and there are multiple key/value pairs to use in the WHERE clause.
-		 **/
+	/**
+	 * Edit a row in a table using an associative array.
+	 * @param string $table The table to edit in.
+	 * @param string|array $column The name of the column to use as the condition in the WHERE clause. If an array is specified, multiple values are used in the WHERE clause (key/value).
+	 * @param string $condition When $column is just a single value, condition specifies the value to which the field must be equal to.
+	 * @param array $array An associative array where the keys are the field names and the values are the field values. The fields will be modified according to this array.
+	 * @param string $conditionType Can have a value of AND or OR. This only matters if $column is an array, and there are multiple key/value pairs to use in the WHERE clause.
+	 * @return bool|zajlib_db_session Returns the db session or false if error.
+	 */
 		private function edit($table, $column, $condition, $array, $conditionType = "AND"){
 			// Generate data to add
 				foreach($array as $key => $value){
 					// special functions
 						switch($value){
 							// this is needed since false is otherwise sent to the MAX (why?)
-							case false:			$value = "'".addslashes($value)."'";
+							case false:
+												if(!is_string($value) && !is_bool($value)) $this->zajlib->warning("Value for $table.$column not valid: ".print_r($value, true));
+												$value = "'".addslashes($value)."'";
 												break;
 							case MYSQL_MAX:		//print $value.'*'.MYSQL_MAX.'<br/>';
 												$value = "MAX($key)";
