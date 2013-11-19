@@ -100,6 +100,15 @@
 		if(in_array($zajlib->host, $zajconf['debug_mode_domains']) || !empty($zajconf['debug_mode']) || !empty($_SERVER['DEBUG_MODE']) || !empty($_SERVER['MOZAJIK_DEBUG_MODE'])) $zajlib->debug_mode = true;
 	// debug mode explicity overridden?
 		if($zajlib->debug_mode && isset($_REQUEST['debug_mode'])) $zajlib->debug_mode = false;
+	// use debug database?
+		if($zajlib->debug_mode && !empty($zajconf['mysql_enabled_debug'])){
+			$zajlib->zajconf['mysql_enabled'] = $zajconf['mysql_enabled_debug'];
+			$zajlib->zajconf['mysql_server'] = $zajconf['mysql_server_debug'];
+			$zajlib->zajconf['mysql_user'] = $zajconf['mysql_user_debug'];
+			$zajlib->zajconf['mysql_password'] = $zajconf['mysql_password_debug'];
+			$zajlib->zajconf['mysql_db'] = $zajconf['mysql_db_debug'];
+			$zajlib->zajconf['mysql_ignore_tables'] = $zajconf['mysql_ignore_tables_debug'];
+		}
 
 	// If LOGIN_AUTH is set up in Apache conf and user does not have proper cookie set, redirect!
 		if(!empty($_SERVER['MOZAJIK_LOGIN_AUTH']) && !empty($_SERVER['MOZAJIK_LOGIN_URL'])){
