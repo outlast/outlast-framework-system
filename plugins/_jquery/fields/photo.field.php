@@ -53,11 +53,19 @@ class zajfield_photo extends zajField {
 	public function save($data, &$object){
 		// if it is a string (form field input where it's the id), convert to an object first
 			if(is_string($data) || is_integer($data)){
+				// Remove previous ones
+				$photos = Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
+				foreach($photos as $pold){ $pold->delete(); }
+				// Set new one
 				$pobj = Photo::fetch($data);
 				if(is_object($pobj)) $data = $pobj;
 			}
 		// if data is a photo object
 			if(is_object($data) && is_a($data, 'Photo')){
+				// Remove previous ones
+				$photos = Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
+				foreach($photos as $pold){ $pold->delete(); }
+				// Set new one
 				// check to see if already has parent (disable hijacking of photos)
 					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
 				// now set parent
