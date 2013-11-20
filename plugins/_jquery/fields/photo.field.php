@@ -52,7 +52,7 @@ class zajfield_photo extends zajField {
 	 **/
 	public function save($data, &$object){
 		// if it is a string (form field input where it's the id), convert to an object first
-			if(is_string($data) || is_integer($data)){
+			if(!empty($data) && is_string($data) || is_integer($data)){
 				// Remove previous ones
 				$photos = Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
 				foreach($photos as $pold){ $pold->delete(); }
