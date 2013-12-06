@@ -42,7 +42,8 @@ class zajlib_export extends zajLibExtension {
 							header("Content-Disposition: attachment; filename=\"$file_name\"");
 							if(!$delimiter) $delimiter = ',';
 						}
-						$this->send_data($workbook, $fetcher, $fields, $excel_encoding, $delimiter);
+						$output = fopen('php://output', 'w');
+						$this->send_data($output, $fetcher, $fields, $excel_encoding, $delimiter);
 				}
 				else{
 					// Create the csv file with PHPExcel
@@ -104,7 +105,7 @@ class zajlib_export extends zajLibExtension {
 
 		/**
 		 * Write data to an output.
-		 * @param file|PHPExcel $output The output object or handle.
+		 * @param resource|PHPExcel $output The output object or handle.
 		 * @param zajFetcher|zajDb|array $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array $fields A list of fields from the model which should be included in the export.
 		 * @param boolean $excel_encoding If set to true, it will download in CSV format which Excel can recognize.
