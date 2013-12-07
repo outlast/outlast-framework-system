@@ -283,7 +283,7 @@ class zajlib_template_zajvariables {
 				case 'ofw': return $this->zajlib->mozajik;
 				case 'mozajik': return $this->zajlib->mozajik;
 			// Mobile detection (uses server-side detection)
-				case 'mobile': return $this->zajlib->browser->ismobiledevice;
+				case 'mobile': return $this->zajlib->mobile->isMobile();
 			// Platform detection (uses server-side detection, returns string from browser.lib.php)
 				case 'platform': return $this->zajlib->browser->platform;
 			// Server-side browser detection. Returns parameters from browser.lib.php.
