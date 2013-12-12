@@ -158,10 +158,24 @@
 				if(zaj.mobile){
 					backdrop = true;
 					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
-				}
+                }
 			// Set body and show it (requires selector again)
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
+
+            if(zaj.mobile){
+                var $backdrop = $(".modal-backdrop"),
+                    $modal = $('#zaj_bootstrap_modal');
+
+                if($backdrop.offset().top !== $(document).scrollTop()) {
+                    zaj.alert_reposition($modal, $backdrop);
+
+                    $(window).scroll(function() {
+                        zaj.alert_reposition($modal, $backdrop);
+                    });
+                }
+            }
+
 			// Reposition the modal if needed
 				zaj.alert_reposition($('#zaj_bootstrap_modal'));
 		}
@@ -174,8 +188,24 @@
 				else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction, top);
 		}
 	};
-	zaj.alert_reposition = function($modal){
-		if(zaj.facebook){
+	zaj.alert_reposition = function($modal, $backdrop){
+        if($backdrop) {
+            var viewportWidth = $(window).width();
+            var viewportHeight = $(window).height();
+
+            $modal.css({
+                position: "absolute",
+                top: $(document).scrollTop() + 50
+            });
+
+            $backdrop.css({
+                position: "absolute",
+                top: $(document).scrollTop(),
+                height: viewportHeight,
+                width: viewportWidth
+            });
+        }
+		else if(zaj.facebook){
 			var fb_top_bar = 115, fb_bottom_bar = 100;
 			FB.Canvas.getPageInfo(function(e){
 				// Set height
