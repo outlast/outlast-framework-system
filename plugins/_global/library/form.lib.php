@@ -1,7 +1,7 @@
 <?php
 /**
  * Form helper library is inteded to validate field input during saves.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/

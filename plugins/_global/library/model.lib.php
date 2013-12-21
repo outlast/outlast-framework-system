@@ -1,7 +1,7 @@
 <?php
 /**
  * Manipulate the database to match the defined models.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Model
  * @subpackage DatabaseApi

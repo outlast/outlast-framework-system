@@ -1,7 +1,7 @@
 <?php
 /**
  * Generate RSS and ATOM feeds.
- * @author Anis uddin Ahmad <anisniit@gmail.com>, Aron Budinszky <aron@mozajik.org>
+ * @author Anis uddin Ahmad <anisniit@gmail.com>, Aron Budinszky <aron@outlast.hu>
  * @link http://www.ajaxray.com/projects/rss
  * @version 3.0
  * @package Library

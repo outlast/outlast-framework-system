@@ -2,7 +2,7 @@
 /**
  * Backend compile-related classes.
  * 
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Template
  * @subpackage CompilingBackend

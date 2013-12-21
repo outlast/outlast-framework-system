@@ -1,6 +1,6 @@
 /**
  * The mozajik-tool.js file contains all the custom Mozajik tools.
- * @author Thierry Bela, modified by Aron Budinszky /aron@mozajik.org/
+ * @author Thierry Bela, modified by Aron Budinszky /aron@outlast.hu/
  * @version 1.3
  * @requires MozajikBase, MooTools 1.3+, Mootools/Asset
  **/

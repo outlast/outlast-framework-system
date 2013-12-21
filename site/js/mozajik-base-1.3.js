@@ -1,7 +1,7 @@
 /**
  * This is the basic Mozajik JS layer class. The JS layer has three sections, 'base' (basic stuff for sending requests, logging, etc.), 'tool' (tabs, forms, etc.),
  *	and 'ui' (user interface elements)
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.3
  * 
  * @changes 1.3 Now supports pushstate, but ajax methods' parameter order has changed: bind is now the fourth param, the third is the new url.
@@ -43,7 +43,7 @@ window.onerror=function(message, url, line){
 
 /**
  * Base class contains the most important and often used features of the Mozajik JS layer: ajax requests, history management, logging, etc.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  **/
 var MozajikBase = new Class({
@@ -167,7 +167,7 @@ var MozajikBase = new Class({
 
 /**
  * The Ajax class handles requests back and forth between the JS layer and Mozajik controllers.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  **/
 var MozajikBaseAjax = new Class({
@@ -393,7 +393,7 @@ var MozajikBaseAjax = new Class({
 
 /**
  * The History class is used to manage back and forward buttons when using ajax requests.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  * @todo Implement this!
  **/
@@ -419,7 +419,7 @@ var MozajikBaseHistory = new Class({
 
 /**
  * The Element class allows the extension of mootools elements via the zaj object.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  **/
 var MozajikBaseElement = new Class({
@@ -433,7 +433,7 @@ var MozajikBaseElement = new Class({
 
 /**
  * Class Loader allows you to load javascript, css, or image files async
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  */
 Mozajik.Loader = new Class({

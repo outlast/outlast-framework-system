@@ -1,7 +1,7 @@
 <?php
 /**
  * File-system related methods for manipulating and getting information about files and folders.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/

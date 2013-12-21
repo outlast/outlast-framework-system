@@ -2,7 +2,7 @@
 /**
  * A collection of functions for checking plugin load status. This is useful during init of your application to make sure plugins are enabled and/or loaded in the proper order.
  *
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/

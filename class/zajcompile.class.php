@@ -6,7 +6,7 @@
  * you should use the compile() library instead. These classes ensure that tags, variables, parameters, and filters are processed,
  * the appropriate plugin files (tags, filters) are loaded, and the necessary functions are called.
  *
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Template
  * @subpackage CompilingBackend

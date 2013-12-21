@@ -1,6 +1,6 @@
 /**
  * This file containes Mozajik GUI elements in the Dojo Toolkit version.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.6
  **/
 
@@ -11,7 +11,7 @@ dojo.require("dijit.Dialog");
 
 /**
  * Class PopUp creates an in-page div-based popup interface.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  */
 dojo.declare("PopUp", null, {
@@ -91,7 +91,7 @@ dojo.declare("PopUp", null, {
 
 /**
  * Class PopOver creates a popover interface similar to what is used on iOS interfaces.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  **/
 

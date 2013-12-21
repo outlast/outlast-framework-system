@@ -1,7 +1,7 @@
 <?php
 /**
  * Handle connection and queries to the database.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Model
  * @subpackage DatabaseApi

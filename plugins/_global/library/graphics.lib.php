@@ -1,7 +1,7 @@
 <?php
 /**
  * Methods for manipulating images.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/

@@ -1,7 +1,7 @@
 /**
  * This is the basic Mozajik JS layer class for jQuery. The JS layer has three sections, 'base' (basic stuff for sending requests, logging, etc.), 'tool' (tabs, forms, etc.),
  *	and 'ui' (user interface elements)
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.0
  * 
  * @changes 1.0 Now supports pushstate, but ajax methods' parameter order has changed: bind is now the fourth param, the third is the new url.
@@ -396,7 +396,7 @@
 
 		/**
 		 * Class Search creates a search box which sends ajax requests at specified intervals to a given url.
-		 * @author Aron Budinszky /aron@mozajik.org/
+		 * @author Aron Budinszky /aron@outlast.hu/
 		 * @todo Add placeholder text
 		 * @version 3.0
 		 */

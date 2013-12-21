@@ -1,7 +1,7 @@
 <?php
 /**
  * Template related methods.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/
@@ -209,7 +209,7 @@ class zajlib_template extends zajLibExtension {
 
 /**
  * This is a special class which loads up the template variables when requested.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @property zajLib $zajlib
  **/
 class zajlib_template_zajvariables {

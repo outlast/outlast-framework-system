@@ -1,7 +1,7 @@
 <?php
 /**
  * Library helps you import data into Mozajik models, arrays, or other objects.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/

@@ -1,13 +1,13 @@
 /**
  * The mozajik-tool.js file contains all the custom Mozajik tools.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.3
  * @requires MozajikBase, MooTools 1.3+, Mootools/Asset
  **/
 
 /**
  * Class ReorderList allows you to easily reorder a list of zajModel objects.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  */
 Mozajik.ReorderList = new Class({
@@ -53,7 +53,7 @@ Mozajik.ReorderList = new Class({
 
 /**
  * Class FileList allows you to easily list files when, for example, uploading.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  */
 Mozajik.FileList = new Class({
@@ -113,7 +113,7 @@ Mozajik.FileList = new Class({
 
 /**
  * Crop class allows you to crop an image.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  */
 Crop = new Class({
@@ -149,7 +149,7 @@ Crop = new Class({
 
 /**
  * Rating allows you to create a generic rating system.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  * @event onRate(ratenumber) Called after a rating is clicked on by the user.
  * @event onShow(ratenumber) Called when the stars are shown (for example also after mouseenter).
@@ -230,7 +230,7 @@ Rate = new Class({
 
 /**
  * Upload assists in creating and submitting uploads with progress bars.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @todo Make Progress optional
  * @version 3.0
  */
@@ -310,7 +310,7 @@ Upload = new Class({
 
 /**
  * Class Tab allows users to create a tabbed interface easily.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @todo Add history support!
  * @version 3.0
  * @event onSelect(tab_name) Fired when the tab is selected.
@@ -355,7 +355,7 @@ Tab = new Class({
 
 /**
  * Class Search creates a search box which sends ajax requests at specified intervals to a given url.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @todo Add placeholder text
  * @version 3.0
  */
@@ -426,7 +426,7 @@ Search = new Class({
 
 /**
  * Class AutoComplete can be attached to any text box and display result suggestions in a box based on a query sent to a url.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  * @requires Search
  * @event onAdd(id, name) Called when a search result is added to the list of results.
@@ -561,7 +561,7 @@ AutoComplete = new Class({
 /**
  * Extend the global zaj object with GUI elements.
  * @version 3.0
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  */
 	Mozajik.implement({	
 		/* search */
