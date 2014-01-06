@@ -21,6 +21,8 @@ class zajlib_import extends zajLibExtension {
 	 * @return array An array of objects where the keys are either numbers or taken from the header row.
 	 **/
 	public function gdocs_spreadsheet($url, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
+		// Must be a valid url
+			if(!$this->zajlib->url->valid($url)) return $this->zajlib->warning("Gdocs import must be a valid url.");
 		return $this->csv($url, $first_row_is_header, $delimiter, $enclosure, $escape);
 	}
 
