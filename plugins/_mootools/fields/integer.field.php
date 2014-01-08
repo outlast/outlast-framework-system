@@ -29,6 +29,9 @@ class zajfield_integer extends zajField {
 	 * @return array Returns in array with the database definition.
 	 **/
 	public function database(){
+		// Defaults to 0, but use default() if given
+			$default = 0;
+			if(!empty($this->options['default'])) $default = $this->options['default'];
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name,
@@ -37,7 +40,7 @@ class zajfield_integer extends zajField {
 						0 => 11,
 					),
  					'key' => 'MUL',
-					'default' => 0,
+					'default' => $default,
 					'extra' => '',
 					'comment' => 'integer',
 			);

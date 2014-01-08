@@ -73,6 +73,3 @@ class zajfield_float extends zajField {
 	}
 
 }
-
-
-?>
