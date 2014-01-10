@@ -776,7 +776,7 @@ class zajCompileElement{
 							}
 							else{
 								// This is an operator! So now let's make sure this is an if tag
-								if($this->parent->get_current_tag() != 'if'){
+								if($this->parent->get_current_tag() != 'if' && $this->parent->get_current_tag() != 'elseif'){
 									$this->parent->warning("operator $variable is only supported for 'if' tags!");
 									return '$empty';
 								}
