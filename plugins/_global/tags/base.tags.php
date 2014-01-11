@@ -310,61 +310,8 @@ EOF;
 		// add level
 			$source->add_level('if', false);
 		
-		// build condition
-			$param_ok = true;	// needed to track that param cannot follow param
-			$string = '';
-			foreach($param_array as $param){
-				switch($param->variable){
-					case '$this->zajlib->variable->not':	$string .= "!";
-															break;
-					case '$this->zajlib->variable->and':	$string .= "&& ";
-															$param_ok = true;	
-															break;
-					case '$this->zajlib->variable->or':		$string .= "|| ";
-															$param_ok = true;	
-															break;
-					case '$this->zajlib->variable->gt':	
-					case '>':	
-															$string .= "> ";
-															$param_ok = true;	
-															break;
-					case '$this->zajlib->variable->lt':
-					case '<':	
-															$string .= "< ";
-															$param_ok = true;	
-															break;
-					case '$this->zajlib->variable->eq':		
-					case '=':
-					case '==':
-
-															$string .= "== ";
-															$param_ok = true;	
-															break;
-					case '$this->zajlib->variable->lteq':
-					case '<=':
-															$string .= "<= ";
-															$param_ok = true;
-															break;															
-					case '$this->zajlib->variable->gteq':
-					case '>=':
-															$string .= ">= ";
-															$param_ok = true;
-															break;
-					case '!=':
-															$string .= "!= ";
-															$param_ok = true;
-															break;
-					case '$this->zajlib->variable->in':
-															$source->error("Use the |in filter instead!"); // fatal error
-															$param_ok = false;
-															break;
-					default:	if(!$param_ok) $source->error("Proper operator expected instead of $param!"); // fatal error
-								$string .= $param->variable.' ';
-								$param_ok = false;
-								break;
-				}
-			}
-		
+		// get conditional string
+			$string = $this->generate_conditional_string($param_array, $source);
 		
 		// generate if true
 			$contents = <<<EOF
@@ -377,7 +324,7 @@ EOF;
 			$this->zajlib->compile->write($contents);
 		// return true
 			return true;
-	}		
+	}
 	/**
 	 * @ignore
 	 * @todo Remove this depricated tag.
@@ -422,13 +369,31 @@ EOF;
 	 * {@link tag_if()}
 	 **/
 	public function tag_elseif($param_array, &$source){
-		// generate if true
+		// generate lone else when no param given
+		if(count($param_array) == 0){
+		// standard, lone else
 			$contents = <<<EOF
 <?php
 	}
 	else{
 ?>
 EOF;
+		}
+		// generate full elseif when param given
+		else{
+		// get conditional string
+			$string = $this->generate_conditional_string($param_array, $source);
+		// generate if true
+			$contents = <<<EOF
+<?php
+	}
+// another conditional
+	elseif($string){
+?>
+EOF;
+
+		}
+
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats
@@ -541,6 +506,70 @@ EOF;
 		// return debug_stats
 			return true;		
 	}
+
+	/**
+	 * Helper function for creating a conditional string from parameter array
+	 * @param array $param_array An array of parameters.
+	 * @param zajCompileSource $source The source object passed here not as reference.
+	 * @return string Returns the conditional string.
+	 */
+	private function generate_conditional_string($param_array, $source){
+			$param_ok = true;	// needed to track that param cannot follow param
+			$string = '';
+			foreach($param_array as $param){
+				switch($param->variable){
+					case '$this->zajlib->variable->not':	$string .= "!";
+															break;
+					case '$this->zajlib->variable->and':	$string .= "&& ";
+															$param_ok = true;
+															break;
+					case '$this->zajlib->variable->or':		$string .= "|| ";
+															$param_ok = true;
+															break;
+					case '$this->zajlib->variable->gt':
+					case '>':
+															$string .= "> ";
+															$param_ok = true;
+															break;
+					case '$this->zajlib->variable->lt':
+					case '<':
+															$string .= "< ";
+															$param_ok = true;
+															break;
+					case '$this->zajlib->variable->eq':
+					case '=':
+					case '==':
+
+															$string .= "== ";
+															$param_ok = true;
+															break;
+					case '$this->zajlib->variable->lteq':
+					case '<=':
+															$string .= "<= ";
+															$param_ok = true;
+															break;
+					case '$this->zajlib->variable->gteq':
+					case '>=':
+															$string .= ">= ";
+															$param_ok = true;
+															break;
+					case '!=':
+															$string .= "!= ";
+															$param_ok = true;
+															break;
+					case '$this->zajlib->variable->in':
+															$source->error("Use the |in filter instead!"); // fatal error
+															$param_ok = false;
+															break;
+					default:	if(!$param_ok) $source->error("Proper operator expected instead of $param!"); // fatal error
+								$string .= $param->variable.' ';
+								$param_ok = false;
+								break;
+				}
+			}
+		return $string;
+	}
+
 
 	/**
 	 * Tag: include - Include an app controller by request url (relative to base url).

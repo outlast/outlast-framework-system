@@ -1,13 +1,13 @@
 /**
  * The mozajik-tool.js file contains all the custom Mozajik tools. Requires MooTools 1.3!
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  **/
 
 
 /**
  * Class Search creates a search box which sends ajax requests at specified intervals to a given url.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  */
 var Search = new Class({
@@ -51,7 +51,7 @@ var Search = new Class({
 /**
  * Extend the global zaj object with GUI elements.
  * @version 3.0
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  */
 	Mozajik.implement({	
 		/* search */

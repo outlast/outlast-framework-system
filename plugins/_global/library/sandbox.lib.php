@@ -1,7 +1,7 @@
 <?php
 /**
  * Check if files are sandboxed within the base folder.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  * @depricated

@@ -5,7 +5,7 @@
  * The zajData class is a helper class which allows the end user to retrieve, set, and save the model field data. The class handles the various data
  *  types and loads additional helper classes (from plugins/fields/) if needed. It also helps out with cacheing.
  *
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Model
  * @subpackage Database

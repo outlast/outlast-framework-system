@@ -5,7 +5,7 @@
  * The fetcher class is the API to fetch data from the database. This could be a single row (single object) or many rows
  * filtered by one or more parameters, sorted, paginated, etc.
  *
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Model
  * @subpackage DatabaseApi

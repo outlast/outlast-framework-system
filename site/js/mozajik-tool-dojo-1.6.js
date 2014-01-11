@@ -1,6 +1,6 @@
 /**
  * This file containes Mozajik tools.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.6
  **/
 
@@ -9,7 +9,7 @@ dojo.provide("Mozajik.tool");
 
 /**
  * This class allows you to generate a drag and drop list.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  */
 dojo.declare("Mozajik.DragList", null, {
@@ -44,7 +44,7 @@ dojo.declare("Mozajik.DragList", null, {
 
 /**
  * This class allows you to generate a file list.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  */
 dojo.declare("Mozajik.FileList", null, {

@@ -1,7 +1,7 @@
 <?php
 /**
  * The abstract controller base class.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Controller
  * @subpackage Base

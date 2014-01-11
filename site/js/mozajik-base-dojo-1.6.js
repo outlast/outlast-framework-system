@@ -1,7 +1,7 @@
 /**
  * This is the Dojo Toolkit version of the Mozajik JS layer class. The JS layer has three sections, 'base' (basic stuff for sending requests, logging, etc.), 'tool' (tabs, forms, etc.),
  *	and 'ui' (user interface elements). The Dojo version's ui is a wrapper for Digits.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.6
  **/
 
@@ -33,7 +33,7 @@ window.onerror=function(message, url, line){
 
 /**
  * Base class contains the most important and often used features of the Mozajik JS layer: ajax requests, history management, logging, etc.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  **/
 dojo.declare("Mozajik", null, {
@@ -139,7 +139,7 @@ var zaj = new Mozajik();
 
 /**
  * The Ajax class handles requests back and forth between the JS layer and Mozajik controllers.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.6
  **/
 dojo.declare("Mozajik.Ajax", null, {
@@ -258,7 +258,7 @@ zaj.ajax = new Mozajik.Ajax();
 
 /**
  * Mozajik.Element class provides special functionality via the $ method. This is not dojo like and should not be used too much (it's here for mootools compatibility).
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.6
  **/
 dojo.declare("Mozajik.Element", null, {

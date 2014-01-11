@@ -17,7 +17,7 @@ define('CACHE_DIR_LEVEL', 4);
  *
  * All model classes need to extend zajModel which provides the basic set of methods and variables to the object.
  *
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @package Model
  * @subpackage DefaultModel
  * @abstract Model files extend this base class.
@@ -776,7 +776,7 @@ abstract class zajModel {
 /**
  * This is the abstract extender model class from which all extended model classes are derived.
  *
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @package Model
  * @subpackage DefaultModel
  * @abstract Model files which extend other models should extend this base class.
@@ -1052,7 +1052,7 @@ abstract class zajModelExtender {
 /**
  * This class allows the model data translations to be fetched easily.
  *
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @package Model
  * @subpackage DefaultModel
  */

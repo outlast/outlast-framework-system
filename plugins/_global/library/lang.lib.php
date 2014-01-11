@@ -1,7 +1,7 @@
 <?php
 /**
  * This library performs various language and encoding related conversions. It also enables loading language files and changing the current language.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/

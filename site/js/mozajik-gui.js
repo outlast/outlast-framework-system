@@ -1,13 +1,13 @@
 /**
  * The mozajik-gui.js file contains all the custom Mozajik GUI elements' javascript code.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  **/
 
 
 /**
  * Class PopOver creates a popover interface similar to what is used on iOS interfaces.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  * @todo Content can be some text, or a div object
  * @todo What if relativeTo not defined? There is a bug!
@@ -162,7 +162,7 @@ var PopOver = new Class({
 /**
  * Class CheckList turns a list of items in a div into a sortable, selectable list of items. You can specify URLs in the options or use events to initiate call-backs.
  * @version 3.0
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  */
 var CheckList = new Class({
 
@@ -171,7 +171,7 @@ var CheckList = new Class({
 
 /**
  * Class PopUp creates a lightbox-style popup interface.
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  * @version 3.0
  * @todo Add close on ESC keyup.
  */
@@ -302,7 +302,7 @@ var PopUp = new Class({
 /**
  * Extend the global zaj object with GUI elements.
  * @version 3.0
- * @author Aron Budinszky /aron@mozajik.org/
+ * @author Aron Budinszky /aron@outlast.hu/
  */
 	Mozajik.implement({	
 		/* popovers */

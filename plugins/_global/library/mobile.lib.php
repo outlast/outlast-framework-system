@@ -31,6 +31,20 @@ class zajlib_mobile extends zajLibExtension {
 	}
 
 	/**
+	 * Detect if mobile
+	 */
+	public function is_mobile(){
+		return $this->detector->isMobile();
+	}
+
+	/**
+	 * Detect if tablet
+	 */
+	public function is_tablet(){
+		return $this->detector->isTablet();
+	}
+
+	/**
 	 * Redirect inaccessible method calls to my parent.
 	 **/
 	public function __call($name, $arguments){

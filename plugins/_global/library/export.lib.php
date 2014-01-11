@@ -1,7 +1,7 @@
 <?php
 /**
  * Library helps you export data from Mozajik models, database queries, or an array of standard PHP objects. Using PHPExcel will provide more features and better export results.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/

@@ -64,9 +64,9 @@ class zajlib_tag_mozajik extends zajElementCollection{
 			// add set value
 				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
 			// now create form field
+				// @todo Is this template path checked here?
 				$this->zajlib->compile->compile($template);
-				//$this->zajlib->compile->write("insert file $template");
-				$this->zajlib->compile->insert_file($template.'.php');		
+				$this->zajlib->compile->insert_file($template.'.php');
 		// return debug_stats
 			return true;
 	}

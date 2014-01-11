@@ -1,7 +1,7 @@
 <?php
 /**
  * This library handles the loading and compiling of configuration and language files.
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/

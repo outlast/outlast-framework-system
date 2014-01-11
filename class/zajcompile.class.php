@@ -6,7 +6,7 @@
  * you should use the compile() library instead. These classes ensure that tags, variables, parameters, and filters are processed,
  * the appropriate plugin files (tags, filters) are loaded, and the necessary functions are called.
  *
- * @author Aron Budinszky <aron@mozajik.org>
+ * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Template
  * @subpackage CompilingBackend
@@ -776,7 +776,7 @@ class zajCompileElement{
 							}
 							else{
 								// This is an operator! So now let's make sure this is an if tag
-								if($this->parent->get_current_tag() != 'if'){
+								if($this->parent->get_current_tag() != 'if' && $this->parent->get_current_tag() != 'elseif'){
 									$this->parent->warning("operator $variable is only supported for 'if' tags!");
 									return '$empty';
 								}
