@@ -10,6 +10,7 @@ class Translation extends zajModel {
 	 **/
 	public static function __model(){
 		// define custom database fields
+			$f = (object) array();
 			$f->modelname = zajDb::text();
 			$f->parent = zajDb::text();
 			$f->field = zajDb::text();

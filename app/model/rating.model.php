@@ -16,6 +16,7 @@ class Rating extends zajModel {
 	///////////////////////////////////////////////////////////////
 	public static function __model(){	
 		// define custom database fields
+			$fields = (object) array();
 			$fields->parent = zajDb::text();
 			$fields->rating = zajDb::integer();
 		// do not modify the line below!
@@ -32,7 +33,7 @@ class Rating extends zajModel {
 	///////////////////////////////////////////////////////////////
 	public static function get_rating($parent){
 		$parentSQL = addslashes($parent);
-		$this->zajlib->db->query("SELECT COUNT(*) as count, AVG(rating) as average WHERE `parent`='$parentSQL' && `status`!='deleted'");
-		return $this->zajlib->db->get_one();
+		zajLib::me()->db->query("SELECT COUNT(*) as count, AVG(rating) as average WHERE `parent`='$parentSQL' && `status`!='deleted'");
+		return zajLib::me()->db->get_one();
 	}
 }

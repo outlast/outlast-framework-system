@@ -17,6 +17,7 @@ class MozajikError extends zajModel {
 	 */
 	static function __model(){
 		// define custom database fields
+			$f = (object) array();
 			$f->errortext = zajDb::text();
 			$f->errorlevel = zajDb::select(array('notice', 'warning', 'error'));
 

@@ -34,6 +34,7 @@ class MozajikVersion extends zajModel {
 	 */
 	static function __model(){
 		// define custom database fields
+			$f = (object) array();
 			$f->major = zajDb::integer();
 			$f->minor = zajDb::integer();
 			$f->build = zajDb::integer();
