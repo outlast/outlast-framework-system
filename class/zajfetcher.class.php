@@ -109,7 +109,8 @@ class zajFetcher implements Iterator, Countable{
 				$this->pagination = (object) array();
 				$this->pagination->page = $page;
 				$this->pagination->perpage = $perpage;
-				$this->pagination->pagefirstitem = ($page-1)*$perpage+1;
+				$this->pagination->pagefirstitem0 = ($page-1)*$perpage;
+				$this->pagination->pagefirstitem = $this->pagination->pagefirstitem0+1;
 				$this->pagination->nextpage = $page+1;	// nextpage is reset to false if not enough object (done after query)
 				$this->pagination->prevpage = $page-1;
 				$this->pagination->prevurl = zajLib::me()->fullrequest."&zajpagination[{$this->class_name}]={$this->pagination->prevpage}";
