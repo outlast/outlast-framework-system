@@ -37,7 +37,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * The current session object
 		 * @var zajlib_db_session
 		 **/
-		private $current_session='';
+		private $current_session;
 		/**
 		 * The total number of queries run for all sessions together.
 		 * @var integer
@@ -72,6 +72,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				if(!empty($zajlib->db) && is_object($zajlib->db) && is_a($zajlib->db, 'zajlib_db')) return $zajlib->error('Only one db instance allowed, so unable to create new db instance. Please use the session method if you need a new db session.');
 			// send to parent
 				parent::__construct($zajlib, $system_library);
+			// create current session
+				$this->current_session = (object) array();
 			// create my default session
 				$this->create_session('default');
 		}	
