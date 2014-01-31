@@ -6,6 +6,8 @@
  * @package Library
  **/
 
+define("OFW_DOWNLOAD_DISABLED_EXTENSIONS", 'php,ini,exe,sh,cache,tmp');
+
 class zajlib_file extends zajLibExtension {
 
 	/**
@@ -332,7 +334,8 @@ class zajlib_file extends zajLibExtension {
 	            'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
 	        );
 	
-	        $ext = strtolower(array_pop(explode('.',$filename)));
+			$ext = $this->get_extension($filename);
+
 	        if (array_key_exists($ext, $mime_types)) {
 	            return $mime_types[$ext];
 	        }
@@ -346,7 +349,40 @@ class zajlib_file extends zajLibExtension {
 	            return 'application/octet-stream';
 	        }
 	}
-	
+
+	/**
+	 * Download a file specified by path. There are some checks here, but be careful to sanitize the input as this is a potentially dangerous function.
+	 * @param string $file_path The relative file path to the project base path.
+	 * @param string|boolean $download_name If specified, the file will download with this name.
+	 * @param string|boolean $mime_type The mime type for the file. If not given, it will try to detect it automatically.
+	 * @return boolean|array There is no return value and execution stop here because the file is returned. Tests return an array.
+	 */
+	function download($file_path, $download_name = false, $mime_type = false){
+		// check file
+			$this->file_check($file_path);
+		// disable some specific files
+			$ext = $this->get_extension($file_path);
+			if(in_array($ext, explode(',', OFW_DOWNLOAD_DISABLED_EXTENSIONS))){
+				return $this->zajlib->error('The selected extension is disabled.');
+			}
+		// add basepath
+			$file_path = $this->zajlib->basepath.$file_path;
+		// detect mime type if not given
+			if($mime_type === false) $mime_type = $this->get_mime_type($file_path);
+		// use file name as download name if not given
+			basename($file_path);
+		// return my data for testing
+			if($this->zajlib->test->is_running()) return array($file_path, $download_name, $mime_type);
+		// pass file thru to user via download
+			header('Content-Type: '.$mime_type);
+			header('Content-Length: '.filesize($file_path));
+			header('Content-Disposition: attachment; filename="'.addslashes($download_name).'"');
+			ob_clean();
+			flush();
+			readfile($file_path);
+		exit();
+	}
+
 	/**
 	 * Calculate download time (in seconds)
 	 * @param integer $bytes The file size in bytes.
@@ -381,8 +417,3 @@ class zajlib_file extends zajLibExtension {
 	}
 
 }
-
-
-
-
-?>

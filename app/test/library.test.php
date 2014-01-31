@@ -171,6 +171,10 @@ class OfwLibraryTest extends zajTest {
 			$folders = $this->zajlib->file->get_folders('system/');
 			zajTestAssert::isArray($folders);
 			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system//doc/', $folders));
+		// Test download security
+			//$download = $this->zajlib->file->download('/etc/shadow');
+			//zajTestAssert::isFalse($download);
+
 	}
 
 	/**
