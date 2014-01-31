@@ -370,7 +370,7 @@ class zajlib_file extends zajLibExtension {
 		// detect mime type if not given
 			if($mime_type === false) $mime_type = $this->get_mime_type($file_path);
 		// use file name as download name if not given
-			basename($file_path);
+			if($download_name === false) $download_name = basename($file_path);
 		// return my data for testing
 			if($this->zajlib->test->is_running()) return array($file_path, $download_name, $mime_type);
 		// pass file thru to user via download

@@ -319,8 +319,7 @@ class zajLib {
 			$error = $this->load->library('error');
 		// Now report the error and send 500 error
 			if(!$this->output_started) header('HTTP/1.1 500 Internal Server Error');
-			$error->error($message);
-			exit;
+			$error->error($message);	// this terminates the run
 	}
 
 	/**
