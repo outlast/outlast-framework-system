@@ -171,6 +171,29 @@ class OfwLibraryTest extends zajTest {
 			$folders = $this->zajlib->file->get_folders('system/');
 			zajTestAssert::isArray($folders);
 			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system//doc/', $folders));
+		// Test download security
+			$this->zajlib->error->surpress_errors_during_test(true);
+			$this->zajlib->file->download('/etc/shadow');
+			$error = $this->zajlib->error->get_last('error');
+			zajTestAssert::areIdentical('Invalid file path given. /etc/shadow', $error);
+			$this->zajlib->file->download($this->zajlib->basepath.'index.php');
+			$error = $this->zajlib->error->get_last('error');
+			zajTestAssert::areIdentical('The selected extension is disabled.', $error);
+			$this->zajlib->error->surpress_errors_during_test(false);
+			// Test automatic filename and mime
+			$download = $this->zajlib->file->download('system/site/img/outlast-framework-logo.png');
+			zajTestAssert::isArray($download);
+			list($file_path, $download_name, $mime_type) = $download;
+			zajTestAssert::areIdentical($this->zajlib->basepath.'system/site/img/outlast-framework-logo.png', $file_path);
+			zajTestAssert::areIdentical('outlast-framework-logo.png', $download_name);
+			zajTestAssert::areIdentical('image/png', $mime_type);
+			// Test parameters filename and mime
+			$download = $this->zajlib->file->download('system/site/img/outlast-framework-logo.png', 'asdf.png', 'test-mime');
+			zajTestAssert::isArray($download);
+			list($file_path, $download_name, $mime_type) = $download;
+			zajTestAssert::areIdentical($this->zajlib->basepath.'system/site/img/outlast-framework-logo.png', $file_path);
+			zajTestAssert::areIdentical('asdf.png', $download_name);
+			zajTestAssert::areIdentical('test-mime', $mime_type);
 	}
 
 	/**

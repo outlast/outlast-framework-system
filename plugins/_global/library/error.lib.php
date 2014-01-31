@@ -37,10 +37,13 @@ class zajlib_error extends zajLibExtension {
 	/**
 	 * Send a fatal error message.
 	 * @param string $message The reported message.
+	 * @return boolean Always returns false unless test is running and errors are surpressed.
 	 **/
 	public function error($message){
 		// Log my error
 			$this->log($message, 'error');
+		// If tests are running and errors surpessed, let it pass
+			if($this->errors_disabled_during_test && $this->zajlib->test->is_running()) return true;
 		// Fatal error, so exit
 			exit(1);
 	}
@@ -48,7 +51,7 @@ class zajlib_error extends zajLibExtension {
 	/**
 	 * Sends a warning message.
 	 * @param string $message The reported message.
-	 * @return boolean Always returns false.
+	 * @return boolean Always returns false unless test is running and errors are surpressed.
 	 **/
 	public function warning($message){
 		// Log my error
@@ -59,7 +62,7 @@ class zajlib_error extends zajLibExtension {
 	/**
 	 * Sends a notice message.
 	 * @param string $message The reported message.
-	 * @return boolean Always returns false.
+	 * @return boolean Always returns false unless test is running and errors are surpressed.
 	 **/
 	public function notice($message){
 		// Log my error
@@ -95,6 +98,14 @@ class zajlib_error extends zajLibExtension {
 		// Set to new
 			$this->errors_disabled_during_test = $errors_disabled_during_test;
 		return $current_value;
+	}
+
+	/**
+	 * Returns the current error disable status.
+	 * @return bool
+	 */
+	public function are_errors_surpressed_during_test(){
+		return $this->errors_disabled_during_test;
 	}
 
 	/**
