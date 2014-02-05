@@ -389,8 +389,3 @@ class zajlib_lang extends zajlib_config {
 		}
 
 }
-
-
-
-
-?>
