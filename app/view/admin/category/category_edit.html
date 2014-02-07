@@ -1,0 +1,34 @@
+{% extends 'admin/base.html' %}
+
+{% block submenu %}
+	<a href='../'>{{#admin_list#}}</a> &gt; {{#admin_edit#}}
+{% endblock submenu %}
+
+
+{% block content %}
+	<form id='saverform'>
+		<h3>{{#admin_edit#}}</h3>
+		
+		<label>{{#category_name#}}: <input class='field text' type='text' id='field[name]' name='name' value='{{object.data.name|escape}}' onkeyup="suggest();" onblur="suggest();"></label>
+		<label>{{#category_description#}}: {% input category.description object.data.description %}</label>
+		<label>{{#category_url#}}: {% input category.friendlyurl object.data.friendlyurl %}</label>
+		<script language="javascript">
+			{% if not category.data.friendlyurl %}
+				var suggest = function(){ zaj.ajax.get('admin/category/friendly/url/?title='+$('field[name]').value, function(result){ $('field[friendlyurl]').value = result; }); }
+			{% elseif %}
+				var suggest = function(){}
+			{% endif %}
+		</script>	
+		<hr/>
+
+		<label>{{#category_parent#}}: {% input category.parentcategory currentcat %}</label>
+		<hr/>
+
+		<input type='hidden' name='id' value="{{object.id}}">
+	</form>
+	
+	<p align="right">
+		<a class='btn' href='../'>{{#admin_cancel#}}</a>
+		<a class='btn btn-primary' onclick="$('saverform').$zaj().post('admin/category/save/', 'admin/category/');">{{#admin_save#}}</a>
+	</p>
+{% endblock content %} 
