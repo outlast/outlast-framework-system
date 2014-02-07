@@ -655,6 +655,8 @@
 							_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
 							_loading = false;
 							zaj.log("Done loading, running callbacks.");
+							// Resize fb canvas if available
+							if(typeof FB != 'undefined' && typeof FB.Canvas != 'undefined') FB.Canvas.setSize();
 							// Call all of my readyFunctions
 							$.each(_this.readyFunctions, function(i, func){ func(); });
 						});
