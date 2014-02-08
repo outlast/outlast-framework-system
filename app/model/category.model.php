@@ -1,10 +1,18 @@
 <?php
-
+/**
+ * A class for storing hierarchical categories.
+ * @property string $friendlyurl
+ * @property array $hierarchy An array list of categories above me wher each element is an object with name, friendly url, id.
+ * @property string $parentcategoryid
+ * @property string $parentcategoryname
+ * @preoprty integer $child_count The number of children this category has.
+ * @property zajDataCategory $data
+ */
 class Category extends zajModel {
-	
+
+	// Change the default sorting behavior
 	public static $fetch_order = 'ASC';
 	public static $fetch_order_field = 'abc';
-
 
 	public $hierarchy;
 	
@@ -13,15 +21,15 @@ class Category extends zajModel {
 	///////////////////////////////////////////////////////////////
 	public static function __model(){	
 		// define custom database fields
-			$fields->name = zajDb::name();
-			$fields->abc = zajDb::text();
-			$fields->description = zajDb::text();
-			$fields->url = zajDb::text();
-			$fields->parentcategory = zajDb::manytoone('Category');
-			$fields->friendlyurl = zajDb::text(255);
+			$f = (object) array();
+			$f->name = zajDb::name();
+			$f->abc = zajDb::text();
+			$f->description = zajDb::text();
+			$f->parentcategory = zajDb::manytoone('Category');
+			$f->friendlyurl = zajDb::text(255);
 
 		// do not modify the line below!
-			$fields = parent::__model(__CLASS__, $fields); return $fields;
+			$f = parent::__model(__CLASS__, $f); return $f;
 	}
 	/**
 	 * Construction and required methods
@@ -45,26 +53,26 @@ class Category extends zajModel {
 				$this->parentcategoryid = $this->data->parentcategory->id;
 				$this->parentcategoryname = $this->data->parentcategory->name;
 			}
-		// Recalculate all category counters
-			$this->recalcCounters();
-	}	
+		// The count
+			$this->child_count = $this->recalc_counters();
+	}
 	public function __afterDelete(){
-		$this->recalcCounters();	
+		$this->recalc_counters();
 	}
 	
 	/**
 	 * Calculates the number of children I and all of my ascendent parents have. Sets $this->count.
 	 * @return integer The count of children.
 	 **/
-	public function recalcCounters(){
+	public function recalc_counters(){
 		// Recalculate my children
-			$this->count = Category::fetch()->filter('parentcategory', $this->id)->total;
+			$this->child_count = Category::fetch()->filter('parentcategory', $this->id)->total;
 		// Recalculate for my parent (recursive)
 			if(is_object($this->data->parentcategory)){
-				$this->data->parentcategory->recalcCounters();
+				$this->data->parentcategory->recalc_counters();
 				$this->data->parentcategory->cache();
 			}
-		return $this->count;
+		return $this->child_count;
 	}	
 
 	/**
@@ -74,6 +82,10 @@ class Category extends zajModel {
 		return Category::fetch()->filter('friendlyurl', $friendlyurl)->next();
 	}
 
-
+	/**
+	 * Categories are completely public by default.
+	 * @param zajFetcher $fetcher
+	 * @return zajFetcher
+	 */
 	public function __onSearch($fetcher){ return $fetcher; }
 }
