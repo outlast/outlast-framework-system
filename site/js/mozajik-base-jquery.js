@@ -17,7 +17,7 @@
 		debug_mode:false,
 		protocol:'http',
 		jslib:'jquery',
-		jslibver:1.7,
+		jslibver:1.10,
 		trackevents_analytics:true,
 		trackevents_local:false,
 		fields: {}
@@ -34,6 +34,7 @@
 // Detect various dynamically loaded features (bootstrap, facebook, etc.)
 	$(document).ready(function(){
 		zaj.bootstrap = (typeof $().modal == 'function');
+		zaj.bootstrap3 = (typeof $().emulateTransitionEnd == 'function');
 		zaj.facebook = (window.parent != window) && FB && FB.Canvas;
 		zaj.fbcanvas = false;
 		if(zaj.facebook){
@@ -143,7 +144,9 @@
 
 			// Create modal if not yet available
 				if($('#zaj_bootstrap_modal').length <= 0){
-					$('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
+					// Check to see which Bootstrap version
+					if(zaj.bootstrap3) $('body').append('<div id="zaj_bootstrap_modal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
+					else $('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
 				}
 			// Reset and init button
 				// Set action
