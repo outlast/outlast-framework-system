@@ -951,7 +951,7 @@ class zajDb {
 		 **/
 		public function __call($method, $args){
 			// Convert argument into true if no args or to a single value if single arg
-				if(count($args) <= 1) $args = true;
+				if(count($args) <= 0) $args = true;
 				elseif(count($args) <= 1) $args = $args[0];
 			// Now set options
 				$this->options[$method] = $args;
