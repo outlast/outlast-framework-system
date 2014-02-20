@@ -251,8 +251,11 @@
 		 * @param {string} [value] A value.
 		 */
 		zaj.track = function(category, action, label, value){
-			// Track via Google Analytics
-				if(zaj.trackevents_analytics && typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
+			// Track via Google Analytics (ga.js or analytics.js)
+				if(zaj.trackevents_analytics){
+					if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
+					if(typeof ga != 'undefined') ga('send', 'event', category, action, label, value);
+				}
 			// Track to local database
 				if(zaj.trackevents_local){
 					// Don't use zaj.ajax.get because that tracks events, so we'd get into loop
