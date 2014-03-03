@@ -68,3 +68,12 @@ class zajDataPhoto extends zajData{}
  * @property float $lng
  **/
 class zajDataMap {}
+
+/**
+ * Add some properties to category data.
+ * @property string $abc The converted, abc-sort compatibly text field.
+ * @property string $description
+ * @property Category $parentcategory
+ * @property string $friendlyurl
+ */
+class zajDataCategory extends zajModel {}
