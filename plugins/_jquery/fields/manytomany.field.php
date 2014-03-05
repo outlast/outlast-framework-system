@@ -98,24 +98,39 @@ class zajfield_manytomany extends zajField {
 	public function get($data, &$object){
 		return zajFetcher::manytomany($this->name, $object);
 	}
-	
+
 	/**
 	 * Preprocess the data before saving to the database.
-	 * @param $data The first parameter is the input data.
+	 * @param mixed $data The first parameter is the input data.
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
-	 * @param array $additional_fields Use this to save additional columns in the manytomany table. This parameter is really only useful if you override this method to create a custom field.
+	 * @param array|bool $additional_fields Use this to save additional columns in the manytomany table. This parameter is really only useful if you override this method to create a custom field.
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
-	 **/
+	 */
 	public function save($data, &$object, $additional_fields=false){
 		$field_name = $this->name;
-		
+		/** @var zajModel $othermodel */
+	 	$othermodel = $this->options['model'];
+
 		// is data a fetcher object or an array of objects? if so, add them
 			if(is_array($data) || is_object($data) && is_a($data, 'zajFetcher')){
-				foreach($data as $id=>$otherobject){					
+				// Add new data
+				$added = array();
+				foreach($data as $id=>$otherobject){
+					// check if object or id
+						if(!is_a($otherobject, 'zajModel') && is_string($otherobject)) $otherobject = $othermodel::fetch($othermodel);
 					// only save if not connected already (TODO: make this an option!)
-						//if(!$object->data->$field_name->is_connected($otherobject))					
-							$object->data->$field_name->add($otherobject, 'add', $additional_fields);
+						if(!$object->data->$field_name->is_connected($otherobject)){
+							if($otherobject !== false) $object->data->$field_name->add($otherobject, 'add', $additional_fields);
+						}
+					$added[$id] = true;
+				}
+				// Remove missing old data
+				foreach($object->data->$field_name as $current_item){
+					if(empty($added[$current_item->id])){
+						// It wasn't added so just remove it
+							$object->data->$field_name->remove($otherobject);
+					}
 				}
 			}
 		// is data a model object? if so, add this one
@@ -125,7 +140,6 @@ class zajfield_manytomany extends zajField {
 			}
 		// is data a string of json data?
 		 	elseif(is_string($data) && !empty($data)){
-			 	$othermodel = $this->options['model'];
 		 		$data = json_decode($data);
 		 		// compatibility (add/remove is new)
 		 		if(!empty($data->add)) $data->new = $data->add;
@@ -220,12 +234,13 @@ class zajfield_manytomany extends zajField {
 				return "model.`id` $logic ($query)";
 	}
 
-	
+
 	/**
 	 * This method is called just before the input field is generated. Here you can set specific variables and such that are needed by the field's GUI control.
 	 * @param array $param_array The array of parameters passed by the input field tag. This is the same as for tag definitions.
 	 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
-	 **/
+	 * @return bool
+	 */
 	public function __onInputGeneration($param_array, &$source){
 		// override to print all choices
 			// use search method with all			
@@ -236,6 +251,3 @@ class zajfield_manytomany extends zajField {
 	}
 
 }
-
-
-?>
