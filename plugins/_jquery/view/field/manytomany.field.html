@@ -1,1 +1,13 @@
-[TODO: IMPLEMENT THIS]
+<!-- Load up my requirements -->
+<script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
+<link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
+<!-- Display markup -->
+<select width="100%" data-placeholder="--" id="{{field.uid}}" name="{{field.name}}" multiple>
+    <option value="">--</option>
+    {% foreach field.choices as val %}
+        <option id='{{val.id}}'>{{val.name}}</option>
+    {% endforeach %}
+</select>
+<script>
+    $('#{{field.uid}}').chosen({width: '100%'});
+</script>
