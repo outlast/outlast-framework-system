@@ -151,9 +151,9 @@
 			// Reset and init button
 				// Set action
 				$('#zaj_bootstrap_modal a.modal-button').unbind('click');
-				if(typeof urlORfunction == 'function') $('#zaj_bootstrap_modal a.modal-button').click(urlORfunction);
+				if(typeof urlORfunction == 'function') $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); $('.modal-backdrop').remove(); urlORfunction(); });
 				else if(typeof urlORfunction == 'string') $('#zaj_bootstrap_modal a.modal-button').click(function(){ zaj.redirect(urlORfunction, top); });
-				else $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); });
+				else $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); $('.modal-backdrop').remove(); });
 				// Set text (if needed)
 				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
 			// Backdrop closes on mobile

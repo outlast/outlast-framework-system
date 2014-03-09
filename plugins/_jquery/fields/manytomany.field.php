@@ -46,7 +46,7 @@ class zajfield_manytomany extends zajField {
 
 	/**
 	 * This method allows you to create a subtable which is associated with this field.
-	 * @return Return the table definition.
+	 * @return array Return the table definition.
 	 **/
 	public function table(){
 		// if this is only a reference to another
@@ -82,7 +82,7 @@ class zajfield_manytomany extends zajField {
 
 	/**
 	 * Check to see if input data is valid.
-	 * @param $input The input data.
+	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){
@@ -91,9 +91,9 @@ class zajfield_manytomany extends zajField {
 	
 	/**
 	 * Preprocess the data before returning the data from the database.
-	 * @param $data The first parameter is the input data.
+	 * @param mixed $data The first parameter is the input data.
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
-	 * @return Return the data that should be in the variable.
+	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
 		return zajFetcher::manytomany($this->name, $object);
@@ -118,7 +118,7 @@ class zajfield_manytomany extends zajField {
 				$added = array();
 				foreach($data as $id=>$otherobject){
 					// check if object or id
-						if(!is_a($otherobject, 'zajModel') && is_string($otherobject)) $otherobject = $othermodel::fetch($othermodel);
+						if(!is_a($otherobject, 'zajModel') && is_string($otherobject)) $otherobject = $othermodel::fetch($otherobject);
 					// only save if not connected already (TODO: make this an option!)
 						if(!$object->data->$field_name->is_connected($otherobject)){
 							if($otherobject !== false) $object->data->$field_name->add($otherobject, 'add', $additional_fields);
@@ -181,12 +181,13 @@ class zajfield_manytomany extends zajField {
 		// return whatever...first param will be removed, second reloaded
 			return array(false, false);		 	
 	}
-	
+
 	/**
 	 * This is called when a filter() or exclude() methods are run on this field. It is actually executed only when the query is being built.
 	 * @param zajFetcher $fetcher A pointer to the "parent" fetcher which is being filtered.
 	 * @param array $filter An array of values specifying what type of filter this is.
-	 **/
+	 * @return bool|string
+	 */
 	public function filter(&$fetcher, $filter){
 		// break up filter
 			list($field, $value, $logic, $type) = $filter;

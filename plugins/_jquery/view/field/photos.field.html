@@ -1,24 +1,32 @@
-<!-- requires jquery! ONLY FOR A SINGLE PHOTO!!!! -->
+<!-- Multiple photos -->
+
+<!-- Current photos -->
+<div class="col-sm-12" id="{{field.uid}}-filelist">
+    {% foreach field.value as field_thumb %}
+        <div class="col-sm-2" id="{{field_thumb.id}}" style="position: relative; cursor: pointer;" data-content="<a class='btn btn-primary' href='{{field_thumb.large}}' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='{{field_thumb.id}}' onclick='zaj.closeMyPhotoPopover(event)'><span data-photo='{{field_thumb.id}}' class='glyphicon glyphicon-remove'></span></a>">
+            <img class="pull-left img-thumbnail img-responsive" src='{{field_thumb.normal}}'>
+        </div>
+    {% endforeach %}
+</div>
+<script>
+    $("#{{field.uid}}-filelist div").popover({toggle: 'popover', html: true, container: 'body', placement: 'top'});
+    zaj.closeMyPhotoPopover = function(ev){
+        $('#'+$(ev.target).attr('data-photo')).popover('hide');
+    }
+</script>
+<div class="clearfix"><br/></div>
+
+<!-- Uploader -->
 <script language="JavaScript" src="{{baseurl}}system/js/plupload/plupload.full.js" type="text/javascript"></script>
 
-<a id="{{field.uid}}-pickfiles" class="btn" style="cursor: pointer;" href="#"><i class="icon-folder-open"></i> Browse</a>
-
-<div id="{{field.uid}}-transferbar" class="hidden progress progress-striped active">
-  <div class="bar" style="width: 0%;"></div>
-</div>
-<!--
-<br/>
-<p class="foto_upload_standard">Nem megy a fotófeltöltés? <a href="#goupload" onclick="window.open ('{{nwappurl}}page=feltoltes_standard&fielduid={{field.uid}}','mywindow','status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height=300,width=400');">Kattints ide!</a></p>
--->
+<a id="{{field.uid}}-pickfiles" class="btn btn-primary" href="#"><i class="icon-folder-open"></i> Add photos</a>
+<div id="{{field.uid}}-transferbar" class="hidden progress progress-striped active"><div class="bar" style="width: 0;"></div></div>
 <div id="{{field.id}}-uploadbutton"></div>
 <div id="{{field.id}}-errors"></div>
-<div class="foto" id="{{field.uid}}-filelist">
-	{{field.value.id}}
-</div>
+
 <input type="hidden" name="{{field.name}}" id="{{field.uid}}">
 
-<br/>
-
+<div class="clearfix"><br/></div>
 
 <script type="text/javascript">
 	var file_upload_changes_{{field.uid}} = {'add': {}, 'remove': {}, 'order': {} };
@@ -37,10 +45,8 @@
 				flash_swf_url : '{{baseurl}}system/js/plupload/plupload.flash.swf'
 			});
 			var uploadergo_{{field.uid}} = function(){
-				//console.log("Starting upload...");
 				uploader_{{field.uid}}.start()
-			}
-			
+			};
 		// Add uploader events		
 			uploader_{{field.uid}}.bind('Init', function(up, params){
 				//console.log("Uploader initialized. Runtime: " + params.runtime);
@@ -69,12 +75,11 @@
 						uploader_update_{{field.uid}}(res);
 					}
 			});
-			
 
-			/**
-			 * Expects an object as such:
-			 *	res.height, res.width, res.id
-			 **/
+        /**
+         * Expects an object as such:
+         *	res.height, res.width, res.id
+         **/
 			uploader_update_{{field.uid}} = function(res){
 				// Is it wide/tall enough?
 					if(res.height < 300 || res.width < 300) return alert("The picture is too small. It must be at least 300x300 pixels.");
@@ -83,7 +88,7 @@
 					$('#{{field.uid}}-filelist').html("<img src='"+imgurl+"'>");
 				// Set as my input value
 					$('#{{field.uid}}').val(res.id);
-			}
+			};
 			
 		// Run init
 			uploader_{{field.uid}}.init();

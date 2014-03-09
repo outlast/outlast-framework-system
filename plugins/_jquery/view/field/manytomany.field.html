@@ -10,9 +10,11 @@
 </select>
 <script>
     zaj.ready(function(){
-        {% foreach field.value as sitem %}
-            $('option[value="{{sitem.id}}"]').select();
-        {% endfor %}
+        {% if field.value %}
+            {% foreach field.value as sitem %}
+                $('option[value="{{sitem.id}}"]').select();
+            {% endfor %}
+        {% endif %}
         $('#{{field.uid}}').chosen({width: '100%'});
     });
 </script>
