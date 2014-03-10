@@ -26,6 +26,7 @@ class Category extends zajModel {
 			$f->abc = zajDb::text();
 			$f->description = zajDb::text();
 			$f->parentcategory = zajDb::manytoone('Category');
+			$f->subcategories = zajDb::onetomany('Category', 'parentcategory');
 			$f->friendlyurl = zajDb::text(255);
 
 		// do not modify the line below!
