@@ -12,7 +12,7 @@
     zaj.ready(function(){
         {% if field.value %}
             {% foreach field.value as sitem %}
-                $('option[value="{{sitem.id}}"]').select();
+                $('option[value="{{sitem.id}}"]').attr('selected', 'selected');
             {% endfor %}
         {% endif %}
         $('#{{field.uid}}').chosen({width: '100%'});
