@@ -1,19 +1,22 @@
 <!-- Multiple photos -->
 
 <!-- Current photos -->
-<div class="col-sm-12" id="{{field.uid}}-filelist">
-    {% foreach field.value as field_thumb %}
-        <div class="col-sm-2" id="{{field_thumb.id}}" style="position: relative; cursor: pointer;" data-content="<a class='btn btn-primary' href='{{field_thumb.large}}' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='{{field_thumb.id}}' onclick='zaj.closeMyPhotoPopover(event)'><span data-photo='{{field_thumb.id}}' class='glyphicon glyphicon-remove'></span></a>">
-            <img class="pull-left img-thumbnail img-responsive" src='{{field_thumb.normal}}'>
-        </div>
-    {% endforeach %}
-</div>
 <script>
-    $("#{{field.uid}}-filelist div").popover({toggle: 'popover', html: true, container: 'body', placement: 'top'});
-    zaj.closeMyPhotoPopover = function(ev){
-        $('#'+$(ev.target).attr('data-photo')).popover('hide');
-    }
+	zaj.addMyPhotoPopover = function(el, url){
+		el.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='zaj.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-remove'></span></a>" });
+	};
+	zaj.closeMyPhotoPopover = function(ev){
+		$('#'+$(ev.target).attr('data-photo')).popover('hide');
+	};
 </script>
+<div class="col-sm-12" id="{{field.uid}}-filelist">
+	{% foreach field.value as field_thumb %}
+		<div class="col-sm-2" id="{{field_thumb.id}}" style="position: relative; cursor: pointer;">
+			<img class="pull-left img-thumbnail img-responsive" src='{{field_thumb.normal}}'>
+		</div>
+		<script>zaj.ready(function(){ zaj.addMyPhotoPopover($('#{{field_thumb.id}}'), '{{field_thumb.large}}'); })</script>
+	{% endforeach %}
+</div>
 <div class="clearfix"><br/></div>
 
 <!-- Uploader -->
@@ -29,12 +32,8 @@
 <div class="clearfix"><br/></div>
 
 <script type="text/javascript">
-	var file_upload_changes_{{field.uid}} = {'add': {}, 'remove': {}, 'order': {} };
+	var file_upload_changes_{{field.uid}} = {add: [], remove: [], order: [] };
 	
-	// create uploader and list
-		var uploader_{{field.uid}};
-		var filelist_{{field.uid}};	
-		
 		// create objects
 			var uploader_{{field.uid}} = new plupload.Uploader({
 				runtimes : 'html5,flash,html4',
@@ -47,7 +46,9 @@
 			var uploadergo_{{field.uid}} = function(){
 				uploader_{{field.uid}}.start()
 			};
-		// Add uploader events		
+			/**
+			 * Plupload event handlers.
+			 */
 			uploader_{{field.uid}}.bind('Init', function(up, params){
 				//console.log("Uploader initialized. Runtime: " + params.runtime);
 			});
@@ -59,37 +60,59 @@
 				$('#{{field.uid}}-transferbar').removeClass('hidden');
 			});
 			uploader_{{field.uid}}.bind('Error', function(up, err) {
-				alert("A kiválasztott fájl nem felel meg a követelményeknek! (Maximum 4 MB, jpg/png/gif)");
+				zaj.alert("A kiválasztott fájl nem felel meg a követelményeknek! (Maximum 4 MB, jpg/png/gif)");
 				up.refresh(); // Reposition Flash/Silverlight
 			});
 			uploader_{{field.uid}}.bind('FileUploaded', function(up, file, result) {
 				setTimeout(function() { $('#{{field.uid}}-transferbar').addClass('hidden'); }, 1000);
-
 				var res = jQuery.parseJSON(result.response);
-				//console.log(res);
 				// check for error
 					if(res.status == 'error'){
-						alert("A fájl feltöltése nem sikerült. Próbálj kissebb méretű fájlt választani (maximum 4 MB, jpg/png/gif)!");
+						zaj.alert("A fájl feltöltése nem sikerült. Próbálj kissebb méretű fájlt választani (maximum 4 MB, jpg/png/gif)!");
 					}
 					else{
 						uploader_update_{{field.uid}}(res);
 					}
 			});
 
-        /**
-         * Expects an object as such:
-         *	res.height, res.width, res.id
-         **/
+			/**
+			 * Update after upload.
+			 * @param {object} res Expects a result with id, width, height.
+			 * @return {string|boolean} Returns false or the id.
+			 **/
 			uploader_update_{{field.uid}} = function(res){
 				// Is it wide/tall enough?
 					if(res.height < 300 || res.width < 300) return alert("The picture is too small. It must be at least 300x300 pixels.");
 				// Add my image
 					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
-					$('#{{field.uid}}-filelist').html("<img src='"+imgurl+"'>");
+					var el = $("<div class='col-sm-2' id='"+res.id+"' style='position: relative; cursor: pointer;'><img class='pull-left img-thumbnail img-responsive' src='"+imgurl+"'></div>");
+					$('#{{field.uid}}-filelist').append(el);
+					zaj.addMyPhotoPopover(el, imgurl);
 				// Set as my input value
-					$('#{{field.uid}}').val(res.id);
+					file_upload_changes_{{field.uid}}.add.push(res.id);
+					$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
+				return res.id;
 			};
-			
+
+			/**
+			 * Update after remove
+			 * @param {object} ev The event which is passed when clicking on the delete element.
+			 **/
+			upload_remove_{{field.uid}} = function(ev){
+				var id = $(ev.target).attr('data-photo');
+				var $photodiv = $('#'+id);
+				// Turn off my popover
+					$photodiv.popover('hide');
+				// Remove my div
+					$photodiv.remove();
+				// Remove from add value
+					file_upload_changes_{{field.uid}}.add = jQuery.grep(file_upload_changes_{{field.uid}}.add, function(value) { return value != id; });
+				// Update my remove value
+					file_upload_changes_{{field.uid}}.remove.push(id);
+                // Set input
+					$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
+			};
+
 		// Run init
 			uploader_{{field.uid}}.init();
 </script>
