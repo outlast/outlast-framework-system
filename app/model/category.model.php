@@ -5,7 +5,8 @@
  * @property array $hierarchy An array list of categories above me wher each element is an object with name, friendly url, id.
  * @property string $parentcategoryid
  * @property string $parentcategoryname
- * @preoprty integer $child_count The number of children this category has.
+ * @property integer $child_count The number of children this category has.
+ * @property boolean $featured
  * @property zajDataCategory $data
  */
 class Category extends zajModel {
@@ -26,6 +27,7 @@ class Category extends zajModel {
 			$f->abc = zajDb::text();
 			$f->photo = zajDb::photo();
 			$f->description = zajDb::text();
+			$f->featured = zajDb::boolean();
 			$f->parentcategory = zajDb::manytoone('Category');
 			$f->subcategories = zajDb::onetomany('Category', 'parentcategory');
 			$f->friendlyurl = zajDb::text(255);
@@ -57,6 +59,8 @@ class Category extends zajModel {
 			}
 		// The count
 			$this->child_count = $this->recalc_counters();
+		// Other fields
+			$this->featured = $this->data->featured;
 	}
 	public function __afterDelete(){
 		$this->recalc_counters();
