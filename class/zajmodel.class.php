@@ -285,7 +285,6 @@ abstract class zajModel {
 
 	/**
 	 * Set the value of a field for this object.
-	 *
 	 * @param string $field_name The name of model field.
 	 * @param mixed $value The new value of the field.
 	 * @return zajModel Returns me to allow chaining.
@@ -313,6 +312,42 @@ abstract class zajModel {
 		// Run through each argument
 		foreach(func_get_args() as $field_name){
 			$this->set($field_name, $_POST[$field_name]);
+		}
+		return $this;
+	}
+
+	/**
+	 * Set the value of a field for this object.
+	 * @param string $field_name The name of model field.
+	 * @param mixed $value The new value of the field.
+	 * @param string $locale The locale for which to set this translation.
+	 * @return zajModel Returns me to allow chaining.
+	 */
+	public function set_translation($field_name, $value, $locale){
+		// disable for non-database objects
+		if(!$this::$in_database) return false;
+		// init the data object if not done already
+		$tobj = Translation::create_by_properties($this->class_name, $this->id, $field_name, $locale);
+		$tobj->set('value', $value);
+		$tobj->save();
+		return $this;
+	}
+
+	/**
+	 * Sets the translation of all the locales of all the fields specified by the list of parameters. It uses GET or POST requests, and ignores fields where no value was sent (that is, not even an empty value). In cases where you need more control, use {@link set_translation()} for each individual field.
+	 * @internal param string $field_name1 The first parameter to set.
+	 * @internal param string $field_name2 The second parameter to set.
+	 * @internal param string $field_name3 The third parameter to set...etc...
+	 * @return zajModel Returns me to allow chaining.
+	 */
+	public function set_translations(){
+		// Use _GET or _POST
+		$_POST = array_merge($_GET, $_POST);
+		// Run through each argument
+		foreach(func_get_args() as $field_name){
+			foreach($_POST['translation'][$field_name] as $locale=>$value){
+				$this->set_translation($field_name, $value, $locale);
+			}
 		}
 		return $this;
 	}

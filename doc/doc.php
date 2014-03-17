@@ -80,3 +80,13 @@ class zajDataMap {}
  * @property zajFetcher $subcategories
  */
 class zajDataCategory extends zajModel {}
+
+/**
+ * Add properties to Translation data.
+ * @property string $modelname
+ * @property string $parent
+ * @property string $field
+ * @property mixed $value
+ * @property string $locale
+ */
+class zajTranslationData extends zajModel {}
