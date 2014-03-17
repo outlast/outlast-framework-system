@@ -77,5 +77,6 @@ class zajDataMap {}
  * @property string $friendlyurl
  * @property Photo $photo
  * @property boolean $featured
+ * @property zajFetcher $subcategories
  */
 class zajDataCategory extends zajModel {}

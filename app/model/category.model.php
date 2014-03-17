@@ -82,6 +82,23 @@ class Category extends zajModel {
 	}	
 
 	/**
+	 * Override delete so that all subcategories are also deleted.
+	 * @param boolean $permanent If set to true, it will permanently delete the item.
+	 * @return integer Returns the number of categories deleted.
+	 */
+	public function delete($permanent = false){
+		/** @var Category $subcategory */
+		// Delete subcategories
+			$items_deleted = 1;
+			foreach($this->data->subcategories as $subcategory){
+				$items_deleted += $subcategory->delete($permanent);
+			}
+		// Delete me
+			parent::delete($permanent);
+		return $items_deleted;
+	}
+
+	/**
 	 * Create a product object by friendly url.
 	 **/
 	public static function fetch_by_friendlyurl($friendlyurl){
