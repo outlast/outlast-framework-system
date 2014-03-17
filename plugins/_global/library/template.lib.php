@@ -277,6 +277,8 @@ class zajlib_template_zajvariables {
 				case 'https': return $this->zajlib->https;
 			// Return the current locale
 				case 'locale': return $this->zajlib->lang->get();
+				case 'locale_all': return $this->zajlib->lang->get_locales();
+				case 'locale_default': return $this->zajlib->lang->get_default_locale();
 			// Return the current lang (two letter version of locale)
 				case 'lang': return $this->zajlib->lang->get_code();
 			// Mozajik version info and other stuff
