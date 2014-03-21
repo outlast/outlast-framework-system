@@ -3,9 +3,10 @@
 
 <a id="{{field.uid}}-pickfiles" class="btn" style="cursor: pointer;" href="#"><i class="icon-folder-open"></i> Kép kiválasztása</a>
 
-<div id="{{field.uid}}-transferbar" class="hidden progress progress-striped active">
-  <div class="bar" style="width: 0%;"></div>
+<div id="{{field.uid}}-transferbar" role="progressbar" class="hidden progress progress-striped active">
+  <div class="bar progress-bar" style="width: 0%;"></div>
 </div>
+
 <!--
 <br/>
 <p class="foto_upload_standard">Nem megy a fotófeltöltés? <a href="#goupload" onclick="window.open ('{{nwappurl}}page=feltoltes_standard&fielduid={{field.uid}}','mywindow','status=0,toolbar=0,location=0,menubar=0,resizable=1,scrollbars=1,height=300,width=400');">Kattints ide!</a></p>
