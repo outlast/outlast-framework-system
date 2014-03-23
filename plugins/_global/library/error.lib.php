@@ -147,6 +147,9 @@ class zajlib_error extends zajLibExtension {
 					$error_details['line'] = $backtrace[1]['line'];
 					if(!empty($backtrace[2]['class'])) $error_details['class'] = $backtrace[2]['class'];
 				}
+			// Update error text
+				$errortext .= " on line ".$error_details['line']." of ".$error_details['file'];
+				$error_details['errortext'] = $errortext;
 
 		// remove the first entry
 			$backtrace = array_slice($backtrace, 2);
@@ -178,7 +181,7 @@ class zajlib_error extends zajLibExtension {
 			if(zajLib::me()->debug_mode) $debug_mode = " [DEBUG_MODE]";
 			else $debug_mode = "";
 		// write to error_log			
-			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.zajLib::me()->fullrequest."] $post_data [Mozajik $errorlevel - ".$errortext."]".$referer.$debug_mode);
+			$this->file_log("[".$_SERVER['REMOTE_ADDR']."] [".$protocol.zajLib::me()->fullrequest."] $post_data [Outlast Framework $errorlevel - ".$errortext."]".$referer.$debug_mode);
 			
 		// log the backtrace?
 			if(zajLib::me()->zajconf['error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
@@ -187,7 +190,7 @@ class zajlib_error extends zajLibExtension {
 			if($errorlevel == 'error' || zajLib::me()->debug_mode){
 				// print it to screen
 					if(!zajLib::me()->debug_mode) $errortext = "Sorry, there has been a system error. The webmaster has been notified of the issue.";
-					else "MOZAJIK ".strtoupper($errorlevel).": ".$errortext;
+					else "OUTLAST FRAMEWORK ".strtoupper($errorlevel).": ".$errortext;
 		
 						// display the error?
 							$uid = $error_details['id'];
