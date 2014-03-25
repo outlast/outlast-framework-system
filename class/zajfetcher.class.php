@@ -18,6 +18,7 @@
  **/
 define('RANDOM', 'RANDOM');
 define('RAND', 'RANDOM');
+define('CUSTOM_SORT', 'CUSTOM_SORT');
 
 /**
  * Additional magic methods.
