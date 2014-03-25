@@ -357,7 +357,7 @@
 				// is pushstate used now
 					var psused = zaj.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object');
 					var psdata = false;
-					if(typeof pushstate == 'object' && pushstate.data) psdata = pushstate.data;
+					if(typeof pushstate == 'object' && pushstate != null && pushstate.data) psdata = pushstate.data;
 				// Send to Analytics
 					zaj.track('Ajax', mode, request);
 				// Figure out query string
@@ -441,10 +441,10 @@
 				delay: 300,						// Number of miliseconds before 
 				url: false,						// The url to send the request to. This should be relative. &query=your+query will be appended. If no url (false), it will not be submitted anywhere.
 				callback: false,				// A function or an element.
-				callback_bind: false,			// The callback function's 'this' will bind to whatever is specified here.
 				receiver: false,				// The selector or jQuery object that will receive the content
 				method: 'get',					// The method to send by. Values can be 'post' (default) or 'get'.
-				allow_empty_query: true			// If set to true, an empty query will also execute
+				allow_empty_query: true,		// If set to true, an empty query will also execute
+				pushstate_url: 'auto'			// If set to 'auto', the url will automatically change via pushstate. Set to false for not pushstate. Set to specific for custom.
 			},
 			
 			/**
@@ -457,18 +457,34 @@
 						this.timer = false;
 						this.element = $(element);
 						var self = this;
-						this.element.keyup(function(){
-							// reset earlier timer
-								if(self.timer){ clearTimeout(self.timer); }
-							// now set a new timer
-								self.timer = setTimeout(function(){ self.send(); }, self.options.delay);
-						});
+						this.element.keyup(function(){ self.timeout() });
 						this.element.blur(function(){
 							self.send();
 						});
-					return true;
+					return self;
 				},
 			
+			/**
+			 * Sends a keyup event to retrigger search!
+			 **/
+				keyup: function(){
+					// reset my last request
+						this.last_query = '';
+					// timeout
+						this.timeout();
+				},
+
+			/**
+			 * Starts a timeout.
+			 **/
+				timeout: function(){
+					// set stuff
+						var self = this;
+					// reset earlier timer
+						if(this.timer){ clearTimeout(this.timer); }
+					// now set a new timer
+						this.timer = setTimeout(function(){ self.send(); }, this.options.delay);
+				},
 			/**
 			 * Sends the query to the set url and processes.
 			 **/
@@ -483,12 +499,20 @@
 							else url += '?query='+this.element.val();
 							// @todo Deprecated, remove this querystring item:
 							url += '&mozajik-tool-search=true';
-						// check if the current query is like last query
+						// check if the current query is like last query, if so, dont resend
 							if(this.last_query == this.element.val()) return false;
 							else this.last_query = this.element.val();
+						// pushstate?
+							var pushstate_url = null;
+							if(this.options.pushstate_url == 'auto'){
+								pushstate_url = zaj.baseurl+url;
+							}
+							else if(this.options.pushstate_url !== false){
+								pushstate_url = this.options.pushstate_url;
+							}
 						// now send via the appropriate method
-							if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, zaj.baseurl+url, this.options.callback_bind);
-							else zaj.ajax.post(url, this.options.callback, zaj.baseurl+url, this.options.callback_bind);
+							if(this.options.method == 'get') zaj.ajax.get(url, this.options.callback, pushstate_url);
+							else zaj.ajax.post(url, this.options.callback, pushstate_url);
 					}
 					else{
 						this.options.callback(this.element.val());
