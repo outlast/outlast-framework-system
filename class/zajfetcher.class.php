@@ -21,10 +21,16 @@ define('RAND', 'RANDOM');
 define('CUSTOM_SORT', 'CUSTOM_SORT');
 
 /**
- * Additional magic methods.
+ * This is the fetcher class for getting and traversing lists in Outlast Framework.
+ * These are read-only properties available.
  * @property integer $total The total number of items on all pages.
  * @property integer $count The number of items in the current limit / page.
  * @property integer $affected The number affected items.
+ * @property stdClass $pagination The pagination object.
+ * @property string $wherestr The generated WHERE clause.
+ * @property string $orderby The generated ORDER BY clause.
+ * @property string $groupby The generated GROUP BY clause
+ * @property string $limit The generated LIMIT clause.
  **/
 class zajFetcher implements Iterator, Countable{
 	// create a fetch class
@@ -47,6 +53,7 @@ class zajFetcher implements Iterator, Countable{
 		private $groupby = "";								// not grouped by default
 		private $filter_deleted = "model.status!='deleted'";	// this does not show deleted items by default
 		private $filters = array();							// an array of filters to be applied
+		private $filterstr = "";							// the generated filter query
 		private $wherestr = "";								// where is empty by default
 	// connection related stuff
 		private $connection_wherestr = "";					// part of the where string if there is a connection involved
@@ -504,6 +511,8 @@ class zajFetcher implements Iterator, Countable{
 			// generate from and what
 				$from = join(', ', $this->select_from);
 				$what = join(', ', $this->select_what);
+			// save filter query
+				$this->filterstr = $filters_sql;
 			// generate
 				return "SELECT $distinct $what FROM $from WHERE $this->filter_deleted $filters_sql $this->wherestr $this->connection_wherestr $this->groupby $this->orderby $this->ordermode $this->limit";
 	}
@@ -722,7 +731,19 @@ class zajFetcher implements Iterator, Countable{
 							// if query not yet executed, do it now
 							if(!$this->query_done) $this->query();
 							return $this->pagination;
-			
+			case "wherestr":
+							$this->get_query();
+							return $this->filter_deleted.' '.$this->filterstr.' '.$this->wherestr.' '.$this->connection_wherestr;
+			case "orderby":
+							$this->get_query();
+							return $this->orderby;
+			case "groupby":
+							$this->get_query();
+							return $this->groupby;
+			case "limit":
+							$this->get_query();
+							return $this->limit;
+
 			default: 		zajLib::me()->warning("Attempted to access inaccessible variable ($name) for zajFetcher class!");
 		}
 	}
