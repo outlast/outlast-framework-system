@@ -18,6 +18,7 @@
  * @property integer $ordernum The order number (autoincremented).
  * @property integer $time_create The time when the object was created.
  * @property integer $time_edit The time when the object was modified.
+ * @property boolean $unit_test True if the object was created during a unit test.
  **/
 class zajData {
 	// Instance variables

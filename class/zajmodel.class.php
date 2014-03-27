@@ -199,6 +199,7 @@ abstract class zajModel {
 				$fields = (object) array_merge((array) $fields, (array) $ext::__model());
 			}
 			// now set defaults (if not already set)
+			if(!isset($fields->unit_test)) $fields->unit_test = zajDb::boolean(false);
 			if(!isset($fields->time_create)) $fields->time_create = zajDb::time();
 			if(!isset($fields->time_edit)) $fields->time_edit = zajDb::time();
 			if(!isset($fields->ordernum)) $fields->ordernum = zajDb::ordernum();
@@ -398,6 +399,26 @@ abstract class zajModel {
 		// now fire __afterDelete
 		$this->fire('afterDelete');
 		return true;
+	}
+
+	/**
+	 * A static method which deletes all objects that were created during unit testing.
+	 * @param boolean $permanent If set to true, object is permanently removed from db. Defaults to true.
+	 * @param integer $max_to_delete The maximum number of objects to remove. Defaults to 3. Fatal error if more than this amount found.
+	 * @return integer Returns the number of objects deleted.
+	 */
+	public static function delete_tests($permanent = true, $max_to_delete = 3){
+		// Fetch the test objects
+			$test_objects = self::fetch()->filter('unit_test', true);
+			if($test_objects->total > $max_to_delete) return zajLib::me()->error("Reached maximum number of test object deletes during unit test. Delete manually or raise limit!");
+		// Now remove!
+			$test_objects_deleted = 0;
+			/** @var zajModel $obj */
+			foreach($test_objects as $obj){
+				$obj->delete($permanent);
+				$test_objects_deleted++;
+			}
+		return $test_objects_deleted;
 	}
 
 	/**
