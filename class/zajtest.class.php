@@ -595,7 +595,7 @@ class Test
         /** @var $testClass iTestable */
         $testClass = new $this->ClassName();
 
-        /** added by mozajik **/
+        /** added by Outlast Framework **/
         $testClass->zajlib = \zajLib::me();
 
         try {

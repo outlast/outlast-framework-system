@@ -118,6 +118,3 @@ class zajTest extends \Enhance\TestFixture{
 }
 class zajTestAssert extends \Enhance\Assert{
 }
-
-
-?>

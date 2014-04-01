@@ -199,6 +199,7 @@ abstract class zajModel {
 				$fields = (object) array_merge((array) $fields, (array) $ext::__model());
 			}
 			// now set defaults (if not already set)
+			if(!isset($fields->unit_test)) $fields->unit_test = zajDb::boolean(false);
 			if(!isset($fields->time_create)) $fields->time_create = zajDb::time();
 			if(!isset($fields->time_edit)) $fields->time_edit = zajDb::time();
 			if(!isset($fields->ordernum)) $fields->ordernum = zajDb::ordernum();
@@ -275,11 +276,11 @@ abstract class zajModel {
 		// do i have any extenders?
 		/* @var zajModelExtender $ext */
 		$ext = $class_name::extension();
-		/* @var zajModelExtender $new_object */
+		/* @var zajModel $new_object */
 		if($ext) $new_object = $ext::create($new_object, $id);
 		// call the callback function
 		$new_object->fire('afterCreate');
-		// and return	
+		// and return
 		return $new_object;
 	}
 
@@ -292,6 +293,8 @@ abstract class zajModel {
 	public function set($field_name, $value){
 		// disable for non-database objects
 		if(!$this::$in_database) return false;
+		// only allow unit_test when tests are running
+		if($field_name == 'unit_test' && !$this->zajlib->test->is_running()) return $this->zajlib->error("Cannot set field unit_test while not running a test!");
 		// init the data object if not done already
 		if(!$this->data) $this->data = new zajData($this);
 		// set it in the data object
@@ -367,6 +370,8 @@ abstract class zajModel {
 		if($events_and_cache && !$exists_before_save) $this->fire('beforeCreateSave');
 		// call beforeSave event
 		if($events_and_cache && $this->fire('beforeSave') === false) return false;
+		// if unit test is running, set the unit_test field
+		if(zajLib::me()->test->is_running()) $this->set('unit_test', true);
 		// set it in the data object
 		$this->data->save();
 		// call afterSave events 
@@ -398,6 +403,26 @@ abstract class zajModel {
 		// now fire __afterDelete
 		$this->fire('afterDelete');
 		return true;
+	}
+
+	/**
+	 * A static method which deletes all objects that were created during unit testing.
+	 * @param integer $max_to_delete The maximum number of objects to remove. Defaults to 3. Fatal error if more than this amount found.
+	 * @param boolean $permanent If set to true, object is permanently removed from db. Defaults to true.
+	 * @return integer Returns the number of objects deleted.
+	 */
+	public static function delete_tests($max_to_delete = 3, $permanent = true){
+		// Fetch the test objects
+			$test_objects = self::fetch()->filter('unit_test', true);
+			if($test_objects->total > $max_to_delete) return zajLib::me()->error("Reached maximum number of test object deletes during unit test. Delete manually or raise limit!");
+		// Now remove!
+			$test_objects_deleted = 0;
+			/** @var zajModel $obj */
+			foreach($test_objects as $obj){
+				$obj->delete($permanent);
+				$test_objects_deleted++;
+			}
+		return $test_objects_deleted;
 	}
 
 	/**

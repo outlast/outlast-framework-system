@@ -14,7 +14,7 @@ if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'sm
  * @property string $field The field name of the parent.
  * @property boolean $timepath If the new time-based path is used.
  * @property integer $time_create
- * @property string $extension
+ * @property string $extension Extension, not including the dot
  * @property string $imagetype Can be IMAGETYPE_PNG, IMAGETYPE_GIF, or IMAGETYPE_JPG constant.
  * @method static Photo|zajFetcher fetch()
  **/
