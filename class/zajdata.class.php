@@ -14,6 +14,7 @@
 /**
  * The basic fields that all zajModel objects have.
  * @property string $name The name of the object.
+ * @property string $status The current status.
  * @property string $id The id of the object.
  * @property integer $ordernum The order number (autoincremented).
  * @property integer $time_create The time when the object was created.
