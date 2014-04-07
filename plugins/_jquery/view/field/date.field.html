@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{{baseurl}}system/css/bootstrap/2.3.1/css/bootstrap-picker.min.css"/>
 
 <div class="input-append bootstrap-datepicker">
-	<input name="{{field.id}}[date]" class="input-small" type="text" id="{{field.uid}}-date" value="{{field.value|date:'Y.m.d.'}}">
+	<input name="{{field.id}}[date]" class="input-small" type="text" id="{{field.uid}}-date" value="{% if field.value > 0 %}{{field.value|date:'Y.m.d.'}}{% endif %}">
 	<span class="add-on" onclick="jQuery('#date').datepicker('show');"><i class="icon-th"></i></span>
 </div>
 
