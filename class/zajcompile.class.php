@@ -513,7 +513,7 @@ class zajCompileDestination {
 			@mkdir(dirname($this->file_path), 0777, true);
 			$this->file = fopen($this->file_path, 'w');
 		// start with writing validation
-			$this->write("<? \$this->template_valid = true; ?>");
+			$this->write("<?php \$this->template_valid = true; ?>");
 		// did it fail?
 			if(!$this->file) return $this->zajlib->error("could not open ($dest_file) for writing. does cache folder have write permissions?");
 		return true;
