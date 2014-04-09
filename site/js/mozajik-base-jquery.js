@@ -671,6 +671,7 @@
 					$(_options.useMoreButton).hide();
 				}
 
+
 				// Define public interface
 				var pub = {
 					/**
@@ -679,21 +680,25 @@
 					next: function(){
 						// Check if loading
 						if(_loading) return false;
+						// Check if already at max page count
+						if(_currentPage >= _options.pageCount){
+							return false;
+						}
 						// Load page
 						zaj.log("Loading next page. Current "+_currentPage);
 						_loading = true;
 						_currentPage += 1;
 						// Set as visible
 						_watchElement.css('visibility', 'visible');
-						// Check if already at max page count
-						if(_currentPage >= _options.pageCount){
-							if(_options.useMoreButton != null) $(_options.useMoreButton).hide();
-						}
 						// Get next data
 						zaj.ajax.get(_options.url+_currentPage+'&zaj_pushstate_block='+_options.targetBlock, function(res){
 							_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
 							_loading = false;
 							zaj.log("Done loading, running callbacks.");
+							// Check if already at max page count, if so hide button
+							if(_currentPage >= _options.pageCount){
+								if(_options.useMoreButton != null) $(_options.useMoreButton).hide();
+							}
 							// Call all of my readyFunctions
 							$.each(_this.readyFunctions, function(i, func){ func(); });
 						});
