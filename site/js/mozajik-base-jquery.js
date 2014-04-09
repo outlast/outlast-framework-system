@@ -666,6 +666,10 @@
 				}
 				else _watchElement = $(_options.watchElement);
 				_watchElement.css('visibility', 'hidden');
+				// If button is set, make it invisible if no additional pages
+				if(_options.useMoreButton != null && _options.startPage >= _options.pageCount){
+					$(_options.useMoreButton).hide();
+				}
 
 				// Define public interface
 				var pub = {
@@ -675,17 +679,16 @@
 					next: function(){
 						// Check if loading
 						if(_loading) return false;
-						// Check if already at max page count
-						if(_currentPage >= _options.pageCount){
-							if(_options.useMoreButton != null) $(_options.useMoreButton).hide();
-							return false;
-						}
 						// Load page
 						zaj.log("Loading next page. Current "+_currentPage);
 						_loading = true;
 						_currentPage += 1;
 						// Set as visible
 						_watchElement.css('visibility', 'visible');
+						// Check if already at max page count
+						if(_currentPage >= _options.pageCount){
+							if(_options.useMoreButton != null) $(_options.useMoreButton).hide();
+						}
 						// Get next data
 						zaj.ajax.get(_options.url+_currentPage+'&zaj_pushstate_block='+_options.targetBlock, function(res){
 							_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
