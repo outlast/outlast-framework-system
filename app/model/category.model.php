@@ -102,7 +102,14 @@ class Category extends zajModel {
 	 * Create a product object by friendly url.
 	 **/
 	public static function fetch_by_friendlyurl($friendlyurl){
-		return Category::fetch()->filter('friendlyurl', $friendlyurl)->next();
+		if(zajLib::me()->lang->is_default_locale()){
+			return Category::fetch()->filter('friendlyurl', $friendlyurl)->next();
+		}
+		else{
+			/** @var Translation $t */
+			$t = Translation::fetch()->filter('modelname', 'Category')->filter('field', 'friendlyurl')->filter('locale', zajLib::me()->lang->get())->filter('value', $friendlyurl)->next();
+			return Category::fetch($t->parent);
+		}
 	}
 
 	/**
