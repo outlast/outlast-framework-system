@@ -1166,6 +1166,8 @@ class zajModelLocalizerItem {
 
 	/**
 	 * Returns the translation for the given locale. It can be set to another locale if desired. If nothing set, the global default value will be returned (not a translation).
+	 * @param string|boolean $locale The locale. If not set (or default locale set), the default value is returned.
+	 * @return mixed Return the translated value.
 	 **/
 	public function get_by_locale($locale = false){
 		// Locale is not set or is default, so return the default value
@@ -1190,18 +1192,25 @@ class zajModelLocalizerItem {
 	}
 
 	/**
-	 * Invoked as an object so must return properties.
+	 * Invoked as an object so must return properties. Return the default value if no translation.
+	 * @param string $name The name of the field to return.
+	 * @return mixed Return the translated value or the default lang value if no translation available.
 	 **/
 	public function __get($name){
 		// Get the property of the value
-		return $this->get()->$name;
+		$value = $this->get()->$name;
+		if($value !== '') return $value;
+		else return $this->parent->data->$name;
 	}
 
 	/**
-	 * Simply printing this object will result in the translation being printed.
+	 * Simply printing this object will result in the translation being printed. Return the default value if no translation.
+	 * @return mixed Return the translated value or the default lang value if no translation available.
 	 **/
 	public function __toString(){
-		// Get the value
-		return $this->get();
+		$value = $this->get();
+		$fieldname = $this->fieldname;
+		if($value !== '') return $value;
+		else return $this->parent->data->$fieldname;
 	}
 }
