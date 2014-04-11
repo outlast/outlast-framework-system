@@ -231,6 +231,9 @@ class zajlib_template_zajvariables {
 			$this->self = $this->zajlib->variable->app.'/'.$this->zajlib->variable->mode;
 			$this->fullurl = $this->zajlib->fullurl;
 			$this->fullrequest = $this->zajlib->fullrequest;
+		// Constants
+			$this->zajlib->variable->true = true;
+			$this->zajlib->variable->false = false;
 		// The rest of the variables are built on request via the __get() magic method...
 	}
 	

@@ -23,7 +23,7 @@ define('regexp_zaj_onefilter', '\|(([A-z]*)([ ]*(:)[ ]*)?)?(\'(.*?)[^\\\']\'|\"(
 /**
  * Regular expression to one tag parameter (including filter support).
  */
-define('regexp_zaj_oneparam', '(\'(.*?)\'|\"(.*?)\"|(<=|>=|!=|==|=|>|<)|[A-z.\-_0-9#]*)('.regexp_zaj_onefilter.")*");
+define('regexp_zaj_oneparam', '(\'(.*?)\'|\"(.*?)\"|(<=|>=|!==|!=|===|==|=|>|<)|[A-z.\-_0-9#]*)('.regexp_zaj_onefilter.")*");
 /**
  * Regular expression to one tag variable.
  */
@@ -31,7 +31,7 @@ define('regexp_zaj_variable', '/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/');
 /**
  * Regular expression to tag operator.
  */
-define('regexp_zaj_operator', '/(<=|>=|!=|==|=|>|<)/');
+define('regexp_zaj_operator', '/(<=|>=|!==|!=|===|==|=|>|<)/');
 
 /**
  * One compile session, which may include several source and destination files.

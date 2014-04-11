@@ -543,6 +543,11 @@ EOF;
 															$string .= "== ";
 															$param_ok = true;
 															break;
+					case '===':
+
+															$string .= "=== ";
+															$param_ok = true;
+															break;
 					case '$this->zajlib->variable->lteq':
 					case '<=':
 															$string .= "<= ";
@@ -553,8 +558,13 @@ EOF;
 															$string .= ">= ";
 															$param_ok = true;
 															break;
+					case '$this->zajlib->variable->neq':
 					case '!=':
 															$string .= "!= ";
+															$param_ok = true;
+															break;
+					case '!==':
+															$string .= "!== ";
 															$param_ok = true;
 															break;
 					case '$this->zajlib->variable->in':
