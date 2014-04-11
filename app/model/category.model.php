@@ -108,7 +108,9 @@ class Category extends zajModel {
 		else{
 			/** @var Translation $t */
 			$t = Translation::fetch()->filter('modelname', 'Category')->filter('field', 'friendlyurl')->filter('locale', zajLib::me()->lang->get())->filter('value', $friendlyurl)->next();
-			return Category::fetch($t->parent);
+			// If found return, if not, try default
+			if($t !== false) return Category::fetch($t->parent);
+			else return Category::fetch()->filter('friendlyurl', $friendlyurl)->next();
 		}
 	}
 
