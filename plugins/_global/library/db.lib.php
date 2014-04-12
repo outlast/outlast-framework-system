@@ -221,7 +221,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 							case MYSQL_AVG:		$value = "COALESCE(AVG($key), 0)";
 												$function = true;
 												break;
-							default:			$value = "'".addslashes($value)."'";
+							default:			if(is_object($value)) $this->zajlib->warning("Tried to save object ".get_class($value)." in field $table.$key.");
+												$value = "'".addslashes($value)."'";
 												break;
 						}
 
