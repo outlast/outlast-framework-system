@@ -13,7 +13,7 @@
         <li><a class="unlink"></a></li>
     </ul>
     <div class='text' contenteditable="true" spellcheck="false">
-        {{field.value}}
+        {{field.value|strip_attribute:'style'}}
     </div>
 	<textarea class='field textarea hide' id='{{field.uid}}' name='{{field.name}}'>{{field.value|escape:'htmlall'}}</textarea>
 </div>

@@ -419,4 +419,16 @@ EOF;
 		return true;
 	}
 
+	/**
+	 * Filter: strip_attribute - Removes a given attribute from any html tags in the variable.
+	 *
+	 * <b>{{ product.data.description|strip_attribute:'style' }}</b> Will remove styling.
+	 */
+	public function filter_strip_attribute($parameter, &$source){
+		// return error
+			if(!$parameter) $this->zajlib->compile->error("Parameter is required for filter strip_attribute.");
+		$this->zajlib->compile->write('$filter_var = preg_replace(\'/(<[^>]+) \'.'.$parameter.'.\'=".*?"/i\', \'$1\', $filter_var);');
+		return true;
+	}
+
 }
