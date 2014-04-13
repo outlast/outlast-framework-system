@@ -6,11 +6,12 @@
 
 <div class="ol-rte well" id="{{field.uid}}-rte">
     <ul class="menu">
-        <li><a class="bold"></a></li>
-        <li><a class="italic"></a></li>
-        <li><a class="underline"></a></li>
-        <li><a class="link"></a></li>
-        <li><a class="unlink"></a></li>
+        <li><a data-action="bold" class="bold"></a></li>
+        <li><a data-action="italic" class="italic"></a></li>
+        <li><a data-action="underline" class="underline"></a></li>
+        <li><a data-action="link" class="link"></a></li>
+        <li><a data-action="unlink" class="unlink"></a></li>
+        <li><a data-action="insertUnorderedList" class="list"></a></li>
     </ul>
     <div class='text' contenteditable="true" spellcheck="false">
         {{field.value|strip_attribute:'style'}}
