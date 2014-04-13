@@ -1,4 +1,7 @@
 <!-- Multiple photos -->
+<!-- jquery ui -->
+<script language="JavaScript" src="{{baseurl}}system/js/jquery/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.min.js" type="text/javascript"></script>
+<!--[if lt IE 8]><script src="{{baseurl}}system/js/json2.js"></script><![endif]-->
 
 <!-- Current photos -->
 <script>
@@ -8,13 +11,32 @@
 	zaj.closeMyPhotoPopover = function(ev){
 		$('#'+$(ev.target).attr('data-photo')).popover('hide');
 	};
+	zaj.ready(function(){
+		// Make sortable
+			$('#{{field.uid}}-filelist').sortable({
+			    start: function(event, ui) {
+			    	ui.item.addClass('draginprogress');
+			    },
+			    stop: function(event, ui) {
+			    	ui.item.removeClass('draginprogress');
+					// Build array
+						var my_array = [];
+						$('#{{field.uid}}-filelist').children('div').each(function(){
+							my_array.push(this.id);
+						});
+						file_upload_changes_{{field.uid}}.order = my_array;
+						$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
+			    }
+			});
+
+	})
 </script>
 <div class="col-sm-12" id="{{field.uid}}-filelist">
 	{% foreach field.value as field_thumb %}
 		<div class="col-sm-2" id="{{field_thumb.id}}" style="position: relative; cursor: pointer;">
 			<img class="pull-left img-thumbnail img-responsive" src='{{field_thumb.normal}}'>
 		</div>
-		<script>zaj.ready(function(){ zaj.addMyPhotoPopover($('#{{field_thumb.id}}'), '{{field_thumb.large}}'); })</script>
+		<!--<script>zaj.ready(function(){ zaj.addMyPhotoPopover($('#{{field_thumb.id}}'), '{{field_thumb.large}}'); })</script>-->
 	{% endforeach %}
 </div>
 <div class="clearfix"><br/></div>
