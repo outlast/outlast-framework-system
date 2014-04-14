@@ -27,6 +27,19 @@ class OfwFieldsTest extends zajTest {
 			$result = $fieldobj->get($data, $fieldobj);
 			zajTestAssert::isObject($result);
 	}
+
+	public function system_fields_boolean(){
+		// Create a field object
+			$fieldobj = $this->system_fields_create("boolean");
+		// Get data by default
+			$result = (boolean) $fieldobj->get('', $fieldobj);
+			zajTestAssert::isFalse($result);
+		// Create a field object with true as default
+			$fieldobj = $this->system_fields_create("boolean", true);
+			$result = (boolean) $fieldobj->get('', $fieldobj);
+			zajTestAssert::isTrue($result);
+	}
+
 	public function system_fields_locale(){
 		// Create a field object
 			$fieldobj = $this->system_fields_create("locale");
@@ -68,9 +81,11 @@ class OfwFieldsTest extends zajTest {
 	/**
 	 * Creates a field object for testing.
 	 **/
-	private function system_fields_create($type){
+	private function system_fields_create($type, $options = false){
+		// Defaults to array
+			if($options === false) $options = array();
 		// Create the feeld
-			$fieldobj = zajField::create($type.'_test_field', (object) array('type'=>$type,'options'=>array(), 'OfwTestModel'));
+			$fieldobj = zajField::create($type.'_test_field', (object) array('type'=>$type,'options'=>$options, 'OfwTestModel'));
 		// Database
 			$db = $fieldobj->database();
 			zajTestAssert::isArray($db);
