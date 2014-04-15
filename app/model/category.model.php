@@ -119,5 +119,5 @@ class Category extends zajModel {
 	 * @param zajFetcher $fetcher
 	 * @return zajFetcher
 	 */
-	public function __onSearch($fetcher){ return $fetcher; }
+	public function __onSearch($fetcher){ return $fetcher->filter('parentcategory', ''); }
 }
