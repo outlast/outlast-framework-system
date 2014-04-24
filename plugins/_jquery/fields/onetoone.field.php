@@ -113,6 +113,3 @@ class zajfield_onetoone extends zajField {
 		return array($data->id, $data);
 	}
 }
-
-
-?>
