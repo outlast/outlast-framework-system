@@ -10,8 +10,8 @@
 class zajlib_dom extends zajLibExtension {
 	
 	/**
-	 * Get an object representing the HTML DOM. You can use a url or a relative path to your basepath.
-	 * @param string $file Retrieves the DOM from a file. File can be relative or a url.
+	 * Get an object representing the HTML DOM. You can use a url or a relative path to your /app/view.
+	 * @param string $file Retrieves the DOM from a file. File can be a view or a url.
 	 * @param boolean $convert_to_lowercase If set to true (the default), it converts the tags and attributes to lowercase.
 	 * @return simple_html_dom An object representing the top level DOM node.
 	 **/
@@ -20,13 +20,11 @@ class zajlib_dom extends zajLibExtension {
 			$dom = new simple_html_dom();
 		// Check if not url, add basepath
 			if(!$this->zajlib->url->valid($file)){
-				// Add basepath
-					$file = $this->zajlib->basepath.$file;
-				// Check file
-					$this->zajlib->file->file_check($file);
+				$contents = $this->zajlib->template->show($file, false, true);
 			}
+			else $contents = file_get_contents($file);
 		// Load and return
-			$dom->load(file_get_contents($file), $convert_to_lowercase);
+			$dom->load($contents, $convert_to_lowercase);
 		return $dom;
 	}
 
