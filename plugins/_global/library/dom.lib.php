@@ -4,6 +4,7 @@
  * @author S.C. Chen <me578022@gmail.com>
  * @version 1.11
  * @package Library
+ * @link http://simplehtmldom.sourceforge.net/manual.htm
  **/
 
 class zajlib_dom extends zajLibExtension {
@@ -12,7 +13,7 @@ class zajlib_dom extends zajLibExtension {
 	 * Get HTML DOM from file.
 	 * @param string $file Retrieves the DOM from a file. File can also be a URL wrapper.
 	 * @param boolean $convert_to_lowercase If set to true (the default), it converts the tags and attributes to lowercase.
-	 * @return An object representing the top level DOM node.
+	 * @return simple_html_dom An object representing the top level DOM node.
 	 **/
 	function fetch($file, $convert_to_lowercase = true){
 		// Create object
@@ -24,10 +25,9 @@ class zajlib_dom extends zajLibExtension {
 
 	/**
 	 * Dump the HTML DOM tree starting from the specified node.
-	 * @param DOMnode An object representing the current DOM node.
+	 * @param DOMnode $node An object representing the current DOM node.
 	 * @param boolean $show_attr If set to true (the default), it will also display attributes of the dom.
-	 * @param integer $depth The current depth of the DOM.
-	 * 
+	 * @param integer $deep The current depth of the DOM.
 	 **/
 	function dump($node, $show_attr=true, $deep=0){
 		// Print leading space
