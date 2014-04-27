@@ -23,6 +23,18 @@ class zajlib_config extends zajLibExtension{
 	 * object - config variables are stored here
 	 **/
 	private $variable;
+
+	/**
+	 * Creates a new zajlib_config
+	 * @param zajLib $zajlib A reference to the global zajlib object.
+	 * @param string $system_library The name of the system library.
+	 **/
+	public function __construct(&$zajlib, $system_library){
+		// call parent
+		parent::__construct($zajlib, $system_library);
+		// init variables
+		$this->variable = new stdClass();
+	}
 	
 	/**
 	 * Loads a configuration or language file at runtime.
