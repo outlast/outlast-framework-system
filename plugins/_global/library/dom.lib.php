@@ -10,14 +10,21 @@
 class zajlib_dom extends zajLibExtension {
 	
 	/**
-	 * Get HTML DOM from file.
-	 * @param string $file Retrieves the DOM from a file. File can also be a URL wrapper.
+	 * Get an object representing the HTML DOM. You can use a url or a relative path to your basepath.
+	 * @param string $file Retrieves the DOM from a file. File can be relative or a url.
 	 * @param boolean $convert_to_lowercase If set to true (the default), it converts the tags and attributes to lowercase.
 	 * @return simple_html_dom An object representing the top level DOM node.
 	 **/
 	function fetch($file, $convert_to_lowercase = true){
 		// Create object
 			$dom = new simple_html_dom();
+		// Check if not url, add basepath
+			if(!$this->zajlib->url->valid($file)){
+				// Add basepath
+					$file = $this->zajlib->basepath.$file;
+				// Check file
+					$this->zajlib->file->file_check($file);
+			}
 		// Load and return
 			$dom->load(file_get_contents($file), $convert_to_lowercase);
 		return $dom;
@@ -25,13 +32,13 @@ class zajlib_dom extends zajLibExtension {
 
 	/**
 	 * Dump the HTML DOM tree starting from the specified node.
-	 * @param DOMnode $node An object representing the current DOM node.
+	 * @param simple_html_dom_node $node An object representing the current DOM node.
 	 * @param boolean $show_attr If set to true (the default), it will also display attributes of the dom.
-	 * @param integer $deep The current depth of the DOM.
+	 * @param integer $depth The depth to start at (this is only for display)
 	 **/
-	function dump($node, $show_attr=true, $deep=0){
+	function dump($node, $show_attr=true, $depth=0){
 		// Print leading space
-			$lead = str_repeat('    ', $deep);
+			$lead = str_repeat('    ', $depth);
 			echo $lead.$node->tag;
 		// Print attributes (if requested and if exist)
 			if ($show_attr && count($node->attr)>0) {
@@ -42,7 +49,7 @@ class zajlib_dom extends zajLibExtension {
 		// New line!
 			echo "\n";
 		// Continue on with child node
-			foreach($node->nodes as $c) $this->dump($c, $show_attr, $deep+1);
+			foreach($node->nodes as $c) $this->dump($c, $show_attr, $depth+1);
 	}
 }
 
@@ -973,4 +980,3 @@ class simple_html_dom {
     function getElementsByTagName($name, $idx=-1) {return $this->find($name, $idx);}
     function loadFile() {$args = func_get_args();$this->load(call_user_func_array('file_get_contents', $args), true);}
 }
-?>
