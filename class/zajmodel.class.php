@@ -36,7 +36,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @method void __afterDelete() EVENT. Executed after the object is deleted.
  * @method void __onFetch() EVENT. Executed when a fetch method is requested.
  * @method void __onCreate() EVENT. Executed when a create method is requested.
- * @method zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when an auto-search is running on the class.
+ * @internal zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when an auto-search is running on the class.
  * Properties...
  * @property zajLib $zajlib A pointer to the global object.
  * @property string $name The name of the object.
@@ -414,7 +414,7 @@ abstract class zajModel {
 	public static function delete_tests($max_to_delete = 3, $permanent = true){
 		// Fetch the test objects
 			$test_objects = self::fetch()->filter('unit_test', true);
-			if($test_objects->total > $max_to_delete) return zajLib::me()->error("Reached maximum number of test object deletes during unit test. Delete manually or raise limit!");
+			if($test_objects->total > $max_to_delete) return zajLib::me()->error("Reached maximum number of test object deletes during unit test for ".get_called_class().". Allowance is ".$max_to_delete." but found ".$test_objects->total." objects. Delete manually or raise limit!");
 		// Now remove!
 			$test_objects_deleted = 0;
 			/** @var zajModel $obj */
@@ -677,6 +677,15 @@ abstract class zajModel {
 	 */
 	public function __toString(){
 		return $this->__get('name');
+	}
+
+	/**
+	 * An event executed when a client-side search API request is performed. By default requests are denied.
+	 * @param zajFetcher $fetcher The incoming list of objects.
+	 * @return zajFetcher|boolean The list of objects that the API request should return (filtered if needed). False and a warning is returned if it is not enabled.
+	 */
+	public function __onSearch($fetcher){
+		return zajLib::me()->warning("You are trying to access the client-side search API and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
 	}
 
 	/**

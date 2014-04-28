@@ -4,34 +4,39 @@
  * @author S.C. Chen <me578022@gmail.com>
  * @version 1.11
  * @package Library
+ * @link http://simplehtmldom.sourceforge.net/manual.htm
  **/
 
 class zajlib_dom extends zajLibExtension {
 	
 	/**
-	 * Get HTML DOM from file.
-	 * @param string $file Retrieves the DOM from a file. File can also be a URL wrapper.
+	 * Get an object representing the HTML DOM. You can use a url or a relative path to your /app/view.
+	 * @param string $file Retrieves the DOM from a file. File can be a view or a url.
 	 * @param boolean $convert_to_lowercase If set to true (the default), it converts the tags and attributes to lowercase.
-	 * @return An object representing the top level DOM node.
+	 * @return simple_html_dom An object representing the top level DOM node.
 	 **/
 	function fetch($file, $convert_to_lowercase = true){
 		// Create object
 			$dom = new simple_html_dom();
+		// Check if not url, add basepath
+			if(!$this->zajlib->url->valid($file)){
+				$contents = $this->zajlib->template->show($file, false, true);
+			}
+			else $contents = file_get_contents($file);
 		// Load and return
-			$dom->load(file_get_contents($file), $convert_to_lowercase);
+			$dom->load($contents, $convert_to_lowercase);
 		return $dom;
 	}
 
 	/**
 	 * Dump the HTML DOM tree starting from the specified node.
-	 * @param DOMnode An object representing the current DOM node.
+	 * @param simple_html_dom_node $node An object representing the current DOM node.
 	 * @param boolean $show_attr If set to true (the default), it will also display attributes of the dom.
-	 * @param integer $depth The current depth of the DOM.
-	 * 
+	 * @param integer $depth The depth to start at (this is only for display)
 	 **/
-	function dump($node, $show_attr=true, $deep=0){
+	function dump($node, $show_attr=true, $depth=0){
 		// Print leading space
-			$lead = str_repeat('    ', $deep);
+			$lead = str_repeat('    ', $depth);
 			echo $lead.$node->tag;
 		// Print attributes (if requested and if exist)
 			if ($show_attr && count($node->attr)>0) {
@@ -42,7 +47,7 @@ class zajlib_dom extends zajLibExtension {
 		// New line!
 			echo "\n";
 		// Continue on with child node
-			foreach($node->nodes as $c) $this->dump($c, $show_attr, $deep+1);
+			foreach($node->nodes as $c) $this->dump($c, $show_attr, $depth+1);
 	}
 }
 
@@ -973,4 +978,3 @@ class simple_html_dom {
     function getElementsByTagName($name, $idx=-1) {return $this->find($name, $idx);}
     function loadFile() {$args = func_get_args();$this->load(call_user_func_array('file_get_contents', $args), true);}
 }
-?>

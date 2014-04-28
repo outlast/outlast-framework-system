@@ -8,7 +8,7 @@ class zajfield_boolean extends zajField {
 	// name, options - these are passed to constructor and available here!
 	const in_database = true;		// boolean - true if this field is stored in database		
 	const use_validation = false;	// boolean - true if data should be validated before saving
-	const use_get = false;			// boolean - true if preprocessing required before getting data
+	const use_get = true;			// boolean - true if preprocessing required before getting data
 	const use_save = true;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = true;		// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = true;		// boolean - true if fetcher needs to be modified
@@ -20,9 +20,9 @@ class zajfield_boolean extends zajField {
 	public function __construct($name, $options, $class_name, &$zajlib){
 		// set default options
 			// A single option is interpreted as the default field value (backwards-compatibility)
-			if(!is_array($options)) $options = array('default'=>$options);
+			if(!is_array($options)) $options = (object) array('default'=>$options);
 			else{
-				if($options[0]) $options = array('default'=>true);
+				if($options[0]) $options = (object) array('default'=>true);
 			}
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
@@ -34,7 +34,7 @@ class zajfield_boolean extends zajField {
 	 **/
 	public function database(){
 		// set my default
-			if($this->{options}['default']) $default = 'yes';
+			if($this->options->default) $default = 'yes';
 			else $default = '';
 		// define each field
 			$fields[$this->name] = array(
@@ -65,6 +65,8 @@ class zajfield_boolean extends zajField {
 	 * @return Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
+		// If the object does not exist yet, then use the default value
+			if(!$object->exists) $data = $this->options->default;
 		return $data;
 	}
 	
