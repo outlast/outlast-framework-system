@@ -2,16 +2,17 @@
 <link rel="stylesheet" href="{{baseurl}}plugins/outlast/css/outlast-rte.css{% cachebuster %}"/>
 <script src="{{baseurl}}plugins/outlast/js/outlast-rte.js{% cachebuster %}"></script>
 
-
-
 <div class="ol-rte well" id="{{field.uid}}-rte">
     <ul class="menu">
-        <li><a data-action="bold" class="bold"></a></li>
-        <li><a data-action="italic" class="italic"></a></li>
-        <li><a data-action="underline" class="underline"></a></li>
-        <li><a data-action="link" class="link"></a></li>
-        <li><a data-action="unlink" class="unlink"></a></li>
-        <li><a data-action="insertUnorderedList" class="list"></a></li>
+        <li><a data-action="bold"><i class="fa fa-bold"></i></a></li>
+        <li><a data-action="italic"><i class="fa fa-italic"></i></a></li>
+        <li><a data-action="underline"><i class="fa fa-underline"></i></a></li>
+        <li><a data-action="link"><i class="fa fa-link"></i></a></li>
+        <li><a data-action="unlink"><i class="fa fa-unlink"></i></a></li>
+        <li><a data-action="insertUnorderedList"><i class="fa fa-list-ul"></i></a></li>
+        <li><a data-action="insertOrderedList"><i class="fa fa-list-ol"></i></a></li>
+        <!--<li><a data-action="increaseFontSize"><i class="fa fa-arrows-v"></i></a></li>-->
+        <li><a data-action="removeFormat"><i class="fa fa-ban"></i></a></li>
     </ul>
     <div class='text' contenteditable="true" spellcheck="false">
         {{field.value|strip_attribute:'style'}}
