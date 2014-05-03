@@ -58,6 +58,3 @@ class zajfield_id extends zajField {
 	}
 
 }
-
-
-?>

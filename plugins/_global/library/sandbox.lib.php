@@ -32,5 +32,3 @@ class zajlib_sandbox extends zajLibExtension {
 			else $this->zajlib->error("Failed realpath sandbox requirement for file $file");
 	}
 }
-
-?>

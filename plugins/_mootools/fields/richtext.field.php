@@ -12,6 +12,3 @@ class zajfield_richtext extends zajfield_textarea {
 
 	// alias of textarea
 }
-
-
-?>

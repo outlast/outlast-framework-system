@@ -82,7 +82,7 @@ class zajfield_manytomany extends zajField {
 
 	/**
 	 * Check to see if input data is valid.
-	 * @param $input The input data.
+	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){
@@ -91,9 +91,9 @@ class zajfield_manytomany extends zajField {
 	
 	/**
 	 * Preprocess the data before returning the data from the database.
-	 * @param $data The first parameter is the input data.
+	 * @param mixed $data The first parameter is the input data.
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
-	 * @return Return the data that should be in the variable.
+	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
 		return zajFetcher::manytomany($this->name, $object);
@@ -101,7 +101,7 @@ class zajfield_manytomany extends zajField {
 	
 	/**
 	 * Preprocess the data before saving to the database.
-	 * @param $data The first parameter is the input data.
+	 * @param mixed $data The first parameter is the input data.
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @param array $additional_fields Use this to save additional columns in the manytomany table. This parameter is really only useful if you override this method to create a custom field.
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
@@ -236,6 +236,3 @@ class zajfield_manytomany extends zajField {
 	}
 
 }
-
-
-?>

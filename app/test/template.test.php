@@ -42,5 +42,3 @@ class OfwTemplateTest extends zajTest {
 
 
 }
-
-?>

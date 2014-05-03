@@ -444,4 +444,3 @@ class mMail
 		  return (@fsockopen($email_array[1], 25, $errno, $errstr, 30) ? true : false); 
 	}
 }
-?>

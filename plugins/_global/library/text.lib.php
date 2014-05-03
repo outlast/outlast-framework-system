@@ -154,7 +154,3 @@ class zajlib_text extends zajLibExtension {
 	}
 
 }
-
-
-
-?>

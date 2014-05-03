@@ -920,6 +920,3 @@ EOF;
 	public function tag_get_extend(){ return trim($this->extended_path, "'\""); }
 	public function tag_get_block(){ return $this->block_name; }
 }
-
-
-?>

@@ -44,7 +44,7 @@ class zajfield_timestamp extends zajField {
 
 	/**
 	 * Check to see if input data is valid.
-	 * @param $input The input data.
+	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){

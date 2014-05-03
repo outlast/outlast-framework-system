@@ -106,5 +106,3 @@ class zajlib_array extends zajLibExtension{
 	public function array_to_object($array){ return $this->to_object($array); }
 
 }
-
-?>

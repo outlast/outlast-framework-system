@@ -174,5 +174,3 @@
 			unset($_REQUEST['zajhtver'], $_REQUEST['zajapp'], $_REQUEST['zajmode']);
 	// now create url
 		$app_request = $zaj_app."/".$zaj_mode;
-
-?>
