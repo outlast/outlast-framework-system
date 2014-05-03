@@ -33,7 +33,8 @@ class zajlib_request extends zajLibExtension {
 
 			if($method == 'POST' || $method == 'PUT'){
 				curl_setopt($curl, CURLOPT_POST, true);
-				if($params) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
+				if($params && (is_array($params) || is_object($params))) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
+				if($params && is_string($params)) curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
 			}
 		// Set any other options?
 			if(is_array($additional_options)) foreach($additional_options as $key=>$value) curl_setopt($curl, $key, $value);
@@ -56,7 +57,7 @@ class zajlib_request extends zajLibExtension {
 	 */
 	function post($url, $content=false, $returnheaders = false, $customheaders = false){
 		// Set the content based on url query string
-			if($content == false){
+			if($content === false){
 				// parse the url
 					$urldata = parse_url($url);
 					if($urldata === false) return $this->zajlib->warning("Malformed url ($url). Cannot parse.");
