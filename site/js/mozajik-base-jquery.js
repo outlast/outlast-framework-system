@@ -309,7 +309,7 @@
 			 * Send AJAX request via GET.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
-			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
+			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 			 */
 			zaj.ajax.get = function(request,result, pushstate){
 				zaj.ajax.request('get', request, result, pushstate);
@@ -319,7 +319,7 @@
 			 * Send AJAX request via POST.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
-			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
+			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 			 */
 			zaj.ajax.post = function(request,result, pushstate){
 				zaj.ajax.request('post', request, result, pushstate);
@@ -330,7 +330,7 @@
 			 * @link http://framework.outlast.hu/api/javascript-api/ajax-requests/#docs-blocking-form-requests
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
-			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
+			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 			 */
 			zaj.ajax.submit = function(request,result,pushstate){
 				// if submitting already, just block!
@@ -349,13 +349,13 @@
 			 * @param {string} mode Can be post or get.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
-			 * @param {string|object} pushstate If it is just a string, it will be the url for the pushState. If it is an object, you can specify all three params of pushState: data, title, url
+			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 			 * @param {boolean} set_submitting If set to true, it will set zaj.ajax.submitting when the request returns with a response.
 			 * @return {string} Returns the request url as sent.
 			 */
 			zaj.ajax.request = function(mode,request,result,pushstate,set_submitting){
 				// is pushstate used now
-					var psused = zaj.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object');
+					var psused = zaj.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object' || (typeof pushstate == 'boolean' && pushstate === true));
 					var psdata = false;
 					if(typeof pushstate == 'object' && pushstate != null && pushstate.data) psdata = pushstate.data;
 				// Send to Analytics
@@ -401,6 +401,8 @@
 										if(psdata == false) psdata = {url: window.location.href};
 									// string mode - convert to object
 										if(typeof pushstate == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
+									// boolean mode - use current request
+										else if(typeof pushstate == 'boolean') pushstate = {'data': psdata, 'title':"", 'url': request};
 									// now set everything and fire event
 										pushstate = $.extend({}, {'title': false}, pushstate);	// default title is false
 										if(pushstate.url) window.history.pushState(psdata, pushstate.title, pushstate.url);
