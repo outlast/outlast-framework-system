@@ -52,6 +52,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
 					if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
 					else $template = $field_object::edit_template;
 			}
+
 		// generate content					
 			// generate options
 				$options_php = $this->zajlib->array->to_code($field_object->options);

@@ -1,0 +1,48 @@
+<div class="dd nestable category" id="nestable-{{field.uid}}" data-field-uid="{{field.uid}}">
+{% with field.choices as categories %}
+	{% block ddlist %}
+	<ol class="dd-list">
+		{% foreach categories as category %}
+			<li class="dd-item" data-id="{{category.id}}" style="cursor: pointer;" onclick="toggleCategoryCheckbox(event, this)">
+				<div class="dd-handle">
+					{{category.name}}
+					<div class="pull-right" style="position: relative; top: -2px;">
+						<input class='field boolean iCheck' type='checkbox' id='{{category.id}}' name='{{field.name}}[]' value='{{category.id}}'>
+					</div>
+				</div>
+				{% if category.data.subcategories.total > 0 %}
+					{% with category.data.subcategories as categories %}
+						{% insert 'field/category.field.html' 'ddlist' %}
+					{% endwith %}
+				{% endif %}
+			</li>
+		{% endforeach %}
+	</ol>
+	{% endblock ddlist %}
+{% endwith %}
+</div>
+
+<script src="{{baseurl}}plugins/outlast/js/jquery.nestable.js?v2"></script>
+<script>
+	// Nestable without drag and drop
+	zaj.ready(function(){
+		$('#nestable-{{field.uid}}').nestable({enableDragAndDrop: false});
+		$('#nestable-{{field.uid}}').nestable('collapseAll');
+	});
+	function toggleCategoryCheckbox(ev, el){
+		var $me = $(el);
+		// Check what type of target
+			if(ev.target.type == 'button') return true;
+		// Toggle me, plus stop propagation
+			var $myinput = $me.find('input').first();
+			$myinput.iCheck('toggle');
+			ev.stopPropagation();
+		// If I was just turned on, turn on my parents
+			if($myinput[0].checked) $me.parents('.dd-item').find('input').first().iCheck('check');
+		// If I was just turned off, turn off my children
+			if(!$myinput[0].checked) $me.find('.dd-item').find('input').iCheck('uncheck');
+	}
+	{% foreach field.value as selcat %}
+		$('#{{selcat.id}}').iCheck('toggle');
+	{% endforeach %}
+</script>

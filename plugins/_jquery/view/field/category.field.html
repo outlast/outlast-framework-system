@@ -1,0 +1,28 @@
+<!-- Load up my requirements -->
+<script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
+<link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
+
+{% config 'category.conf.ini' 'settings' %}
+
+<!-- Display markup -->
+<select class='ofw-field-category form-control' id='{{field.uid}}' name='{{field.name}}'>
+	<option value=''>--</option>
+	{% if #category_two_level# %}
+		{% foreach field.choices as toplevel %}
+			<optgroup label="{{toplevel.name|escape}}">
+				{% foreach choice.data.subcategories as choice %}
+					<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}'>{{choice.name}}</option>
+				{% endforeach %}
+			</optgroup>
+		{% endforeach %}
+	{% elseif %}
+		{% foreach field.choices as choice %}
+			<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}'>{{choice.name}}</option>
+		{% endforeach %}
+	{% endif %}
+</select>
+<script>
+    zaj.ready(function(){
+        $('#{{field.uid}}').chosen({width: '100%'});
+    });
+</script>
