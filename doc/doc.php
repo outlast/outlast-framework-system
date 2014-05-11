@@ -36,6 +36,7 @@ die("This file is for documentation.");
  * @method static zajDb time
  * @method static zajDb timestamp
  * @method static zajDb tinymce
+ * @method static zajDb unittest
  * @method static zajDb year
  **/
 class zajDb{}
