@@ -1,4 +1,8 @@
-<select class='field select' id='{{field.id}}' name='{{field.name}}'>
+<!-- Load up my requirements -->
+<script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
+<link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
+<!-- Display markup -->
+<select class='ofw-field-select form-control' id='{{field.uid}}' name='{{field.name}}'>
 	{% foreach field.options.choices as choice %}
 		<option value='{{choice}}' {% if field.value eq choice %}selected{%endif%}>{{choice}}</option>
 	{% endfor %}

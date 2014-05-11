@@ -1,6 +1,15 @@
-<select class='ofw-field-manytoone form-control' type='text' id='{{field.id}}' name='{{field.name}}'>
+<!-- Load up my requirements -->
+<script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
+<link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
+<!-- Display markup -->
+<select class='ofw-field-manytoone form-control' id='{{field.uid}}' name='{{field.name}}'>
 	<option value=''>--</option>
 	{% foreach field.choices as choice %}
 		<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}'>{{choice.name}}</option>
 	{% endforeach %}
 </select>
+<script>
+    zaj.ready(function(){
+        $('#{{field.uid}}').chosen({width: '100%'});
+    });
+</script>
