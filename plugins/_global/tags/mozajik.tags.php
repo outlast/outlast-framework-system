@@ -28,6 +28,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
 		// check for required param
 			if(empty($param_array[0])) $source->error("Tag {%input%} requires at least one parameter.");
 		// grab my class and field name
+			/** @var zajModel $classname static */
 			list($classname, $fieldname) = explode('.', $param_array[0]->vartext);
 		// check for required param
 			if(empty($classname) || empty($fieldname)) $source->error("Tag {%input%} parameter one needs to be in 'modelname.fieldname' format.");
@@ -35,6 +36,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
 			$id = $template = '';
 			$value = $param_array[1]->variable;
 		// get field object
+			/** @var zajField $field_object */
 			$field_object = $classname::__field($fieldname);
 		// are we in locale mode?
 			if(isset($param_array[3])){

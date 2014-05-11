@@ -10,7 +10,7 @@
 	{% if #category_two_level# %}
 		{% foreach field.choices as toplevel %}
 			<optgroup label="{{toplevel.name|escape}}">
-				{% foreach choice.data.subcategories as choice %}
+				{% foreach toplevel.data.subcategories as choice %}
 					<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}'>{{choice.name}}</option>
 				{% endforeach %}
 			</optgroup>
