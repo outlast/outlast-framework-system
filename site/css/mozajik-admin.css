@@ -192,8 +192,8 @@
 	.grippy{
 		cursor: move;
 	}
-	td.list.select, div.list.select { background-image: url(../system/img/button/checkbox-off.png); background-position: left center; background-repeat: no-repeat; padding-left: 20px; cursor: pointer; }
-	td.list.select.on, div.list.select.on, div.list.select.selected {  background-image: url(../system/img/button/checkbox-on.png); }
+	td.list.select, div.list.select { background-image: url(../system/img/assets/checkbox-off.png); background-position: left center; background-repeat: no-repeat; padding-left: 20px; cursor: pointer; }
+	td.list.select.on, div.list.select.on, div.list.select.selected {  background-image: url(../system/img/assets/checkbox-on.png); }
 	.grippy{
 		cursor: move;
 	}
@@ -217,7 +217,7 @@
 		background: white;
 	}
 		div.selectbox div{
-			background-image: url(../system/img/button/checkbox-off.png);
+			background-image: url(../system/img/assets/checkbox-off.png);
 			background-position: left center;
 			background-repeat: no-repeat;
 			background-color: #F4F4F4;
@@ -227,7 +227,7 @@
 			cursor: pointer;		
 		}		
 			div.selectbox div:nth-child(even){ background-color: white; }
-			div.selectbox div.selected{ background-image: url(../system/img/button/checkbox-on.png); }
+			div.selectbox div.selected{ background-image: url(../system/img/assets/checkbox-on.png); }
 
 /* admin */
 	div.formsection{
