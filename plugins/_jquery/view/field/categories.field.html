@@ -12,7 +12,7 @@
 				</div>
 				{% if category.data.subcategories.total > 0 %}
 					{% with category.data.subcategories as categories %}
-						{% insert 'field/category.field.html' 'ddlist' %}
+						{% insert 'field/categories.field.html' 'ddlist' %}
 					{% endwith %}
 				{% endif %}
 			</li>
