@@ -42,7 +42,9 @@
 		// If I was just turned off, turn off my children
 			if(!$myinput[0].checked) $me.find('.dd-item').find('input').iCheck('uncheck');
 	}
-	{% foreach field.value as selcat %}
-		$('#{{selcat.id}}').iCheck('toggle');
-	{% endforeach %}
+	{% if field.value %}
+		{% foreach field.value as selcat %}
+			$('#{{selcat.id}}').iCheck('toggle');
+		{% endforeach %}
+	{% endif %}
 </script>
