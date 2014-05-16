@@ -115,6 +115,13 @@ class Category extends zajModel {
 	}
 
 	/**
+	 * Fetch top level categories.
+	 **/
+	public static function fetch_top_level(){
+		return Category::fetch()->filter('parentcategory', '');
+	}
+
+	/**
 	 * Categories are completely public by default.
 	 * @param zajFetcher $fetcher
 	 * @return zajFetcher

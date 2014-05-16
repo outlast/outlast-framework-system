@@ -6,6 +6,8 @@ die("This file is for documentation.");
 
 /**
  * @method static zajDb boolean
+ * @method static zajDb category
+ * @method static zajDb categories
  * @method static zajDb date
  * @method static zajDb email
  * @method static zajDb files
@@ -35,6 +37,7 @@ die("This file is for documentation.");
  * @method static zajDb time
  * @method static zajDb timestamp
  * @method static zajDb tinymce
+ * @method static zajDb unittest
  * @method static zajDb year
  **/
 class zajDb{}

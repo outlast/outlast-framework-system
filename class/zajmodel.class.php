@@ -199,7 +199,7 @@ abstract class zajModel {
 				$fields = (object) array_merge((array) $fields, (array) $ext::__model());
 			}
 			// now set defaults (if not already set)
-			if(!isset($fields->unit_test)) $fields->unit_test = zajDb::boolean(false);
+			if(!isset($fields->unit_test)) $fields->unit_test = zajDb::unittest();
 			if(!isset($fields->time_create)) $fields->time_create = zajDb::time();
 			if(!isset($fields->time_edit)) $fields->time_edit = zajDb::time();
 			if(!isset($fields->ordernum)) $fields->ordernum = zajDb::ordernum();
@@ -436,6 +436,8 @@ abstract class zajModel {
 			$class_name = $this->class_name;
 		// create the same object type
 			$new = $class_name::create($id);
+		// load up data object if not already done
+			if(!$this->data) $this->data = new zajData($this);
 		// run through all of my fields
 			$model = $class_name::__model();
 			foreach($model as $name=>$fielddata){
