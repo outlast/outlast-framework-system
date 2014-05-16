@@ -134,6 +134,7 @@
  	 * @param {string|function} urlORfunction A callback url or function on button push.
 	 * @param {string} buttonText The text of the button.
 	 * @param {boolean} top Set to true if you want the url to load in window.top.location. Defaults to false.
+	 * @return {boolean} Will always return false.
  	 */
 	zaj.alert = function(message, urlORfunction, buttonText, top){
 		if(zaj.bootstrap){
@@ -190,6 +191,7 @@
 				if(typeof urlORfunction == 'function') urlORfunction();
 				else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction, top);
 		}
+		return false;
 	};
 	zaj.alert_reposition = function($modal, $backdrop){
         if($backdrop) {
