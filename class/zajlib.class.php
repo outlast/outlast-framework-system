@@ -12,13 +12,12 @@ define('MAX_GLOBAL_EVENT_STACK', 50);
  * The zajlib class is a single, global object which stores all the basic methods and variables. It is accessible from all controller and model objects.
  * @package Base
  * @property zajlib_array $array
- * @property zajlib_breadcrumb $breadcrumb
  * @property zajlib_browser $browser
  * @property zajlib_cache $cache
  * @property zajlib_compile $compile
  * @property zajlib_config $config
  * @property zajlib_cookie $cookie
- * @property zajlib_db $db
+ * @property zajlib_db|zajlib_db_session $db
  * @property zajlib_dom $dom
  * @property zajlib_email $email
  * @property zajlib_error $error
@@ -27,13 +26,10 @@ define('MAX_GLOBAL_EVENT_STACK', 50);
  * @property zajlib_file $file
  * @property zajlib_form $form
  * @property zajlib_graphics $graphics
- * @property zajlib_html $html
  * @property zajlib_import $import
  * @property zajlib_lang $lang
- * @property zajlib_log $log
  * @property zajlib_mobile $mobile
  * @property zajlib_model $model
- * @property zajlib_number $number
  * @property zajlib_plugin $plugin
  * @property zajlib_request $request
  * @property zajlib_sandbox $sandbox

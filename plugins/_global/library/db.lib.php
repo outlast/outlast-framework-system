@@ -20,6 +20,9 @@ define('MYSQL_MAX_PLUS', 'MAX+1');
  **/
 define('MYSQL_AVG', 'AVG');
 
+/**
+ * Class zajlib_db
+ */
 class zajlib_db extends zajLibExtension implements Countable, Iterator {
 	// instance variables
 		/**
@@ -198,7 +201,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		/**
 		 * Add a row to a table using an associative array.
 		 * @param string $table The table to add to.
-		 * @param array An associative array where the keys are the field names and the values are the field values.
+		 * @param array $array An associative array where the keys are the field names and the values are the field values.
+		 * @return bool|zajlib_db_session Returns the db session or false if error.
 		 **/
 		private function add($table, $array){
 			// Check for errors
@@ -301,7 +305,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * @param string $table The table to edit in.
 		 * @param string $column The name of the column to use as the condition in the WHERE clause.
 		 * @param string $condition Condition specifies the value to which the field must be equal to.
-		 * @param string $limit The maximum number of items to delete. By default, this is one to safeguard against accidental deletes.
+		 * @param string|integer $limit The maximum number of items to delete. By default, this is one to safeguard against accidental deletes.
+		 * @return zajlib_db_session
 		 **/
 		private function delete($table, $column, $condition, $limit = 1){
 			// Generate sql
@@ -319,6 +324,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * @param integer $num The number of rows to retrieve. This is depricated, and only the default value should be used.
 		 * @param integer $startat The number of rows to skip. This is depricated, and only the default value should be used.
 		 * @param string $column_as_key Use a specific column as key. This is depricated, and only the default value should be used.
+		 * @return array Returns a key/value array of results.
 		 **/
 		private function get($num = 1, $startat = 0, $column_as_key = '', $one_dimensional_by_key = ''){
 			// set as array
@@ -594,6 +600,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * Send an error to the user or to the log.
 		 * @param boolean $display_warning Will display the warning even if debug mode is off. When debug mode is on, the warning is displayed regardless of this setting.
 		 * @param string $error_text This is the error string.
+		 * @return boolean
 		 **/
 		private function send_error($display_warning = false, $error_text = ""){
 			// set all the necessary variables
@@ -647,6 +654,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * Magic method to handle session calls to the default session.
 		 * @param string $name The name of the method to call.
 		 * @param array $arguments An array of arguments to pass to the session.
+		 * @return mixed
 		 **/
 		public function __call($name, $arguments){
 			// get current session
@@ -660,14 +668,15 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// set back to current session
 				$this->set_session($current_session);
 			return $value;
-		}		
+		}
 
 		/**
 		 * Magic method to handle session calls. This will set the current session and execute the method.
 		 * @param string $name The name of the method to call.
 		 * @param array $arguments An array of arguments to pass to the session.
-		 * @param string $id The session id to use.
-		 **/
+		 * @param string $sessionid The session id to use.
+		 * @return mixed
+		 */
 		public function __call_session($name, $arguments, $sessionid){
 			// set to default session
 				$this->set_session($sessionid);
@@ -683,6 +692,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
  * This class helps manage database sessions. Database sessions are a way to handle simultaneous queries without using different connections.
  * @package Model
  * @subpackage DatabaseApi
+ * @method zajlib_db_session query()
  **/
 class zajlib_db_session implements Countable, Iterator {
 	// private instance variables 
