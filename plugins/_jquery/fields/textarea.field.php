@@ -48,6 +48,7 @@ class zajfield_textarea extends zajField {
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){
+		if(empty($input)) return false;
 		return true;
 	}
 	

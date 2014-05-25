@@ -2,7 +2,7 @@
 <script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
 <link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
 <!-- Display markup -->
-<select class='ofw-field-manytoone form-control' id='{{field.uid}}' name='{{field.name}}'>
+<select class='ofw-field-manytoone' id='{{field.uid}}' name='{{field.name}}'>
 	<option value=''>--</option>
 	{% foreach field.choices as choice %}
 		<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}'>{{choice.name}}</option>
@@ -10,6 +10,6 @@
 </select>
 <script>
     zaj.ready(function(){
-        $('#{{field.uid}}').chosen({width: '100%'});
+        $('#{{field.uid}}').chosen({width: '100%', inherit_select_classes: true});
     });
 </script>
