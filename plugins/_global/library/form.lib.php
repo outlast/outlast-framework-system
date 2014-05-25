@@ -55,6 +55,7 @@ class zajlib_form extends zajLibExtension {
 		public function validate($class_name, $fields, $error_messages = OFW_VALIDATION_DEFAULT_ERROR_MESSAGES, $values = false){
 			// Let's make sure the data is consistent
 				if(is_string($fields)) $fields = array($fields);
+				if(is_string($error_messages)) $error_messages = array($error_messages);
 			// Get the model for this class
 				/** @var zajModel $class_name */
 				$model = $class_name::__model();
