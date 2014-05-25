@@ -131,9 +131,9 @@
 	/**
 	 * Custom alerts, confirms, prompts. If bootstrap is enabled, it wil use that. Otherwise the standard blocking alert() will be used.
  	 * @param {string} message The message to alert.
- 	 * @param {string|function} urlORfunction A callback url or function on button push.
-	 * @param {string} buttonText The text of the button.
-	 * @param {boolean} top Set to true if you want the url to load in window.top.location. Defaults to false.
+ 	 * @param {string|function} [urlORfunction=null] A callback url or function on button push.
+	 * @param {string} [buttonText="Ok"] The text of the button.
+	 * @param {boolean} [top=false] Set to true if you want the url to load in window.top.location. Defaults to false.
 	 * @return {boolean} Will always return false.
  	 */
 	zaj.alert = function(message, urlORfunction, buttonText, top){
@@ -394,8 +394,52 @@
 									$(result).html(data);
 								}
 								else{
-									if(data == 'ok') zaj.redirect(result);
-									else zaj.alert(data);
+									// check to see if data is json
+									try{
+										/** @type {{status: String, message: String, highlight: Array, errors: <string, string>}} dataJson */
+										var dataJson = $.parseJSON(data);
+										if(dataJson.status == 'ok') zaj.redirect(result);
+										else{
+											// Display a message (if set)
+												if(dataJson.message != null) zaj.alert(dataJson.message);
+											// Highlight the fields (if set)
+												// @todo Make sure that fields are only selected if they are part of the request to begin with! But how?
+												if(typeof dataJson.highlight == 'object'){
+													$.each(dataJson.highlight, function(key, val){
+														// Add the error class and remove on change
+														var input = $('[name="'+val+'"]');
+														var inputGroup = input.parent('.form-group');
+														input.addClass('has-error').change(function(){
+															input.removeClass('has-error');
+															inputGroup.removeClass('has-error');
+														});
+														inputGroup.addClass('has-error');
+													});
+												}
+											// Display errors for each field
+												// @todo Make sure that fields are only selected if they are part of the request to begin with! But how?
+												if(typeof dataJson.errors == 'object'){
+													$.each(dataJson.errors, function(key, msg){
+														// Get input and input group
+														var input = $('[name="'+key+'"]');
+														var inputGroup = input.parent('.form-group');
+														if(zaj.bootstrap3) input.attr('title', msg).tooltip({trigger:'manual'}).tooltip('show');
+														// Add the error class and remove on change
+														input.addClass('has-error').change(function(){
+															input.removeClass('has-error');
+															inputGroup.removeClass('has-error');
+															if(zaj.bootstrap3) input.tooltip('hide');
+														});
+														inputGroup.addClass('has-error');
+													});
+												}
+										}
+									}
+									// not json, so parse as string
+									catch(err){
+										if(data == 'ok') zaj.redirect(result);
+										else zaj.alert(data);
+									}
 								}
 							// pushState actions
 								if(psused){
