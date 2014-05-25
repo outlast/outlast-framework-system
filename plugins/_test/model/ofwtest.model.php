@@ -16,7 +16,8 @@ class OfwTest extends zajModel {
 		// begin custom fields definition:
 			$f = (object) array();
 
-			// No model fields yet
+			// Fake email for testing email validation
+			$f->email = zajDb::email();
 
 		// end of custom fields definition
 		/////////////////////////////////////////

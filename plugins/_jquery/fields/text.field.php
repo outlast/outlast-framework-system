@@ -56,6 +56,9 @@ class zajfield_text extends zajField {
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){
+		// If the input is empty, this is invalid
+			if(empty($input)) return false;
+		// All passed, return true
 		return true;
 	}
 	

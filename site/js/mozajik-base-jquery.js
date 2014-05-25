@@ -72,8 +72,8 @@
 	/**
 	 * Logs a message to the console. Ingored if console not available.
 	 * @param {string} message The message to log.
-	 * @param {string} type Can be notice, warning, or error
-	 * @param {string} context The context is any other element or object which will be logged.
+	 * @param {string} [type="error"] Can be notice, warning, or error
+	 * @param {string} [context=null] The context is any other element or object which will be logged.
 	 * @return {boolean} Returns true or console.log.
 	 **/
 	zaj.log = function(message, type, context){
@@ -95,7 +95,7 @@
 	/**
 	 * Logs an error message to the console.
 	 * @param {string} message The message to log.
-	 * @param {string} context The context is any other element or object which will be logged.
+	 * @param {string} [context=null] The context is any other element or object which will be logged.
 	 * @return {boolean} Returns true or console.log.
 	 **/
 	zaj.error = function(message, context){
@@ -105,7 +105,7 @@
 	/**
 	 * Logs a warning message to the console.
 	 * @param {string} message The message to log.
-	 * @param {string} context The context is any other element or object which will be logged.
+	 * @param {string} [context=null] The context is any other element or object which will be logged.
 	 * @return {boolean} Returns true or console.log.
 	 **/
 	zaj.warning = function(message, context){
@@ -115,7 +115,7 @@
 	/**
 	 * Logs a notice message to the console.
 	 * @param {string} message The message to log.
-	 * @param {string} context The context is any other element or object which will be logged.
+	 * @param {string} [context=null] The context is any other element or object which will be logged.
 	 * @return {boolean} Returns true or console.log.
 	 **/
 	zaj.notice = function(message, context){
@@ -394,10 +394,19 @@
 									$(result).html(data);
 								}
 								else{
+									/** @type {{status: String, message: String, highlight: Array, errors: <string, string>}|boolean} dataJson */
+									var dataJson;
 									// check to see if data is json
 									try{
-										/** @type {{status: String, message: String, highlight: Array, errors: <string, string>}} dataJson */
-										var dataJson = $.parseJSON(data);
+										dataJson = $.parseJSON(data);
+									}
+									// not json, so parse as string
+									catch(err){
+										dataJson = false;
+									}
+
+									// If data json is not false, then it is json
+									if(dataJson !== false){
 										if(dataJson.status == 'ok') zaj.redirect(result);
 										else{
 											// Display a message (if set)
@@ -423,20 +432,21 @@
 														// Get input and input group
 														var input = $('[name="'+key+'"]');
 														var inputGroup = input.parent('.form-group');
-														if(zaj.bootstrap3) input.attr('title', msg).tooltip({trigger:'manual'}).tooltip('show');
-														// Add the error class and remove on change
-														input.addClass('has-error').change(function(){
+														var inputCleanup = function(){
 															input.removeClass('has-error');
 															inputGroup.removeClass('has-error');
 															if(zaj.bootstrap3) input.tooltip('hide');
-														});
+														};
+														if(zaj.bootstrap3) input.attr('title', msg).tooltip({trigger:'manual'}).tooltip('show');
+														// Add the error class and remove on change
+														input.addClass('has-error').change(inputCleanup).keyup(inputCleanup);
 														inputGroup.addClass('has-error');
 													});
 												}
 										}
 									}
 									// not json, so parse as string
-									catch(err){
+									else{
 										if(data == 'ok') zaj.redirect(result);
 										else zaj.alert(data);
 									}
