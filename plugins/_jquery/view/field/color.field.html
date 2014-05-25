@@ -1,1 +1,7 @@
-<input class='ofw-field-text form-control' type='color' id='{{field.id}}' name='{{field.name}}' value='{{field.value|escape}}'>
+<div class="input-group">
+	<input class='ofw-field-text form-control' type='color' id='{{field.id}}' name='{{field.name}}' value='{{field.value|escape}}'>
+	<span class="input-group-btn">
+		<!-- toggle color -->
+		<button class="btn btn-default" type="button" onclick="var inp = $(this).parent().prev(); if(inp.attr('type') == 'text') inp.attr('type', 'color'); else inp.attr('type', 'text');"><i class="fa fa-code"></i></button>
+	</span>
+</div>
