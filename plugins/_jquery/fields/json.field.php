@@ -80,8 +80,8 @@ class zajfield_json extends zajField {
 				$data = $sdata;
 			}
 		// Standard array, so serialize
-			if($data && is_array($data)) $newdata = json_encode($this->zajlib->array->array_to_object($data));
-			elseif($data && is_object($data)) $newdata = json_encode($data);
+			if(is_array($data)) $newdata = json_encode($this->zajlib->array->array_to_object($data));
+			elseif(is_object($data)) $newdata = json_encode($data);
 			else $newdata = $data;
 		return array($newdata, $data);
 	}
