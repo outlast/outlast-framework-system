@@ -128,7 +128,7 @@ class Photo extends zajModel {
 	 * @return bool|Photo Returns the Photo object, false if error.
 	 */
 	public function set_image($filename = ""){
-		// if filename is empty, use default tempoary name
+		// if filename is empty, use default temporary name
 			if(empty($filename)) $filename = $this->id.".tmp";
 		// jail file
 			if(strpos($filename, '..') !== false || strpos($filename, '/') !== false) $this->zajlib->error("invalid filename given when trying to save final image.");
@@ -139,16 +139,16 @@ class Photo extends zajModel {
 			if(strpos($filename,"/") !== false) return $this->zajlib->error('uploaded photo cannot be saved: must specify relative path to cache/upload folder.');
 			if(!file_exists($this->zajlib->basepath."cache/upload/".$filename)) return $this->zajlib->error("uploaded photo $filename does not exist!");
 			if($image_data === false) return $this->zajlib->error('uploaded file is not a photo. you should always check this before calling set_image/upload!');
+		// now enable time-based folders
+			$this->set('timepath', true);
+			$this->timepath = true;
+			$filesizes = $dimensions = array();
 		// check image type of source
 			$image_type = exif_imagetype($file_path);
 		// select extension
 			if($image_type == IMAGETYPE_PNG) $extension = 'png';
 			elseif($image_type == IMAGETYPE_GIF) $extension = 'gif';
 			else $extension = 'jpg';
-		// now enable time-based folders
-			$this->set('timepath', true);
-			$this->timepath = true;
-			$filesizes = $dimensions = array();
 		// no errors, resize and save
 			foreach($GLOBALS['photosizes'] as $key => $size){
 				if($size !== false){
@@ -211,6 +211,97 @@ class Photo extends zajModel {
 	public function show($size = "normal"){
 		$this->download($size, false);
 	}
+
+	/**
+	 * Crop image.
+	 * @param integer $x Cropped image offset from left.
+	 * @param integer $y Cropped image offset from top.
+	 * @param integer $w Cropped image width.
+	 * @param integer $h Cropped image height.
+	 * @param integer $jpeg_quality A number value of the jpg quality to be used in conversion. Only matters for jpg output.
+	 * @param boolean $keep_a_copy_of_original If set to true (default), a copy of the original file will be kept.
+	 * @return boolean True if successful, false otherwise.
+	 */
+	public function crop($x, $y, $w, $h, $jpeg_quality = 85, $keep_a_copy_of_original = true){
+		// get master file
+			$file_path = $this->get_master_file_path();
+		// get extension
+			$extension = $this->get_extension($file_path);
+		// save a copy of the original
+			if($keep_a_copy_of_original){
+				$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-beforecrop-".date('Y-m-d-h-i-s').".".$extension, true);
+				copy($file_path, $new_path);
+			}
+		// now perform the crop and save over original
+			$this->zajlib->graphics->crop($file_path, $file_path, $x, $y, $w, $h, $jpeg_quality);
+		// now perform the resize
+			$this->resize();
+	}
+
+	/**
+	 * Create all of the defined size versions from the master file.
+	 */
+	public function resize(){
+		// get master file
+			$file_path = $this->get_master_file_path();
+		// get extension
+			$extension = $this->get_extension($file_path);
+		// create a copy of the master file (if not already done)
+			$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-full.".$extension, true);
+			if($file_path != $new_path) copy($file_path, $new_path);
+		// get sizes
+			$sizes = $GLOBALS['photosizes'];
+			unset($sizes['full']);
+		// resize
+			foreach($sizes as $key => $size){
+				if($size !== false){
+					// save resized images perserving extension
+						$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-$key.".$extension, true);
+					// resize it now!
+						$this->zajlib->graphics->resize($file_path, $new_path, $size);
+					// let's get the new file size
+						$filesizes[$key] = @filesize($new_path);
+						$my_image_data = @getimagesize($new_path);
+						$dimensions[$key] = array('w'=>$my_image_data[0], 'h'=>$my_image_data[1]);
+				}
+			}
+	}
+
+	/**
+	 * Get the file path of the original image.
+	 */
+	public function get_master_file_path(){
+		// Use the temporary name if not yet saved
+			if($this->temporary) $path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
+			else{
+				// Determine the highest resolution version of the image
+					$last_key = end(array_keys($GLOBALS['photosizes']));
+					$path = $this->zajlib->basepath.$this->__get('rel_'.$last_key);
+			}
+		// Perform verification
+			$this->zajlib->file->file_check($path);
+			$my_image_data = @getimagesize($path);
+			if($my_image_data === false) return $this->zajlib->error("Could not get photo file path. Path is not a photo: ".$path);
+		// All is ok, return
+			return $path;
+	}
+
+	/**
+	 * Get the file extension type.
+	 * @param string|boolean $file_path The path whoes extension we wish to check. Defaults to the master file path.
+	 * @return string Will return png, gif, or jpg.
+	 */
+	public function get_extension($file_path = false){
+		// Get my file
+			if($file_path === false) $file_path = $this->get_master_file_path();
+		// Verify the extension
+			$image_type = exif_imagetype($file_path);
+			if($image_type == IMAGETYPE_PNG) $extension = 'png';
+			elseif($image_type == IMAGETYPE_GIF) $extension = 'gif';
+			else $extension = 'jpg';
+		return $extension;
+	}
+
 
 	/**
 	 * Forces a download dialog for the browser.
