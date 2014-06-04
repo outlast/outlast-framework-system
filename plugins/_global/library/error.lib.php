@@ -24,6 +24,11 @@ class zajlib_error extends zajLibExtension {
 	private $last_warning_text = '';
 
 	/**
+	 * @var string The last warning's text.
+	 */
+	private $last_deprecated_text = '';
+
+	/**
 	 * @var string The last notice's text.
 	 */
 	private $last_notice_text = '';
@@ -57,6 +62,17 @@ class zajlib_error extends zajLibExtension {
 		// Log my error
 			$this->log($message, 'warning');
 		return false;	
+	}
+
+	/**
+	 * Sends a deprecation message.
+	 * @param string $message The reported message.
+	 * @return boolean Always returns false unless test is running and errors are surpressed.
+	 **/
+	public function deprecated($message){
+		// Log my error
+			$this->log($message, 'deprecated');
+		return false;
 	}
 
 	/**
@@ -122,6 +138,9 @@ class zajlib_error extends zajLibExtension {
 					break;
 				case 'warning':
 					$this->last_warning_text = $errortext;
+					break;
+				case 'deprecated':
+					$this->last_deprecated_text = $errortext;
 					break;
 				case 'error':
 				default:

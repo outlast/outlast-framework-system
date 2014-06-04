@@ -332,6 +332,20 @@ class zajLib {
 	}
 
 	/**
+	 * Returns a deprecation message but continues execution.
+	 * @param string $message The deprecation message to display and/or log.
+	 * @return bool Always returns false.
+	 **/
+	public function deprecated($message){
+		// Manually load error reporting lib
+			/* @var zajlib_error $error */
+			$error = $this->load->library('error');
+		// Now report the error
+			return $error->deprecated($message);
+	}
+
+
+	/**
 	 * Displays a query in the browser log.
 	 * @param string $message
 	 **/
@@ -746,7 +760,7 @@ class zajLibLoader{
 	 * @param string $file_path The file path relative to the system or site folder.
 	 * @param boolean $check_if_exists Not implemented.
 	 * @return void|bool Prints the string generated, returns nothing or true if already printed.
-	 * @depricated
+	 * @deprecated
 	 **/
 	public function js($file_path, $check_if_exists = false){
 		// is it loaded already?
@@ -766,7 +780,7 @@ class zajLibLoader{
 	 * @param string $file_path The file path relative to the system or site folder.
 	 * @param boolean $check_if_exists Not implemented.
 	 * @return void|bool Prints the string generated, returns nothing or true if already printed.
-	 * @depricated
+	 * @deprecated
 	 **/
 	public function css($file_path, $check_if_exists = false){
 		// is it loaded already?

@@ -4,7 +4,7 @@
  * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
- * @depricated
+ * @deprecated
  **/
 
 class zajlib_sandbox extends zajLibExtension {
