@@ -824,6 +824,246 @@
 				this.readyFunctions.push(func);
 			}
 		};
+	/**
+	 * Provide helper for file uploads.
+	 */
+
+		/**
+		 * Helper js for plupload to make it compatible with Outlast Framework upload forms.
+		 * @param options
+		 * Basics
+		 * @option browse_button
+		 * @option drop_element
+		 * @option max_file_size
+		 * @option input_name
+		 * @option input_crop
+		 * @option alert_toosmall
+		 * @option alert_toolarge
+		 * @option debug_mode
+		 * Cropping
+		 * @option {boolean} crop_disabled If set to true, cropping is disabled.
+		 * @option {integer} min_width The minimum width in pixels
+		 * @option {integer} min_height The minimum width in pixels
+		 * @option {string} ratio The ration for cropping
+		 * Webcam
+		 * @option {boolean} webcam_enabled True if webcam is enabled
+		 * @option {string} webcam_button Selector of the webcam button
+		 * @option {string} webcam_id ID of the webcam (usually field id)
+		 **/
+		var open_graphapi_uploader_callback = {};
+		zaj.plupload = {
+			// Public variables
+			ready: false,
+			percent: 0,
+
+			/**
+			 * Cropper
+			 * @param options The options object, specified above.
+			 */
+			cropper: function(options){
+				// Make sure baseurl is defined
+				if(typeof zaj.baseurl == 'undefined' || !zaj.baseurl) zaj.error("Baseurl not defined, cannot init uploader!");
+				// Globals
+				var selection_changed = false;
+				var sel_instance;
+
+				// Create plupload object
+				var uploader = new plupload.Uploader({
+					runtimes : 'html5,flash,html4',
+					browse_button : options.browse_button,
+					drop_element : options.drop_element,
+					max_file_size : options.max_file_size,
+					url : zaj.baseurl+'system/plupload/upload/photo/',
+					flash_swf_url : zaj.baseurl+'system/js/plupload/plupload.flash.swf'
+				});
+				var uploadergo = function(){
+					uploader.start()
+				}
+				if(options.debug_mode) zaj.log("Uploader is in debug mode.");
+
+				// Add uploader events
+				uploader.bind('Init', function(up, params){
+					zaj.log("Uploader initialized. Runtime is " + params.runtime);
+				});
+				uploader.bind('FilesAdded', function(up, files) {
+					if(options.debug_mode) zaj.log("File added to uploader.");
+					// If Flash is enabled, turn it off
+					if(options.webcam_enabled) flash_off();
+					// Go!
+					setTimeout(uploadergo, 800);
+				});
+				uploader.bind('UploadProgress', function(up, file) {
+					if(options.debug_mode) zaj.log("File at "+file.percent+"%.");
+					zaj.plupload.percent = file.percent;
+					$(options.file_percent).text(file.percent+'%');
+				});
+				uploader.bind('Error', function(up, err) {
+					if(options.debug_mode) zaj.log("Error: " + err.code +", Message: " + err.message + (err.file ? ", File: " + err.file.name : ""));
+					zaj.alert(options.alert_toolarge);
+					up.refresh(); // Reposition Flash/Silverlight
+				});
+				uploader.bind('FileUploaded', function(up, file, result) {
+					// Log and set variables
+					if(options.debug_mode) zaj.log("Completed.");
+					zaj.plupload.percent = 100;
+					zaj.plupload.ready = true;
+					setTimeout(function(){
+						$(options.file_percent).text('');
+					}, 1000);
+					// Fire event on window
+					$(window).trigger('ofwFileUploaded', uploader);
+					// Parse results and share
+					var res = jQuery.parseJSON(result.response);
+					if(res.status == 'error') zaj.alert(options.alert_toolarge);
+					else uploader_update(res);
+				});
+
+				/**
+				 * Image area selector.
+				 * @param {object} res Res has three properties: res.height, res.width, res.id
+				 */
+				uploader.imgAreaSelect = function(res){
+					sel_instance = $(options.file_list+" img").imgAreaSelect({
+						show: true,
+						aspectRatio: options.ratio,
+						imageHeight: res.height,
+						imageWidth: res.width,
+						minWidth: options.min_width,
+						instance: true,
+						handles: true,
+						persistent: true,
+						fadeSpeed: 600,
+						onInit: function(){
+							sel_instance.setSelection(0, 0, options.min_width, options.min_height);
+							sel_instance.update(); },
+						onSelectChange: function(img, selection) {
+							selection_changed = true;
+							var dimensions = '{"x":'+selection.x1+',"y":'+selection.y1+',"w":'+selection.width+',"h":'+selection.height+'}';
+							$(options.input_crop).val(dimensions);
+						},
+						onSelectEnd: function(img, selection) {
+							// Let's check to see if selection was destroyed (recreate!)
+								if(selection.width == 0 || selection.height == 0){
+									zaj.log("Selection was destroyed, recreating!");
+									uploader.imgAreaSelect(res);
+								}
+							// Let's check to see if selection is less than the allowed minimum (allow a few pixels less for rounding)
+								if(selection.width + 5 < options.min_width || selection.height + 5 < options.min_height){
+									zaj.log("Selection too small, repositioning!");
+									sel_instance.setSelection(0, 0, options.min_width, options.min_height);
+									sel_instance.update();
+								}
+						}
+					});
+					uploader.imgAreaSelectInstance = sel_instance;
+				};
+
+
+				/**
+				 * Init initial image area selector.
+				 */
+
+				// Init crop default
+				if(!options.crop_disabled) $(options.input_crop).val('{"x":0,"y":0,"w":'+options.min_width+',"h":'+options.min_height+'}');
+
+				// Expects an object as such: res.height, res.width, res.id
+				var uploader_update = function(res){
+					if(options.debug_mode) zaj.log(res);
+					// Is it wide/tall enough?
+					if(res.width < options.min_width  || res.height < options.min_height) return zaj.alert(options.alert_toosmall);
+					// Add my image
+					if(options.debug_mode) zaj.log("Adding preview to "+options.file_list);
+					var imgurl = zaj.baseurl+'system/plupload/preview/?id='+res.id;
+					$(options.file_list).html("<img src='"+imgurl+"'>");
+					// Create a new selection (discard old)
+					if(!options.crop_disabled && sel_instance) sel_instance.remove();
+					selection_changed = false;
+					// Add landscape or portrait class to file_list
+					$(options.file_list).removeClass('landscape').removeClass('portrait');
+					if(res.width > res.height) $(options.file_list).addClass('landscape');
+					else $(options.file_list).addClass('portrait');
+					// Init my cropper
+					if(!options.crop_disabled){
+						// Enable the image area select
+						uploader.imgAreaSelect(res);
+						// Add click event to img in case it is disabled
+						$(options.file_list+" img").click(function(){
+							uploader.imgAreaSelect(res);
+						});
+					}
+					// Set as my input value
+					$(options.input_name).val(res.id);
+					// If Flash is enabled, turn it off
+					if(options.webcam_enabled) flash_off();
+
+				};
+				if(!options.uid) open_graphapi_uploader_callback = uploader_update;
+				else open_graphapi_uploader_callback[options.uid] = uploader_update;
+
+				/**
+				 * Webcam stuff.
+				 */
+
+				// Base variables
+				var flash_app;
+				var flash_is_active = false;
+
+				// Turn it on
+				var flash_on = function(){
+					if(!options.crop_disabled && sel_instance) sel_instance.remove();
+					flash_is_active=true;
+					$('div.foto.standard').hide();$('div.foto.flash').show();
+				};
+				// Turn it off
+				var flash_off = function(){
+					flash_is_active=false;
+					$('div.foto.standard').show();$('div.foto.flash').hide();
+				};
+
+				if(options.webcam_enabled){
+					// Add click event
+					$(options.webcam_button).click(function(){
+						// Snap or activate?
+						if(flash_is_active){
+							// Snap!
+							flash_app.snap_me();
+						}
+						else{
+							// Activate!
+							flash_on();
+							flash_app = $('#'+options.webcam_id+'-flash-swf')[0];
+						}
+					});
+				}
+				// Process upload
+				uploader.flash_upload_done = function(url, ev){
+					zaj.log(ev.target.data);
+					var rdata = jQuery.parseJSON(ev.target.data);
+					if(rdata.status == 'success'){
+						// Log and set variables
+						if(options.debug_mode) zaj.log("Completed.");
+						zaj.plupload.percent = 100;
+						zaj.plupload.ready = true;
+						setTimeout(function(){
+							$(options.file_percent).text('');
+						}, 1000);
+						// Fire event on window
+						$(window).trigger('ofwFileUploaded', uploader);
+						// Add to my filelist
+						uploader_update(rdata);
+					}
+					else zaj.alert(rdata.message);
+				};
+
+				// Run init
+				zaj.ready(function(){ uploader.init(); });
+				return uploader;
+			},
+			uploader: function(options){
+				this.cropper(options)
+			}
+		};
+
 
 	/**
 	 * Pushstate excitement
