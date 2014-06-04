@@ -69,6 +69,7 @@ class zajfield_photo extends zajField {
 				// check to see if already has parent (disable hijacking of photos)
 					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
 				// now set parent
+					$data->set('class', $object->class_name);
 					$data->set('parent', $object->id);
 					$data->set('field', $this->name);
 					$data->set('status', 'saved');
