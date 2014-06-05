@@ -8,6 +8,8 @@
 		 * Set up stuff.
 		 **/
 		public function setUp(){
+			// Load up my _test plugin (if not already done)
+				$this->zajlib->plugin->load('_test', true, true);
 		}
 
 		/**
