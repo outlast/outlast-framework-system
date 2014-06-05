@@ -28,7 +28,7 @@ class zajlib_export extends zajLibExtension {
 				zajLib::me()->model_autoloading = false;
 			// Try using PHPExcel if available
 				@include_once(OFW_EXPORT_PHPEXCEL_PATH);
-				if(!class_exists('PHPExcel', false)){
+				if(!class_exists('PHPExcel', false) || $excel_encoding){
 					// Standard CSV export
 						zajLib::me()->model_autoloading = true;
 					// Standard CSV or Excel header?
