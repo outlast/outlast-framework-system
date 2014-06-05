@@ -12,7 +12,6 @@ if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'sm
  * @property string $class The class of the parent.
  * @property string $parent The id of the parent.
  * @property string $field The field name of the parent.
- * @property boolean $timepath If the new time-based path is used.
  * @property integer $time_create
  * @property string $extension Extension, not including the dot
  * @property string $imagetype Can be IMAGETYPE_PNG, IMAGETYPE_GIF, or IMAGETYPE_JPG constant.
@@ -49,8 +48,11 @@ class Photo extends zajModel {
 			$f->description = zajDb::textbox();
 			$f->filesizes = zajDb::json();
 			$f->dimensions = zajDb::json();
-			$f->timepath = zajDb::boolean();
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
+
+			// Deprecated because everything is timepath now! Always true.
+			$f->timepath = zajDb::boolean(true);
+
 		// do not modify the line below!
 			$f = parent::__model(__CLASS__, $f); return $f;
 	}
@@ -69,7 +71,6 @@ class Photo extends zajModel {
 			$this->class = $this->data->class;
 			$this->parent = $this->data->parent;
 			$this->field = $this->data->field;
-			$this->timepath = $this->data->timepath;
 			$this->time_create = $this->data->time_create;
 		// See which file exists
 			if(file_exists($this->zajlib->basepath.$this->get_file_path($this->id."-normal.png"))){
@@ -87,7 +88,7 @@ class Photo extends zajModel {
 		// Calculate photo orientation
 			$this->landscape = $this->portrait = false;
 			if(is_object($this->data->dimensions)){
-				if($this->data->dimensions->small->w > $this->data->dimensions->small->h){
+				if($this->data->dimensions->small->w >= $this->data->dimensions->small->h){
 					$this->orientation = 'landscape';
 					$this->landscape = true;
 				}
@@ -121,8 +122,7 @@ class Photo extends zajModel {
 	 **/
 	public function get_file_path($filename, $create_folders = false){
 		// First, let's determine which function to use
-			if($this->timepath) $path = $this->zajlib->file->get_time_path("data/Photo", $filename, $this->time_create, false);
-			else $path = $this->zajlib->file->get_id_path("data/Photo", $filename, false);
+			$path = $this->zajlib->file->get_time_path("data/Photo", $filename, $this->time_create, false);
 		// Create folders if requested
 			if($create_folders) $this->zajlib->file->create_path_for($path);
 		// Now call and return!
@@ -155,11 +155,8 @@ class Photo extends zajModel {
 			if(strpos($filename,"/") !== false) return $this->zajlib->error('uploaded photo cannot be saved: must specify relative path to cache/upload folder.');
 			if(!file_exists($this->zajlib->basepath."cache/upload/".$filename)) return $this->zajlib->error("uploaded photo $filename does not exist!");
 			if($image_data === false) return $this->zajlib->error('uploaded file is not a photo. you should always check this before calling set_image/upload!');
-		// now enable time-based folders
-			$this->set('timepath', true);
-			$this->timepath = true;
+		// check image size and type of source
 			$filesizes = $dimensions = array();
-		// check image type of source
 			$image_type = exif_imagetype($file_path);
 		// select extension
 			if($image_type == IMAGETYPE_PNG) $extension = 'png';
