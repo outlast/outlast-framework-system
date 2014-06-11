@@ -149,10 +149,12 @@ class zajlib_export extends zajLibExtension {
 						if(is_a($s, 'zajModel')) $model_mode = true;
 						else $model_mode = false;
 					// Add first default value (only if model_mode)
-						if($model_mode) $data['name'] = $s->name;
-					// Convert encoding if excel mode selected
-						if($encoding) $data['name'] = mb_convert_encoding($data['name'], $encoding, 'UTF-8');
-					
+						if($model_mode){
+							// Set as name
+								$data['name'] = $s->name;
+							// Convert encoding if it is set
+								if($encoding) $data['name'] = mb_convert_encoding($data['name'], $encoding, 'UTF-8');
+						}
 						
 					// Add my values for each field
 						foreach($fields as $type => $field){
