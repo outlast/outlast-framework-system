@@ -640,11 +640,22 @@
 	 **/
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
-	 	};	 
+	 	};
+
+	/**
+	 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
+	 * @param {string} url The url to inspect and prepare for a query string.
+	 * @return {string} Returns a url with ? added if no query string or & added if it already has a query string.
+	 */
+		zaj.querymode  = function(url){
+			if(url.indexOf('?') > -1) return url+'&';
+			else return url+'?';
+		};
+
 
 	/**
 	 * Enables sortable features on a list of items. Requires jquery-ui sortable feature.
-	 * @param {string} target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
+	 * @param {string|jQuery} target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
 	 * @param {string} url The url which will handle this sortable request.
 	 **/
 		zaj.sortable = function(target, url){
@@ -1082,10 +1093,11 @@
 	  	var target = this;
 	  	// Create my object and return
 		return {
+
 	  		// Get or post serialized data
-	  		get: function(url, response){ return zaj.ajax.get(url+'?'+target.serialize(), response); },
-	  		post: function(url, response){ return zaj.ajax.post(url+'?'+target.serialize(), response); },
-	  		submit: function(url, response){ return zaj.ajax.submit(url+'?'+target.serialize(), response); },
+	  		get: function(url, response){ return zaj.ajax.get(zaj.querymode(url)+target.serialize(), response); },
+	  		post: function(url, response){ return zaj.ajax.post(zaj.querymode(url)+target.serialize(), response); },
+	  		submit: function(url, response){ return zaj.ajax.submit(zaj.querymode(url)+target.serialize(), response); },
 	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
 	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
 	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, receiver: $(receiver), callback: function(r){
@@ -1094,7 +1106,6 @@
 	  	};
 	  };
 	})(jQuery);
-
 
 	/**
 	 * Now add some attribute sniffer helpers
