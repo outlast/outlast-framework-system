@@ -413,81 +413,9 @@
 									$(result).html(data);
 								}
 								else{
-									/** @type {{status: String, message: String, highlight: Array, errors: <string, string>}|boolean} dataJson */
-									var dataJson;
-									// check to see if data is json
-									try{
-										dataJson = $.parseJSON(data);
-									}
-									// not json, so parse as string
-									catch(err){
-										dataJson = false;
-									}
-
-									// If data json is not false, then it is json
-									if(dataJson !== false){
-										if(dataJson.status == 'ok') zaj.redirect(result);
-										else{
-											// Define vars
-												var input, inputGroup, inputCleanup;
-												/** @type {boolean|Number} scrollTo */
-												var scrollTo = false;
-											// Display a message (if set)
-												if(dataJson.message != null) zaj.alert(dataJson.message);
-											// Highlight the fields (if set)
-												// @todo Make sure that fields are only selected if they are part of the request to begin with! But how?
-												if(typeof dataJson.highlight == 'object'){
-													$.each(dataJson.highlight, function(key, val){
-														// Add the error class and remove on change
-														input = $('[name="'+val+'"]');
-														inputGroup = input.parent('.form-group');
-														inputCleanup = function(){
-															$(this).removeClass('has-error');
-															$(this).parent('.form-group').removeClass('has-error');
-														};
-														input.addClass('has-error').change(inputCleanup).keyup(inputCleanup);
-														inputGroup.addClass('has-error');
-														// Check to see if input is higher than any previous input
-														/** @type {Number|Window} inputOffset */
-														var inputOffset = input.offset().top;
-														if(scrollTo === false || inputOffset < scrollTo) scrollTo = inputOffset;
-													});
-												}
-											// Display errors for each field
-												// @todo Make sure that fields are only selected if they are part of the request to begin with! But how?
-												if(typeof dataJson.errors == 'object'){
-													$.each(dataJson.errors, function(key, msg){
-														// Get input and input group
-														input = $('[name="'+key+'"]');
-														inputGroup = input.parent('.form-group');
-														inputCleanup = function(){
-															$(this).removeClass('has-error');
-															$(this).parent('.form-group').removeClass('has-error');
-															if(zaj.bootstrap3) $(this).tooltip('hide');
-														};
-														// @todo enable invisible fields to somehow work their magic! have a date-attribute with the selector of the visible field
-														if(zaj.bootstrap3 && input.filter(':visible').length > 0){
-															input.attr('title', msg).attr('data-original-title', msg).tooltip({trigger:'manual', animation: false}).tooltip('show');
-															// Add the error class and remove on change
-															input.addClass('has-error').change(inputCleanup).keyup(inputCleanup);
-															inputGroup.addClass('has-error');
-															// Check to see if input is higher than any previous input
-															/** @type {Number|Window} inputOffset */
-															var inputOffset = input.offset().top - input.next('.tooltip').height() - 10;
-															if(scrollTo === false || inputOffset < scrollTo) scrollTo = inputOffset;
-														}
-														else zaj.alert(msg);
-													});
-												}
-											// Scroll to top-most
-												if(scrollTo !== false) zaj.scroll(scrollTo);
-										}
-									}
-									// not json, so parse as string
-									else{
-										if(data == 'ok') zaj.redirect(result);
-										else zaj.alert(data);
-									}
+									var validationResult = zaj.validate(data);
+									if(validationResult === true) zaj.redirect(result);
+									else return validationResult;
 								}
 							// pushState actions
 								if(psused){
@@ -524,6 +452,91 @@
 						cache: false
 					});
 				return request;
+			};
+
+			/**
+			 * Perform validation with return data.
+			 * @param {string} data This can be a json string or a non-json string.
+			 * @return {boolean} Will return true if validation was successful, false if not.
+			 */
+			zaj.validate = function(data){
+				/** @type {{status: String, message: String, highlight: Array, errors: <string, string>}|boolean} dataJson */
+				var dataJson;
+				// check to see if data is json
+				try{
+					dataJson = $.parseJSON(data);
+				}
+				// not json, so parse as string
+				catch(err){
+					dataJson = false;
+				}
+
+				// If data json is not false, then it is json
+				if(dataJson !== false){
+					if(dataJson.status == 'ok') return true;
+					else{
+						// Define vars
+							var input, inputGroup, inputCleanup;
+							/** @type {boolean|Number} scrollTo */
+							var scrollTo = false;
+						// Display a message (if set)
+							if(dataJson.message != null) zaj.alert(dataJson.message);
+						// Highlight the fields (if set)
+							// @todo Make sure that fields are only selected if they are part of the request to begin with! But how?
+							if(typeof dataJson.highlight == 'object'){
+								$.each(dataJson.highlight, function(key, val){
+									// Add the error class and remove on change
+									input = $('[name="'+val+'"]');
+									inputGroup = input.parent('.form-group');
+									inputCleanup = function(){
+										$(this).removeClass('has-error');
+										$(this).parent('.form-group').removeClass('has-error');
+									};
+									input.addClass('has-error').change(inputCleanup).keyup(inputCleanup);
+									inputGroup.addClass('has-error');
+									// Check to see if input is higher than any previous input
+									/** @type {Number|Window} inputOffset */
+									var inputOffset = input.offset().top;
+									if(scrollTo === false || inputOffset < scrollTo) scrollTo = inputOffset;
+								});
+							}
+						// Display errors for each field
+							// @todo Make sure that fields are only selected if they are part of the request to begin with! But how?
+							if(typeof dataJson.errors == 'object'){
+								$.each(dataJson.errors, function(key, msg){
+									// Get input and input group
+									input = $('[name="'+key+'"]');
+									inputGroup = input.parent('.form-group');
+									inputCleanup = function(){
+										$(this).removeClass('has-error');
+										$(this).parent('.form-group').removeClass('has-error');
+										if(zaj.bootstrap3) $(this).tooltip('hide');
+									};
+									// @todo enable invisible fields to somehow work their magic! have a date-attribute with the selector of the visible field
+									if(zaj.bootstrap3 && input.filter(':visible').length > 0){
+										input.attr('title', msg).attr('data-original-title', msg).tooltip({trigger:'manual', animation: false}).tooltip('show');
+										// Add the error class and remove on change
+										input.addClass('has-error').change(inputCleanup).keyup(inputCleanup);
+										inputGroup.addClass('has-error');
+										// Check to see if input is higher than any previous input
+										/** @type {Number|Window} inputOffset */
+										var inputOffset = input.offset().top - input.next('.tooltip').height() - 10;
+										if(scrollTo === false || inputOffset < scrollTo) scrollTo = inputOffset;
+									}
+									else zaj.alert(msg);
+								});
+							}
+						// Scroll to top-most
+							if(scrollTo !== false) zaj.scroll(scrollTo);
+					}
+				}
+				// not json, so parse as string
+				else{
+					if(data == 'ok') return true;
+					else zaj.alert(data);
+				}
+				// all other cases return false
+				return false;
 			};
 
 		/**
