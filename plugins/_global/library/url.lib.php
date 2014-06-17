@@ -67,6 +67,17 @@ class zajlib_url extends zajLibExtension {
 	}
 
 	/**
+	 * Get ready for query string by adding a ? or & to the url.
+	 * @param string $url Any url.
+	 * @return string Will return a url that is definitely ready to append a query string.
+	 */
+	function querymode($url){
+		// Does it have a ? already?
+			if(strstr($url, '?')) return $url.'&';
+			else return $url.'?';
+	}
+
+	/**
 	 * Returns true or false depending on whether the passed string is a valid http URL.
 	 * @param string $url The url to be parsed
 	 * @param boolean $allow_spaces Allow spaces in query string. This will allow spaces in query string, but also in the url. True url-encoded strings should not require this since spaces are %20.
