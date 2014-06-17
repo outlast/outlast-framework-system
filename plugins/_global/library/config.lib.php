@@ -177,7 +177,7 @@ class zajlib_config extends zajLibExtension{
 		// generate variable
 			// treat booleans and numbers separately
 				if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n";
-				else $current_line = '$this->zajlib->config->variable->'.$varname.' = \''.addslashes($varcontent)."';\n";
+				else $current_line = '$this->zajlib->config->variable->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n";
 		return $current_line;
 	}
 
