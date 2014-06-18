@@ -307,15 +307,16 @@ class zajLib {
 	/**
 	 * Returns an error message and exists. Useful for fatal errors.
 	 * @param string $message The error message to display and/or log.
+	 * @param boolean $display_to_users If set to true, the message will also be displayed to users even if not in debug mode. Defaults to false with a generic error message displayed.
 	 * @return bool Does not return anything.
 	 **/
-	public function error($message){
+	public function error($message, $display_to_users = false){
 		// Manually load error reporting lib
 			/* @var zajlib_error $error */
 			$error = $this->load->library('error');
 		// Now report the error and send 500 error
 			if(!$this->output_started) header('HTTP/1.1 500 Internal Server Error');
-			$error->error($message);	// this terminates the run
+			$error->error($message, $display_to_users);	// this terminates the run
 	}
 
 	/**

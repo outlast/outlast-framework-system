@@ -44,9 +44,9 @@ class zajlib_error extends zajLibExtension {
 	 * @param string $message The reported message.
 	 * @return boolean Always returns false unless test is running and errors are surpressed.
 	 **/
-	public function error($message){
+	public function error($message, $display_to_users = false){
 		// Log my error
-			$this->log($message, 'error');
+			$this->log($message, 'error', $display_to_users);
 		// If tests are running and errors surpessed, let it pass
 			if($this->errors_disabled_during_test && $this->zajlib->test->is_running()) return true;
 		// Fatal error, so exit
@@ -130,7 +130,7 @@ class zajlib_error extends zajLibExtension {
 	 * @param string $errorlevel Can be 'error', 'warning', or 'notice' to specify the mode of reporting.
 	 * @return boolean Will return true if logging was successful.
 	 */
-	private function log($errortext, $errorlevel='error'){		
+	private function log($errortext, $errorlevel='error', $display_to_users = false){
 		// Save my text
 			switch($errorlevel){
 				case 'notice':
@@ -167,6 +167,7 @@ class zajlib_error extends zajLibExtension {
 					if(!empty($backtrace[2]['class'])) $error_details['class'] = $backtrace[2]['class'];
 				}
 			// Update error text
+				$original_error_text = $errortext;
 				$errortext .= " on line ".$error_details['line']." of ".$error_details['file'];
 				$error_details['errortext'] = $errortext;
 
@@ -208,7 +209,10 @@ class zajlib_error extends zajLibExtension {
 		// only print if it is fatal error or debug mode
 			if($errorlevel == 'error' || zajLib::me()->debug_mode){
 				// print it to screen
-					if(!zajLib::me()->debug_mode) $errortext = "Sorry, there has been a system error. The webmaster has been notified of the issue.";
+					if(!zajLib::me()->debug_mode){
+						if($display_to_users) $errortext = "Sorry, there has been a system error: ".$original_error_text;
+						else $errortext = "Sorry, there has been a system error. The webmaster has been notified of the issue.";
+					}
 					else "OUTLAST FRAMEWORK ".strtoupper($errorlevel).": ".$errortext;
 		
 						// display the error?
