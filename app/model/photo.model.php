@@ -12,7 +12,6 @@ if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'sm
  * @property string $class The class of the parent.
  * @property string $parent The id of the parent.
  * @property string $field The field name of the parent.
- * @property boolean $timepath If the new time-based path is used.
  * @property integer $time_create
  * @property string $extension Extension, not including the dot
  * @property string $imagetype Can be IMAGETYPE_PNG, IMAGETYPE_GIF, or IMAGETYPE_JPG constant.
@@ -22,6 +21,10 @@ if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'sm
  * @property string $normal
  * @property string $large
  * @property string $full
+ * Orientation properties
+ * @property string $orientation Can be 'portrait' or 'landscape'.
+ * @property boolean $portrait True if portrait.
+ * @property boolean $landscape True if landscape.
  *
  * @method static Photo|zajFetcher fetch()
  **/
@@ -45,8 +48,11 @@ class Photo extends zajModel {
 			$f->description = zajDb::textbox();
 			$f->filesizes = zajDb::json();
 			$f->dimensions = zajDb::json();
-			$f->timepath = zajDb::boolean();
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
+
+			// Deprecated because everything is timepath now! Always true.
+			$f->timepath = zajDb::boolean(true);
+
 		// do not modify the line below!
 			$f = parent::__model(__CLASS__, $f); return $f;
 	}
@@ -65,7 +71,6 @@ class Photo extends zajModel {
 			$this->class = $this->data->class;
 			$this->parent = $this->data->parent;
 			$this->field = $this->data->field;
-			$this->timepath = $this->data->timepath;
 			$this->time_create = $this->data->time_create;
 		// See which file exists
 			if(file_exists($this->zajlib->basepath.$this->get_file_path($this->id."-normal.png"))){
@@ -79,6 +84,18 @@ class Photo extends zajModel {
 			else{
 				$this->extension = 'jpg';
 				$this->imagetype = IMAGETYPE_JPEG;
+			}
+		// Calculate photo orientation
+			$this->landscape = $this->portrait = false;
+			if(is_object($this->data->dimensions)){
+				if($this->data->dimensions->small->w >= $this->data->dimensions->small->h){
+					$this->orientation = 'landscape';
+					$this->landscape = true;
+				}
+				else{
+					$this->orientation = 'portrait';
+					$this->portrait = true;
+				}
 			}
 	}
 
@@ -105,8 +122,7 @@ class Photo extends zajModel {
 	 **/
 	public function get_file_path($filename, $create_folders = false){
 		// First, let's determine which function to use
-			if($this->timepath) $path = $this->zajlib->file->get_time_path("data/Photo", $filename, $this->time_create, false);
-			else $path = $this->zajlib->file->get_id_path("data/Photo", $filename, false);
+			$path = $this->zajlib->file->get_time_path("data/Photo", $filename, $this->time_create, false);
 		// Create folders if requested
 			if($create_folders) $this->zajlib->file->create_path_for($path);
 		// Now call and return!
@@ -128,7 +144,7 @@ class Photo extends zajModel {
 	 * @return bool|Photo Returns the Photo object, false if error.
 	 */
 	public function set_image($filename = ""){
-		// if filename is empty, use default tempoary name
+		// if filename is empty, use default temporary name
 			if(empty($filename)) $filename = $this->id.".tmp";
 		// jail file
 			if(strpos($filename, '..') !== false || strpos($filename, '/') !== false) $this->zajlib->error("invalid filename given when trying to save final image.");
@@ -139,16 +155,13 @@ class Photo extends zajModel {
 			if(strpos($filename,"/") !== false) return $this->zajlib->error('uploaded photo cannot be saved: must specify relative path to cache/upload folder.');
 			if(!file_exists($this->zajlib->basepath."cache/upload/".$filename)) return $this->zajlib->error("uploaded photo $filename does not exist!");
 			if($image_data === false) return $this->zajlib->error('uploaded file is not a photo. you should always check this before calling set_image/upload!');
-		// check image type of source
+		// check image size and type of source
+			$filesizes = $dimensions = array();
 			$image_type = exif_imagetype($file_path);
 		// select extension
 			if($image_type == IMAGETYPE_PNG) $extension = 'png';
 			elseif($image_type == IMAGETYPE_GIF) $extension = 'gif';
 			else $extension = 'jpg';
-		// now enable time-based folders
-			$this->set('timepath', true);
-			$this->timepath = true;
-			$filesizes = $dimensions = array();
 		// no errors, resize and save
 			foreach($GLOBALS['photosizes'] as $key => $size){
 				if($size !== false){
@@ -213,6 +226,96 @@ class Photo extends zajModel {
 	}
 
 	/**
+	 * Crop image.
+	 * @param integer $x Cropped image offset from left.
+	 * @param integer $y Cropped image offset from top.
+	 * @param integer $w Cropped image width.
+	 * @param integer $h Cropped image height.
+	 * @param integer $jpeg_quality A number value of the jpg quality to be used in conversion. Only matters for jpg output.
+	 * @param boolean $keep_a_copy_of_original If set to true (default), a copy of the original file will be kept.
+	 * @return boolean True if successful, false otherwise.
+	 */
+	public function crop($x, $y, $w, $h, $jpeg_quality = 85, $keep_a_copy_of_original = true){
+		// get master file
+			$file_path = $this->get_master_file_path();
+		// get extension
+			$extension = $this->get_extension($file_path);
+		// save a copy of the original
+			if($keep_a_copy_of_original){
+				$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-beforecrop-".date('Y-m-d-h-i-s').".".$extension, true);
+				copy($file_path, $new_path);
+			}
+		// now perform the crop and save over original
+			$this->zajlib->graphics->crop($file_path, $file_path, $x, $y, $w, $h, $jpeg_quality);
+		// now perform the resize
+			$this->resize();
+	}
+
+	/**
+	 * Create all of the defined size versions from the master file.
+	 */
+	public function resize(){
+		// get master file
+			$file_path = $this->get_master_file_path();
+		// get extension
+			$extension = $this->get_extension($file_path);
+		// create a copy of the master file (if not already done)
+			$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-full.".$extension, true);
+			if($file_path != $new_path) copy($file_path, $new_path);
+		// get sizes
+			$sizes = $GLOBALS['photosizes'];
+			unset($sizes['full']);
+		// resize
+			foreach($sizes as $key => $size){
+				if($size !== false){
+					// save resized images perserving extension
+						$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-$key.".$extension, true);
+					// resize it now!
+						$this->zajlib->graphics->resize($file_path, $new_path, $size);
+					// let's get the new file size
+						$filesizes[$key] = @filesize($new_path);
+						$my_image_data = @getimagesize($new_path);
+						$dimensions[$key] = array('w'=>$my_image_data[0], 'h'=>$my_image_data[1]);
+				}
+			}
+	}
+
+	/**
+	 * Get the file path of the original image.
+	 */
+	public function get_master_file_path(){
+		// Use the temporary name if not yet saved
+			if($this->temporary) $path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
+			else{
+				// Determine the highest resolution version of the image
+					$last_key = end(array_keys($GLOBALS['photosizes']));
+					$path = $this->zajlib->basepath.$this->__get('rel_'.$last_key);
+			}
+		// Perform verification
+			$this->zajlib->file->file_check($path);
+			$my_image_data = @getimagesize($path);
+			if($my_image_data === false) return $this->zajlib->error("Could not get photo file path. Path is not a photo: ".$path);
+		// All is ok, return
+			return $path;
+	}
+
+	/**
+	 * Get the file extension type.
+	 * @param string|boolean $file_path The path whoes extension we wish to check. Defaults to the master file path.
+	 * @return string Will return png, gif, or jpg.
+	 */
+	public function get_extension($file_path = false){
+		// Get my file
+			if($file_path === false) $file_path = $this->get_master_file_path();
+		// Verify the extension
+			$image_type = exif_imagetype($file_path);
+			if($image_type == IMAGETYPE_PNG) $extension = 'png';
+			elseif($image_type == IMAGETYPE_GIF) $extension = 'gif';
+			else $extension = 'jpg';
+		return $extension;
+	}
+
+	/**
 	 * Forces a download dialog for the browser.
 	 * @param string $size One of the standard photo sizes.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
@@ -249,6 +352,7 @@ class Photo extends zajModel {
 		// now exit
 		exit;
 	}
+
 	/**
 	 * Overrides the global delete.
 	 * @param bool $complete If set to true, the file will be deleted too and the full entry will be removed.
@@ -273,27 +377,58 @@ class Photo extends zajModel {
 	///////////////////////////////////////////////////////////////
 	// be careful when using the import function to check if filename or url is valid
 
+	/**
+	 * Creates a photo with a specific parent object and field.
+	 * @param zajModel|string $parent The parent object.
+	 * @param string $field The name of the field.
+	 * @return Photo Returns a new bare photo object with the parent and field set.
+	 */
+	public static function create_with_parent($parent, $field){
+		// Check parent object
+			if(!is_object($parent) || !is_a($parent, 'zajModel')){
+				// @todo Change this to an error once we are done updating code!
+				//return zajLib::me()->error("You tried to create a new Photo with an invalid parent. You must pass an object instead of an id.");
+
+				// Temporary warning for backwards compatibility!
+				zajLib::me()->deprecated("You tried to create a new Photo, but didn't pass an object as a parent. You must pass an object (not an id string).");
+				$parent = (object) array('id'=>$parent, 'class_name'=>'');
+			}
+		// Creata a new Photo object
+			$pobj = Photo::create();
+			$pobj->set('parent', $parent->id);
+			$pobj->set('class', $parent->class_name);
+			$pobj->set('field', $field);
+		return $pobj;
+	}
 
 	/**
-	 * Creates a photo object from a file or url. Will return false if it is not an image or not found.
-	 * @param string $urlORfilename The url or file name.
-	 * @param zajModel|bool $parent My parent object. If not specified, none will be set.
+	 * Creates and saves a photo object from a file or url. Will return false if it is not an image or not found.
+	 * @param string $url_or_file_name The url or file name.
+	 * @param zajModel|bool $parent My parent object or id. If not specified, none will be set.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
 	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @return Photo Returns the new photo object or false if none created.
 	 **/
-	public static function create_from_file($urlORfilename, $parent = false, $save_now_to_final_destination = true){
+	public static function create_from_file($url_or_file_name, $parent = false, $field = null, $save_now_to_final_destination = true){
+		// @todo remove this backwards compatibility code
+			if($field === false){
+				zajLib::me()->deprecated("You called create_from_upload with an old parameter order. Update your code with the proper parameters. See docs.");
+				$save_now_to_final_destination = $field;
+			}
 		// First check to see if it is a photo
-			$image_data = @getimagesize($urlORfilename);
+			$image_data = @getimagesize($url_or_file_name);
 			if($image_data === false) return false;
-		// Make sure uploads folder exists
-			@mkdir(zajLib::me()->basepath."cache/upload/", 0777, true);
 		// Create object
 			/** @var Photo $pobj **/
-			$pobj = Photo::create();
-			$pobj->set('name', basename($urlORfilename));
-		// Copy to tmp destination and set stuff
-			copy($urlORfilename, zajLib::me()->basepath."cache/upload/".$pobj->id.".tmp");
-			if($parent !== false) $pobj->set('parent', $parent);
+			if($parent !== false) $pobj = Photo::create_with_parent($parent, $field);
+			else $pobj = Photo::create();
+		// Set basics
+			$pobj->set('name', basename($url_or_file_name));
+		// Copy to tmp destination
+			$tmp_destination = zajLib::me()->basepath."cache/upload/".$pobj->id.".tmp";
+			zajLib::me()->file->create_path_for($tmp_destination);
+			copy($url_or_file_name, $tmp_destination);
+		// Save or just be temporary
 			if($save_now_to_final_destination) $pobj->upload();
 			else $pobj->temporary = true;
 			$pobj->save();
@@ -303,54 +438,65 @@ class Photo extends zajModel {
 	 * Included for backwards-compatibility. Will be removed. Alias of create_from_file.
 	 * @todo Remove from version release.
 	 **/
-	public static function import($urlORfilename){ return self::create_from_file($urlORfilename); }
+	public static function import($urlORfilename){
+		zajLib::me()->deprecated("Used deprecated static method 'import' for Photo model.");
+		return self::create_from_file($urlORfilename);
+	}
 	
 	/**
 	 * Creates a photo object from php://input stream.
 	 * @param zajModel|bool $parent My parent object.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
 	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
-	public static function create_from_stream($parent = false, $save_now_to_final_destination = true){
+	public static function create_from_stream($parent = false, $field = null, $save_now_to_final_destination = true){
 		// Get raw data
 			$raw_data = file_get_contents("php://input");
 		// Now create from raw data!
-			return self::create_from_raw($raw_data, $parent, $save_now_to_final_destination);
+			return self::create_from_raw($raw_data, $parent, $field, $save_now_to_final_destination);
 	}
 	
 	/**
 	 * Creates a photo object from base64 data.
 	 * @param string $base64_data This is the photo file data, base64-encoded.
 	 * @param zajModel|bool $parent My parent object.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
 	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
-	public static function create_from_base64($base64_data, $parent = false, $save_now_to_final_destination = true){
+	public static function create_from_base64($base64_data, $parent = false, $field = null, $save_now_to_final_destination = true){
 		// Allow data-urls with base64 data
 			$base64_data = preg_replace("|data:[A-z0-9/]+;base64,|", "", $base64_data);
 		// Get raw data
 			$raw_data = base64_decode($base64_data);
 		// Now create from raw data!
-			return self::create_from_raw($raw_data, $parent, $save_now_to_final_destination);
+			return self::create_from_raw($raw_data, $parent, $field, $save_now_to_final_destination);
 	}
 
 	/**
 	 * Create a photo object from raw data.
 	 * @param string|boolean $raw_data If specified, this will be used instead of input stream data.
 	 * @param zajModel|bool $parent My parent object.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
 	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 */
-	public static function create_from_raw($raw_data, $parent = false, $save_now_to_final_destination = true){
+	public static function create_from_raw($raw_data, $parent = false, $field = null, $save_now_to_final_destination = true){
+		// @todo remove this backwards compatibility code
+			if($field === false){
+				zajLib::me()->deprecated("You called create_from_upload with an old parameter order. Update your code with the proper parameters. See docs.");
+				$save_now_to_final_destination = $field;
+			}
 		// Create a Photo object
 			/** @var Photo $pobj **/
-			$pobj = Photo::create();
+			if($parent !== false) $pobj = Photo::create_with_parent($parent, $field);
+			else $pobj = Photo::create();
 		// tmp folder
 			$folder = zajLib::me()->basepath.'/cache/upload/';
 			$filename = $pobj->id.'.tmp';
 		// make temporary folder
 			@mkdir($folder, 0777, true);
-		// write to temporary file in upload folder
 			@file_put_contents($folder.$filename, $raw_data);
 		// is photo an image
 			$image_data = getimagesize($folder.$filename);
@@ -361,44 +507,47 @@ class Photo extends zajModel {
 			}
 		// Now set stuff
 			$pobj->set('name', 'Upload');
-			if($parent !== false) $pobj->set('parent', $parent);
-			//$obj->set('status', 'saved'); (done by set_image)
 			if($save_now_to_final_destination) $pobj->set_image($filename);
 			else $pobj->temporary = true;
 			$pobj->save();
-			return $pobj;
+		return $pobj;
 	}
 
 	/**
 	 * Creates a photo object from a standard upload HTML4
 	 * @param string $field_name The name of the file input field.
 	 * @param zajModel|bool $parent My parent object.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
 	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
 	 * @return Photo|bool Returns the Photo object on success, false if not.
 	 **/
-	public static function create_from_upload($field_name, $parent = false, $save_now_to_final_destination = true){
+	public static function create_from_upload($field_name, $parent = false, $field = null, $save_now_to_final_destination = true){
+		// @todo remove this backwards compatibility code
+			if($field === false){
+				zajLib::me()->deprecated("You called create_from_upload with an old parameter order. Update your code with the proper parameters. See docs.");
+				$save_now_to_final_destination = $field;
+			}
 		// File names
 			$orig_name = $_FILES[$field_name]['name'];
 			$tmp_name = $_FILES[$field_name]['tmp_name'];
 		// If no file, return false
 			if(empty($tmp_name)) return false;
 		// Now create photo object and set me
-			/** @var Photo $obj **/
-			$obj = Photo::create();
+			/** @var Photo $pobj **/
+			if($parent !== false) $pobj = Photo::create_with_parent($parent, $field);
+			else $pobj = Photo::create();
 		// Move uploaded file to tmp
 			@mkdir(zajLib::me()->basepath.'cache/upload/');
-			$new_name = zajLib::me()->basepath.'cache/upload/'.$obj->id.'.tmp';
+			$new_name = zajLib::me()->basepath.'cache/upload/'.$pobj->id.'.tmp';
 		// Verify new name is jailed
 			zajLib::me()->file->file_check($new_name);
 			move_uploaded_file($tmp_name, $new_name);
 		// Now set and save
-			$obj->set('name', $orig_name);
-			if($parent !== false) $obj->set('parent', $parent);
-			//$obj->set('status', 'saved'); (done by set_image)
-			if($save_now_to_final_destination) $obj->upload();
-			else $obj->temporary = true;
-			$obj->save();
+			$pobj->set('name', $orig_name);
+			if($save_now_to_final_destination) $pobj->upload();
+			else $pobj->temporary = true;
+			$pobj->save();
 			@unlink($tmp_name);
-		return $obj;
+		return $pobj;
 	}
 }

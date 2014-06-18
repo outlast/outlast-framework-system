@@ -61,8 +61,9 @@ class zajDbMap extends zajDb{}
  * @property string $extension
  * @property string $imagetype Can be IMAGETYPE_PNG, IMAGETYPE_GIF, or IMAGETYPE_JPG constant.
  * @property string $status
- * @property string $original Depricated.
+ * @property string $original Deprecated.
  * @property string $description Description.
+ * @property stdClass $dimensions
  **/
 class zajDataPhoto extends zajData{}
 

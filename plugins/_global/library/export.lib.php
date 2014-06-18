@@ -9,6 +9,9 @@
 define("OFW_EXPORT_PHPEXCEL_PATH", "/var/www/_scripts/PHPExcel/PHPExcel.php");
 define("OFW_EXPORT_MAX_EXECUTION_TIME", 300);
 
+define("OFW_EXPORT_ENCODING_DEFAULT", false);
+define("OFW_EXPORT_ENCODING_EXCEL", true);
+
 
 class zajlib_export extends zajLibExtension {
 
@@ -17,23 +20,25 @@ class zajlib_export extends zajLibExtension {
 		 * @param array|zajlib_db_session|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
 		 * @param string $file_name The name of the file which will be used during download.
-		 * @param boolean $excel_encoding If set to true, it will download in CSV format which Excel can recognize.
+		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
 		 * @return void Print the csv.
 		 */
-		public function csv($fetcher, $fields = false, $file_name='export.csv', $excel_encoding = false, $delimiter = false){
+		public function csv($fetcher, $fields = false, $file_name='export.csv', $encoding = false, $delimiter = false){
 			// Show template
 
 			// No more autoloading for OFW
 				zajLib::me()->model_autoloading = false;
 			// Try using PHPExcel if available
 				@include_once(OFW_EXPORT_PHPEXCEL_PATH);
-				if(!class_exists('PHPExcel', false)){
+				if(!class_exists('PHPExcel', false) || $encoding){
 					// Standard CSV export
 						zajLib::me()->model_autoloading = true;
 					// Standard CSV or Excel header?
-						if($excel_encoding){
-							header("Content-Type: application/vnd.ms-excel; charset=UTF-16LE");
+						if($encoding){
+							// Use excel encoding or custom encoding
+							if($encoding === OFW_EXPORT_ENCODING_EXCEL) header("Content-Type: application/vnd.ms-excel; charset=UTF-16LE");
+							else  header("Content-Type: application/vnd.ms-excel; charset=".$encoding);
 							header("Content-Disposition: attachment; filename=\"$file_name\"");
 							if(!$delimiter) $delimiter = ';';
 						}
@@ -43,7 +48,7 @@ class zajlib_export extends zajLibExtension {
 							if(!$delimiter) $delimiter = ',';
 						}
 						$output = fopen('php://output', 'w');
-						$this->send_data($output, $fetcher, $fields, $excel_encoding, $delimiter);
+						$this->send_data($output, $fetcher, $fields, $encoding, $delimiter);
 				}
 				else{
 					// Create the csv file with PHPExcel
@@ -108,11 +113,13 @@ class zajlib_export extends zajLibExtension {
 		 * @param resource|PHPExcel $output The output object or handle.
 		 * @param zajFetcher|zajlib_db_session|array $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array $fields A list of fields from the model which should be included in the export.
-		 * @param boolean $excel_encoding If set to true, it will download in CSV format which Excel can recognize.
+		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
 		 * @return integer Returns the number of rows written.
 		 */
-		private function send_data(&$output, $fetcher, $fields, $excel_encoding=false, $delimiter=false){
+		private function send_data(&$output, $fetcher, $fields, $encoding=false, $delimiter=false){
+			// If encoding is boolean true, it is excel-encoding
+				if($encoding === OFW_EXPORT_ENCODING_EXCEL) $encoding = "UTF-16LE";
 			// Set my time limit
 				set_time_limit(OFW_EXPORT_MAX_EXECUTION_TIME);
 			// Get fields of fetcher class if fields not passed
@@ -142,10 +149,12 @@ class zajlib_export extends zajLibExtension {
 						if(is_a($s, 'zajModel')) $model_mode = true;
 						else $model_mode = false;
 					// Add first default value (only if model_mode)
-						if($model_mode) $data['name'] = $s->name;
-					// Convert encoding if excel mode selected
-						if($excel_encoding) $data['name'] = mb_convert_encoding($data['name'], 'UTF-16LE', 'UTF-8');
-					
+						if($model_mode){
+							// Set as name
+								$data['name'] = $s->name;
+							// Convert encoding if it is set
+								if($encoding) $data['name'] = mb_convert_encoding($data['name'], $encoding, 'UTF-8');
+						}
 						
 					// Add my values for each field
 						foreach($fields as $type => $field){
@@ -175,7 +184,7 @@ class zajlib_export extends zajLibExtension {
 							// Standard field
 								else $data[$field] = $field_value;
 							// Convert encoding if excel mode selected
-								if($excel_encoding) $data[$field] = mb_convert_encoding($data[$field], 'UTF-16LE', 'UTF-8');
+								if($encoding) $data[$field] = mb_convert_encoding($data[$field], $encoding, 'UTF-8');
 						}
 					// Add default values (only if model_mode)
 						if($model_mode){						

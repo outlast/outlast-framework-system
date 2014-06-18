@@ -34,7 +34,7 @@ class zajlib_array extends zajLibExtension{
 	}
 	/**
 	 * @ignore
-	 * @depricated
+	 * @deprecated
 	 */
 	public function sort_me($array){ $this->sort($array); }
 
@@ -52,7 +52,7 @@ class zajlib_array extends zajLibExtension{
 	}
 	/**
 	 * @ignore
-	 * @depricated
+	 * @deprecated
 	 */
 	public function array_merge($array1, $array2){ return $this->merge($array1,$array2); }
 	
@@ -79,7 +79,7 @@ class zajlib_array extends zajLibExtension{
 	}
 	/**
 	 * @ignore
-	 * @depricated
+	 * @deprecated
 	 */
 	public function array_to_php($array){ return $this->to_code($array); }
 
@@ -101,7 +101,7 @@ class zajlib_array extends zajLibExtension{
 	}
 	/**
  	 * @ignore
-	 * @depricated
+	 * @deprecated
 	 */
 	public function array_to_object($array){ return $this->to_object($array); }
 
