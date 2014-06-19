@@ -48,6 +48,7 @@ class Photo extends zajModel {
 			$f->description = zajDb::textbox();
 			$f->filesizes = zajDb::json();
 			$f->dimensions = zajDb::json();
+			$f->cropdata = zajDb::json();   // Stores original photo data and associated cropping values. {"x":0,"y":0,"w":540,"h":525,"path":'data/something/beforecrop.jpg'}. Path is empty if original not saved during crop.
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
 
 			// Deprecated because everything is timepath now! Always true.
@@ -240,13 +241,24 @@ class Photo extends zajModel {
 			$file_path = $this->get_master_file_path();
 		// get extension
 			$extension = $this->get_extension($file_path);
+		// create data for crop
+			// {"x":0,"y":0,"w":540,"h":525,"path":'data/something/beforecrop.jpg'}
+			$cropdata = array(
+				'x'=>$x,
+				'y'=>$y,
+				'w'=>$w,
+				'h'=>$h,
+			);
 		// save a copy of the original
 			if($keep_a_copy_of_original){
-				$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-beforecrop-".date('Y-m-d-h-i-s').".".$extension, true);
-				copy($file_path, $new_path);
+				$new_path = $this->get_file_path($this->id."-beforecrop-".date('Y-m-d-h-i-s').".".$extension, true);
+				$cropdata['path'] = $new_path;
+				copy($file_path, $this->zajlib->basepath.$new_path);
 			}
 		// now perform the crop and save over original
 			$this->zajlib->graphics->crop($file_path, $file_path, $x, $y, $w, $h, $jpeg_quality);
+		// now save my crop data
+			$this->set('cropdata', $cropdata)->save();
 		// now perform the resize
 			$this->resize();
 	}

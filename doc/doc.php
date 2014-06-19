@@ -64,6 +64,8 @@ class zajDbMap extends zajDb{}
  * @property string $original Deprecated.
  * @property string $description Description.
  * @property stdClass $dimensions
+ * @property stdClass $filesizes
+ * @property stdClass $cropdata Stores original photo data and associated cropping values.
  **/
 class zajDataPhoto extends zajData{}
 
