@@ -982,6 +982,20 @@
 					uploader.imgAreaSelectInstance = sel_instance;
 				};
 
+				uploader.JCropbox = function(res){
+
+					sel_instance = $(options.file_list+" img").cropbox({
+				        width: options.min_width,
+				        height: options.min_height,
+				        showControls: 'always',
+				        zoom: 5
+				    }).on('cropbox', function(e, data) {
+				        selection_changed = true;
+							var dimensions = '{"x":'+data.cropX+',"y":'+data.cropY+',"w":'+data.cropW+',"h":'+data.cropH+'}';
+							$(options.input_crop).val(dimensions);
+				    });
+				}
+
 
 				/**
 				 * Init initial image area selector.
@@ -1009,11 +1023,9 @@
 					// Init my cropper
 					if(!options.crop_disabled){
 						// Enable the image area select
-						uploader.imgAreaSelect(res);
-						// Add click event to img in case it is disabled
-						$(options.file_list+" img").click(function(){
-							uploader.imgAreaSelect(res);
-						});
+						//uploader.imgAreaSelect(res);
+						uploader.JCropbox(res);
+						
 					}
 					// Set as my input value
 					$(options.input_name).val(res.id);
