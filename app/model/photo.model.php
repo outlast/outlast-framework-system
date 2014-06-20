@@ -44,7 +44,6 @@ class Photo extends zajModel {
 			$f->field = zajDb::text();
 			$f->name = zajDb::name();
 			$f->imagetype = zajDb::integer();
-			$f->original = zajDb::text();
 			$f->description = zajDb::textbox();
 			$f->filesizes = zajDb::json();
 			$f->dimensions = zajDb::json();
@@ -53,6 +52,7 @@ class Photo extends zajModel {
 
 			// Deprecated because everything is timepath now! Always true.
 			$f->timepath = zajDb::boolean(true);
+			$f->original = zajDb::text();
 
 		// do not modify the line below!
 			$f = parent::__model(__CLASS__, $f); return $f;
