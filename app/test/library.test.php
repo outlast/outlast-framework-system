@@ -254,8 +254,16 @@ class OfwLibraryTest extends zajTest {
 	 * Check request.
 	 */
 	public function system_library_request(){
-		// Just load it up and do nothing
-		$this->zajlib->request;
+		// Check is_ajax
+			$r = $this->zajlib->request->is_ajax();
+			zajTestAssert::isFalse($r);
+		// Now try when it is true
+			$s = $_SERVER['HTTP_X_REQUESTED_WITH'];
+			$_SERVER['HTTP_X_REQUESTED_WITH'] = 'asdf';
+			$r = $this->zajlib->request->is_ajax();
+			zajTestAssert::isTrue($r);
+		// Clean up
+			$_SERVER['HTTP_X_REQUESTED_WITH'] = $s;
 	}
 
 	/**
