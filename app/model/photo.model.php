@@ -234,9 +234,10 @@ class Photo extends zajModel {
 	 * @param integer $h Cropped image height.
 	 * @param integer $jpeg_quality A number value of the jpg quality to be used in conversion. Only matters for jpg output.
 	 * @param boolean $keep_a_copy_of_original If set to true (default), a copy of the original file will be kept.
+	 * @param boolean $crop_from_original If set to true, the crop will be created from the saved original file.
 	 * @return boolean True if successful, false otherwise.
 	 */
-	public function crop($x, $y, $w, $h, $jpeg_quality = 85, $keep_a_copy_of_original = true){
+	public function crop($x, $y, $w, $h, $jpeg_quality = 85, $keep_a_copy_of_original = true, $crop_from_original = false){
 		// get master file
 			$file_path = $this->get_master_file_path();
 		// get extension
@@ -249,6 +250,15 @@ class Photo extends zajModel {
 				'w'=>$w,
 				'h'=>$h,
 			);
+		// do we have an original and should we use it?
+			$original_uncropped = $this->data->cropdata->path;
+			if($crop_from_original && !empty($original_uncropped) && file_exists($this->zajlib->basepath.$original_uncropped)){
+				// copy the original file over the current one
+				copy($this->zajlib->basepath.$original_uncropped, $file_path);
+				// set the original path again and no need to keep a copy of the original (since the original is already copied)
+				$cropdata['path'] = $original_uncropped;
+				$keep_a_copy_of_original = false;
+			}
 		// save a copy of the original
 			if($keep_a_copy_of_original){
 				$new_path = $this->get_file_path($this->id."-beforecrop-".date('Y-m-d-h-i-s').".".$extension, true);
