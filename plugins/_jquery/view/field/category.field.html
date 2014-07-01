@@ -8,7 +8,7 @@
 <select class='ofw-field-category form-control' id='{{field.uid}}' name='{{field.name}}'>
 	<option value=''>--</option>
 	{% if #category_two_level# %}
-		{% foreach field.choices as toplevel %}
+		{% foreach field.choices_toplevel as toplevel %}
 			<optgroup label="{{toplevel.name|escape}}">
 				{% foreach toplevel.data.subcategories as choice %}
 					<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}'>{{choice.name}}</option>
