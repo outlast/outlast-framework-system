@@ -1,5 +1,5 @@
 <div class="dd nestable category" id="nestable-{{field.uid}}" data-field-uid="{{field.uid}}">
-{% with field.choices as categories %}
+{% with field.choices_toplevel as categories %}
 	{% block ddlist %}
 	<ol class="dd-list">
 		{% foreach categories as category %}
