@@ -28,7 +28,7 @@ class Category extends zajModel {
 			$f->photo = zajDb::photo();
 			$f->description = zajDb::text();
 			$f->featured = zajDb::boolean();
-			$f->parentcategory = zajDb::manytoone('Category');
+			$f->parentcategory = zajDb::category();
 			$f->subcategories = zajDb::onetomany('Category', 'parentcategory');
 			$f->friendlyurl = zajDb::text(255);
 
@@ -126,5 +126,5 @@ class Category extends zajModel {
 	 * @param zajFetcher $fetcher
 	 * @return zajFetcher
 	 */
-	public function __onSearch($fetcher){ return $fetcher->filter('parentcategory', ''); }
+	public function __onSearch($fetcher){ return $fetcher; }
 }
