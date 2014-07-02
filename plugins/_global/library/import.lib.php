@@ -21,6 +21,10 @@ class zajlib_import extends zajLibExtension {
 	 * @return array An array of objects where the keys are either numbers or taken from the header row.
 	 **/
 	public function gdocs_spreadsheet($url, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
+
+		// @todo The gdocs URL has changed. If the document is shared publicly, then it can be accessed like this:
+		// https://docs.google.com/spreadsheets/d/YOUR_SECRET_KEY/export?format=csv&gid=0
+
 		// Must be a valid url
 			if(!$this->zajlib->url->valid($url)) return $this->zajlib->warning("Gdocs import must be a valid url.");
 		return $this->csv($url, $first_row_is_header, $delimiter, $enclosure, $escape);
