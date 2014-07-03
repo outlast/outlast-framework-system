@@ -169,7 +169,7 @@ class zajfield_manytoone extends zajField {
 			// use search method with all			
 				$class_name = $this->options['model'];
 			// write to compile destination
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); $this->zajlib->variable->field->choices_toplevel = '.$class_name.'::__onSearch('.$class_name.'::fetch_top_level()); if($this->zajlib->variable->field->choices === false) $this->zajlib->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
+				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); if($this->zajlib->variable->field->choices === false) $this->zajlib->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
 		return true;
 	}
 
