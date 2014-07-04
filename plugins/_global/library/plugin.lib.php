@@ -63,7 +63,7 @@ class zajlib_plugin extends zajLibExtension {
 		// only do this if either default controller exists in the plugin folder
 			if($load_function && file_exists($pluginbasepath.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($pluginbasepath.$plugin.'/controller/'.$plugin.'/default.ctl.php')){
 				// reroute but if no __plugin method, just skip without an error message (TODO: maybe remove the false here?)!
-					$result = $this->zajlib->reroute($plugin.'/__plugin/', array($this->zajlib->app.$this->zajlib->mode, $this->zajlib->app, $this->zajlib->mode), false);
+					$result = $this->zajlib->reroute($plugin.'/__plugin/', array($this->zajlib->app.$this->zajlib->mode, $this->zajlib->app, $this->zajlib->mode), false, false);
 				// unload the plugin if the result is explicitly false
 					if($result === false) $this->unload($plugin);
 			}

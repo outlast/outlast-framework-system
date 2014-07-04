@@ -199,8 +199,9 @@
 					// only do this if either default controller exists in the plugin folder
 						if(file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($this->zajlib->basepath.'plugins/'.$plugin.'/controller/'.$plugin.'/default.ctl.php')){			
 							// reroute but if no __install method, just skip without an error message (TODO: maybe remove the false here?)!
-								$result = $this->zajlib->reroute($plugin.'/__install/', array($app_request, $zaj_app, $zaj_mode), false);
+								$result = $this->zajlib->reroute($plugin.'/__install/', array(), false, false);
 							// __install should return a string if it fails, otherwise it is considered to pass
+								$plugin_text = "";
 								if(is_string($result) && $result == ZAJ_INSTALL_DONTCHECK) return true;
 								elseif(is_string($result)){ $plugin_text .= "<li>Checking plugin $plugin. <span class='label label-important'>Failed</span><pre class='well' style='font-family: monospace; padding: 10px; overflow: auto; background-color: #f5f5f5; margin-top: 10px;'>$result</pre></li>"; $ready_to_activate = false; }
 								else $plugin_text .= "<li>Checking plugin $plugin... <span class='label label-success'>Done</span></li>";
