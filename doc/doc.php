@@ -56,14 +56,13 @@ class zajDbMap extends zajDb{}
  * @property string $parent The id of the parent.
  * @property string $field The field name of the parent.
  * @property string $name The file name.
- * @property boolean $timepath If the new time-based path is used.
- * @property integer $time_create
- * @property string $extension
  * @property string $imagetype Can be IMAGETYPE_PNG, IMAGETYPE_GIF, or IMAGETYPE_JPG constant.
- * @property string $status
- * @property string $original Deprecated.
  * @property string $description Description.
+ * @property stdClass $filesizes
  * @property stdClass $dimensions
+ * @property stdClass $cropdata
+ * @property boolean $timepath Deprecated.
+ * @property string $original Deprecated.
  **/
 class zajDataPhoto extends zajData{}
 

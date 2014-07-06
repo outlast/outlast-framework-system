@@ -119,7 +119,7 @@ class Photo extends zajModel {
 	 * Helper function which returns the path based on the current settings.
 	 * @param string $filename Can be thumb, small, normal, etc.
 	 * @param bool $create_folders Create the subfolders if needed.
-	 * @return string Returns the file path.
+	 * @return string Returns the full file path, including basepath.
 	 **/
 	public function get_file_path($filename, $create_folders = false){
 		// First, let's determine which function to use
@@ -373,6 +373,35 @@ class Photo extends zajModel {
 			fclose($f);
 		// now exit
 		exit;
+	}
+
+	/**
+	 * Overrides the global duplicate method. Unlike the standard duplicate method, this actually saves the object.
+	 * @return Photo Returns a new photo object with all files duplicated.
+	 */
+	public function duplicate(){
+		// First duplicate my object
+			$new_object = $this->duplicate();
+			$new_object->temporary = true;
+			$new_object->set('status', 'uploaded');
+		// Create a copy of my original file
+			$original_file = $this->get_master_file_path();
+			$new_file = $this->zajlib->basepath."cache/upload/".$new_object->id.".tmp";
+			copy($original_file, $new_file);
+		// Create my object
+			$new_object->upload();
+		// Create a copy of the uncropped file (if needed)
+			$original_uncropped = $this->data->cropdata->path;
+			$new_uncropped = $new_object->get_file_path($new_object->id."-beforecrop-".date('Y-m-d-h-i-s').".".$this->extension, true);
+			if(!empty($original_uncropped) && file_exists($this->zajlib->basepath.$original_uncropped)){
+				// copy the original file over the current one
+				copy($this->zajlib->basepath.$original_uncropped, $new_uncropped);
+				// set the original path again and no need to keep a copy of the original (since the original is already copied)
+				$newcropdata = $this->data->cropdata;
+				$newcropdata['path'] = $new_uncropped;
+				$new_object->set('cropdata', $newcropdata)->save();
+			}
+		return $new_object;
 	}
 
 	/**
