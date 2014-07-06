@@ -44,14 +44,15 @@ class Photo extends zajModel {
 			$f->field = zajDb::text();
 			$f->name = zajDb::name();
 			$f->imagetype = zajDb::integer();
-			$f->original = zajDb::text();
 			$f->description = zajDb::textbox();
 			$f->filesizes = zajDb::json();
 			$f->dimensions = zajDb::json();
+			$f->cropdata = zajDb::json();   // Stores original photo data and associated cropping values. {"x":0,"y":0,"w":540,"h":525,"path":'data/something/beforecrop.jpg'}. Path is empty if original not saved during crop.
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
 
 			// Deprecated because everything is timepath now! Always true.
 			$f->timepath = zajDb::boolean(true);
+			$f->original = zajDb::text();
 
 		// do not modify the line below!
 			$f = parent::__model(__CLASS__, $f); return $f;
@@ -233,20 +234,41 @@ class Photo extends zajModel {
 	 * @param integer $h Cropped image height.
 	 * @param integer $jpeg_quality A number value of the jpg quality to be used in conversion. Only matters for jpg output.
 	 * @param boolean $keep_a_copy_of_original If set to true (default), a copy of the original file will be kept.
+	 * @param boolean $crop_from_original If set to true, the crop will be created from the saved original file.
 	 * @return boolean True if successful, false otherwise.
 	 */
-	public function crop($x, $y, $w, $h, $jpeg_quality = 85, $keep_a_copy_of_original = true){
+	public function crop($x, $y, $w, $h, $jpeg_quality = 85, $keep_a_copy_of_original = true, $crop_from_original = false){
 		// get master file
 			$file_path = $this->get_master_file_path();
 		// get extension
 			$extension = $this->get_extension($file_path);
+		// create data for crop
+			// {"x":0,"y":0,"w":540,"h":525,"path":'data/something/beforecrop.jpg'}
+			$cropdata = array(
+				'x'=>$x,
+				'y'=>$y,
+				'w'=>$w,
+				'h'=>$h,
+			);
+		// do we have an original and should we use it?
+			$original_uncropped = $this->data->cropdata->path;
+			if($crop_from_original && !empty($original_uncropped) && file_exists($this->zajlib->basepath.$original_uncropped)){
+				// copy the original file over the current one
+				copy($this->zajlib->basepath.$original_uncropped, $file_path);
+				// set the original path again and no need to keep a copy of the original (since the original is already copied)
+				$cropdata['path'] = $original_uncropped;
+				$keep_a_copy_of_original = false;
+			}
 		// save a copy of the original
 			if($keep_a_copy_of_original){
-				$new_path = $this->zajlib->basepath.$this->get_file_path($this->id."-beforecrop-".date('Y-m-d-h-i-s').".".$extension, true);
-				copy($file_path, $new_path);
+				$new_path = $this->get_file_path($this->id."-beforecrop-".date('Y-m-d-h-i-s').".".$extension, true);
+				$cropdata['path'] = $new_path;
+				copy($file_path, $this->zajlib->basepath.$new_path);
 			}
 		// now perform the crop and save over original
 			$this->zajlib->graphics->crop($file_path, $file_path, $x, $y, $w, $h, $jpeg_quality);
+		// now save my crop data
+			$this->set('cropdata', $cropdata)->save();
 		// now perform the resize
 			$this->resize();
 	}
