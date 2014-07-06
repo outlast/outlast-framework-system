@@ -5,8 +5,8 @@
 	 **/
 	class OfwModelTest extends zajTest {
 
-		/* @var Photo $photo */
-		public $photo;
+		/* @var Category $category */
+		public $category;
 
 		/**
 		 * Set up stuff.
@@ -14,11 +14,11 @@
 		public function setUp(){
 			// Disabled if mysql not enabled
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
-			// Create a mock photo object
-				$this->photo = Photo::create('mockid');
-				$this->photo->set('name', 'mock!');
-				$this->photo->set('field', 'mymockfield');
-				$this->photo->save();
+			// Create a mock category object
+				$this->category = Category::create('mockid');
+				$this->category->set('name', 'mock!');
+				$this->category->set('description', 'mymockdesc');
+				$this->category->save();
 		}
 
 		/**
@@ -28,9 +28,9 @@
 			// Disabled if mysql not enabled
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Fetch and test!
-				$p = Photo::fetch('mockid');
-				zajTestAssert::areIdentical('mock!', $p->name);
-				zajTestAssert::areIdentical('mockid', $p->id);
+				$cat = Category::fetch('mockid');
+				zajTestAssert::areIdentical('mock!', $cat->name);
+				zajTestAssert::areIdentical('mockid', $cat->id);
 		}
 
 
@@ -40,16 +40,16 @@
 		public function system_check_duplication_feature(){
 			// Disabled if mysql not enabled
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
-			// Let's try to duplicate the Photo object
-				$p = $this->photo->duplicate('mock2');
-				$p->save();
+			// Let's try to duplicate the Category object
+				$cat = $this->category->duplicate('mock2');
+				$cat->save();
 			// Now verify if it has the same info
-				$p = Photo::fetch('mock2');
-				zajTestAssert::areIdentical('mock!', $p->name);
-				zajTestAssert::areIdentical('mock2', $p->id);
-				zajTestAssert::areNotIdentical($this->photo->id, $p->id);
+				$cat = Category::fetch('mock2');
+				zajTestAssert::areIdentical('mock!', $cat->name);
+				zajTestAssert::areIdentical('mock2', $cat->id);
+				zajTestAssert::areNotIdentical($this->category->id, $cat->id);
 			// The order number of mock2 should be greater than that of mockid
-				zajTestAssert::areNotIdentical($this->photo->data->ordernum, $p->data->ordernum);
+				zajTestAssert::areNotIdentical($this->category->data->ordernum, $cat->data->ordernum);
 		}
 
 		/**
@@ -98,11 +98,9 @@
 		public function tearDown(){
 			// Disabled if mysql not enabled
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
-			// Remove permanently my mock photo
-				$this->photo->delete(true);
-			// Remove my mock2
-				$m2 = Photo::fetch('mock2');
-				if($m2->exists) $m2->delete(true);
+			// Remove all of my tests
+				Category::delete_tests();
+			return true;
 		}
 
 	}

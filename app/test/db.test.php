@@ -24,6 +24,16 @@
 			return true;
 		}
 
+		public function photo_does_cropdata_exist(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
+			// Get timepath
+				$r = $this->zajlib->db->query("SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = '{$this->dbname}' AND TABLE_NAME = 'photo' AND COLUMN_NAME = 'cropdata'")->next();
+			// Assert that it exists
+				zajTestAssert::areIdentical('cropdata', $r->COLUMN_NAME);
+			return true;
+		}
+
 		public function file_does_timepath_exist(){
 			// Disabled if mysql not enabled
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;

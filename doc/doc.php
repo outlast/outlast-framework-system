@@ -83,7 +83,7 @@ class zajDataMap {}
  * @property boolean $featured
  * @property zajFetcher $subcategories
  */
-class zajDataCategory extends zajModel {}
+class zajDataCategory extends zajData {}
 
 /**
  * Add properties to Translation data.
@@ -93,4 +93,4 @@ class zajDataCategory extends zajModel {}
  * @property mixed $value
  * @property string $locale
  */
-class zajTranslationData extends zajModel {}
+class zajTranslationData extends zajData {}
