@@ -42,6 +42,7 @@ class zajlib_error extends zajLibExtension {
 	/**
 	 * Send a fatal error message.
 	 * @param string $message The reported message.
+	 * @param boolean $display_to_users Display the error message to users. You can use this if the error message conveys information without exposing security issues. Typically no information is better in terms of security.
 	 * @return boolean Always returns false unless test is running and errors are surpressed.
 	 **/
 	public function error($message, $display_to_users = false){
@@ -118,7 +119,7 @@ class zajlib_error extends zajLibExtension {
 
 	/**
 	 * Returns the current error disable status.
-	 * @return bool
+	 * @return boolean The current errors_disabled_during_test value.
 	 */
 	public function are_errors_surpressed_during_test(){
 		return $this->errors_disabled_during_test;

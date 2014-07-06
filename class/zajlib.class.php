@@ -1,6 +1,6 @@
 <?php
 /**
- * The Mozajik base classes.
+ * The Outlast Framework base classes.
  * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Base
@@ -69,17 +69,17 @@ class zajLib {
 			 **/
 			public $host;
 			/**
-			 * The top level domain and the current domain. (example: 'mozajik.org' for www.mozajik.org)
+			 * The top level domain and the current domain. (example: 'outlast.hu' for framework.outlast.hu)
 			 * @var string
 			 **/
 			public $domain="";
 			/**
-			 * The top level domain. (example: 'org' for www.mozajik.org)
+			 * The top level domain. (example: 'hu' for framework.outlast.hu)
 			 * @var string
 			 **/
 			public $tld="";
 			/**
-			 * The subdomain, excluding www. (example: 'mail' for www.mail.mozajik.org or for mail.mozajik.org)
+			 * The subdomain, excluding www. (example: 'framework' for www.framework.outlast.hu or for framework.outlast.hu)
 			 * @var string
 			 **/
 			public $subdomain="";
@@ -538,7 +538,7 @@ abstract class zajLibExtension{
 }
 
 /** 
- * This class allows the user to load files into the Mozajik system. These files may be libraries, apps, models, etc.
+ * This class allows the user to load files into the OFW system. These files may be libraries, apps, models, etc.
  * @package Base
  **/
 class zajLibLoader{
@@ -886,34 +886,31 @@ class zajLibLoader{
 /** 
  * Basic field structure is stored in this class. This is a static class used to create the field array structure.
  * @package Base
- * @property string $type
- * @property array $options An array of options (whatever is passed)
- * @property boolean $in_database
- * @property boolean $use_validation
- * @property boolean $use_get
- * @property boolean $use_save
- * @property boolean $use_duplicate
- * @property boolean $use_filter
- * @property boolean $search_field
- * @property boolean $edit_template
- * @property boolean $show_template
+ * @property string $type The name of the data type. Each data type must be defined az a zajField class.
+ * @property array $options An associated array of options. Options can be set as arguments
+ * @property string $virtual A virtual field (alias) pointing to another.
+ * @property boolean $in_database True if this is stored in database.
+ * @property boolean $use_validation True if it has a custom validation method.
+ * @property boolean $use_get True if it has a custom get() method.
+ * @property boolean $use_save True if it has a custom save() method.
+ * @property boolean $use_duplicate True if it has a custom duplicate() method.
+ * @property boolean $use_filter True if it has a custom filter() method.
+ * @property boolean $search_field True if this field should be included in a search().
+ * @property boolean|string $edit_template The path of the template which should be displayed for {% input %} editors. If none, set to false.
+ * @property boolean|string $show_template The path of the template which should be used when simply showing data from this field. If none, set to false.
  * @method zajDb default(mixed $default_value) Specify a default value for this field.
  * @method zajDb validate(boolean $validate_or_not) Set the use_validation setting for this field. (not fully supported yet)
  * @method zajDb validation($validation_function) Override the validation function for this field. (not fully supported yet)
  **/
 class zajDb {
 		/**
-		 * @var stdClass A key/value pair of options.
-		 */
-		public $dynamic_options;
-
-		/**
-		 * @var string A virtual field pointing to another.
+		 * @var string A virtual field (alias) pointing to another.
 		 */
 		public $virtual = false;
 
 		/**
 		 * This method returns the type and structure of the field definition in an array format.
+		 *
 		 **/
 		public static function __callStatic($method, $args){
 			// Create my db field
@@ -941,14 +938,19 @@ class zajDb {
 		}
 
 		/**
-		 * This method allows you to specify this as a virtual field that points to another.
+		 * This method allows you to specify this as an alias field that points to another.
 		 * @param string $field_name The name of another field in the model. Must have the same data type.
 		 * @return zajDb Will always return itself.
+		 * @todo Get rid of this method since it's just an option and should be handled by __call().
 		 **/
-		public function virtual($field_name){
+		public function alias($field_name){
 			$this->virtual = $field_name;
 			return $this;
 		}
+		/**
+		 * @deprecated
+		 */
+		public function virtual($field_name){ return $this->alias($field_name); }
 
 		/**
 		 * This method creates a zajField object for this db field and returns it.
@@ -983,7 +985,7 @@ class zajField {
 	protected $class_name;				// string - class name of the parent class
 	public $name;						// string - name of this field
 	public $options;					// array - this is an array of the options set in the model definition
-	public $type;						// string - type of the field (mozajik type, not mysql)
+	public $type;						// string - type of the field (Outlast Framework type, not mysql)
 
 	// Default values for fields
 	const in_database = true;		// boolean - true if this field is stored in database
@@ -1019,7 +1021,7 @@ class zajField {
 	/**
 	 * Preprocess the data before returning the data from the database.
 	 * @param $data mixed The first parameter is the input data.
-	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being retrieved.
 	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
@@ -1065,7 +1067,7 @@ class zajField {
 	/**
 	 * Duplicates the data when duplicate() is called on a model object. This method can be overridden to add extra processing before duplication. See built-in ordernum as an override example.
 	 * @param $data mixed The first parameter is the input data.
-	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being duplicated.
 	 * @return mixed Returns the duplicated value.
 	 **/
 	public function duplicate($data, &$object){

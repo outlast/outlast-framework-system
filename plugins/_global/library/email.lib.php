@@ -14,9 +14,9 @@ class zajlib_email extends zajLibExtension {
 	 * @param string $to The email to which this message should be sent.
 	 * @param string $subject A string with the email's subject.
 	 * @param string $body The email's body.
-	 * @param string $sendcopyto If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
-	 * @param string $bounceto If set, the email will bounce to this address. By default, bounces are ignored and not sent anywhere.
-	 * @param string $additional_headers If set, these additional headers will be appended to the email.
+	 * @param string|boolean $sendcopyto If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
+	 * @param string|boolean $bounceto If set, the email will bounce to this address. By default, bounces are ignored and not sent anywhere.
+	 * @param string|boolean $additional_headers If set, these additional headers will be appended to the email.
 	 * @return bool Returns true if succesful, false otherwise.
 	 **/
 	function send($from, $to, $subject, $body, $sendcopyto = false, $bounceto = false, $additional_headers = false){
@@ -98,7 +98,6 @@ class zajlib_email extends zajLibExtension {
 	 * Checks and returns true if the email address is valid. You can specify whether to allow "Name <test@test.com>" formatting.
 	 * @param string $email The email address to test.
 	 * @param boolean $allow_named_format Set to true if you want to allow named format. False by default.
-	 * @todo Change to preg_match support.
 	 * @return boolean Returns true if the email is valid, false otherwise.
 	 **/
 	function valid($email, $allow_named_format = false){
