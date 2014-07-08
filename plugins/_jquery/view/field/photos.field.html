@@ -44,7 +44,7 @@
 <!-- Uploader -->
 <script language="JavaScript" src="{{baseurl}}system/js/plupload/plupload.full.js" type="text/javascript"></script>
 
-<a id="{{field.uid}}-pickfiles" class="btn btn-primary" href="#"><i class="icon-folder-open"></i> Add photos</a>
+<a id="{{field.uid}}-pickfiles" class="btn btn-primary"><i class="icon-folder-open"></i> Add photos</a>
 <div id="{{field.uid}}-transferbar" class="hidden progress progress-striped active"><div class="progress-bar bar" style="width: 0;"></div></div>
 <div id="{{field.id}}-uploadbutton"></div>
 <div id="{{field.id}}-errors"></div>
@@ -61,7 +61,7 @@
 				runtimes : 'html5,flash,html4',
 				browse_button : '{{field.uid}}-pickfiles',
 				drop_element : '{{field.uid}}-filelist',
-				max_file_size : '25mb',
+				max_file_size : '{{field.options.max_file_size|escapejs}}',
 				url : '{% block upload_url %}{{baseurl}}system/plupload/upload/photo/{% endblock upload_url %}',
 				flash_swf_url : '{{baseurl}}system/js/plupload/plupload.flash.swf'
 			});
@@ -82,7 +82,7 @@
 				$('#{{field.uid}}-transferbar').removeClass('hidden');
 			});
 			uploader_{{field.uid}}.bind('Error', function(up, err) {
-				zaj.alert("A kiválasztott fájl nem felel meg a követelményeknek! (Maximum 4 MB, jpg/png/gif)");
+				zaj.alert("A kiválasztott fájl nem felel meg a követelményeknek! (Maximum {{field.options.max_file_size|escapejs}}, jpg/png/gif)");
 				up.refresh(); // Reposition Flash/Silverlight
 			});
 			uploader_{{field.uid}}.bind('FileUploaded', function(up, file, result) {
@@ -90,7 +90,7 @@
 				var res = jQuery.parseJSON(result.response);
 				// check for error
 					if(res.status == 'error'){
-						zaj.alert("A fájl feltöltése nem sikerült. Próbálj kissebb méretű fájlt választani (maximum 4 MB, jpg/png/gif)!");
+						zaj.alert("A fájl feltöltése nem sikerült. Próbálj kissebb méretű fájlt választani (maximum {{field.options.max_file_size|escapejs}}, jpg/png/gif)!");
 					}
 					else{
 						uploader_update_{{field.uid}}(res);
@@ -104,7 +104,7 @@
 			 **/
 			uploader_update_{{field.uid}} = function(res){
 				// Is it wide/tall enough?
-					if(res.height < 300 || res.width < 300) return alert("The picture is too small. It must be at least 300x300 pixels.");
+					if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("The picture is too small. It must be at least {{field.options.min_width|escapejs}}x{{field.options.min_height|escapejs}} pixels.");
 				// Add my image
 					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
 					var el = $("<div class='col-sm-2' id='"+res.id+"' style='position: relative; cursor: pointer;'><img class='pull-left img-thumbnail img-responsive' src='"+imgurl+"'></div>");

@@ -19,7 +19,9 @@ class zajfield_photos extends zajField {
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
 		// set default options
-			// no options
+			if(empty($options['min_height'])) $options['min_height'] = 300;
+			if(empty($options['min_width'])) $options['min_width'] = 300;
+			if(empty($options['max_file_size'])) $options['max_file_size'] = '25mb';
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
 	}	

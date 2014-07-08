@@ -25,8 +25,8 @@ die("This file is for documentation.");
  * @method static zajDb onetomany
  * @method static zajDb ordernum
  * @method static zajDb password
- * @method static zajDb photo
- * @method static zajDb photos
+ * @method static zajDbPhoto photo
+ * @method static zajDbPhoto photos
  * @method static zajDb rating
  * @method static zajDb richtext
  * @method static zajDb select
@@ -41,6 +41,16 @@ die("This file is for documentation.");
  * @method static zajDb year
  **/
 class zajDb{}
+
+
+/**
+ * Class zajDbPhoto
+ * @method zajDbPhoto min_width
+ * @method zajDbPhoto min_height
+ * @method zajDbPhoto max_file_size
+ */
+class zajDbPhoto extends zajDb{}
+
 
 /**
  * Class zajDbMap
