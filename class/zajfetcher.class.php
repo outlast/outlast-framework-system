@@ -717,6 +717,9 @@ class zajFetcher implements Iterator, Countable{
 	 **/
 	public function __get($name){
 		switch($name){
+			case "first":	// if query not yet executed, do it now
+							if(!$this->query_done) $this->query();
+							return $this->next();
 			case "total":	// if total not yet loaded, then retrieve and return it...otherwise just return it
 							if($this->total === false) return $this->count_total();
 							return $this->total;
