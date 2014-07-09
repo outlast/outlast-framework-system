@@ -105,6 +105,7 @@
 			uploader_update_{{field.uid}} = function(res){
 				// Is it wide/tall enough?
 					if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("The picture is too small. It must be at least {{field.options.min_width|escapejs}}x{{field.options.min_height|escapejs}} pixels.");
+					if(res.height > {{field.options.max_height|escapejs}} || res.width > {{field.options.max_width|escapejs}}) return alert("The picture is too big. It must be at least {{field.options.max_width|escapejs}}x{{field.options.max_height|escapejs}} pixels.");
 				// Add my image
 					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
 					var el = $("<div class='col-sm-2' id='"+res.id+"' style='position: relative; cursor: pointer;'><img class='pull-left img-thumbnail img-responsive' src='"+imgurl+"'></div>");
