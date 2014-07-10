@@ -167,7 +167,7 @@
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
 
-            if(zaj.mobile){
+            /**if(zaj.mobile){
                 var $backdrop = $(".modal-backdrop"),
                     $modal = $('#zaj_bootstrap_modal');
 
@@ -178,7 +178,7 @@
                         zaj.alert_reposition($modal, $backdrop);
                     });
                 }
-            }
+            }**/
 
 			// Reposition the modal if needed
 				zaj.alert_reposition($('#zaj_bootstrap_modal'));
