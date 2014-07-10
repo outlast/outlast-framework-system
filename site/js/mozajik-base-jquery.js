@@ -159,10 +159,10 @@
 				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
 			// Backdrop closes on mobile
 				var backdrop = 'static';
-				if(zaj.mobile){
+				/**if(zaj.mobile){
 					backdrop = true;
 					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
-                }
+                }**/
 			// Set body and show it (requires selector again)
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
