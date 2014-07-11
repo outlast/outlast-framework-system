@@ -12,7 +12,7 @@ class zajlib_url extends zajLibExtension {
 	 * Reroutes the user to a specified controller. This is depricated and will be removed in 1.0. Use $this->zajlib->reroute() instead.
 	 * @param string $request A url-like request to a controller.
 	 * @param array|bool $optional_parameters An array of parameters passed to the controller method.
-	 * @return Returns whatever the rerouted method returns.
+	 * @return boolean Returns whatever the rerouted method returns.
 	 * @todo Remove this in 1.0.
 	 */
 	function redirect($request, $optional_parameters = false){
@@ -112,7 +112,10 @@ class zajlib_url extends zajLibExtension {
 	 * @deprecated
 	 * @ignore
 	 **/
-	function is_url($url){ return $this->valid($url); }
+	function is_url($url){
+		$this->zajlib->deprecated("Use url->valid() instead.");
+		return $this->valid($url);
+	}
 
 	/**
 	 * Returns true or false depending on whether the passed string is a valid email address.
@@ -122,6 +125,7 @@ class zajlib_url extends zajLibExtension {
 	 * @deprecated
 	 **/
 	function is_email($email){
+		$this->zajlib->deprecated("Use email->valid() instead.");
 		return $this->zajlib->email->valid($email);
 	 	//return preg_match("/\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\Z/", $email);
 	}
@@ -133,6 +137,7 @@ class zajlib_url extends zajLibExtension {
 	 * @deprecated
 	 **/
 	function send_post($url, $returnheaders = false){
+		$this->zajlib->deprecated("Use request->post() instead.");
 		return $this->zajlib->request->post($url, '', $returnheaders);
 	}
 	
@@ -142,6 +147,7 @@ class zajlib_url extends zajLibExtension {
 	 * @deprecated
 	 **/
 	function send_request($url, $content='', $method = 'GET', $customheaders = false, $returnheaders = false){
+		$this->zajlib->deprecated("Use request->get() instead.");
 		return $this->zajlib->request->get($url, $content, $returnheaders, $customheaders, $method);
 	}
 
