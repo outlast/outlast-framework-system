@@ -865,6 +865,7 @@
 		 * @option alert_toolarge
 		 * @option debug_mode
 		 * Cropping
+		 * @option {boolean} [cropbox=false] If set to true, crop box will be used instead of imgareaselect.
 		 * @option {boolean} crop_disabled If set to true, cropping is disabled.
 		 * @option {integer} min_width The minimum width in pixels
 		 * @option {integer} min_height The minimum width in pixels
@@ -891,6 +892,9 @@
 				var selection_changed = false;
 				var sel_instance;
 
+				// Default options
+				if(typeof options.cropbox == 'undefined') options.cropbox = false;
+
 				// Create plupload object
 				var uploader = new plupload.Uploader({
 					runtimes : 'html5,flash,html4',
@@ -902,7 +906,7 @@
 				});
 				var uploadergo = function(){
 					uploader.start()
-				}
+				};
 				if(options.debug_mode) zaj.log("Uploader is in debug mode.");
 
 				// Add uploader events
@@ -982,6 +986,20 @@
 					uploader.imgAreaSelectInstance = sel_instance;
 				};
 
+				uploader.JCropbox = function(res){
+
+					sel_instance = $(options.file_list+" img").cropbox({
+				        width: options.min_width,
+				        height: options.min_height,
+				        showControls: 'always',
+				        zoom: 5
+				    }).on('cropbox', function(e, data) {
+				        selection_changed = true;
+							var dimensions = '{"x":'+data.cropX+',"y":'+data.cropY+',"w":'+data.cropW+',"h":'+data.cropH+'}';
+							$(options.input_crop).val(dimensions);
+				    });
+				}
+
 
 				/**
 				 * Init initial image area selector.
@@ -1008,12 +1026,17 @@
 					else $(options.file_list).addClass('portrait');
 					// Init my cropper
 					if(!options.crop_disabled){
-						// Enable the image area select
-						uploader.imgAreaSelect(res);
-						// Add click event to img in case it is disabled
-						$(options.file_list+" img").click(function(){
-							uploader.imgAreaSelect(res);
-						});
+						// Enable the image area select or cropbox
+						if(options.cropbox){
+							// Init cropbox
+								uploader.JCropbox(res);
+						}
+						else{
+							// Add click event to img in case it is disabled
+								$(options.file_list+" img").click(function(){
+									uploader.imgAreaSelect(res);
+								});
+						}
 					}
 					// Set as my input value
 					$(options.input_name).val(res.id);
