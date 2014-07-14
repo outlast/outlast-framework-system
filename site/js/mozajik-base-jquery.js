@@ -159,29 +159,11 @@
 				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
 			// Backdrop closes on mobile
 				var backdrop = 'static';
-				/**if(zaj.mobile){
-					backdrop = true;
-					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
-                }**/
 			// Set body and show it (requires selector again)
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
-
-            /**if(zaj.mobile){
-                var $backdrop = $(".modal-backdrop"),
-                    $modal = $('#zaj_bootstrap_modal');
-
-                if($backdrop.offset().top !== $(document).scrollTop()) {
-                    zaj.alert_reposition($modal, $backdrop);
-
-                    $(window).scroll(function() {
-                        zaj.alert_reposition($modal, $backdrop);
-                    });
-                }
-            }**/
-
 			// Reposition the modal if needed
-				//zaj.alert_reposition($('#zaj_bootstrap_modal'));
+				zaj.alert_reposition($('#zaj_bootstrap_modal'));
 		}
 		else{
 			// Alert sent via bootstrap
@@ -193,44 +175,31 @@
 		}
 		return false;
 	};
-	zaj.alert_reposition = function($modal, $backdrop){
-        if($backdrop) {
-            var viewportWidth = $(window).width();
-            var viewportHeight = $(window).height();
-
-            $modal.css({
-                position: "absolute",
-                top: $(document).scrollTop() + 50
-            });
-
-            $backdrop.css({
-                position: "absolute",
-                top: $(document).scrollTop(),
-                height: viewportHeight,
-                width: viewportWidth
-            });
-        }
-		else if(zaj.facebook){
-			var fb_top_bar = 115, fb_bottom_bar = 100;
+	var alert_reposition_interval;
+	zaj.alert_reposition = function($modal){
+		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(e){
+				// Top bar
+					var fb_top_bar = e.offsetTop;
+					var fb_bottom_bar = 250;
+				// Calculate my top position
+					var topoffset = 20;
+					if(e.scrollTop > fb_top_bar) topoffset += e.scrollTop - fb_top_bar;
 				// Set height
-					// Calculate max height
-					var maxheight = e.clientHeight - e.offsetTop - fb_top_bar;
-					// Set the modal body to autosize
-					$modal.find('.modal-body').css({width:'auto', height: 'auto', 'max-height': maxheight-150});
-					// Set modal height
-					$modal.css('max-height', maxheight);
-				// Set position
-					var topoffset = e.scrollTop;
-					// If at top
-					if(e.scrollTop < fb_top_bar) topoffset += fb_top_bar;
-					// If at bottom
-					/**if(e.scrollTop + e.offsetTop + fb_top_bar > $(window).height()){
-						FB.Canvas.scrollTo(0, e.scrollTop - fb_bottom_bar);
-						return zaj.alert_reposition($modal);
-					}**/
-					$modal.css({top: topoffset, 'margin-top': 0});
+					var height = e.clientHeight - fb_bottom_bar;
+					// If we are near the bottom
+					if(topoffset + height > $(window).height()) height = $(window).height() - topoffset - fb_bottom_bar;
+					// If we are near the top
+					if(e.scrollTop < fb_top_bar) height = e.clientHeight - fb_top_bar - 150 + e.scrollTop;
+				// Subtract modal footer from height
+					height -= $modal.find('.modal-footer').height();
+				// Set the modal body to autosize
+					$modal.find('.modal-body').css({width:'auto', height: height, 'overflow-y': 'scroll'});
+					$modal.css({top: topoffset, overflow: 'hidden', 'margin-top': 0});
 			});
+			// clear and set
+			clearInterval(alert_reposition_interval);
+			alert_reposition_interval = setInterval(function(){ zaj.alert_reposition($modal); }, 1000);
 		}
 	};
 	zaj.confirm = function(message, urlORfunction){
