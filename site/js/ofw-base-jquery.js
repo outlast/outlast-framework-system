@@ -162,33 +162,13 @@
 				else $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); $('.modal-backdrop').remove(); });
 				// Set text (if needed)
 				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
-
 			// Backdrop closes on mobile
 				var backdrop = 'static';
-				if(zaj.mobile){
-					backdrop = true;
-					$('#zaj_bootstrap_modal').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); })
-                }
 			// Set body and show it (requires selector again)
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
-
-
-            /**if(zaj.mobile){
-                var $backdrop = $(".modal-backdrop"),
-                    $modal = $('#zaj_bootstrap_modal');
-
-                if($backdrop.offset().top !== $(document).scrollTop()) {
-                    zaj.alert_reposition($modal, $backdrop);
-
-                    $(window).scroll(function() {
-                        zaj.alert_reposition($modal, $backdrop);
-                    });
-                }
-            }**/
-
 			// Reposition the modal if needed
-				//zaj.alert_reposition($('#zaj_bootstrap_modal'));
+				zaj.alert_reposition($('#zaj_bootstrap_modal'));
 		}
 		else{
 			// Alert sent via bootstrap
@@ -200,60 +180,31 @@
 		}
 		return false;
 	};
-	zaj.alert_reposition = function(ev){
-		// Let's reposition for Facebook
-			if(zaj.facebook){
-				var fb_top_bar = 115, fb_bottom_bar = 100;
-				FB.Canvas.getPageInfo(function(e){
-					console.log(e);
-				});
-			}
-
-			//console.log(ev.target, this);
-
-	return true;
-
-
-
-
-
-        if($backdrop) {
-            var viewportWidth = $(window).width();
-            var viewportHeight = $(window).height();
-
-            $modal.css({
-                position: "absolute",
-                top: $(document).scrollTop() + 50
-            });
-
-            $backdrop.css({
-                position: "absolute",
-                top: $(document).scrollTop(),
-                height: viewportHeight,
-                width: viewportWidth
-            });
-        }
-		else if(zaj.facebook){
-			var fb_top_bar = 115, fb_bottom_bar = 100;
+	var alert_reposition_interval;
+	zaj.alert_reposition = function($modal){
+		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(e){
+				// Top bar
+					var fb_top_bar = e.offsetTop;
+					var fb_bottom_bar = 250;
+				// Calculate my top position
+					var topoffset = 20;
+					if(e.scrollTop > fb_top_bar) topoffset += e.scrollTop - fb_top_bar;
 				// Set height
-					// Calculate max height
-					var maxheight = e.clientHeight - e.offsetTop - fb_top_bar;
-					// Set the modal body to autosize
-					$modal.find('.modal-body').css({width:'auto', height: 'auto', 'max-height': maxheight-150});
-					// Set modal height
-					$modal.css('max-height', maxheight);
-				// Set position
-					var topoffset = e.scrollTop;
-					// If at top
-					if(e.scrollTop < fb_top_bar) topoffset += fb_top_bar;
-					// If at bottom
-					/**if(e.scrollTop + e.offsetTop + fb_top_bar > $(window).height()){
-						FB.Canvas.scrollTo(0, e.scrollTop - fb_bottom_bar);
-						return zaj.alert_reposition($modal);
-					}**/
-					$modal.css({top: topoffset, 'margin-top': 0});
+					var height = e.clientHeight - fb_bottom_bar;
+					// If we are near the bottom
+					if(topoffset + height > $(window).height()) height = $(window).height() - topoffset - fb_bottom_bar;
+					// If we are near the top
+					if(e.scrollTop < fb_top_bar) height = e.clientHeight - fb_top_bar - 150 + e.scrollTop;
+				// Subtract modal footer from height
+					height -= $modal.find('.modal-footer').height();
+				// Set the modal body to autosize
+					$modal.find('.modal-body').css({width:'auto', height: height, 'overflow-y': 'scroll'});
+					$modal.css({top: topoffset, overflow: 'hidden', 'margin-top': 0});
 			});
+			// clear and set
+			clearInterval(alert_reposition_interval);
+			alert_reposition_interval = setInterval(function(){ zaj.alert_reposition($modal); }, 1000);
 		}
 	};
 	zaj.confirm = function(message, urlORfunction){
@@ -301,7 +252,7 @@
 			window.location.reload(false);
 		};
 		zaj.refresh = zaj.reload;
-
+			
 	/**
 	 * Redirect to a page relative to baseurl or absolute.
 	 * @param {string} relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
@@ -570,7 +521,7 @@
 		 */
 		zaj.search = {
 			options: {
-				delay: 300,						// Number of miliseconds before
+				delay: 300,						// Number of miliseconds before 
 				url: false,						// The url to send the request to. This should be relative. &query=your+query will be appended. If no url (false), it will not be submitted anywhere.
 				callback: false,				// A function or an element.
 				receiver: false,				// The selector or jQuery object that will receive the content
@@ -578,7 +529,7 @@
 				allow_empty_query: true,		// If set to true, an empty query will also execute
 				pushstate_url: 'auto'			// If set to 'auto', the url will automatically change via pushstate. Set to false for not pushstate. Set to specific for custom.
 			},
-
+			
 			/**
 			 * Creates a new Search object
 			 **/
@@ -595,7 +546,7 @@
 						});
 					return self;
 				},
-
+			
 			/**
 			 * Sends a keyup event to retrigger search!
 			 **/
@@ -624,7 +575,7 @@
 					// if the element value is empty, do not do anything
 						if(!this.options.allow_empty_query && !this.element.val()) return false;
 					// if url not set, just do callback immediately!
-					if(this.options.url){
+					if(this.options.url){			
 						// append element value to url
 							var url = this.options.url;
 							if(this.options.url.indexOf('?') >= 0) url += '&query='+this.element.val();
@@ -888,6 +839,7 @@
 		 * @option alert_toolarge
 		 * @option debug_mode
 		 * Cropping
+		 * @option {boolean} [cropbox=false] If set to true, crop box will be used instead of imgareaselect.
 		 * @option {boolean} crop_disabled If set to true, cropping is disabled.
 		 * @option {integer} min_width The minimum width in pixels
 		 * @option {integer} min_height The minimum width in pixels
@@ -914,6 +866,9 @@
 				var selection_changed = false;
 				var sel_instance;
 
+				// Default options
+				if(typeof options.cropbox == 'undefined') options.cropbox = false;
+
 				// Create plupload object
 				var uploader = new plupload.Uploader({
 					runtimes : 'html5,flash,html4',
@@ -925,7 +880,7 @@
 				});
 				var uploadergo = function(){
 					uploader.start()
-				}
+				};
 				if(options.debug_mode) zaj.log("Uploader is in debug mode.");
 
 				// Add uploader events
@@ -1005,6 +960,20 @@
 					uploader.imgAreaSelectInstance = sel_instance;
 				};
 
+				uploader.JCropbox = function(res){
+
+					sel_instance = $(options.file_list+" img").cropbox({
+				        width: options.min_width,
+				        height: options.min_height,
+				        showControls: 'always',
+				        zoom: 5
+				    }).on('cropbox', function(e, data) {
+				        selection_changed = true;
+							var dimensions = '{"x":'+data.cropX+',"y":'+data.cropY+',"w":'+data.cropW+',"h":'+data.cropH+'}';
+							$(options.input_crop).val(dimensions);
+				    });
+				}
+
 
 				/**
 				 * Init initial image area selector.
@@ -1031,12 +1000,17 @@
 					else $(options.file_list).addClass('portrait');
 					// Init my cropper
 					if(!options.crop_disabled){
-						// Enable the image area select
-						uploader.imgAreaSelect(res);
-						// Add click event to img in case it is disabled
-						$(options.file_list+" img").click(function(){
-							uploader.imgAreaSelect(res);
-						});
+						// Enable the image area select or cropbox
+						if(options.cropbox){
+							// Init cropbox
+								uploader.JCropbox(res);
+						}
+						else{
+							// Add click event to img in case it is disabled
+								$(options.file_list+" img").click(function(){
+									uploader.imgAreaSelect(res);
+								});
+						}
 					}
 					// Set as my input value
 					$(options.input_name).val(res.id);
