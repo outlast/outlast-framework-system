@@ -181,7 +181,7 @@
             }**/
 
 			// Reposition the modal if needed
-				zaj.alert_reposition($('#zaj_bootstrap_modal'));
+				//zaj.alert_reposition($('#zaj_bootstrap_modal'));
 		}
 		else{
 			// Alert sent via bootstrap
