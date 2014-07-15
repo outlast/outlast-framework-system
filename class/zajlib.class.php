@@ -74,6 +74,11 @@ class zajLib {
 			 **/
 			public $domain="";
 			/**
+			 * The port of the current request. This will be empty when running on the default port.
+			 * @var string
+			 **/
+			public $port="";
+			/**
 			 * The top level domain. (example: 'hu' for framework.outlast.hu)
 			 * @var string
 			 **/
@@ -251,12 +256,18 @@ class zajLib {
 		// autodetect my domain (todo: optimize this part with regexp!)
 			// if not an ip address
 			if(!preg_match('/^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/', $this->host)){
-				$ddata = explode(".",$this->host);
-				$this->domain = join(".",array_slice($ddata, -2));
-				$this->subdomain = str_replace("www.","",join(".",array_slice($ddata, 0, -2)));		// will exclude www.!
-				if($this->subdomain == "www") $this->subdomain = "";								// if only www, then set to none!
-				$slice = array_slice($ddata, -1);
-				$this->tld = reset($slice);
+				// split the port (if it exists)
+					$pdata = explode(':', $this->host);
+					$this->host = $pdata[0];
+					if(empty($pdata[1])) $this->port = $pdata[1];
+					else $this->port = "";
+				// process domain and subdomain
+					$ddata = explode(".",$this->host);
+					$this->domain = join(".",array_slice($ddata, -2));
+					$this->subdomain = str_replace("www.","",join(".",array_slice($ddata, 0, -2)));		// will exclude www.!
+					if($this->subdomain == "www") $this->subdomain = "";								// if only www, then set to none!
+					$slice = array_slice($ddata, -1);
+					$this->tld = reset($slice);
 			}
 		// loader
 			$this->load = new zajLibLoader($this);
