@@ -30,7 +30,7 @@
 						if(!empty($this->zajlib->zajconf['update_realm'])) $realm = $this->zajlib->zajconf['update_realm'];
 						else $realm = "Outlast Framework Update";
 					// all is good, so authenticate
-						return $this->zajlib->security->protect_me($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm);
+						return $this->zajlib->security->protect($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm);
 				}
 			return true;
 		}
