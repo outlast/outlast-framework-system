@@ -150,6 +150,7 @@ class zajlib_error extends zajLibExtension {
 			}
 		// If errors are disabled
 			if($this->errors_disabled_during_test && $this->zajlib->test->is_running()) return true;
+
 		// generate a backtrace
 			$backtrace = debug_backtrace(false);
 		// increment number of errors
@@ -209,6 +210,9 @@ class zajlib_error extends zajLibExtension {
 
 		// only print if it is fatal error or debug mode
 			if($errorlevel == 'error' || zajLib::me()->debug_mode){
+				// if its an error, its a 500 error
+					if($errorlevel == 'error') @header('HTTP/1.1 500 Internal Server Error');
+
 				// print it to screen
 					if(!zajLib::me()->debug_mode){
 						if($display_to_users) $errortext = "Sorry, there has been a system error: ".$original_error_text;
