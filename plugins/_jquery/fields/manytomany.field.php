@@ -137,7 +137,9 @@ class zajfield_manytomany extends zajField {
 		// is data a model object? if so, add this one
 			elseif(is_object($data) && is_a($data, 'zajModel')){
 				// add me
-					$object->data->$field_name->add($data);
+					if(!$object->data->$field_name->is_connected($data)){
+						$object->data->$field_name->add($data);
+					}
 			}
 		// is data a string of json data?
 		 	elseif(is_string($data) && !empty($data)){
@@ -155,14 +157,20 @@ class zajfield_manytomany extends zajField {
 			 				$otherobject->set('name', $name);
 			 				$otherobject->save();
 			 			// connect
-			 				$object->data->$field_name->add($otherobject, 'add', $additional_fields);
+					        if(!$object->data->$field_name->is_connected($otherobject)){
+			 				    $object->data->$field_name->add($otherobject, 'add', $additional_fields);
+					        }
 		 			}
 		 		}
 		 		if(!empty($data->new)){
 		 			// connect
 		 			foreach($data->new as $id){
 		 				$otherobject = $othermodel::fetch($id);
-		 				if($otherobject && $otherobject->exists) $object->data->$field_name->add($otherobject, 'add', $additional_fields);
+		 				if($otherobject && $otherobject->exists){
+						    if(!$object->data->$field_name->is_connected($otherobject)){
+						        $object->data->$field_name->add($otherobject, 'add', $additional_fields);
+						    }
+					    }
 		 			}
 		 		}
 		 		if(!empty($data->delete)){
