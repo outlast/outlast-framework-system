@@ -259,7 +259,7 @@ class zajLib {
 				// split the port (if it exists)
 					$pdata = explode(':', $this->host);
 					$this->host = $pdata[0];
-					if(empty($pdata[1])) $this->port = $pdata[1];
+					if(!empty($pdata[1])) $this->port = $pdata[1];
 					else $this->port = "";
 				// process domain and subdomain
 					$ddata = explode(".",$this->host);
