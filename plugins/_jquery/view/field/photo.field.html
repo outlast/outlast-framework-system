@@ -1,3 +1,4 @@
+ {% lang 'system/fields' %}
 <!-- requires jquery! ONLY FOR A SINGLE PHOTO!!!! -->
 <script language="JavaScript" src="{{baseurl}}system/js/plupload/plupload.full.js" type="text/javascript"></script>
 
@@ -56,7 +57,7 @@
 				$('#{{field.uid}}-transferbar').removeClass('hidden');
 			});
 			uploader_{{field.uid}}.bind('Error', function(up, err) {MB
-				alert("A kiválasztott fájl nem felel meg a követelményeknek! (Maximum {{field.options.max_file_size|escapejs}}, jpg/png/gif)");
+				alert("{{#system_field_file_upload_error#|printf:field.options.max_file_size|escapejs}}");
 				up.refresh(); // Reposition Flash/Silverlight
 			});
 			uploader_{{field.uid}}.bind('FileUploaded', function(up, file, result) {
@@ -66,7 +67,7 @@
 				//console.log(res);
 				// check for error
 					if(res.status == 'error'){
-						alert("A fájl feltöltése nem sikerült. Próbálj kissebb méretű fájlt választani (maximum {{field.options.max_file_size|escapejs}}, jpg/png/gif)!");
+						alert("{{#system_field_file_too_big#|printf:field.options.max_file_size|escapejs}}");
 					}
 					else{
 						uploader_update_{{field.uid}}(res);
@@ -79,8 +80,17 @@
 			 *	res.height, res.width, res.id
 			 **/
 			uploader_update_{{field.uid}} = function(res){
+				
+				var max_height = {{field.options.max_height|escapejs}} + 0;
+				var max_width = {{field.options.max_width|escapejs}} + 0;
 				// Is it wide/tall enough?
-					if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("The picture is too small. It must be at least {{field.options.min_width|escapejs}}x{{field.options.min_height|escapejs}} pixels.");
+					if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("{{#system_field_picture_too_small#|printf:field.options.min_width|printf:field.options.min_height|escapejs}}");
+					
+				// check for height, if is > 0;
+					if(max_height && res.height > max_height) return alert("{{#system_field_picture_too_high#|printf:field.options.max_height|escapejs}}");
+				// check for width, if is > 0;
+					if(max_width && res.width > max_width) return alert("{{#system_field_picture_too_wide#|printf:field.options.max_height|escapejs}}");
+					
 				// Add my image
 					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
 					$('#{{field.uid}}-filelist').html("<img src='"+imgurl+"'>");
