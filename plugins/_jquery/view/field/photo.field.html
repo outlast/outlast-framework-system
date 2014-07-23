@@ -79,18 +79,19 @@
 			 * Expects an object as such:
 			 *	res.height, res.width, res.id
 			 **/
-			uploader_update_{{field.uid}} = function(res){
-				
-				var max_height = {{field.options.max_height|escapejs}} + 0;
-				var max_width = {{field.options.max_width|escapejs}} + 0;
+			uploader_update_{{field.uid}} = function(res){				
 				// Is it wide/tall enough?
 					if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("{{#system_field_picture_too_small#|printf:field.options.min_width|printf:field.options.min_height|escapejs}}");
-					
-				// check for height, if is > 0;
-					if(max_height && res.height > max_height) return alert("{{#system_field_picture_too_high#|printf:field.options.max_height|escapejs}}");
-				// check for width, if is > 0;
-					if(max_width && res.width > max_width) return alert("{{#system_field_picture_too_wide#|printf:field.options.max_height|escapejs}}");
-					
+					{% if field.options.max_height %}
+					// check for height, if is > 0;
+						var max_height = {{field.options.max_height|escapejs}} + 0;
+						if(max_height && res.height > max_height) return alert("{{#system_field_picture_too_high#|printf:field.options.max_height|escapejs}}");
+					{% endif %}
+					{% if field.options.max_width %}
+					// check for width, if is > 0;
+						if(max_width && res.width > max_width) return alert("{{#system_field_picture_too_wide#|printf:field.options.max_width|escapejs}}");					
+						var max_width = {{field.options.max_width|escapejs}} + 0;
+					{% endif %}
 				// Add my image
 					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
 					$('#{{field.uid}}-filelist').html("<img src='"+imgurl+"'>");
