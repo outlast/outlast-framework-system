@@ -6,7 +6,7 @@
  * @package Library
  **/
 
-define("OFW_EXPORT_PHPEXCEL_PATH", "/var/www/_scripts/PHPExcel/PHPExcel.php");
+
 define("OFW_EXPORT_MAX_EXECUTION_TIME", 300);
 
 define("OFW_EXPORT_ENCODING_DEFAULT", false);
@@ -26,11 +26,11 @@ class zajlib_export extends zajLibExtension {
 		 */
 		public function csv($fetcher, $fields = false, $file_name='export.csv', $encoding = false, $delimiter = false){
 			// Show template
-
+			$this->zajlib->config->load('export.conf.ini');
 			// No more autoloading for OFW
 				zajLib::me()->model_autoloading = false;
 			// Try using PHPExcel if available
-				@include_once(OFW_EXPORT_PHPEXCEL_PATH);
+				@include_once($this->zajlib->config->variable->php_excel_path);
 				if(!class_exists('PHPExcel', false) || $encoding){
 					// Standard CSV export
 						zajLib::me()->model_autoloading = true;
@@ -83,10 +83,12 @@ class zajlib_export extends zajLibExtension {
 		 * @return void Sends to download of excel file.
 		 */
 		public function xls($fetcher, $fields = false, $file_name='export.xlsx'){
+			$this->zajlib->config->load('export.conf.ini');
+			
 			// No more autoloading for OFW
 				zajLib::me()->model_autoloading = false;
 			// Require it if it is available
-				include_once(OFW_EXPORT_PHPEXCEL_PATH);
+				include_once($this->zajlib->config->variable->php_excel_path);
 				if(!class_exists('PHPExcel', false)) $this->zajlib->error("PHPExcel not found!");
 			// Create the excel file
 				$workbook = new PHPExcel();
