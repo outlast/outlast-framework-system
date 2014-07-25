@@ -54,10 +54,30 @@
  * Enable JS error logging to Analytics.
  **/
 	window.onerror=function(message, url, line){
-		// log JS errors to Analytics
-			if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', 'JavascriptError', 'Error', 'Line: '+line+': '+message]);
+		// Log to analytics
+			if(typeof ga != 'undefined') ga('send', 'exception', {
+					exDescription: 'Javascript error on line '+line+' of '+url+': '+message,
+					exFatal: true
+    			});
 		// Allow event to propogate by returning false
 			return false;
+	};
+
+	/**
+	 * Send exception to Google Analytics.
+	 * @param {string} message The message to send.
+	 * @param {boolean} [fatal=false] Set this to true if this is a fatal error. False by default.
+	 * @return {boolean} Always returns false.
+	 */
+	zaj.exception = function(message, fatal){
+		// Set default value for fatal
+			if(typeof fatal == 'undefined') fatal = false;
+		// Check if new GA available
+			if(typeof ga != 'undefined') ga('send', 'exception', {
+					exDescription: message,
+					exFatal: fatal
+    			});
+		return false;
 	};
 
 /**
@@ -77,13 +97,16 @@
 	 * @return {boolean} Returns true or console.log.
 	 **/
 	zaj.log = function(message, type, context){
-		zaj.track('LogMessage', type, message);
 		if(typeof console != 'undefined' && typeof(console) == 'object'){
 			if(typeof context == 'undefined') context = '';
 			switch(type){
-				case 'error': return console.error(message, context);
+				case 'error':
+					zaj.exception(message, true);
+					return console.error(message, context);
 				case 'warn':
-				case 'warning': return console.warn(message, context);
+				case 'warning':
+					zaj.exception(message, false);
+					return console.warn(message, context);
 				case 'info':
 				case 'notice': return console.info(message, context);
 				default: console.log(message, context);
@@ -355,9 +378,7 @@
 						var rdata = request.split('?');
 						if(rdata.length > 2){
 							// Display warning
-								zaj.warning("Found multiple question marks in query string!");
-							// Send to Analytics
-								zaj.track('AjaxError', 'MultipleQueryStrings', request);
+								zaj.warning("Found multiple question marks in query string: "+request);
 						}
 						request = rdata[0];
 						datarequest = rdata[1];
@@ -409,10 +430,8 @@
 											var el = $('[data-submit-toggle-class]');
 											if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
 										}
-									// Send to Analytics
-										zaj.track('AjaxError', 'RequestFailed', textStatus);
 									// Send a log
-										zaj.log("Ajax request failed with status ".textStatus);
+										zaj.error("Ajax request ("+request+") failed with status "+textStatus, true);
 								}
 						},
 						data: datarequest,
