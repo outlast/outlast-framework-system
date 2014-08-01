@@ -9,11 +9,10 @@
 	<option value=''>--</option>
 	{% if #category_two_level# %}
 		{% foreach field.choices_toplevel as toplevel %}
-			<optgroup label="{{toplevel.name|escape}}">
+			<option {% if toplevel.id eq field.value.id %}selected="selected"{% endif %} value="{{toplevel.id}}" style="font-weight:bold;">{{toplevel.name|escape}}</option>
 				{% foreach toplevel.data.subcategories as choice %}
-					<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}'>{{choice.name}}</option>
+					<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}' style="padding-left: 25px;">{{choice.name}}</option>
 				{% endforeach %}
-			</optgroup>
 		{% endforeach %}
 	{% elseif %}
 		{% foreach field.choices as choice %}
