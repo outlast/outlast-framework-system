@@ -9,19 +9,18 @@
 class zajlib_url extends zajLibExtension {
 
 	/**
-	 * Reroutes the user to a specified controller. This is depricated and will be removed in 1.0. Use $this->zajlib->reroute() instead.
-	 * @param string $request A url-like request to a controller.
-	 * @param array|bool $optional_parameters An array of parameters passed to the controller method.
-	 * @return boolean Returns whatever the rerouted method returns.
-	 * @todo Remove this in 1.0.
-	 */
-	function redirect($request, $optional_parameters = false){
-		return $this->zajlib->reroute($request, $optional_parameters);
+	 * Returns true or false depending on whether the passed string is a valid http URL.
+	 * @param string $url The url to be parsed
+	 * @param boolean $allow_spaces Allow spaces in query string. This will allow spaces in query string, but also in the url. True url-encoded strings should not require this since spaces are %20.
+	 * @return bool True if a valid url. False otherwise.
+	 **/
+	function valid($url, $allow_spaces = true){
+	 	if($allow_spaces) return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[\S ]*$/i', $url);
+		else return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[^\s]*$/i', $url);
 	}
-	
-	
+
 	/**
-	 * Fetches the domain without any subdomains for the given url. For example, for foo.bar.www.youtube.com it will return youtube.com.
+	 * Returns the domain without any subdomains for the given url. For example, for foo.bar.www.youtube.com it will return youtube.com.
 	 * @param string $url The url to parse.
 	 * @return string The domain portion of the url.
 	 **/
@@ -36,7 +35,7 @@ class zajlib_url extends zajLibExtension {
 	}
 
 	/**
-	 * Fetches the subdomain, but excludes www. This is useful because users usually think www.news.domain.com is the same as news.domain.com and domain.com is the same as www.domain.com.
+	 * Returns the subdomain, but excludes www. This is useful because users usually think www.news.domain.com is the same as news.domain.com and domain.com is the same as www.domain.com.
 	 * @param string $url The url to parse.
 	 * @return string The subdomain portion of the url.
 	 **/
@@ -77,36 +76,11 @@ class zajlib_url extends zajLibExtension {
 			else return $url.'?';
 	}
 
-	/**
-	 * Returns true or false depending on whether the passed string is a valid http URL.
-	 * @param string $url The url to be parsed
-	 * @param boolean $allow_spaces Allow spaces in query string. This will allow spaces in query string, but also in the url. True url-encoded strings should not require this since spaces are %20.
-	 * @return bool True if a valid url. False otherwise.
-	 * @todo Move this to validation lib.
-	 **/
-	function valid($url, $allow_spaces = true){
-	 	if($allow_spaces) return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[\S ]*$/i', $url);
-		else return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[^\s]*$/i', $url);
-	}
-
-	/**
-	 * Redirects to a URL based on the current subdomain.
-	 * @param string $from The subdomain to check for.
-	 * @param string $to The URL to redirect to.
-	 * @return bool Redirects or returns false.
-	 **/
-	function redirect_from_subdomain_to_url($from,$to){
-		$subdomaindata = explode(".",$_SERVER['HTTP_HOST']);
-		if($subdomaindata[0]==$from || $subdomaindata[1]==$from){
-			// redirect me!
-			header("Location: $to");
-			exit;
-		}
-		return false;
-	}
 
 
 
+
+	/** Below are old, deprecated methods. */
 
 	/**
 	 * @deprecated
@@ -149,6 +123,37 @@ class zajlib_url extends zajLibExtension {
 	function send_request($url, $content='', $method = 'GET', $customheaders = false, $returnheaders = false){
 		$this->zajlib->deprecated("Use request->get() instead.");
 		return $this->zajlib->request->get($url, $content, $returnheaders, $customheaders, $method);
+	}
+
+	/**
+	 * Reroutes the user to a specified controller. This is depricated and will be removed in 1.0. Use $this->zajlib->reroute() instead.
+	 * @param string $request A url-like request to a controller.
+	 * @param array|bool $optional_parameters An array of parameters passed to the controller method.
+	 * @return boolean Returns whatever the rerouted method returns.
+	 * @todo Remove this in 1.0.
+	 * @deprecated
+	 * @ignore
+	 */
+	function redirect($request, $optional_parameters = false){
+		return $this->zajlib->reroute($request, $optional_parameters);
+	}
+
+	/**
+	 * Redirects to a URL based on the current subdomain.
+	 * @param string $from The subdomain to check for.
+	 * @param string $to The URL to redirect to.
+	 * @return bool Redirects or returns false.
+	 * @deprecated
+	 * @ignore
+	 **/
+	function redirect_from_subdomain_to_url($from,$to){
+		$subdomaindata = explode(".",$_SERVER['HTTP_HOST']);
+		if($subdomaindata[0]==$from || $subdomaindata[1]==$from){
+			// redirect me!
+			header("Location: $to");
+			exit;
+		}
+		return false;
 	}
 
 }

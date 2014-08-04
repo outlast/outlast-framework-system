@@ -68,6 +68,7 @@ class zajlib_template extends zajLibExtension {
 	
 	/**
 	 * Returns an object containing the built-in 'zaj' variables that are available to the template.
+	 * @return stdClass An object with the zaj variables.
 	 **/
 	public function get_variables(){
 		return new zajlib_template_zajvariables($this->zajlib);
@@ -98,14 +99,14 @@ class zajlib_template extends zajLibExtension {
 
 	/**
 	 * Display a specific template.
-	 * If the request contains zaj_pushstate_block, it will reroute to block. See Mozajik pushState support for more info.
+	 * If the request contains zaj_pushstate_block, it will reroute to block. See Outlast Framework pushState support for more info.
 	 * @param string $source_path The path to the template to be compiled relative to the active view folders. 
 	 * @param boolean $force_recompile If set to true, the template file will be recompiled even if a cached version already exists. (False by default.)
 	 * @param boolean $return_contents If set to true, the compiled contents will be returned by the function and not sent to the browser (as is the default).
 	 * @param boolean $custom_compile_destination If set, this allows you to compile the template to a different location than the default. This is not recommended unless you really know what you are doing!
-	 * @return string If requested by the $return_contents parameter, it returns the entire generated contents.
+	 * @return string|boolean If requested by the $return_contents parameter, it returns the entire generated contents.
 	 **/
-	function show($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
+	public function show($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
 		// do i need to show by block (if pushState request detected)
 			if(!empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
 		// prepare
@@ -118,7 +119,7 @@ class zajlib_template extends zajLibExtension {
 	
 	/**
 	 * Extracts a specific block from a template and displays only that. This is useful for ajax requests.
-	 * If the request contains zaj_pushstate_block, it will display that block. See Mozajik pushState support for more info.
+	 * If the request contains zaj_pushstate_block, it will display that block. See Outlast Framework pushState support for more info.
 	 * @param string $source_path The path to the template to be compiled relative to the active view folders.
 	 * @param string $block_name The name of the block within the template.
 	 * @param boolean $recursive If set to true (false by default), all parent files will be checked for this block as well.
@@ -126,7 +127,7 @@ class zajlib_template extends zajLibExtension {
 	 * @param boolean $return_contents If set to true, the compiled contents will be returned by the function and not sent to the browser (as is the default).
 	 * @return bool|string Returns the contents if requested or false if failure.
 	 */
-	function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
+	public function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
 		// do i need to show by block (if pushState request detected)
 			if(!empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
 		// first do a show to compile (if needed)
@@ -158,7 +159,7 @@ class zajlib_template extends zajLibExtension {
 	 * @param bool $force_download If set to true, the content will never be displayed within the browser. True is the default and the recommended setting.
 	 * @param bool $force_recompile If set to true, the template will always be forced to recompile. Defaults to false.
 	 */
-	function download($source_path, $mime_type, $download_file_name, $force_download=true, $force_recompile=false){
+	public function download($source_path, $mime_type, $download_file_name, $force_download=true, $force_recompile=false){
 		// pass file thru to user
 			header('Content-Type: '.$mime_type);
 			//header('Content-Length: '.filesize($source_path)); // can i somehow detect this?!
@@ -177,13 +178,14 @@ class zajlib_template extends zajLibExtension {
 	 * @param string $source_path The path to the template to be compiled relative to the active view folders.
 	 * @param bool|string $block_name If specified, only this block tag of the template file will be returned in the request.
 	 * @param boolean $force_recompile If set to true, the template file will be recompiled even if a cached version already exists. (False by default.)
+	 * @return boolean Will return true if successful.
 	 */
-	function ajax($source_path, $block_name = false, $force_recompile = false){
+	public function ajax($source_path, $block_name = false, $force_recompile = false){
 		// send ajax header
 			if(!$this->zajlib->output_started) header("Content-Type: application/x-javascript; charset=UTF-8");
 		// now just show
-			if(!is_string($block_name)) $this->show($source_path, $force_recompile);
-			else $this->block($source_path, $block_name, $force_recompile);
+			if(!is_string($block_name)) return $this->show($source_path, $force_recompile);
+			else return $this->block($source_path, $block_name, $force_recompile);
 	}
 	
 	/**
@@ -195,9 +197,9 @@ class zajlib_template extends zajLibExtension {
 	 * @param string $sendcopyto If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
 	 * @param string $bounceto If set, the email will bounce to this address. By default, bounces are ignored and not sent anywhere.
 	 * @param string $plain_text_version The path to the template to be compiled for the plain text version.
-	 * @return bool
+	 * @return bool Will return true. Depending on the email gateway implementation it may return false if the email failed.
 	 */
-	function email($source_path, $from, $to, $subject, $sendcopyto = "", $bounceto = "", $plain_text_version = ""){
+	public function email($source_path, $from, $to, $subject, $sendcopyto = "", $bounceto = "", $plain_text_version = ""){
 		// capture output of this template
 			$body = $this->show($source_path, false, true);
 		// capture output of plain text template

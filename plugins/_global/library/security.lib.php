@@ -77,7 +77,7 @@ class zajlib_security extends zajLibExtension {
 	 *
 	 * @param string $ip The ip address to check.
 	 * @param string $range The ip address range to check in.
-	 * @return Will return true if the specified IP is within the given range.
+	 * @return boolean Will return true if the specified IP is within the given range.
 	 **/
 	 public function ip_in_range($ip, $range) {
 		// if ip is equal to range
