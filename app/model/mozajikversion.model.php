@@ -11,17 +11,17 @@ class MozajikVersion extends zajModel {
 	 * Major version count
 	 * @var integer
 	 **/
-	static $major = 3;			// major version count
+	static $major = 14;			// major version count
 	/**
 	 * Minor version count
 	 * @var integer
 	 **/
-	static $minor = 0;			// minor version count
+	static $minor = 8;			// minor version count
 	/**
 	 * Build count (based on svn repo revision)
 	 * @var integer
 	 **/
-	static $build = 3003;		// build - based on svn repo revision
+	static $build = '';		// build - based on svn repo revision
 	/**
 	 * Beta status
 	 * @var boolean
