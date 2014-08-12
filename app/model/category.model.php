@@ -16,6 +16,7 @@ class Category extends zajModel {
 	public static $fetch_order_field = 'abc';
 
 	public $hierarchy;
+	public $revhierarchy;
 	
 	///////////////////////////////////////////////////////////////
 	// !Model design
@@ -50,8 +51,13 @@ class Category extends zajModel {
 			$this->friendlyurl = $this->data->friendlyurl;	
 		// Generate hierarchy
 			$this->hierarchy = array();
+			$this->revhierarchy = array();
 			$me = $this;
-			while($me = $me->data->parentcategory) $this->hierarchy[] = (object) array('name'=>$me->name, 'friendlyurl'=>$me->friendlyurl, 'id'=>$me->id);
+			while($me = $me->data->parentcategory){ 
+				$this->hierarchy[] = (object) array('name'=>$me->name, 'friendlyurl'=>$me->friendlyurl, 'id'=>$me->id);
+			}
+			$this->revhierarchy = array_reverse($this->hierarchy);
+
 		// Cache my parent if exists!
 			if($this->data->parentcategory){
 				$this->parentcategoryid = $this->data->parentcategory->id;
