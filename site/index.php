@@ -3,7 +3,7 @@
 		define('MOZAJIK_HTACCESS_VERSION', 303);
 		define('MOZAJIK_CONFIG_VERSION', 303);
 
-		define('MOZAJIK_RECOMMENDED_HTACCESS_VERSION', 303);
+		define('MOZAJIK_RECOMMENDED_HTACCESS_VERSION', 305);
 		define('MOZAJIK_RECOMMENDED_CONFIG_VERSION', 305);
 
 	// Set locale but only if new config version
