@@ -63,7 +63,6 @@
 		ini_set('precision', 19);
 	// check for request errors
 		if(!empty($_REQUEST['error'])){
-			if($_REQUEST['error'] == "querystring") exit("MOZAJIK REQUEST ERROR: cannot explicity use zajapp or zajmode in GET or POST query!");
 			if($_REQUEST['error'] == "private") exit("MOZAJIK REQUEST ERROR: cannot access this folder!");
 			if($_REQUEST['error'] == "norewrite") exit("MOZAJIK REQUEST ERROR: the required apache rewrite support not enabled!");
 		}
