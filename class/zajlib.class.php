@@ -28,6 +28,7 @@ define('MAX_GLOBAL_EVENT_STACK', 50);
  * @property zajlib_graphics $graphics
  * @property zajlib_import $import
  * @property zajlib_lang $lang
+ * @property zajlib_memcache $memcache
  * @property zajlib_mobile $mobile
  * @property zajlib_model $model
  * @property zajlib_plugin $plugin

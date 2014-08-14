@@ -10,6 +10,7 @@ class zajlib_template extends zajLibExtension {
 
 	/**
 	 * This variables is used to verify the validity of each included file.
+	 * @var boolean
 	 **/
 	private $template_valid = false;
 
