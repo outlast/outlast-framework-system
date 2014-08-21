@@ -289,11 +289,23 @@
 
 	/**
 	 * Smooth scrolling in and outside of Facebook tabs and canvas pages.
-	 * @param {Number} y The pixel value of where to scroll to.
+	 * @param {Number|object|string} yORdomORselector The pixel value or the dom/jquery object or a selector of where to scroll to.
 	 * @param {Number} [duration=1000] The number of miliseconds for the animation.
 	 **/
-		zaj.scroll = function(y, duration){
-			if(typeof duration == 'undefined') duration = 1000;
+		zaj.scroll = function(yORdomORselector, duration){
+			// Get the y
+				var y;
+				switch(typeof yORdomORselector){
+					case 'string':
+					case 'object':
+						y = $(yORdomORselector).offset().top;
+						break;
+					default:
+						y = yORdomORselector;
+						break;
+				}
+			// Default duration
+				if(typeof duration == 'undefined') duration = 1000;
 			// First, do the standard scrolling (will work outside of FB)
 				$('html,body').animate({scrollTop: y}, {duration: duration});
 			// If within FB Canvas context, we need more...
