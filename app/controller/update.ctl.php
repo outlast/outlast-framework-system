@@ -66,9 +66,9 @@
 			// check to see if my current install is up to date
 				$version_status = MozajikVersion::check();
 			// if all is good, display that message
-				if($version_status < 0) return $this->zajlib->template->show('update/update-version-toonew.html'); 
+				//if($version_status < 0) return $this->zajlib->template->show('update/update-version-toonew.html');
 			// if database exists and it is too old, then update!
-				if($version_status == 0 && is_object($this->zajlib->mozajik)) return $this->zajlib->template->show('update/update-version-needed.html'); 
+				//if($version_status == 0 && is_object($this->zajlib->mozajik)) return $this->zajlib->template->show('update/update-version-needed.html');
 			// all is okay, continue with update
 				$this->zajlib->variable->title = "app update | database";
 				$this->zajlib->variable->updatename = "database model";
