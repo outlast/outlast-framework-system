@@ -144,7 +144,7 @@ EOF;
 		// default parameter
 			if(empty($parameter)) $parameter = "'%F'";
 		// write to file
-			$this->zajlib->compile->write('if(is_numeric($filter_var)) $filter_var=strftime('.$parameter.', $filter_var); else $filter_var=false;');
+			$this->zajlib->compile->write('if(is_numeric($filter_var)) $filter_var=utf8_encode(strftime('.$parameter.', $filter_var)); else $filter_var=false;');
 		return true;
 	}
 
