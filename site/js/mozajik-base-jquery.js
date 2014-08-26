@@ -311,8 +311,8 @@
 			// If within FB Canvas context, we need more...
 				if(zaj.facebook){
 					FB.Canvas.getPageInfo(function(pageInfo){
-						$({y: pageInfo.scrollTop}).animate(
-							{y: y},
+						$({y: pageInfo.scrollTop + pageInfo.offsetTop}).animate(
+							{y: y + pageInfo.offsetTop},
 							{duration: duration, step: function(offset){ FB.Canvas.scrollTo(0, offset); }
 						});
 					});
