@@ -310,9 +310,10 @@
 				$('html,body').animate({scrollTop: y}, {duration: duration});
 			// If within FB Canvas context, we need more...
 				if(zaj.facebook){
+					var blue_bar_height = 42;
 					FB.Canvas.getPageInfo(function(pageInfo){
 						$({y: pageInfo.scrollTop}).animate(
-							{y: y + pageInfo.offsetTop},
+							{y: y + pageInfo.offsetTop + blue_bar_height},
 							{duration: duration, step: function(offset){ FB.Canvas.scrollTo(0, offset); }
 						});
 					});
