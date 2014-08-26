@@ -61,7 +61,7 @@ class zajCompileSession {
 	 *
 	 * @param string $source_file Relative path of source file.
 	 * @param object $zajlib Pointer to the global zajlib object.
-	 * @param string $destination_file Relative path of destination file. If not specified, the destination will be the same as the source, which is the preferred way of doing things. You should only specify this if you are customizing the template compilation process.
+	 * @param string|boolean $destination_file Relative path of destination file. If not specified, the destination will be the same as the source, which is the preferred way of doing things. You should only specify this if you are customizing the template compilation process.
 	 * @return zajCompileSession
 	 */
 	public function __construct($source_file, &$zajlib, $destination_file = false){
@@ -148,9 +148,21 @@ class zajCompileSession {
 	 * @return boolean Always returns true.
 	 */
 	public function add_source($source_path){
-		$this->sources[] = new zajCompileSource($source_path, $this->zajlib);
+		if(!$this->is_source_added($source_path)){
+			$this->sources[$source_path] = new zajCompileSource($source_path, $this->zajlib);
+		}
 		return true;
 	}
+
+	/**
+	 * Is the source path already
+	 * @param string $source_path Relative path of source file.
+	 * @return boolean Return true or false depending on if the file is already being compiled.
+	 */
+	public function is_source_added($source_path){
+		return array_key_exists($source_path, $this->sources);
+	}
+
 
 	/**
 	 * Gets the currently selected source file object.
