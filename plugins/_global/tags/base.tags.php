@@ -914,6 +914,94 @@ EOF;
 			return true;
 	}
 
+/**
+	 * Tag: insert - Inserts another template at this location. The template is treated as if it were inline.
+	 *
+	 *  <b>{% insert '/admin/news_edit.html' 'block_name' %}</b>
+	 *  1. <b>template_file</b> - The template file to insert.
+	 *  2. <b>block_section</b> - If you only want to insert the block section from the file. (optional)
+	 * @todo See comments below for optimization.
+	 **/
+	public function tag_insert($param_array, &$source){
+		// get the first parameter...
+			$var = $param_array[0]->variable;
+			$tvar = trim($var, "'\"");
+		// TODO: if it is a string, then its static, so compile and insert file here...
+			/*if($var != $tvar){
+				// compile contents
+					$this->zajlib->compile->compile($tvar);
+				// insert to current destination
+					$this->zajlib->compile->insert_file($tvar.'.php');
+			}*/
+			// DO THIS FOR insertlocal as well
+
+		// Check if extends is the same as insert
+			// @todo This will not solve the issue if it is not a direct parent.
+			if($this->tag_get_extend() == trim($param_array[0]->variable, "'\"")){
+				$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
+			}
+		// if it is a single variable, then we need to do it with template->show
+			else{
+				if(count($param_array) <= 1) $contents = <<<EOF
+<?php
+// start insert
+	\$this->zajlib->template->show({$param_array[0]->variable});
+?>
+EOF;
+		// if it is two variables, then we need to do it with template->block
+				else $contents = <<<EOF
+<?php
+// start insert block
+	\$this->zajlib->template->block({$param_array[0]->variable}, {$param_array[1]->variable});
+?>
+EOF;
+
+
+				// write to file
+					$this->zajlib->compile->write($contents);
+			}
+		// return debug_stats
+			return true;
+	}
+
+	/**
+	 * Tag: insertlocal - Same as {@link insert} except that this also checks for localized versions of the HTML file before including.
+	 *
+	 *  <b>{% insertlocal '/admin/news_edit.html' 'block_name' %}</b>
+	 *  1. <b>template_file</b> - The template file to insert.
+	 *  2. <b>block_section</b> - If you only want to insert the block section from the file. (optional)
+	 **/
+	public function tag_insertlocal($param_array, &$source){
+		// get the first parameter...
+			$var = $param_array[0]->variable;
+			$tvar = trim($var, "'\"");
+		// Check if extends is the same as insert
+			if($this->tag_get_extend() == trim($param_array[0]->variable, "'\"")){
+				$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
+			}
+		// if it is a single variable, then we need to do it with template->show
+				if(count($param_array) <= 1) $contents = <<<EOF
+<?php
+// start insert for local file
+	\$this->zajlib->lang->template({$param_array[0]->variable});
+?>
+EOF;
+		// if it is two variables, then we need to do it with template->block
+				else $contents = <<<EOF
+<?php
+// start insert block for local file
+	\$this->zajlib->lang->block({$param_array[0]->variable}, {$param_array[1]->variable});
+?>
+EOF;
+
+
+				// write to file
+					$this->zajlib->compile->write($contents);
+			//}
+		// return debug_stats
+			return true;
+	}
+
 	/**
 	 * These are special functions which return the current extend file path and block name in use. THESE ARE NOT TAGS!
 	 **/

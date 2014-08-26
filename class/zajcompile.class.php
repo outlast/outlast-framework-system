@@ -73,7 +73,7 @@ class zajCompileSession {
 			if(!$destination_file) $this->add_destination($source_file);
 			else $this->add_destination($destination_file);
 		// start a new source
-			$this->add_source($source_file);		
+			$this->add_source($source_file);
 	}
 
 
@@ -145,13 +145,14 @@ class zajCompileSession {
 	/**
 	 * Add a source to this compile session. You should not call methods of this object directly, but instead use the compile library.
 	 * @param string $source_path Relative path of source file.
-	 * @return boolean Always returns true.
+	 * @return boolean Returns true if the source was added, false if it was added earlier.
 	 */
 	public function add_source($source_path){
 		if(!$this->is_source_added($source_path)){
 			$this->sources[$source_path] = new zajCompileSource($source_path, $this->zajlib);
+			return true;
 		}
-		return true;
+		else return false;
 	}
 
 	/**
@@ -163,6 +164,13 @@ class zajCompileSession {
 		return array_key_exists($source_path, $this->sources);
 	}
 
+	/**
+	 * The number of sources added.
+	 * @return integer Returns the number of sources.
+	 */
+	public function get_source_count(){
+		return count($this->sources);
+	}
 
 	/**
 	 * Gets the currently selected source file object.
