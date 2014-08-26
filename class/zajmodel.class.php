@@ -411,6 +411,41 @@ abstract class zajModel {
 	}
 
 	/**
+	 * Convert model data to a standard single-dimensional array format.
+	 * @todo Move these conversions to field definition files.
+	 * @return array Return a single-dimensional array.
+	 */
+	public function to_array(){
+		// Get my class name
+			/* @var zajModel $class_name */
+			$class_name = $this->class_name;
+		// Get my model data
+			$mymodel = $class_name::__model();
+		// Load up data if not yet loaded
+			if(!$this->data) $this->data = new zajData($this);
+		// Now fetch array data
+			$array_data = array();
+			foreach($mymodel as $field_name => $field_type){
+				switch($field_type->type){
+					case 'manytoone':
+						$array_data[$field_name] = $this->data->$field_name->id;
+						break;
+					case 'categories':
+					case 'files':
+					case 'photos':
+					case 'onetomany':
+					case 'manytomany':
+						// Just skip these
+						break;
+					default:
+						$array_data[$field_name] = $this->data->$field_name;
+						break;
+				}
+			}
+		return $array_data;
+	}
+
+	/**
 	 * Set the object status to deleted or remove from the database.
 	 *
 	 * @param boolean $permanent OPTIONAL. If set to true, object is permanently removed from db. Defaults to false.
@@ -535,7 +570,6 @@ abstract class zajModel {
 		if(!empty(zajModel::${'extensions'}[$class_name])) return zajModel::${'extensions'}[$class_name];
 		return false;
 	}
-
 
 	/**
 	 * This method looks for methods in extends children and creates "virtual" menthods to events and actions.

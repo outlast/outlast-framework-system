@@ -16,6 +16,38 @@ define("OFW_EXPORT_ENCODING_EXCEL", true);
 class zajlib_export extends zajLibExtension {
 
 		/**
+		 * Export model data as JSON.
+		 * @param zajModel|array|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
+		 * @param array|bool $fields A list of fields from the model which should be included in the export. NOT YET IMPLEMENTED!
+		 * @param string $file_name The name of the file which will be used during download.
+		 * @return void Print the csv.
+		 */
+		public function json($fetcher, $fields = false, $file_name='export.json'){
+			$array_data = array();
+			// If this is a model
+				if(is_a($fetcher, 'zajModel') || is_a($fetcher, 'zajModelExtender')){
+					$array_data = $fetcher->to_array();
+				}
+			// If this is a fetcher or array
+				elseif(is_a($fetcher, 'zajFetcher') || is_array($fetcher)){
+					foreach($fetcher as $object){
+						if(is_a($object, 'zajModel') || is_a($object, 'zajModelExtender')){
+							/** @var zajModel $object */
+							$array_data[] = $object->to_array();
+						}
+						else $this->zajlib->error("JSON exported list must contain model objects only!");
+					}
+				}
+			// Now convert to JSON data and write to file output
+				header('Content-Disposition: attachment; filename="'.$file_name);
+				header('Content-Type: application/json;');
+				$out = fopen("php://output", 'w');
+				fputs($out, json_encode($array_data));
+				fclose($out);
+				exit;
+		}
+
+		/**
 		 * Export model data as csv.
 		 * @param array|zajlib_db_session|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
