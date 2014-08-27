@@ -21,7 +21,10 @@
 		var e = document.getElementById('map_{{field.uid}}');
 		if(e.offsetHeight == 0) e.style.height = '300px';
 	});
-	var map_{{field.uid}} = new GMaps({
+	if(typeof zaj.fields.map == 'undefined') zaj.fields.map = {};
+
+	// Create GMaps object
+	zaj.fields.map['{{field.name}}'] = new GMaps({
 		div: '#map_{{field.uid}}',
 		zoom: 14,
 		lat: {% if field.value.lat %}{{field.value.lat}}{% elseif %}47.497912{% endif %},
@@ -29,31 +32,53 @@
 		scrollwheel: false,
 		click: function(e) {
 			// set new input values
-			$('input[name="{{field.name}}[lat]"]')[0].value = e.latLng.jb;
-			$('input[name="{{field.name}}[lng]"]')[0].value = e.latLng.kb;
+			$('input[name="{{field.name}}[lat]"]')[0].value = e.latLng.lat();
+			$('input[name="{{field.name}}[lng]"]')[0].value = e.latLng.lng();
 			// set marker position
-			map_{{field.uid}}.removeMarkers();
-			map_{{field.uid}}.addMarker({
-				lat: e.latLng.jb,
-				lng: e.latLng.kb,
+			zaj.fields.map['{{field.name}}'].removeMarkers();
+			zaj.fields.map['{{field.name}}'].addMarker({
+				lat: e.latLng.lat(),
+				lng: e.latLng.lng()
 			});
 		},
 		dragend: function(e) {
 		}
 	});
+
+	// Add set by address txt
+	zaj.fields.map['{{field.name}}'].set_by_address = function(address){
+		var self = this;
+		GMaps.geocode({
+			address: address,
+			callback: function(results, status) {
+				if (status == 'OK') {
+					var latlng = results[0].geometry.location;
+					self.removeMarkers();
+					self.setCenter(latlng.lat(), latlng.lng());
+					self.addMarker({
+						lat: latlng.lat(),
+						lng: latlng.lng()
+					});
+					$('input[name="{{field.name}}[lat]"]')[0].value = latlng.lat();
+					$('input[name="{{field.name}}[lng]"]')[0].value = latlng.lng();
+				}
+			}
+		});
+	};
+
 	{% if field.value.lat and field.value.lng %}
 	// set marker position
-	map_{{field.uid}}.removeMarkers();
-	map_{{field.uid}}.addMarker({
+	zaj.fields.map['{{field.name}}'].removeMarkers();
+	zaj.fields.map['{{field.name}}'].addMarker({
 		lat: {{field.value.lat}},
-		lng: {{field.value.lng}},
+		lng: {{field.value.lng}}
 	});
 	{% endif %}
 
 	{% if field.options.geolocation and not field.value.lat %}
 	GMaps.geolocate({
 		success: function(position) {
-			map_{{field.uid}}.setCenter(position.coords.latitude, position.coords.longitude);
+			zaj.fields.map['{{field.name}}'].setCenter(position.coords.latitude, position.coords.longitude);
 		},
 		error: function(error) {
 		},
@@ -63,5 +88,6 @@
 		}
 	});
 	{% endif %}
-	var map_editor_field = map_{{field.uid}};
+	// @todo Remove this in future version
+	var map_editor_field = zaj.fields.map['{{field.name}}'];
 </script>
