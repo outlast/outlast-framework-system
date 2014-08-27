@@ -108,4 +108,50 @@ class zajlib_import extends zajLibExtension {
 			}
 	}
 
+	/**
+	 * Reads JSON data and tries to import as model data. Each item must have at least an id property to be imported.
+	 * @param string $json_data The JSON data.
+	 * @param string $model_name The name of the model
+	 * @param boolean $create_if_not_exists If set to true, it will create the model object if it does not exist. Defaults to true.
+	 * @param boolean $create_if_exists If set to false, existing items will be updated. If set to true, new ones will be created even for existing items. Defaults to false.
+	 * @param boolean $return_created_objects If set to true, it will return the created model objects. Otherwise it returns the number. Defaults to false.
+	 * @return integer|boolean|array The number of models updated or the created objects if that is requested.
+	 */
+	public function json($json_data, $model_name, $create_if_not_exists = true, $create_if_exists = false, $return_created_objects = false){
+		/** @var zajModel $model_name */
+		// Decode the data
+			$data = json_decode($json_data);
+			$updated = 0;
+			$objects = array();
+		// Validate data. It must be an array or an object.
+			if(!is_array($data) && !is_object($data)){
+				return $this->zajlib->warning("You tried to import invalid JSON data. JSON data must be an array or an object.");
+			}
+		// If this is not an array, then just create a single element array
+			if(is_object($data)) $data = array($data);
+		// Run through the list of model data objects
+			foreach($data as $d){
+				if(!empty($d->id)){
+					// Try to fetch the item
+					$object = $model_name::fetch($d->id);
+
+					// Let's create it if it does not exist
+					if($object === false && $create_if_not_exists) $object = $model_name::create($d->id);
+					// Create a new one if it exists already, but with a new id
+					if($object !== false && $create_if_exists) $object = $model_name::create();
+					// Otherwise update if it already exists...
+
+					// If found or created object then time to set with data
+					if($object !== false){
+						$object->set_with_data($d)->save();
+						$updated++;
+						if($return_created_objects) $objects[] = $object;
+					}
+				}
+			}
+		// Decide what to return
+			if($return_created_objects) return $objects;
+			else return $updated;
+	}
+
 }

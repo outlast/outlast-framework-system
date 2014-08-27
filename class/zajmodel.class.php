@@ -320,6 +320,28 @@ abstract class zajModel {
 	}
 
 	/**
+	 * Sets all fields of model data based on a passed associative array or object.
+	 * @param array|stdClass $data The data to create from. This can be a standard class or associative array.
+	 * @return zajModel Returns me to allow chaining.
+	 */
+	public function set_with_data($data){
+		// Verify data
+			$data = (object) $data;
+			if(!is_object($data)){
+				$this->zajlib->warning("Called set_with_data() with invalid data. Must be an object or array.");
+				return $this;
+			}
+		// Set settings
+			foreach($data as $field_name => $field_value){
+				// everything except the system stuff
+				if($field_name != 'unit_test' && $field_name != 'id' && $field_name != 'time_create' && $field_name != 'time_edit' && $field_name != 'ordernum'){
+					$this->set($field_name, $field_value);
+				}
+			}
+		return $this;
+	}
+
+	/**
 	 * Set the translation value of a field for this object.
 	 * @param string $field_name The name of model field.
 	 * @param mixed $value The new value of the field.
@@ -413,6 +435,7 @@ abstract class zajModel {
 	/**
 	 * Convert model data to a standard single-dimensional array format.
 	 * @todo Move these conversions to field definition files.
+	 * @todo Add support for model extensions.
 	 * @return array Return a single-dimensional array.
 	 */
 	public function to_array(){
@@ -1045,7 +1068,6 @@ abstract class zajModelExtender {
 			if($ext) $object = $ext::create($id, $object);
 		return $object;
 	}
-
 
 	/**
 	 * Redirect inaccessible static method calls to my parent.
