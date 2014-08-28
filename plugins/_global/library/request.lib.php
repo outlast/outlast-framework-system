@@ -55,7 +55,7 @@ class zajlib_request extends zajLibExtension {
 	 * @param array|bool $customheaders
 	 * @return string Returns a string with the content received.
 	 */
-	function post($url, $content=false, $returnheaders = false, $customheaders = false){
+	function post($url, $content=false, $returnheaders = false, $customheaders = false, $port = false){
 		// Set the content based on url query string
 			if($content === false){
 				// parse the url
@@ -68,7 +68,7 @@ class zajlib_request extends zajLibExtension {
 			$headers = array('Content-type'=>'application/x-www-form-urlencoded');
 			if(is_array($customheaders)) $headers = array_merge($headers, $customheaders);
 		// Now send the POST request and return the result
-			return $this->get($url, $content, $returnheaders, $headers, 'POST');
+			return $this->get($url, $content, $returnheaders, $headers, 'POST', $port);
 	}
 
 	/**
@@ -81,14 +81,20 @@ class zajlib_request extends zajLibExtension {
 	 * @return string Returns a string with the content received.
 	 * @todo Optimize so that calling post() doesnt run parse_url twice.
 	 */
-	function get($url, $content="", $returnheaders = false, $customheaders = false, $method = 'GET'){
+	function get($url ,$content="", $returnheaders = false, $customheaders = false, $method = 'GET', $setport = false){
 		// parse the url
 			$urldata = parse_url($url);
 			if($urldata === false) return $this->zajlib->warning("Malformed url ($url). Cannot parse.");
 		// get port
 			if($urldata['scheme'] == "https"){
-				$port = 443;
-				$prefix = "ssl://";
+				if($port){
+					$port = 443;
+					$prefix = "ssl://";
+				}
+				else{
+					$port = $setport;
+					$prefix = "ssl://";
+				}
 			}
 			else $port = 80;
 		// get method
