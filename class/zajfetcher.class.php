@@ -602,6 +602,7 @@ class zajFetcher implements Iterator, Countable{
 
 	/**
 	 * Reset will force the fetcher to reload the next time it is accessed
+	 * @todo This should return the actual object not the fetcher. If you fix this, you must fix filter_first().
 	 **/
 	public function reset(){
 		// Set query_done to false

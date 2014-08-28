@@ -232,7 +232,7 @@ EOF;
 	 **/
 	public function filter_first($parameter, &$source){
 		// write to file
-			$this->zajlib->compile->write('$filter_var=reset($filter_var);');
+			$this->zajlib->compile->write('if(is_a($filter_var, "zajFetcher")){ $filter_var = $filter_var->reset()->next(); } else $filter_var=reset($filter_var);');
 		return true;
 	}
 
