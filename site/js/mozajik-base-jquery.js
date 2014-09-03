@@ -198,16 +198,19 @@
 		}
 		return false;
 	};
-	var alert_reposition_interval;
 	zaj.alert_reposition = function($modal){
 		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(e){
 				// Top bar
 					var fb_top_bar = e.offsetTop;
 					var fb_bottom_bar = 250;
+					var $modalbody = $modal.find('.modal-body');
+					var overflow_mode = 'scroll';
 				// Calculate my top position
 					var topoffset = 20;
 					if(e.scrollTop > fb_top_bar) topoffset += e.scrollTop - fb_top_bar;
+				// Get my content height
+					var content_height = $modalbody.height(0)[0].scrollHeight;
 				// Set height
 					var height = e.clientHeight - fb_bottom_bar;
 					// If we are near the bottom
@@ -216,13 +219,17 @@
 					if(e.scrollTop < fb_top_bar) height = e.clientHeight - fb_top_bar - 150 + e.scrollTop;
 				// Subtract modal footer from height
 					height -= $modal.find('.modal-footer').height();
+				// If the height in the end is larger than the content height, then just use content height
+					if(height > content_height){
+						height = content_height;
+						overflow_mode = 'auto';
+					}
 				// Set the modal body to autosize
-					$modal.find('.modal-body').css({width:'auto', height: height, 'overflow-y': 'scroll'});
+					$modal.find('.modal-body').css({width:'auto', height: height, 'overflow-y': overflow_mode});
 					$modal.css({top: topoffset, overflow: 'hidden', 'margin-top': 0});
 			});
 			// clear and set
-			clearInterval(alert_reposition_interval);
-			alert_reposition_interval = setInterval(function(){ zaj.alert_reposition($modal); }, 1000);
+			setTimeout(function(){ zaj.alert_reposition($modal); }, 1000);
 		}
 	};
 	zaj.confirm = function(message, urlORfunction){
