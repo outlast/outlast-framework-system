@@ -558,7 +558,6 @@
 				delay: 300,						// Number of miliseconds before 
 				url: false,						// The url to send the request to. This should be relative. &query=your+query will be appended. If no url (false), it will not be submitted anywhere.
 				callback: false,				// A function or an element.
-				receiver: false,				// The selector or jQuery object that will receive the content
 				method: 'get',					// The method to send by. Values can be 'post' (default) or 'get'.
 				allow_empty_query: true,		// If set to true, an empty query will also execute
 				pushstate_url: 'auto'			// If set to 'auto', the url will automatically change via pushstate. Set to false for not pushstate. Set to specific for custom.
@@ -614,8 +613,6 @@
 							var url = this.options.url;
 							if(this.options.url.indexOf('?') >= 0) url += '&query='+this.element.val();
 							else url += '?query='+this.element.val();
-							// @todo Deprecated, remove this querystring item:
-							url += '&mozajik-tool-search=true';
 						// check if the current query is like last query, if so, dont resend
 							if(this.last_query == this.element.val()) return false;
 							else this.last_query = this.element.val();
