@@ -1144,9 +1144,17 @@
 	  		submit: function(url, response){ return zaj.ajax.submit(zaj.querymode(url)+target.serialize(), response); },
 	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
 	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
-	  		search: function(url, receiver){ return zaj.search.initialize(target, { url: url, receiver: $(receiver), callback: function(r){
-	  			$(receiver).html(r);
-	  		} }); }
+	  		search: function(url, receiver){
+	  			if(typeof receiver == 'function'){
+					return zaj.search.initialize(target, { url: url, callback: receiver });
+
+	  			}
+	  			else{
+					return zaj.search.initialize(target, { url: url, receiver: $(receiver), callback: function(r){
+						$(receiver).html(r);
+					} });
+	  			}
+	  		}
 	  	};
 	  };
 	})(jQuery);
