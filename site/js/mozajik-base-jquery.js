@@ -153,48 +153,53 @@
 
 	/**
 	 * Custom alerts, confirms, prompts. If bootstrap is enabled, it wil use that. Otherwise the standard blocking alert() will be used.
- 	 * @param {string} message The message to alert.
- 	 * @param {string|function} [urlORfunction=null] A callback url or function on button push.
+ 	 * @param {string} message The message to alert. This can be full HTML.
+ 	 * @param {string|function|jQuery} [urlORfunctionORdom=null] A callback url or function on button push. If you set this to a jQuery dom object then it will be used as the modal markup.
 	 * @param {string} [buttonText="Ok"] The text of the button.
 	 * @param {boolean} [top=false] Set to true if you want the url to load in window.top.location. Defaults to false.
 	 * @return {boolean} Will always return false.
  	 */
-	zaj.alert = function(message, urlORfunction, buttonText, top){
+	zaj.alert = function(message, urlORfunctionORdom, buttonText, top){
 		if(zaj.bootstrap){
 			// Alert sent via bootstrap
 				zaj.track('Alert', 'Bootstrap', message);
 			// Cache my jquery selectors
-				// DON't do this, as it causes problems!
-
+				var $modal;
+			// If a modal markup was set with urlORfunctionORdom, then use that. If none, use #zaj_bootstrap_modal.
+				if(typeof urlORfunctionORdom == 'object') $modal = urlORfunctionORdom;
+				else $modal = $('#zaj_bootstrap_modal');
 			// Create modal if not yet available
-				if($('#zaj_bootstrap_modal').length <= 0){
-					// Check to see which Bootstrap version
-					if(zaj.bootstrap3) $('body').append('<div id="zaj_bootstrap_modal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
-					else $('body').append('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
+				if($modal.length <= 0){
+					// Check to see which Bootstrap version and create markup
+						if(zaj.bootstrap3) $modal = $('<div id="zaj_bootstrap_modal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
+						else $modal = $('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
+					// Append it!
+						$('body').append($modal);
 				}
 			// Reset and init button
 				// Set action
-				$('#zaj_bootstrap_modal a.modal-button').unbind('click');
-				if(typeof urlORfunction == 'function') $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); $('.modal-backdrop').remove(); urlORfunction(); });
-				else if(typeof urlORfunction == 'string') $('#zaj_bootstrap_modal a.modal-button').click(function(){ zaj.redirect(urlORfunction, top); });
-				else $('#zaj_bootstrap_modal a.modal-button').click(function(){ $('#zaj_bootstrap_modal').modal('hide'); $('.modal-backdrop').remove(); });
+				var $modal_button = $modal.find('a.modal-button');
+				$modal_button.unbind('click');
+				if(typeof urlORfunctionORdom == 'function') $modal_button.click(function(){ $modal.modal('hide'); $('.modal-backdrop').remove(); urlORfunctionORdom(); });
+				else if(typeof urlORfunctionORdom == 'string') $modal_button.click(function(){ zaj.redirect(urlORfunctionORdom, top); });
+				else $modal_button.click(function(){ $modal.modal('hide'); $('.modal-backdrop').remove(); });
 				// Set text (if needed)
-				if(typeof buttonText == 'string') $('#zaj_bootstrap_modal a.modal-button').html(buttonText);
+				if(typeof buttonText == 'string') $modal_button.html(buttonText);
 			// Backdrop closes on mobile
 				var backdrop = 'static';
 			// Set body and show it (requires selector again)
-				$('#zaj_bootstrap_modal div.modal-body').html(message);
-				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
+				$modal.find('div.modal-body').html(message);
+				$modal.modal({backdrop: backdrop, keyboard: false});
 			// Reposition the modal if needed
-				zaj.alert_reposition($('#zaj_bootstrap_modal'));
+				zaj.alert_reposition($modal);
 		}
 		else{
 			// Alert sent via bootstrap
 				zaj.track('Alert', 'Standard', message);
 			// Send alert
 				alert(message);
-				if(typeof urlORfunction == 'function') urlORfunction();
-				else if(typeof urlORfunction == 'string') zaj.redirect(urlORfunction, top);
+				if(typeof urlORfunctionORdom == 'function') urlORfunctionORdom();
+				else if(typeof urlORfunctionORdom == 'string') zaj.redirect(urlORfunctionORdom, top);
 		}
 		return false;
 	};
@@ -1141,10 +1146,10 @@
 	  		submit: function(url, response){ return zaj.ajax.submit(zaj.querymode(url)+target.serialize(), response); },
 	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
 	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
+	  		alert: function(msg){ zaj.alert(msg, target); },
 	  		search: function(url, receiver){
 	  			if(typeof receiver == 'function'){
 					return zaj.search.initialize(target, { url: url, callback: receiver });
-
 	  			}
 	  			else{
 					return zaj.search.initialize(target, { url: url, receiver: $(receiver), callback: function(r){
