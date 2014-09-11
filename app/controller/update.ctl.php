@@ -45,17 +45,18 @@
 
 		/**
 		 * Run the deployment script
+		 * @todo Change the order of the db check and test runs
 		 **/
 		function deploy(){
 			// Run template update
 				$this->zajlib->variable->count = $this->template(false);
-			// Run dry run and throw 500 error if changes needed
-				$this->zajlib->variable->dbresults = (object) $this->zajlib->model->update(true);
-				if($this->zajlib->variable->dbresults->num_of_changes > 0) header('HTTP/1.1 500 Internal Server Error');
 			// Run unit tests
 				$this->test(false);
 			// Get test results
 				$this->zajlib->variable->testresults = $this->zajlib->template->block("update/update-test.html", "testresults", false, false, true);
+			// Run dry run and throw 500 error if changes needed
+				$this->zajlib->variable->dbresults = (object) $this->zajlib->model->update(true);
+				if($this->zajlib->variable->dbresults->num_of_changes > 0) header('HTTP/1.1 500 Internal Server Error');
 			// all is okay, continue with update
 				$this->zajlib->template->show("update/update-deploy.html");			
 		}
@@ -91,7 +92,7 @@
 			// first let's show the update log template
 				$this->zajlib->template->show("update/update-log.html");
 			// is this a dry run?
-				if($_GET['liverun']) $dryrun = false;
+				if(!empty($_GET['liverun'])) $dryrun = false;
 				else $dryrun = true;
 			// now let's start the db update
 				$db_update_result = $this->zajlib->model->update($dryrun);

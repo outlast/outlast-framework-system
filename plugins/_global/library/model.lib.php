@@ -327,7 +327,7 @@ class zajlib_model extends zajLibExtension {
 	private function add_column($table, $field_data, $dry_run = false){
 		// Id columns can only be edited, not added, since they already exist when the table is created!
 		if($field_data['field'] == 'id') return $this->edit_column($table, $field_data, 'edit', '', $dry_run);
-		else return $this->edit_column($table, $field_data, 'add');
+		else return $this->edit_column($table, $field_data, 'add', '', $dry_run);
 	}
 
 	/**
