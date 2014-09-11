@@ -49,6 +49,9 @@
 		function deploy(){
 			// Run template update
 				$this->zajlib->variable->count = $this->template(false);
+			// Run dry run and throw 500 error if changes needed
+				$this->zajlib->variable->dbresults = (object) $this->zajlib->model->update(true);
+				if($this->zajlib->variable->dbresults->num_of_changes > 0) header('HTTP/1.1 500 Internal Server Error');
 			// Run unit tests
 				$this->test(false);
 			// Get test results
@@ -63,35 +66,42 @@
 		 * Display the database update menu
 		 **/
 		function database(){
-			// check to see if my current install is up to date
-				$version_status = MozajikVersion::check();
-			// if all is good, display that message
-				//if($version_status < 0) return $this->zajlib->template->show('update/update-version-toonew.html');
-			// if database exists and it is too old, then update!
-				//if($version_status == 0 && is_object($this->zajlib->mozajik)) return $this->zajlib->template->show('update/update-version-needed.html');
+			// is this a dry run?
+				if($_GET['liverun']){
+					$this->zajlib->variable->updateframeurl = "database/run/?liverun=yes";
+					$this->zajlib->variable->updatename = "Database model update";
+				}
+				else{
+					$this->zajlib->variable->updateframeurl = "database/run/";
+					$this->zajlib->variable->updatename = "Database model check";
+				}
 			// all is okay, continue with update
 				$this->zajlib->variable->title = "app update | database";
-				$this->zajlib->variable->updatename = "database model";
-				$this->zajlib->variable->updateframeurl = "database/go/";
-				$this->zajlib->template->show("update/update-process.html");			
+			return $this->zajlib->template->show("update/update-process.html");
+		}
+		function database_liverun(){
+			$_GET['liverun'] = true;
+			return $this->database();
 		}
 
 		/**
 		 * Display the database update log
 		 **/
-		function database_go(){			
+		function database_run(){
 			// first let's show the update log template
 				$this->zajlib->template->show("update/update-log.html");
+			// is this a dry run?
+				if($_GET['liverun']) $dryrun = false;
+				else $dryrun = true;
 			// now let's start the db update
-				$db_update_result = $this->zajlib->model->update();
-				$db_update_todo = $this->zajlib->model->num_of_todo;
+				$db_update_result = $this->zajlib->model->update($dryrun);
 			// start output
 				print "<div class='updatelog-results'>";
 			// now check if any errors
-				if($db_update_result['count'] >= 0) print $db_update_result['log'];
-				else exit("<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['count']."'><br>error: stopping update</div></body></html>");
+				if($db_update_result['num_of_changes'] >= 0) print $db_update_result['log'];
+				else exit("<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['num_of_changes']."'><br>error: stopping update</div></body></html>");
 			// now print the update_result
-				print "<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['count']."'><input class='mozajik-update' type='hidden' id='update_todo' value='$db_update_todo'></div></body></html>";
+				print "<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['num_of_changes']."'><input class='mozajik-update' type='hidden' id='update_todo' value='".$db_update_result['num_of_todo']."'></div></body></html>";
 			exit;
 		}
 
@@ -177,7 +187,7 @@
 				if($show_result){
 					$this->zajlib->variable->title = "template cache update | reset";
 					$this->zajlib->variable->count = $total_count;
-					$this->zajlib->template->show("update/update-template.html");
+					return $this->zajlib->template->show("update/update-template.html");
 				}
 				else return $total_count;
 		}

@@ -79,9 +79,15 @@ class zajlib_model extends zajLibExtension {
 	/**
 	 * Run the update now
 	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes, just count and display what will be changed. Defaults to false.
-	 * @return array Returns an associative array where 'count' is num of changes, and 'log' is a text log of changes
+	 * @return array Returns an associative array where 'num_of_changes' is num of changes, 'num_of_todo' is the number of manual changes waiting, and 'log' is a text log of changes
 	 **/
 	public function update($dry_run = false){
+		// reset everything
+			$this->log = "";
+			$this->sql_todo = "";
+			$this->num_of_changes = 0;
+			$this->num_of_queries = 0;
+			$this->num_of_todo = 0;
 		// start log
 			$this->log .= '<strong>Starting update...</strong>';
 			$this->log .= '<ul><li>Examining tables...</li><ul>';
@@ -245,7 +251,7 @@ class zajlib_model extends zajLibExtension {
 				}
 			
 			// return num and log
-				return array('count'=>$this->num_of_changes, 'log'=>$this->log);
+				return array('num_of_changes'=>$this->num_of_changes, 'num_of_todo'=>$this->num_of_todo, 'log'=>$this->log);
 	}
 
 	/**
