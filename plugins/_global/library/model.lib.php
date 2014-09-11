@@ -78,8 +78,10 @@ class zajlib_model extends zajLibExtension {
 
 	/**
 	 * Run the update now
+	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes, just count and display what will be changed. Defaults to false.
+	 * @return array Returns an associative array where 'count' is num of changes, and 'log' is a text log of changes
 	 **/
-	public function update(){
+	public function update($dry_run = false){
 		// start log
 			$this->log .= '<strong>Starting update...</strong>';
 			$this->log .= '<ul><li>Examining tables...</li><ul>';
@@ -102,12 +104,12 @@ class zajlib_model extends zajLibExtension {
 					$new_tables = array_diff($existing_models, $existing_tables);
 				// let's find old tables
 					foreach($old_tables as $old_table){
-						$this->remove_table($old_table);
+						$this->remove_table($old_table, $dry_run);
 					}
 				// let's find new tables
 					if(count($new_tables) > 0){
 						foreach($new_tables as $new_table){
-							$this->add_table($new_table);
+							$this->add_table($new_table, $dry_run);
 						}
 						//return $this->update();	// recursively reload everything
 					}
@@ -193,7 +195,7 @@ class zajlib_model extends zajLibExtension {
 				// Execute: remove
 				///////////////////////////////////////////////////////////////////////////////////////////////
 					foreach($unnecessary_fields as $field_database){
-						$this->remove_column($model_name, $field_database['field']);
+						$this->remove_column($model_name, $field_database['field'], $dry_run);
 						$cols_changed = true;
 					}
 									
@@ -201,7 +203,7 @@ class zajlib_model extends zajLibExtension {
 				// Execute: add
 				///////////////////////////////////////////////////////////////////////////////////////////////
 					foreach($missing_fields as $field_database){
-						$this->add_column($model_name, $field_database);
+						$this->add_column($model_name, $field_database, $dry_run);
 						$cols_changed = true;
 					}
 
@@ -209,7 +211,7 @@ class zajlib_model extends zajLibExtension {
 				// Execute: modify data types
 				///////////////////////////////////////////////////////////////////////////////////////////////
 					foreach($different_fields as $field_database){
-						$this->edit_column($model_name, $field_database);
+						$this->edit_column($model_name, $field_database, 'edit', '', $dry_run);
 						$cols_changed = true;
 					}
 					
@@ -221,9 +223,9 @@ class zajlib_model extends zajLibExtension {
 							$column_name = $field_database['field'];
 							$index_type = $field_database['key'];
 						// first remove this index
-							$this->remove_index($model_name, $column_name, $index_type);
+							$this->remove_index($model_name, $column_name, $index_type, $dry_run);
 						// finally add the new index
-							$this->add_index($model_name, $column_name, $index_type);
+							$this->add_index($model_name, $column_name, $index_type, $dry_run);
 						$cols_changed = true;
 					}
 				///////////////////////////////////////////////////////////////////////////////////////////////
@@ -231,7 +233,7 @@ class zajlib_model extends zajLibExtension {
 				///////////////////////////////////////////////////////////////////////////////////////////////
 					foreach($rename_fields as $old_name=>$field_data){
 						// send to rename
-							$this->rename_column($model_name, $old_name, $field_data);
+							$this->rename_column($model_name, $old_name, $field_data, $dry_run);
 					}
 			}
 			if(!$cols_changed) $this->log("Columns are up-to-date. Nothing to change.");
@@ -242,8 +244,8 @@ class zajlib_model extends zajLibExtension {
 					$this->log .= '<br/>Please manually run the queries below. (Since this will remove data it is not automatic.)<pre>'.$this->sql_todo.'</pre>';
 				}
 			
-			// print log and exit
-				return array($this->num_of_changes, $this->log);
+			// return num and log
+				return array('count'=>$this->num_of_changes, 'log'=>$this->log);
 	}
 
 	/**
@@ -299,9 +301,9 @@ class zajlib_model extends zajLibExtension {
 	 * @param string $name The name of the table created.
 	 * @return bool Always returns true.
 	 **/
-	private function add_table($name){
+	private function add_table($name, $dry_run = false){
 		// execute adding of this table
-			$this->db->query("CREATE TABLE IF NOT EXISTS `$name` (id VARCHAR(50)) CHARACTER SET utf8 ENGINE=MyIsam");
+			if(!$dry_run) $this->db->query("CREATE TABLE IF NOT EXISTS `$name` (id VARCHAR(50)) CHARACTER SET utf8 ENGINE=MyIsam");
 		// count query and action
 			$this->log('Adding table '.$name, true);
 			$this->num_of_changes++;
@@ -313,11 +315,12 @@ class zajlib_model extends zajLibExtension {
 	 * Add a column to a table.
 	 * @param string $table The name of the table.
 	 * @param array $field_data The field's database definition array.
+	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes
 	 * @return bool Returns true if success, false otherwise.
 	 **/
-	private function add_column($table, $field_data){
+	private function add_column($table, $field_data, $dry_run = false){
 		// Id columns can only be edited, not added, since they already exist when the table is created!
-		if($field_data['field'] == 'id') return $this->edit_column($table, $field_data, 'edit');
+		if($field_data['field'] == 'id') return $this->edit_column($table, $field_data, 'edit', '', $dry_run);
 		else return $this->edit_column($table, $field_data, 'add');
 	}
 
@@ -327,9 +330,10 @@ class zajlib_model extends zajLibExtension {
 	 * @param array $field_data The field's database definition array.
 	 * @param string $mode The mode specifies whether it is added or editted. Values are 'add' or 'edit'.
 	 * @param string $old_name The old name of the table, used during renames.
+	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes
 	 * @return bool Returns true if success, false otherwise.
 	 */
-	private function edit_column($table, $field_data, $mode = 'edit', $old_name = ''){
+	private function edit_column($table, $field_data, $mode = 'edit', $old_name = '', $dry_run = false){
 		// create options, make sure sql safe!
 			$table = addslashes($table);
 			$column = addslashes($field_data['field']);
@@ -390,7 +394,7 @@ class zajlib_model extends zajLibExtension {
 								break;
 			}
 		// execute adding of this table
-			$this->db->query("ALTER TABLE `$table` $edit_mode $type_dec $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key");
+			if(!$dry_run) $this->db->query("ALTER TABLE `$table` $edit_mode $type_dec $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key");
 		// count query and action
 			$this->num_of_changes++;
 			$this->num_of_queries++;
@@ -402,23 +406,25 @@ class zajlib_model extends zajLibExtension {
 	 * @param string $table The name of the table.
 	 * @param string $old_name The old name of the table, used during renames.
 	 * @param array $new_field_data The field's database definition array.
+	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes
 	 * @return bool Returns true if success, false otherwise.
 	 **/
-	private function rename_column($table, $old_name, $new_field_data){
+	private function rename_column($table, $old_name, $new_field_data, $dry_run = false){
 		// send to rename
-			return $this->edit_column($table, $new_field_data, 'rename', $old_name);
+			return $this->edit_column($table, $new_field_data, 'rename', $old_name, $dry_run);
 	}
 
 	/**
 	 * Remove column from the table. This is not actually performed, but added to the sql todo.
 	 * @param string $table The name of the table.
 	 * @param string $name The column to remove.
+	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes
 	 * @return boolean Always returns true.
 	 **/
-	private function remove_column($table, $name){
+	private function remove_column($table, $name, $dry_run = false){
 		// add todo sql
 			$this->sql_todo .= "ALTER TABLE `$table` DROP `$name`;\n";
-			$this->log("Found extra column $table.$name. This can be deleted.", true);
+			$this->log("Found extra column $table.$name. This can be deleted.");
 		// count query and action
 			$this->num_of_todo++;
 		return true;	
@@ -427,12 +433,13 @@ class zajlib_model extends zajLibExtension {
 	/**
 	 * Remove a table from the database. This is not actually performed, but added to the sql todo.
 	 * @param string $name The table to remove.
+	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes
 	 * @return boolean Always returns true.
 	 **/
-	private function remove_table($name){
+	private function remove_table($name, $dry_run = false){
 		// add todo sql
 			$this->sql_todo .= "DROP TABLE `$name`;\n";
-			$this->log("Found extra table $name. This can be deleted.", true);
+			$this->log("Found extra table $name. This can be deleted.");
 			$this->num_of_todo++;
 		return true;
 	}
@@ -447,19 +454,22 @@ class zajlib_model extends zajLibExtension {
 	 * @param string $table The name of the table.
 	 * @param string $column The column to index.
 	 * @param string $index The type of index to add.
+	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes
 	 * @return boolean Returns true if successful.
 	 **/
-	private function add_index($table, $column, $index){
+	private function add_index($table, $column, $index, $dry_run = false){
 		// add index
-			switch($index){
-				case 'MUL': $this->db->query("ALTER TABLE `$table` ADD INDEX (`$column`)");
-							break;
-				case 'PRI': $this->db->query("ALTER TABLE `$table` ADD PRIMARY KEY (`$column`)");
-							break;
-				case 'UNI': $this->db->query("ALTER TABLE `$table` ADD UNIQUE (`$column`)");
-							break;
-				default:	// no change needed
-							return true;
+			if(!$dry_run){
+				switch($index){
+					case 'MUL': $this->db->query("ALTER TABLE `$table` ADD INDEX (`$column`)");
+								break;
+					case 'PRI': $this->db->query("ALTER TABLE `$table` ADD PRIMARY KEY (`$column`)");
+								break;
+					case 'UNI': $this->db->query("ALTER TABLE `$table` ADD UNIQUE (`$column`)");
+								break;
+					default:	// no change needed
+								return true;
+				}
 			}
 		// count query and action
 			$this->log("Adding index of type $index on $table.$column.", true);
@@ -473,17 +483,20 @@ class zajlib_model extends zajLibExtension {
 	 * @param string $table The name of the table.
 	 * @param string $column The column to index.
 	 * @param string $index The type of index to remove.
+	 * @param boolean $dry_run If set to true, a dry run will not actually perform any of the requested changes
 	 * @return boolean Always returns true.
 	 */
-	private function remove_index($table, $column, $index){
+	private function remove_index($table, $column, $index, $dry_run = false){
 		// execute a removal of the index
-			switch($index){
-				case 'PRI':	$this->db->query("ALTER TABLE `$table` DROP PRIMARY KEY", true);
-							break;
-				default:	$this->db->query("DROP INDEX `$column` ON `$table`", true);
-							break;
+			if(!$dry_run){
+				switch($index){
+					case 'PRI':	$this->db->query("ALTER TABLE `$table` DROP PRIMARY KEY", true);
+								break;
+					default:	$this->db->query("DROP INDEX `$column` ON `$table`", true);
+								break;
+				}
 			}
-		// count query and action			
+		// count query and action
 			$this->log("Dropping index from $table.$column.", true);
 			$this->num_of_changes++;
 			$this->num_of_queries++;

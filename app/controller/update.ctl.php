@@ -83,17 +83,25 @@
 			// first let's show the update log template
 				$this->zajlib->template->show("update/update-log.html");
 			// now let's start the db update
-				$this->zajlib->load->library("model");
 				$db_update_result = $this->zajlib->model->update();
 				$db_update_todo = $this->zajlib->model->num_of_todo;
 			// start output
 				print "<div class='updatelog-results'>";
 			// now check if any errors
-				if($db_update_result[0] >= 0) print $db_update_result[1];
-				else exit("<input class='mozajik-update' type='hidden' id='update_result' value='$db_update_result[0]'><br>error: stopping update</div></body></html>");
+				if($db_update_result['count'] >= 0) print $db_update_result['log'];
+				else exit("<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['count']."'><br>error: stopping update</div></body></html>");
 			// now print the update_result
-				print "<input class='mozajik-update' type='hidden' id='update_result' value='$db_update_result[0]'><input class='mozajik-update' type='hidden' id='update_todo' value='$db_update_todo'></div></body></html>";
+				print "<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['count']."'><input class='mozajik-update' type='hidden' id='update_todo' value='$db_update_todo'></div></body></html>";
 			exit;
+		}
+
+		/**
+		 * Get the number of required automatic updates.
+		 */
+		function database_get_updates(){
+			// get the updates needed
+				$db_update_needed = $this->zajlib->model->update(true);
+			$this->zajlib->json($db_update_needed);
 		}
 
 		/**
