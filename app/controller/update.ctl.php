@@ -68,7 +68,7 @@
 		 **/
 		function database(){
 			// is this a dry run?
-				if($_GET['liverun']){
+				if(!empty($_GET['liverun'])){
 					$this->zajlib->variable->updateframeurl = "database/run/?liverun=yes";
 					$this->zajlib->variable->updatename = "Database model update";
 				}
