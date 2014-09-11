@@ -212,7 +212,7 @@
 					var $modalbody = $modal.find('.modal-body');
 					var overflow_mode = 'scroll';
 				// Calculate my top position
-					var topoffset = 20;
+					var topoffset = 90;
 					if(e.scrollTop > fb_top_bar) topoffset += e.scrollTop - fb_top_bar;
 				// Get my content height
 					var content_height = $modalbody.height(0)[0].scrollHeight;
