@@ -25,7 +25,7 @@
 				$('#updatesuccess').removeClass('hidden');
 				$('#updatenumofchanges').html(result);
 				$('#updatenumofmanualchanges').html(todo);
-				$('.liverunbutton').removeClass('hide');
+				if(result > 0) $('.liverunbutton').removeClass('hide');
 			}
 	}
 	function showLog(){
