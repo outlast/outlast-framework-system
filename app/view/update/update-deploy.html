@@ -4,13 +4,29 @@
 
 <h3>Deploying now!</h3>
 
-<p>The default deployment script resets the template cache and runs unit tests. If tests fail, a 500 server error will be returned.
-	You can customize the deployment script by extending the update controller.</p>
+	<p>The default deployment script resets the template cache, checks the database structure, and runs unit tests. If anything fails, a 500 server error will be returned. You can customize the deployment script by creating your own deployment controller.</p>
+
 	<hr/>
+
+	<h5>Resetting template cache...</h5>
 	<div class="alert alert-success">
 		<h5>The template cache has been reset (deleted {{count}} files).</h5>
 	 	Each template file will now be regenerated upon first request, so server load may be significantly higher during the next few requests...
 	</div>
 
+	<h5>Checking database structure...</h5>
+	{% if dbresults.num_of_changes > 0 %}
+		<div class="alert alert-danger">
+			<h5>The database needs to be updated with {{dbresults.num_of_changes}} automatic changes.</h5>
+			<a href="{{baseurl}}update/database/">Click here</a> to go to the database update panel.
+		</div>
+	{% elseif %}
+		<div class="alert alert-success">
+			<h5>The database seems to be up to date. There are {{dbresults.num_of_todo}} manual changes waiting.</h5>
+			<a href="{{baseurl}}update/database/">Click here</a> to go to the database update panel.
+		</div>
+	{% endif %}
+
+	<h5>Running unit tests...</h5>
 	{{testresults}}
 {% endblock %}

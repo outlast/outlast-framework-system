@@ -1139,7 +1139,7 @@ abstract class zajModelExtender {
 	 * Fire a static event.
 	 *
 	 * Firing static event methods starts at the parent, but goes to child before the parent is executed. Thus the result is the same as with non-static events.
-	 * @param string Event name.
+	 * @param string $event Event name.
 	 * @param array|bool Array of parameters. Leave empty if no params.
 	 * @return mixed Returns the value returned by the event method.
 	 **/
