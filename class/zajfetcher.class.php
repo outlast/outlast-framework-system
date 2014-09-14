@@ -404,7 +404,7 @@ class zajFetcher implements Iterator, Countable{
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function limit($startat, $limitto=false){
-		// turn of limit
+		// turn off limit and make sure it is valid
 			if($startat === false || !is_numeric($startat) || ($limitto !== false && !is_numeric($limitto))) $this->limit = "";
 		// set limit to value
 			else{
