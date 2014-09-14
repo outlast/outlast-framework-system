@@ -228,7 +228,9 @@
 				/** @var zajFetcher $relations */
 		 		$relations = $other_model::fetch();
 		 	// filter by search query (if any)
-				if(!empty($_REQUEST['query'])) $relations->search('%'.$_REQUEST['query'].'%', false)->limit($limit);
+				if(!empty($_REQUEST['query'])) $relations->search('%'.$_REQUEST['query'].'%', false);
+			// limit
+				$relations->limit($limit);
 			// now send this to the magic method
 				$relations = $other_model::fire_static('onSearch', array($relations, $type));
 			// error?

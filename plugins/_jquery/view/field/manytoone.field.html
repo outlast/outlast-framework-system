@@ -35,7 +35,7 @@
 					$select.trigger('chosen:updated');
 					$('#{{field.uid}}').data('chosen').search_field.val(rdata.query);
 					$select.data('chosen').search_field.trigger('keyup.chosen');
-			}, {pushstate_url: false});
+			}, {pushstate_url: false, allow_empty_query: false});
 		{% endif %}
     });
 </script>
