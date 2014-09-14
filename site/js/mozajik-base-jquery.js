@@ -1156,7 +1156,9 @@
 						$(receiver).html(r);
 					} }, options);
 	  			}
-				return zaj.search.initialize(target, options);
+				// @todo this is just ugly, fix!
+				var s = jQuery.extend(true, {}, zaj.search);
+				return s.initialize(target, options);
 	  		}
 	  	};
 	  };

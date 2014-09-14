@@ -1,4 +1,5 @@
 <!-- Load up my requirements -->
+{% lang 'system/fields' 'relationships' %}
 <script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
 <link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
 <!-- Display markup -->
@@ -19,7 +20,7 @@
         $('#{{field.uid}}').chosen({width: '100%', inherit_select_classes: true});
 		{% if field.choices.total > 50 %}
 			// Add search relation to field
-			$('#{{field.uid}}').data('chosen').search_field.attr('placeholder', 'Start typing to search...');
+			$('#{{field.uid}}').data('chosen').search_field.attr('placeholder', '{{#system_field_relationships_search#|escapejs}}');
 			$('#{{field.uid}}').data('chosen').search_field.$zaj().search('system/search/relation/?class={{field.class_name}}&field={{field.name}}', function(res){
 				// Decode json
 					var rdata = JSON.parse(res);
