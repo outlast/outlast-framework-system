@@ -50,12 +50,13 @@ class zajlib_request extends zajLibExtension {
 	/**
 	 * Sends a POST request to a specified url, by using the query string as post data. You can also send the POST data in the second parameter. Supports HTTPS.
 	 * @param string $url The url of the desired destination. Example: post("https://www.example.com/example.php?asdf=1&qwerty=2");
-	 * @param bool|string $content The content of the document to be sent.
-	 * @param bool $returnheaders If set to true, the headers will be returned as well. By default it is false, so only document content is returned.
-	 * @param array|bool $customheaders
+	 * @param string|boolean $content The content of the document to be sent.
+	 * @param boolean $returnheaders If set to true, the headers will be returned as well. By default it is false, so only document content is returned.
+	 * @param array|boolean $customheaders An array of keys and values with custom headers to be sent along with the content.
+	 * @param integer|boolean $port The port number. If not set, it will default to 80 or 443 depending on the request type.
 	 * @return string Returns a string with the content received.
 	 */
-	function post($url, $content=false, $returnheaders = false, $customheaders = false){
+	function post($url, $content=false, $returnheaders = false, $customheaders = false, $port = false){
 		// Set the content based on url query string
 			if($content === false){
 				// parse the url
@@ -68,29 +69,37 @@ class zajlib_request extends zajLibExtension {
 			$headers = array('Content-type'=>'application/x-www-form-urlencoded');
 			if(is_array($customheaders)) $headers = array_merge($headers, $customheaders);
 		// Now send the POST request and return the result
-			return $this->get($url, $content, $returnheaders, $headers, 'POST');
+			return $this->get($url, $content, $returnheaders, $headers, $port, 'POST');
 	}
 
 	/**
 	 * Sends a request via GET or POST method to the specified url via fsockopen. Supports HTTPS.
 	 * @param string $url The url of the desired destination.
 	 * @param string $content The content of the document to be sent.
-	 * @param bool $returnheaders If set to true, the headers will be returned as well. By default it is false, so only document content is returned.
-	 * @param array|bool $customheaders An array of keys and values with custom headers to be sent along with the content.
+	 * @param boolean $returnheaders If set to true, the headers will be returned as well. By default it is false, so only document content is returned.
+	 * @param array|boolean $customheaders An array of keys and values with custom headers to be sent along with the content.
 	 * @param string $method Specifies the method by which the content is sent. Can be GET (the default) or POST.
+	 * @param integer|boolean $port The port number. If not set, it will default to 80 or 443 depending on the request type.
 	 * @return string Returns a string with the content received.
 	 * @todo Optimize so that calling post() doesnt run parse_url twice.
 	 */
-	function get($url, $content="", $returnheaders = false, $customheaders = false, $method = 'GET'){
+	function get($url ,$content="", $returnheaders = false, $customheaders = false, $port = false, $method = 'GET'){
+		// add backwards compatiblity for method parameter order (if port is used as method)
+			if(!is_numeric($port) && $port !== false){
+				$method = $port;
+				$port = false;
+			}
 		// parse the url
 			$urldata = parse_url($url);
 			if($urldata === false) return $this->zajlib->warning("Malformed url ($url). Cannot parse.");
-		// get port
-			if($urldata['scheme'] == "https"){
-				$port = 443;
-				$prefix = "ssl://";
+		// if port not set, determine automatically based on protocol
+			if($port === false){
+				if($urldata['scheme'] == "https") $port = 443;
+				else $port = 80;
 			}
-			else $port = 80;
+		// now set prefix for https
+			if($urldata['scheme'] == "https") $prefix = "ssl://";
+			else $prefix = "";
 		// get method
 			 if($method == 'POST'){
 			 	$method = 'POST';
@@ -124,7 +133,7 @@ class zajlib_request extends zajLibExtension {
 		
 		// now split into header and content
 			$bufdata = explode("\r\n\r\n", $buf);
-			$headers = $bufdata[0];
+			//$headers = $bufdata[0];
 			$content = $bufdata[1];
 		
 		// now return what was requested
