@@ -885,9 +885,10 @@ class zajFetcher implements Iterator, Countable{
 	 * @param zajModel $object
 	 * @param string $mode Can be add or delete. This will add or remove the relationship. Defaults to add.
 	 * @param bool|array $additional_fields  An assoc array with key/value pairs of additional columns to save to the relationship connection table.
+	 * @param bool $delete_all Remove all connections not just a single one. This only works in 'delete' mode. Defaults to false.
 	 * @return zajFetcher Returns the zajFetcher object, so it can be chained.
 	 */
-	public function add($object, $mode = 'add', $additional_fields = false){
+	public function add($object, $mode = 'add', $additional_fields = false, $delete_all = false){
 		// if not an object
 			if(!is_object($object)) zajLib::me()->error('tried to edit a relationship with something that is not a model or fetcher object.');
 			//if(!$object->exists) zajLib::me()->error('tried to add a relationship that was not an object');
@@ -918,8 +919,13 @@ class zajFetcher implements Iterator, Countable{
 					$row['order2'] = MYSQL_MAX_PLUS;
 					$db = zajLib::me()->db->create_session();
 					if($mode == 'add') $db->add($table_name, $row);
-					if($mode == 'delete') $db->query("DELETE FROM `$table_name` WHERE `id1`='".$row['id1']."' && `id2`='".$row['id2']."' && `field`='".$row['field']."' LIMIT 1");
-					// @todo: destroy db session
+					if($mode == 'delete'){
+						// Delete all connections or just one?
+							if(!$delete_all) $limit = "LIMIT 1";
+							else $limit = "";
+						// Execute SQL
+							$db->query("DELETE FROM `$table_name` WHERE `id1`='".$row['id1']."' && `id2`='".$row['id2']."' && `field`='".$row['field']."' ".$limit);
+					}
 			}
 			elseif($this->connection_type == 'manytoone' || $this->connection_type == 'onetoone'){
 				zajLib::me()->warning('Using add is only necessary on manytomany fields.');
@@ -943,11 +949,11 @@ class zajFetcher implements Iterator, Countable{
 	/**
 	 * This method removes $object from the manytomany relationship.
 	 * @param zajModel $object 
-	 * @param string $mode Can be add or delete. This will add or remove the relationship. Defaults to delete.
+	 * @param bool $delete_all Remove all connections not just a single one. This only works in 'delete' mode. Defaults to false.
 	 * @return zajFetcher Returns the zajFetcher object, so it can be chained.
 	 **/
-	public function remove($object, $mode='delete'){
-		return $this->add($object, $mode);
+	public function remove($object, $delete_all = false){
+		return $this->add($object, 'delete', false, $delete_all);
 	}
 	
 	/**
