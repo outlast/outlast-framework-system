@@ -107,7 +107,7 @@ EOF;
 		// default for parameter
 		if(empty($parameter)) $parameter = '"items"';
 		// write to file
-		$this->zajlib->compile->write('if(!$filter_var->pagination->prevpage) $prevdisabled = "disabled"; if(!$filter_var->pagination->nextpage) $nextdisabled = "disabled"; $filter_var="<div class=\'pagination pagination-small pagination-centered text-center\'><ul class=\'pagination pagination-centered\'><li class=\'$prevdisabled\'><a href=\'{$filter_var->pagination->prevurl}\'>«</a></li><li class=\'disabled\'><a href=\'#\'>{$filter_var->pagination->page} / {$filter_var->pagination->pagecount} ({$filter_var->total} ".'.$parameter.'.")</a></li><li class=\'$nextdisabled\'><a href=\'{$filter_var->pagination->nexturl}\'>»</a></li></ul></div>";');
+		$this->zajlib->compile->write('$prevurl="<a href=\'{$filter_var->pagination->prevurl}\'>«</a>";  $nexturl="<a href=\'{$filter_var->pagination->nexturl}\'>»</a>"; if(!$filter_var->pagination->prevpage) { $prevdisabled = "disabled"; $prevurl = "<span>«</span>"; } if(!$filter_var->pagination->nextpage) {$nextdisabled = "disabled"; $nexturl = "<span>»</span>"; } $filter_var="<div class=\'pagination pagination-small pagination-centered text-center\'><ul class=\'pagination pagination-centered\'><li class=\'$prevdisabled\'>$prevurl</li><li class=\'disabled\'><a href=\'#\'>{$filter_var->pagination->page} / {$filter_var->pagination->pagecount} ({$filter_var->total} ".'.$parameter.'.")</a></li><li class=\'$nextdisabled\'>{$nexturl}</li></ul></div>";');
 		return true;
 	}
 
