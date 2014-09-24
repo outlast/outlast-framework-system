@@ -23,7 +23,7 @@ class zajlib_import extends zajLibExtension {
 	public function gdocs_spreadsheet($url, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
 
 		// @todo The gdocs URL has changed. If the document is shared publicly, then it can be accessed like this:
-		// https://docs.google.com/spreadsheets/d/YOUR_SECRET_KEY/export?format=csv&gid=0
+		// https://docs.google.com/spreadsheets/d/DOC_KEY/export?format=csv&key=DOC_KEY
 
 		// Must be a valid url
 			if(!$this->zajlib->url->valid($url)) return $this->zajlib->warning("Gdocs import must be a valid url.");
