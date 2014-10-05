@@ -257,7 +257,7 @@
 			?>
 <head>
 	<meta charset="utf-8">
-	<title>Mozajik Installation</title>
+	<title>Outlast Framework Installation</title>
 	<meta name="description" content="">
 	<meta name="author" content="">
 	<!--[if lt IE 9]><script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
