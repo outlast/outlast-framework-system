@@ -276,6 +276,29 @@ EOF;
 	}
 
 	/**
+	 * Filter: unserialize - Unserializes a PHP-serialized value.
+	 *
+	 *  <b>{{variable|unserialize}}</b> Assuming variable is an array ['red', 'white', 'blue'], the returned value will be its PHP-serialized value. This is the same as using serialize() function in native PHP.
+	 **/
+	public function filter_unserialize($parameter, &$source){
+		// write to file
+			$this->zajlib->compile->write('$filter_var = unserialize($filter_var);');
+		return true;
+	}
+
+	/**
+	 * Filter: json_decode - Decodes a JSON-encoded value.
+	 *
+	 *  <b>{{variable|json_decode}}</b> Assuming variable is an json-encoded string containing ['red', 'white', 'blue'], the returned value will be the actual array.
+	 **/
+	public function filter_json_decode($parameter, &$source){
+		// write to file
+			$this->zajlib->compile->write('$filter_var = json_decode($filter_var);');
+		return true;
+	}
+
+
+	/**
 	 * Filter: substr - Cuts a string at the given value. See also truncate.
 	 *
 	 *  <b>{{variable|substr:'5'}}</b> Truncates the length of variable string to 5 characters. So 'Superdooper' will be 'Super'
