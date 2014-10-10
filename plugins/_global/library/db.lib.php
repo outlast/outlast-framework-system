@@ -104,6 +104,10 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 					if($fatal_error) return $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
 					else return false;
 				}
+			// set to utf
+				if(!empty($this->zajlib->zajconf['mysql_encoding'])){
+					mysql_query("SET NAMES ".$this->zajlib->zajconf['mysql_encoding'], $this->current_session->conn);
+				}
 			return true;
 		}
 	
@@ -141,6 +145,10 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$conn = mysql_connect($server, $user, $pass, true) or $this->zajlib->error("Unable to connect to sql server. Disable sql or correct the server/user/pass!");
 			// select db
 				mysql_select_db($db, $conn) or $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
+			// set to utf
+				if(!empty($this->zajlib->zajconf['mysql_encoding'])){
+					mysql_query("SET NAMES ".$this->zajlib->zajconf['mysql_encoding'], $conn);
+				}
 			// Now create a session and return
 				return $this->create_session($id, $conn);
 		}
