@@ -111,20 +111,20 @@ class zajlib_lang extends zajlib_config {
 		}
 
 		/**
-		 * Try to set the locale automatically first by subdomain, then by top level domain, then by query string. Saves a cookie.
+		 * Try to set the locale automatically first by querystring, then by subdomain, then by top level domain. Saves a cookie for next page load.
 		 */
 		public function auto(){
-			// Set by subdomain, top level domain, query string, or by cookie
-				// If the subdomain is two letters, it will consider it a language code
-					if(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
-				// If the tld is two letters, it will consider it a language code
-					elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
+			// Set by query string, subdomain, top level domain, or by cookie
 				// If there is a query string, set it to that either by code or by
-					elseif(!empty($_GET['lang'])){
+					if(!empty($_GET['lang'])){
 						// Is it a code or a locale?
 						if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
 						else $this->set($_GET['lang']);
 					}
+				// If the subdomain is two letters, it will consider it a language code
+					elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
+				// If the tld is two letters, it will consider it a language code
+					elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
 				// Otherwise try to set by cookie. If no cookie, it will set default
 					else $this->set($_COOKIE['lang']);
 
@@ -346,27 +346,16 @@ class zajlib_lang extends zajlib_config {
 		 * @param integer $from The original accented string.
 		 * @param integer $len The original accented string.
 		 * @return string
-		 * @ignore
-		 * @todo Depricated! Remove this from 1.0. Use mb_substr.
+		 * @deprecated
+		 * @todo Deprecated! Remove this from 1.0. Use mb_substr.
 		 **/
 		function utf8_substr($str,$from,$len){
 			return mb_substr($str, $from, $len);
 		}
 		
 		/**
-		 * Currency display. Depricated.
-		 * @ignore
-		 * @todo Remove this from 1.0
-		 **/
-		function currency($num){
-			global $lang;
-			return number_format($num, $lang[currency_valto],$lang[currency_tized],$lang[currency_ezer]);
-		}
-		
-		
-		/**
 		 * Convert from central european ISO to UTF
-		 * @ignore
+		 * @deprecated
 		 * @todo Remove this from 1.0
 		 **/
 		function ISO2UTF($str){
@@ -375,7 +364,7 @@ class zajlib_lang extends zajlib_config {
 	
 		/**
 		 * Convert from UTF to central european ISO
-		 * @ignore
+		 * @deprecated
 		 * @todo Remove this from 1.0
 		 **/
 		function UTF2ISO($str){
@@ -383,7 +372,7 @@ class zajlib_lang extends zajlib_config {
 		}	
 		/**
 		 * Replaces language-related sections in a string, but this is depricated so don't use!
-		 * @ignore
+		 * @deprecated
 		 * @todo Remove this from version 1.0
 		 **/
 		function replace($search, $replace, $subject){

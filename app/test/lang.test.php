@@ -35,18 +35,18 @@ class OfwLangTest extends zajTest {
 			$this->zajlib->subdomain = 'www';
 			$setting = $this->zajlib->lang->auto();
 			zajTestAssert::areIdentical($this->zajlib->lang->get_default_locale(), $setting);
-		// Set my tld
-			$_GET['lang'] = 'fr';
-			$setting = $this->zajlib->lang->auto();
-			zajTestAssert::areIdentical('fr_FR', $setting);
 		// Set my tld (should be stronger than query string)
 			$this->zajlib->tld = 'hu';
 			$setting = $this->zajlib->lang->auto();
 			zajTestAssert::areIdentical('hu_HU', $setting);
-		// Set my subdomain (should be stronger than tld or query string)
+		// Set my subdomain (should be stronger than tld)
 			$this->zajlib->subdomain = 'en';
 			$setting = $this->zajlib->lang->auto();
 			zajTestAssert::areIdentical('en_US', $setting);
+		// Set my query string (should be strong than tld or subdomain)
+			$_GET['lang'] = 'fr';
+			$setting = $this->zajlib->lang->auto();
+			zajTestAssert::areIdentical('fr_FR', $setting);
 		// Reset tld and subdomain and other cleanup
 			$this->zajlib->subdomain = $subdomain;
 			$this->zajlib->tld = $tld;
