@@ -96,8 +96,7 @@ class zajlib_lang extends zajlib_config {
 		public function set_by_code($new_language = false){
 			if(!empty($new_language)){
 			// Let's see if we have a compatible locale
-	 			$available_locales = explode(',', $this->zajlib->zajconf['locale_available']);	 			
-	 			foreach($available_locales as $l){
+	 			foreach($this->available_locales as $l){
 	 				// If found, set the locale and return me
 	 				$lcompare = substr($l, 0, 2);
 	 				if($lcompare == $new_language){
@@ -181,8 +180,8 @@ class zajlib_lang extends zajlib_config {
 		 * Reload all the available locales and default locale settings.
 		 */
 		public function reload_locale_settings(){
-	 		$this->default_locale = $this->zajlib->zajconf['locale_default'];
-	 		$this->available_locales = explode(',', $this->zajlib->zajconf['locale_available']);
+	 		$this->default_locale = trim($this->zajlib->zajconf['locale_default']);
+	 		$this->available_locales = array_map('trim', explode(',', $this->zajlib->zajconf['locale_available']));
 		}
 
 
