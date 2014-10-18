@@ -110,7 +110,7 @@ class zajlib_lang extends zajlib_config {
 		}
 
 		/**
-		 * Try to set the locale automatically first by querystring, then by subdomain, then by top level domain. Saves a cookie for next page load.
+		 * Try to set the locale automatically first by querystring, then by cookie, then by subdomain, then by top level domain, finally by default. Saves a cookie for next page load.
 		 */
 		public function auto(){
 			// Set by query string, subdomain, top level domain, or by cookie
@@ -120,18 +120,20 @@ class zajlib_lang extends zajlib_config {
 						if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
 						else $this->set($_GET['lang']);
 					}
+				// If a cookie is set, use that
+					elseif(!empty($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
 				// If the subdomain is two letters, it will consider it a language code
 					elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
 				// If the tld is two letters, it will consider it a language code
 					elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
-				// Otherwise try to set by cookie. If no cookie, it will set default
-					else $this->set($_COOKIE['lang']);
+				// Finally, just set to default
+					else $this->set();
 
 			// If the current locale is not the same as the cookie, then set a cookie
 				// Get current
 					$current = $this->get();
 				// Set a cookie if not the same as current
-					if($current != $_COOKIE['lang']) $this->zajlib->cookie->add('lang', $current);
+					if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) $this->zajlib->cookie->add('lang', $current);
 			return $current;
 		}
 
