@@ -15,7 +15,7 @@
 		/**
 		 * Check validation.
 		 */
-		public function validation_test(){
+		public function system_validation_test(){
 			// Explicitly pass the value and error
 				$result = $this->zajlib->form->validate('OfwTest', array('email'), array('Invalid email!'), array('email'=>'asdf'));
 				zajTestAssert::areIdentical('{"status":"error","errors":{"email":"Invalid email!"}}', $result);
