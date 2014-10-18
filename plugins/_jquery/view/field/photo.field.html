@@ -56,7 +56,7 @@
 				$('#{{field.uid}}-transferbar div').css('width', file.percent + "%")
 				$('#{{field.uid}}-transferbar').removeClass('hidden');
 			});
-			uploader_{{field.uid}}.bind('Error', function(up, err) {MB
+			uploader_{{field.uid}}.bind('Error', function(up, err) {
 				alert("{{#system_field_file_upload_error#|printf:field.options.max_file_size|escapejs}}");
 				up.refresh(); // Reposition Flash/Silverlight
 			});
@@ -67,7 +67,7 @@
 				//console.log(res);
 				// check for error
 					if(res.status == 'error'){
-						alert("{{#system_field_file_too_big#|printf:field.options.max_file_size|escapejs}}");
+						zaj.alert(res.message);
 					}
 					else{
 						uploader_update_{{field.uid}}(res);

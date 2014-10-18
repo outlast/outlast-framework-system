@@ -44,10 +44,6 @@
 			$zajconf['jserror_log_enabled'] = $GLOBALS['zaj_jserror_log_enabled'];
 			$zajconf['jserror_log_file'] = $GLOBALS['zaj_jserror_log_file'];
 
-			$zajconf['plupload_photo_maxwidth'] = $GLOBALS['zaj_plupload_photo_maxwidth'];
-			$zajconf['plupload_photo_maxfilesize'] = $GLOBALS['zaj_plupload_photo_maxfilesize'];
-			$zajconf['plupload_photo_maxuploadwidth'] = $GLOBALS['zaj_plupload_photo_maxuploadwidth'];
-
 			$zajconf['config_file_version'] = $GLOBALS['zaj_config_file_version'];
 		}	
 
