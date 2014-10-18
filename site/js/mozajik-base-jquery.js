@@ -212,7 +212,7 @@
 					var $modalbody = $modal.find('.modal-body');
 					var overflow_mode = 'scroll';
 				// Calculate my top position
-					var topoffset = 20;
+					var topoffset = 90;
 					if(e.scrollTop > fb_top_bar) topoffset += e.scrollTop - fb_top_bar;
 				// Get my content height
 					var content_height = $modalbody.height(0)[0].scrollHeight;
@@ -563,7 +563,7 @@
 				delay: 300,						// Number of miliseconds before 
 				url: false,						// The url to send the request to. This should be relative. &query=your+query will be appended. If no url (false), it will not be submitted anywhere.
 				callback: false,				// A function or an element.
-				method: 'get',					// The method to send by. Values can be 'post' (default) or 'get'.
+				method: 'get',					// The method to send by. Values can be 'post' or 'get' (default).
 				allow_empty_query: true,		// If set to true, an empty query will also execute
 				pushstate_url: 'auto'			// If set to 'auto', the url will automatically change via pushstate. Set to false for not pushstate. Set to specific for custom.
 			},
@@ -1147,15 +1147,18 @@
 	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
 	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
 	  		alert: function(msg){ zaj.alert(msg, target); },
-	  		search: function(url, receiver){
+	  		search: function(url, receiver, options){
 	  			if(typeof receiver == 'function'){
-					return zaj.search.initialize(target, { url: url, callback: receiver });
+					options = $.extend({ url: url, callback: receiver }, options);
 	  			}
 	  			else{
-					return zaj.search.initialize(target, { url: url, receiver: $(receiver), callback: function(r){
+					options = $.extend({ url: url, receiver: $(receiver), callback: function(r){
 						$(receiver).html(r);
-					} });
+					} }, options);
 	  			}
+				// @todo this is just ugly, fix!
+				var s = jQuery.extend(true, {}, zaj.search);
+				return s.initialize(target, options);
 	  		}
 	  	};
 	  };

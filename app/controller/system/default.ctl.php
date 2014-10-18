@@ -214,41 +214,34 @@
 		 		$field_name = preg_replace('/\W/',"",$_REQUEST['field']);
 		 		if(!empty($_REQUEST['type'])) $type = preg_replace('/\W/',"",$_REQUEST['type']);
 		 		else $type = 'default';
-		 	
+			// limit defaults to 15
+				if(empty($_REQUEST['limit']) || !is_numeric($_REQUEST['limit'])) $limit = 15;
+				else $limit = $_REQUEST['limit'];
 		 	// is it a valid model?
 		 		if(!is_subclass_of($class_name, "zajModel")) return $this->zajlib->error("Cannot search model '$class_name': not a zajModel!");
-			// can the user search for relations on this model?
-		 		// something like $class_name::__relation_search($field_name, $query);
 		 	// now what is my field connected to?
-		 		$my_model = $class_name::__model();
+		 		/** @var zajModel $class_name */
+				$my_model = $class_name::__model();
 		 		$other_model = reset($my_model->{$field_name}->options);
-		 		if(empty($other_model))  $this->zajlib->error("Cannot connect to field '$field_name' because it is not defined as a relation or its relation model has not been defined!");		 		
+		 		if(empty($other_model)) $this->zajlib->error("Cannot connect to field '$field_name' because it is not defined as a relation or its relation model has not been defined!");
 		 	// first fetch all
-		 		$this->zajlib->variable->relations = $other_model::fetch();
+				/** @var zajFetcher $relations */
+		 		$relations = $other_model::fetch();
 		 	// filter by search query (if any)
-				if(!empty($_REQUEST['query'])) $this->zajlib->variable->relations->search('%'.$_REQUEST['query'].'%', false)->limit(10);
+				if(!empty($_REQUEST['query'])) $relations->search('%'.$_REQUEST['query'].'%', false);
+			// limit
+				$relations->limit($limit);
 			// now send this to the magic method
-				$this->zajlib->variable->relations = $other_model::fire_static('onSearch', array($this->zajlib->variable->relations, $type));
+				$relations = $other_model::fire_static('onSearch', array($relations, $type));
 			// error?
-				if(!is_object($this->zajlib->variable->relations)){
-					if($this->zajlib->variable->relations === false) $this->zajlib->variable->relations = "You must explicitly define the __onSearch() event method in class '$class_name' to enable autocomplete.";
-					return $this->zajlib->json(json_encode(array(0=>array('error', $this->zajlib->variable->relations))));
-				}
+				if(!is_object($relations)) return zajLib::me()->error("You are trying to access the client-side search API and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
 		 	// now output to relations json
-				$my_relations = array((object) array('id'=>'', 'name'=>'-none-'));
-				foreach($this->zajlib->variable->relations as $rel){
+				$my_relations = array();
+				foreach($relations as $rel){
 					$my_relations[] = (object) array('id'=>$rel->id, 'name'=>$rel->name);
 				}
-			// if dojo output requested, show that
-				if(!empty($_REQUEST['dojo'])){
-					$my_relations = array(
-						'identifier' => 'id',
-						'label' => 'name',
-						'items' => $my_relations
-					);
-				}
 			// now return the json-encoded object	
-				return $this->zajlib->json(json_encode((object) $my_relations));
+				return $this->zajlib->json(array('query'=>$_REQUEST['query'], 'data'=>$my_relations));
 		}	
 		
 		/**

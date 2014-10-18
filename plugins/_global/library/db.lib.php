@@ -5,6 +5,7 @@
  * @version 3.0
  * @package Model
  * @subpackage DatabaseApi
+ * @todo Update to DBO and deprecate this.
  **/
 
 /**
@@ -35,7 +36,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * An array of {@link zajlib_db_session} objects used to manage different session without using different connections.
 		 * @var array
 		 **/
-		private $sessions = array();
+		private $session = array();
 		/**
 		 * The current session object
 		 * @var zajlib_db_session
@@ -104,6 +105,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 					if($fatal_error) return $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
 					else return false;
 				}
+			// set to connection encoding setting
+				$this->set_encoding();
 			return true;
 		}
 	
@@ -141,6 +144,8 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$conn = mysql_connect($server, $user, $pass, true) or $this->zajlib->error("Unable to connect to sql server. Disable sql or correct the server/user/pass!");
 			// select db
 				mysql_select_db($db, $conn) or $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
+			// set to connection encoding setting
+				$this->set_encoding(false, $conn);
 			// Now create a session and return
 				return $this->create_session($id, $conn);
 		}
@@ -167,10 +172,31 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 */
 		public function delete_session($id){
 			// remove the result set
-				mysql_free_result($this->sessions[$id]->query);
+				mysql_free_result($this->session[$id]->query);
 			// remove from array
-				unset($this->sessions[$id]);
+				unset($this->session[$id]);
 			return true;
+		}
+
+		/**
+		 * Set the encoding of the current session.
+		 * @param string|boolean $encoding The encoding. Defaults to mysql_encoding setting.
+		 * @param resource|boolean $connection The connection resource. Defaults to current.
+		 * @return string|boolean Returns the string of the encoding it was set to. Or false if failed.
+		 */
+		public function set_encoding($encoding = false, $connection = false){
+			// Default connection
+				if($connection === false) $connection = $this->current_session->conn;
+			// Default encoding
+				if($encoding === false){
+					if(empty($this->zajlib->zajconf['mysql_encoding'])) return false;
+					else $encoding = $this->zajlib->zajconf['mysql_encoding'];
+				}
+			// Set encoding!
+				mysql_query("SET NAMES ".$encoding, $connection);
+				mysql_query("SET CHARACTER SET ".$encoding, $connection);
+				mysql_set_charset($encoding, $connection);
+			return $encoding;
 		}
 
 

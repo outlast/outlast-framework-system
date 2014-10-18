@@ -107,7 +107,7 @@ EOF;
 		// default for parameter
 		if(empty($parameter)) $parameter = '"items"';
 		// write to file
-		$this->zajlib->compile->write('if(!$filter_var->pagination->prevpage) $prevdisabled = "disabled"; if(!$filter_var->pagination->nextpage) $nextdisabled = "disabled"; $filter_var="<div class=\'pagination pagination-small pagination-centered text-center\'><ul class=\'pagination pagination-centered\'><li class=\'$prevdisabled\'><a href=\'{$filter_var->pagination->prevurl}\'>«</a></li><li class=\'disabled\'><a href=\'#\'>{$filter_var->pagination->page} / {$filter_var->pagination->pagecount} ({$filter_var->total} ".'.$parameter.'.")</a></li><li class=\'$nextdisabled\'><a href=\'{$filter_var->pagination->nexturl}\'>»</a></li></ul></div>";');
+		$this->zajlib->compile->write('$prevurl="<a href=\'{$filter_var->pagination->prevurl}\'>«</a>";  $nexturl="<a href=\'{$filter_var->pagination->nexturl}\'>»</a>"; if(!$filter_var->pagination->prevpage) { $prevdisabled = "disabled"; $prevurl = "<span>«</span>"; } if(!$filter_var->pagination->nextpage) {$nextdisabled = "disabled"; $nexturl = "<span>»</span>"; } $filter_var="<div class=\'pagination pagination-small pagination-centered text-center\'><ul class=\'pagination pagination-centered\'><li class=\'$prevdisabled\'>$prevurl</li><li class=\'disabled\'><a href=\'#\'>{$filter_var->pagination->page} / {$filter_var->pagination->pagecount} ({$filter_var->total} ".'.$parameter.'.")</a></li><li class=\'$nextdisabled\'>{$nexturl}</li></ul></div>";');
 		return true;
 	}
 
@@ -254,26 +254,53 @@ EOF;
 	}
 
 	/**
-	 * Filter: tojson - Converts a variable or object to its JSON value.
+	 * Filter: json_encode - Converts a variable or object to its JSON value.
 	 *
-	 *  <b>{{variable|tojson}}</b> Assuming variable is an array ['red', 'white', 'blue'], the returned value will be .
+	 *  <b>{{variable|json_encode}}</b> Assuming variable is an array ['red', 'white', 'blue'], the returned value will be .
 	 **/
-	public function filter_tojson($parameter, &$source){
+	public function filter_json_encode($parameter, &$source){
 		// write to file
 			$this->zajlib->compile->write('$filter_var = json_encode($filter_var);');
 		return true;
 	}
+	/** @deprecated **/
+	public function filter_tojson($parameter, &$source){ return $this->filter_json_encode($parameter, $source); }
 
 	/**
-	 * Filter: toserialized - Converts a variable or object to its PHP-serialized value.
+	 * Filter: serialize - Converts a variable or object to its PHP-serialized value.
 	 *
-	 *  <b>{{variable|toserialized}}</b> Assuming variable is an array ['red', 'white', 'blue'], the returned value will be its PHP-serialized value. This is the same as using serialize() function in native PHP.
+	 *  <b>{{variable|serialize}}</b> Assuming variable is an array ['red', 'white', 'blue'], the returned value will be its PHP-serialized value. This is the same as using serialize() function in native PHP.
 	 **/
-	public function filter_toserialized($parameter, &$source){
+	public function filter_serialize($parameter, &$source){
 		// write to file
 			$this->zajlib->compile->write('$filter_var = serialize($filter_var);');
 		return true;
 	}
+	/** @deprecated **/
+	public function filter_toserialized($parameter, &$source){ return $this->filter_serialize($parameter, $source); }
+
+	/**
+	 * Filter: unserialize - Unserializes a PHP-serialized value.
+	 *
+	 *  <b>{{variable|unserialize}}</b> Assuming variable is a serialized string it will unserialize the value and return the actual native PHP data.
+	 **/
+	public function filter_unserialize($parameter, &$source){
+		// write to file
+			$this->zajlib->compile->write('$filter_var = unserialize($filter_var);');
+		return true;
+	}
+
+	/**
+	 * Filter: json_decode - Decodes a JSON-encoded value.
+	 *
+	 *  <b>{{variable|json_decode}}</b> Assuming variable is an json-encoded string containing ['red', 'white', 'blue'], the returned value will be the actual array.
+	 **/
+	public function filter_json_decode($parameter, &$source){
+		// write to file
+			$this->zajlib->compile->write('$filter_var = json_decode($filter_var);');
+		return true;
+	}
+
 
 	/**
 	 * Filter: substr - Cuts a string at the given value. See also truncate.
@@ -415,7 +442,7 @@ EOF;
 		// If parameter is not defined, then the parameter is the current locale
 		if(empty($parameter)) $parameter = 50;
 		// write to file
-		$this->zajlib->compile->write('$filter_var = "http://www.gravatar.com/avatar/" . md5( strtolower( trim( $filter_var ) ) ) . "?d=" . urlencode("") . "&s=" . '.$parameter.';');
+		$this->zajlib->compile->write('$filter_var = "//www.gravatar.com/avatar/" . md5( strtolower( trim( $filter_var ) ) ) . "?d=" . urlencode("") . "&s=" . '.$parameter.';');
 		return true;
 	}
 
