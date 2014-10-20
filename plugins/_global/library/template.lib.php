@@ -40,6 +40,7 @@ class zajlib_template extends zajLibExtension {
 			if($this->zajlib->debug_mode || $force_recompile || !file_exists($include_file)) $this->compile($source_path, $destination_path);
 		// set up my global {{zaj}} variable object
 			$this->zajlib->variable->zaj = new zajlib_template_zajvariables($this->zajlib);
+			$this->zajlib->variable->ofw = $this->zajlib->variable->zaj;
 		// set up a few other globals
 			$this->zajlib->variable->baseurl = $this->zajlib->baseurl;
 			$this->zajlib->variable->self = $this->zajlib->variable->app.'/'.$this->zajlib->variable->mode;
