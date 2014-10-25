@@ -178,7 +178,7 @@ class OfwLibraryTest extends zajTest {
 			zajTestAssert::areIdentical('Invalid file path given. /etc/shadow', $error);
 			$this->zajlib->file->download($this->zajlib->basepath.'index.php');
 			$error = $this->zajlib->error->get_last('error');
-			zajTestAssert::areIdentical('The selected extension is disabled.', $error);
+			zajTestAssert::areIdentical('Tried to download disabled extension php', $error);
 			$this->zajlib->error->surpress_errors_during_test(false);
 			// Test automatic filename and mime
 			$download = $this->zajlib->file->download('system/site/img/outlast-framework-logo.png');
