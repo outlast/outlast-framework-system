@@ -154,7 +154,8 @@ class zajlib_export extends zajLibExtension {
 		private function send_data(&$output, $fetcher, $fields, $encoding=false, $delimiter=false){
 			// If encoding is boolean true, it is excel-encoding
 				if($encoding === OFW_EXPORT_ENCODING_EXCEL) $encoding = "UTF-16LE";
-			// Set my time limit
+			// Set my time limit and memory limit
+				ini_set('memory_limit', '2048M');
 				set_time_limit(OFW_EXPORT_MAX_EXECUTION_TIME);
 			// Get fields of fetcher class if fields not passed
 				if(is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
