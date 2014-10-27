@@ -393,7 +393,7 @@ EOF;
 		// If parameter is not defined, then the parameter is the current locale
 		if(empty($parameter)) return $source->warning('You must specify a variable name to get the value of for filter "keyvalue".');
 		// write to file
-		$this->zajlib->compile->write('if(is_array($filter_var)) $filter_var = $filter_var['.$parameter.']; elseif(is_object($filter_var)) $filter_var = $filter_var->{'.$parameter.'}; else $this->zajlib->warning("You tried to use the keyvalue filter on something other than an object or an array. A common mistake is to use {{zaj.lang}} instead of {{zaj.conf}} for variable variables. <a href=\'http://framework.outlast.hu/advanced/internationalization/using-language-files/#docs-using-variable-language-variables\'>See docs</a>.");');
+		$this->zajlib->compile->write('if(empty($filter_var)) $filter_var=""; elseif(is_array($filter_var)) $filter_var = $filter_var['.$parameter.']; elseif(is_object($filter_var)) $filter_var = $filter_var->{'.$parameter.'}; else $this->zajlib->warning("You tried to use the keyvalue filter on something other than an object or an array. A common mistake is to use {{zaj.lang}} instead of {{zaj.conf}} for variable variables. <a href=\'http://framework.outlast.hu/advanced/internationalization/using-language-files/#docs-using-variable-language-variables\'>See docs</a>.");');
 		return true;
 	}
 
