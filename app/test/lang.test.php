@@ -14,10 +14,52 @@ class OfwLangTest extends zajTest {
 			$this->configvars = $this->zajlib->lang->variable;
 	}
 
+
+	/**
+	 * Check if auto loading works.
+	 */
+	public function system_language_auto(){
+		// Get my current
+			$tld = $this->zajlib->tld;
+			$subdomain = $this->zajlib->subdomain;
+			$locale_default = $this->zajlib->zajconf['locale_default'];
+			$locale_available = $this->zajlib->zajconf['locale_available'];
+			unset($_GET['lang']);
+			unset($_COOKIE['lang']);
+		// Now set my conf
+			$this->zajlib->zajconf['locale_default'] = 'hu_HU';
+			$this->zajlib->zajconf['locale_available'] = 'fr_FR,hu_HU,en_US';
+			$this->zajlib->lang->reload_locale_settings();
+		// No setting means that default is set
+			$this->zajlib->tld = 'com';
+			$this->zajlib->subdomain = 'www';
+			$setting = $this->zajlib->lang->auto();
+			zajTestAssert::areIdentical($this->zajlib->lang->get_default_locale(), $setting);
+		// Set my tld (should be stronger than query string)
+			$this->zajlib->tld = 'hu';
+			$setting = $this->zajlib->lang->auto();
+			zajTestAssert::areIdentical('hu_HU', $setting);
+		// Set my subdomain (should be stronger than tld)
+			$this->zajlib->subdomain = 'en';
+			$setting = $this->zajlib->lang->auto();
+			zajTestAssert::areIdentical('en_US', $setting);
+		// Set my query string (should be strong than tld or subdomain)
+			$_GET['lang'] = 'fr';
+			$setting = $this->zajlib->lang->auto();
+			zajTestAssert::areIdentical('fr_FR', $setting);
+		// Reset tld and subdomain and other cleanup
+			$this->zajlib->subdomain = $subdomain;
+			$this->zajlib->tld = $tld;
+			$this->zajlib->zajconf['locale_default'] = $locale_default;
+			$this->zajlib->zajconf['locale_available'] = $locale_available;
+			$this->zajlib->lang->reload_locale_settings();
+	}
+
+
 	/**
 	 * Check if certain fields exist.
 	 */
-	public function verifyLanguageFileVariables(){
+	public function system_language_file_variables(){
 		// Get all of the plugins (local lang files are in _project plugin)
 		foreach($this->zajlib->plugin->get_plugins('app') as $plugin){
 			$my_files = $this->zajlib->file->get_files('plugins/'.$plugin.'/lang/', true);
@@ -28,7 +70,7 @@ class OfwLangTest extends zajTest {
 				if(strlen($fdata[1]) < 5) $this->zajlib->test->notice("Found old language file format: ".$file);
 				else{
 					$file = trim($fdata[0], '/');
-					$this->verifySingleLanguageFile($file);
+					$this->verify_single_language_file($file);
 				}
 			}
 		}
@@ -42,7 +84,7 @@ class OfwLangTest extends zajTest {
 				if(strlen($fdata[1]) < 5) $this->zajlib->test->notice("Found old language file format: ".$file);
 				else{
 					$file = trim($fdata[0], '/');
-					$this->verifySingleLanguageFile($file);
+					$this->verify_single_language_file($file);
 				}
 			}
 		}
@@ -53,7 +95,7 @@ class OfwLangTest extends zajTest {
 	 * @param string $name The specific lang file.
 	 * @return void
 	 */
-	private function verifySingleLanguageFile($name){
+	private function verify_single_language_file($name){
 		// Clear lang variable
 		$this->zajlib->lang->reset_variables();
 		// Load up a language file explicitly for default lang

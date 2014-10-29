@@ -351,7 +351,7 @@ class zajlib_file extends zajLibExtension {
 	}
 
 	/**
-	 * Download a file specified by path. There are some checks here, but be careful to sanitize the input as this is a potentially dangerous function.
+	 * Download a file specified by relative path. There are some checks here, but be careful to sanitize the input as this is a potentially dangerous function.
 	 * @param string $file_path The relative file path to the project base path.
 	 * @param string|boolean $download_name If specified, the file will download with this name.
 	 * @param string|boolean $mime_type The mime type for the file. If not given, it will try to detect it automatically.
@@ -363,7 +363,7 @@ class zajlib_file extends zajLibExtension {
 		// disable some specific files
 			$ext = $this->get_extension($file_path);
 			if(in_array($ext, explode(',', OFW_DOWNLOAD_DISABLED_EXTENSIONS))){
-				return $this->zajlib->error('The selected extension is disabled.');
+				return $this->zajlib->error('Tried to download disabled extension '.$ext);
 			}
 		// add basepath
 			$file_path = $this->zajlib->basepath.$file_path;

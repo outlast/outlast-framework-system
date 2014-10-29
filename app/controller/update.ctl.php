@@ -29,8 +29,16 @@
 					// realm
 						if(!empty($this->zajlib->zajconf['update_realm'])) $realm = $this->zajlib->zajconf['update_realm'];
 						else $realm = "Outlast Framework Update";
-					// all is good, so authenticate
-						return $this->zajlib->security->protect($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm);
+					// all is good, so authenticate. you can authenticate with http pass or via get request
+						if(!empty($_REQUEST['update_user'])){
+							// Verify!
+								if($_REQUEST['update_user'] != $this->zajlib->zajconf['update_user'] || $_REQUEST['update_password'] != $this->zajlib->zajconf['update_password']){
+									header('HTTP/1.0 401 Unauthorized');
+									return exit("Access denied.");
+								}
+								else return true;
+						}
+						else return $this->zajlib->security->protect($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm);
 				}
 			return true;
 		}

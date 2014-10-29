@@ -40,8 +40,7 @@ class zajlib_lang extends zajlib_config {
 	public function __construct(&$zajlib, $system_library) {
 		parent::__construct($zajlib, $system_library);
 		// set default locale and available locales
-	 		$this->default_locale = $this->zajlib->zajconf['locale_default'];
-	 		$this->available_locales = explode(',', $this->zajlib->zajconf['locale_available']);
+			$this->reload_locale_settings();
 		// set my default locale
 			$this->set();
 	}
@@ -54,7 +53,7 @@ class zajlib_lang extends zajlib_config {
 		 * Get the current locale.
 		 * @return string The locale code of the current language.
 		 **/
-		function get(){
+		public function get(){
 			// Return the current locale language
 				return $this->current_locale;
 		}
@@ -63,7 +62,7 @@ class zajlib_lang extends zajlib_config {
 		 * Get the current two-letter language code based on the current locale.
 		 * @return string The language code based on current locale.
 		 **/
-		function get_code(){
+		public function get_code(){
 			// Return the current locale language
 				return substr($this->current_locale, 0, 2);
 		}
@@ -73,7 +72,7 @@ class zajlib_lang extends zajlib_config {
 		 * @param bool|string $new_language If set, it will try to choose this locale. Otherwise the default locale will be chosen.
 		 * @return string Returns the name of the locale that was set.
 		 */
-	 	function set($new_language = false){
+	 	public function set($new_language = false){
 	 		// Check to see if the language to be set is not false and is in locales available. If problem, set to default locale.
 	 			if(!empty($new_language) && in_array($new_language, $this->available_locales)){
 	 				$this->current_locale = $new_language;
@@ -94,11 +93,10 @@ class zajlib_lang extends zajlib_config {
 		 * @param string|bool $new_language If set, it will try to choose this language. Otherwise the default langauge will be chosen based on the default locale.
 		 * @return string The two-letter language code based on current locale.
 		 **/
-		function set_by_code($new_language = false){
+		public function set_by_code($new_language = false){
 			if(!empty($new_language)){
 			// Let's see if we have a compatible locale
-	 			$available_locales = explode(',', $this->zajlib->zajconf['locale_available']);	 			
-	 			foreach($available_locales as $l){
+	 			foreach($this->available_locales as $l){
 	 				// If found, set the locale and return me
 	 				$lcompare = substr($l, 0, 2);
 	 				if($lcompare == $new_language){
@@ -112,10 +110,38 @@ class zajlib_lang extends zajlib_config {
 		}
 
 		/**
+		 * Try to set the locale automatically first by querystring, then by cookie, then by subdomain, then by top level domain, finally by default. Saves a cookie for next page load.
+		 */
+		public function auto(){
+			// Set by query string, subdomain, top level domain, or by cookie
+				// If there is a query string, set it to that either by code or by
+					if(!empty($_GET['lang'])){
+						// Is it a code or a locale?
+						if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
+						else $this->set($_GET['lang']);
+					}
+				// If a cookie is set, use that
+					elseif(!empty($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
+				// If the subdomain is two letters, it will consider it a language code
+					elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
+				// If the tld is two letters, it will consider it a language code
+					elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
+				// Finally, just set to default
+					else $this->set();
+
+			// If the current locale is not the same as the cookie, then set a cookie
+				// Get current
+					$current = $this->get();
+				// Set a cookie if not the same as current
+					if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) $this->zajlib->cookie->add('lang', $current);
+			return $current;
+		}
+
+		/**
 		 * Get default locales.
 		 * @return string Returns the hard-coded default locale.
 		 **/
-		function get_default_locale(){
+		public function get_default_locale(){
 			return $this->default_locale;
 		}
 
@@ -123,7 +149,7 @@ class zajlib_lang extends zajlib_config {
 		 * Returns true if the current locale is the default locale.
 		 * @return boolean True if the current locale, false otherwise.
 		 **/
-		function is_default_locale(){
+		public function is_default_locale(){
 			return ($this->default_locale == $this->get());
 		}
 
@@ -134,7 +160,7 @@ class zajlib_lang extends zajlib_config {
 		 * Get all locales.
 		 * @return array Returns an array of all available locales.
 		 **/
-		function get_locales(){
+		public function get_locales(){
 			return $this->available_locales;
 		}
 
@@ -142,7 +168,7 @@ class zajlib_lang extends zajlib_config {
 		 * Get all the available two-letter language codes.
 		 * @return array Returns an array of all available codes.
 		 **/
-		function get_codes(){
+		public function get_codes(){
 			// Run through
 				$codes = array();
 				foreach($this->available_locales as $al){
@@ -151,6 +177,15 @@ class zajlib_lang extends zajlib_config {
 				}
 			return $codes;
 		}
+
+		/**
+		 * Reload all the available locales and default locale settings.
+		 */
+		public function reload_locale_settings(){
+	 		$this->default_locale = trim($this->zajlib->zajconf['locale_default']);
+	 		$this->available_locales = array_map('trim', explode(',', $this->zajlib->zajconf['locale_available']));
+		}
+
 
 	/**
 	 * Template loading based on current locale.
@@ -312,27 +347,16 @@ class zajlib_lang extends zajlib_config {
 		 * @param integer $from The original accented string.
 		 * @param integer $len The original accented string.
 		 * @return string
-		 * @ignore
-		 * @todo Depricated! Remove this from 1.0. Use mb_substr.
+		 * @deprecated
+		 * @todo Deprecated! Remove this from 1.0. Use mb_substr.
 		 **/
 		function utf8_substr($str,$from,$len){
 			return mb_substr($str, $from, $len);
 		}
 		
 		/**
-		 * Currency display. Depricated.
-		 * @ignore
-		 * @todo Remove this from 1.0
-		 **/
-		function currency($num){
-			global $lang;
-			return number_format($num, $lang[currency_valto],$lang[currency_tized],$lang[currency_ezer]);
-		}
-		
-		
-		/**
 		 * Convert from central european ISO to UTF
-		 * @ignore
+		 * @deprecated
 		 * @todo Remove this from 1.0
 		 **/
 		function ISO2UTF($str){
@@ -341,7 +365,7 @@ class zajlib_lang extends zajlib_config {
 	
 		/**
 		 * Convert from UTF to central european ISO
-		 * @ignore
+		 * @deprecated
 		 * @todo Remove this from 1.0
 		 **/
 		function UTF2ISO($str){
@@ -349,43 +373,11 @@ class zajlib_lang extends zajlib_config {
 		}	
 		/**
 		 * Replaces language-related sections in a string, but this is depricated so don't use!
-		 * @ignore
+		 * @deprecated
 		 * @todo Remove this from version 1.0
 		 **/
 		function replace($search, $replace, $subject){
 			return str_ireplace("%".$search."%", $replace, $subject);
-		}
-
-		/**
-		 * Automatically set the locale based on a number of factors.
-		 * @ignore
-		 * @return string The automatically selected locale.
-		 * @todo Remove this from version 1.0
-		 * @deprecated Do not use!
-		 **/
-		function auto(){
-			// Check if already done...
-			if(!empty($this->auto_done)) return $this->get();
-			// Do I have Wordpress enabled?
-			if(zajLib::me()->plugin->is_enabled('wordpress')){
-				if(!empty($_GET['language'])) $language = $_GET['language'];
-				if(!empty($_COOKIE['_icl_current_language'])) $language = $_COOKIE['_icl_current_language'];
-			}
-			else{
-				// Fetch current setting based on cookie or some other
-				if(!empty(zajLib::me()->subdomain)) $language = zajLib::me()->subdomain;
-				elseif(!empty($_GET['language'])) $language = $_GET['language'];
-				elseif(!empty($_COOKIE['language'])) $language = $_COOKIE['language'];
-				else $language = zajLib::me()->tld;
-			}
-			// Set by code
-			$this->set_by_code($language);
-			// Set as true
-			$this->auto_done = true;
-			// Now set cookie and global var
-			setcookie('language', $language, time()+60*60*24*7, '/');
-			zajLib::me()->variable->language = $language;
-			return $this->get();
 		}
 
 }

@@ -18,7 +18,7 @@
 		/**
 		 * Check validation.
 		 */
-		public function photo_basics(){
+		public function system_photo_basics(){
 				// Disable errors
 					$this->zajlib->error->surpress_errors_during_test(true);
 				/** Try to get master file path without any init **/

@@ -95,7 +95,7 @@ class zajlib_array extends zajLibExtension{
 			return $array;
 		}
 		foreach($array as $key => $element){
-			if(is_array($element)) $array[$key] = $this->array_to_object($element);
+			if(is_array($element)) $array[$key] = $this->to_object($element);
 		}
 		return (object) $array;
 	}
