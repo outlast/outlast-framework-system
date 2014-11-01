@@ -603,6 +603,7 @@ abstract class zajModel {
 		// Get my class name
 		$class_name = get_called_class();
 		// zajModel events
+			// @todo We need to check if these magic methods are available in any of our extensions
 		switch($name){
 			case '__beforeCreateSave':
 			case '__beforeSave':
@@ -627,6 +628,7 @@ abstract class zajModel {
 		$child_class_name = $class_name;
 		// Set my extension and repeat while it exists
 		$my_extension = $child_class_name::extension();
+
 		while($my_extension){
 			// Let's check to see if the method exists here
 			//print "Trying in $child_class_name / $my_extension";
@@ -742,7 +744,7 @@ abstract class zajModel {
 	 * @param zajFetcher $fetcher The incoming list of objects.
 	 * @return zajFetcher|boolean The list of objects that the API request should return (filtered if needed). False and a warning is returned if it is not enabled.
 	 */
-	public function __onSearch($fetcher){
+	private static function __onSearch($fetcher){
 		return zajLib::me()->warning("You are trying to access the client-side search API and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
 	}
 
