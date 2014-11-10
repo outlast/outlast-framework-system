@@ -11,7 +11,6 @@
 
 define('MAX_EVENT_STACK', 50);
 define('CACHE_DIR_LEVEL', 4);
-define('OFW_NO_EXTENSION_METHOD_CALLED', 'OFW_NO_EXTENSION_METHOD_CALLED');
 
 /**
  * This is the abstract model class from which all model classes are derived.
@@ -691,55 +690,52 @@ abstract class zajModel {
 	 * @ignore
 	 */
 	public function __get($name){
-		// call extension and return if there is a value given
-			$val = $this->call_extension_method('__get', array($name));
-			if($val != OFW_NO_EXTENSION_METHOD_CALLED) return $val;
-		// return various values
-			switch($name){
-				case "zajlib": 		return zajLib::me();
-				case "data":		if(!$this::$in_database) return false; 	// disable for non-database objects
-					if(!$this->data) return $this->data = new zajData($this);
-					return $this->data;
-				case "translation":
-				case "translations":if(!$this::$has_translations) return false; 	// disable where no translations available
-					if(!$this->translations) return $this->translations = new zajModelLocalizer($this);
-					return $this->translations;
-				case "autosave":	if(!$this::$in_database) return false; 	// disable for non-database objects
-					if(!$this->data) $this->data = new zajData($this);
-					// turn on autosave
-					$this->data->__autosave = true;
-					$returned = $this->data;
-					return $returned;
-				case "model":		if(!$this::$in_database) return false; 	// disable for non-database objects
-					if(!$this->model) return $this->model = $this->__model();
-					else return $this->model;
-				case "exists":		if(!$this::$in_database) return true; 	// always return true for non-database objects
-					if(!$this->data) $this->data = new zajData($this);
-					return $this->data->exists();
-				case "name":		if(!$this::$in_database || $this->name) return $this->name;
-					// load model if not yet loaded
-					if(!$this->model) $this->model = $this->__model();
-					// load data
-					if(!$this->data) $this->data = new zajData($this);
-					// look for name and return if found
-					foreach($this->model as $field=>$fdata){
-						if($fdata->type == 'name'){					// actual name field
-							$this->name_key = $field;
-							return $this->name = $this->data->$field;
-						}
-						if(!$this->name && $fdata->type == 'text'){ 	// first text field
-							$this->name_key = $field;
-							$this->name = $this->data->$field;
-						}
+		// the zajlib
+		switch($name){
+			case "zajlib": 		return zajLib::me();
+			case "data":		if(!$this::$in_database) return false; 	// disable for non-database objects
+				if(!$this->data) return $this->data = new zajData($this);
+				return $this->data;
+			case "translation":
+			case "translations":if(!$this::$has_translations) return false; 	// disable where no translations available
+				if(!$this->translations) return $this->translations = new zajModelLocalizer($this);
+				return $this->translations;
+			case "autosave":	if(!$this::$in_database) return false; 	// disable for non-database objects
+				if(!$this->data) $this->data = new zajData($this);
+				// turn on autosave
+				$this->data->__autosave = true;
+				$returned = $this->data;
+				return $returned;
+			case "model":		if(!$this::$in_database) return false; 	// disable for non-database objects
+				if(!$this->model) return $this->model = $this->__model();
+				else return $this->model;
+			case "exists":		if(!$this::$in_database) return true; 	// always return true for non-database objects
+				if(!$this->data) $this->data = new zajData($this);
+				return $this->data->exists();
+			case "name":		if(!$this::$in_database || $this->name) return $this->name;
+				// load model if not yet loaded
+				if(!$this->model) $this->model = $this->__model();
+				// load data
+				if(!$this->data) $this->data = new zajData($this);
+				// look for name and return if found
+				foreach($this->model as $field=>$fdata){
+					if($fdata->type == 'name'){					// actual name field
+						$this->name_key = $field;
+						return $this->name = $this->data->$field;
 					}
-					return $this->name;
-				case "name_key":	if(!$this::$in_database) return false; 	// disable for non-database objects
-					if($this->name_key) return $this->name_key;
-					// load name
-					$this->__get("name");
-					// now return it
-					return $this->name_key;
-			}
+					if(!$this->name && $fdata->type == 'text'){ 	// first text field
+						$this->name_key = $field;
+						$this->name = $this->data->$field;
+					}
+				}
+				return $this->name;
+			case "name_key":	if(!$this::$in_database) return false; 	// disable for non-database objects
+				if($this->name_key) return $this->name_key;
+				// load name
+				$this->__get("name");
+				// now return it
+				return $this->name_key;
+		}
 	}
 	/**
 	 * @ignore
@@ -904,52 +900,6 @@ abstract class zajModel {
 			}
 		}
 		return true;
-	}
-
-	/**
-	 * A private method to call extension methods if any extension exists.
-	 * @param string $method The name of the method.
-	 * @param array $arguments The array of arguments to pass to the method.
-	 * @return mixed Will return mixed results from the extension method. It returns OFW_NO_EXTENSION_METHOD_CALLED if no extension method was called.
-	 */
-	private function call_extension_method($method, $arguments){
-		// Search for the method in any of my children
-			/** @var zajModel $child_class_name */
-			$child_class_name = get_called_class();
-		// Set my extension and repeat while it exists
-			$my_extension_class_name = $child_class_name::extension();
-			if($my_extension_class_name){
-				/** @todo We need to have a way to create a model object of class $my_extension_class_name based on $this. **/
-			}
-		return OFW_NO_EXTENSION_METHOD_CALLED;
-	}
-
-	/**
-	 * A private method to call static extension methods if any extension exists.
-	 * @param string $method The name of the method.
-	 * @param array $arguments The array of arguments to pass to the method.
-	 * @return mixed Will return mixed results from the extension method. It returns OFW_NO_EXTENSION_METHOD_CALLED if no extension method was called.
-	 */
-	private static function call_extension_static_method($method, $arguments){
-		// Search for the method in any of my children
-			/** @var zajModel $child_class_name */
-			$child_class_name = get_called_class();
-		// Set my extension and repeat while it exists
-			/** @var zajModel $my_extension_class_name */
-			$my_extension_class_name = $child_class_name::extension();
-			while($my_extension_class_name){
-				// First, check to see if there are further extensions
-				$more_extension = $my_extension_class_name::extension();
-
-				// @todo Fix the logic here so that it runs through the chain!
-
-				// If method exists in extension, call it and return value
-				if(method_exists($my_extension_class_name, $method)){
-					return call_user_func_array("$my_extension_class_name::$method", $arguments);
-				}
-			}
-		// Otherwise no method called
-		return OFW_NO_EXTENSION_METHOD_CALLED;
 	}
 
 }
