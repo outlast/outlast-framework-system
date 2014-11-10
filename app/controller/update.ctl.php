@@ -129,6 +129,8 @@
 		 * @return boolean
 		 **/
 		function test($show_result = true){
+			// Default to internal error
+				header('HTTP/1.0 500 Internal Server Error');
 			// Prepare the tests
 				$this->zajlib->test->prepare_all();
 			// Run all

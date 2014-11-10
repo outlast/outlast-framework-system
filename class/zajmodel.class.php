@@ -37,7 +37,7 @@ define('OFW_NO_EXTENSION_METHOD_CALLED', 'OFW_NO_EXTENSION_METHOD_CALLED');
  * @method void __afterDelete() EVENT. Executed after the object is deleted.
  * @method void __onFetch() EVENT. Executed when a fetch method is requested.
  * @method void __onCreate() EVENT. Executed when a create method is requested.
- * @internal zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when an auto-search is running on the class.
+ * @method static zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when an auto-search is running on the class.
  * Properties...
  * @property zajLib $zajlib A pointer to the global object.
  * @property string $name The name of the object.
@@ -677,6 +677,11 @@ abstract class zajModel {
 			}
 			else  $extended_but_does_not_exist = true;
 		}
+		// check for events
+		switch($name){
+			case '__onSearch':
+				if(!method_exists($arguments[0], $name)) return zajLib::me()->warning("You are trying to access the client-side search API and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
+		}
 		// redirect static method calls to local private ones
 		if(!method_exists($arguments[0], $name)) zajLib::me()->error("called undefined method '$name'!"); return call_user_func_array("$arguments[0]::$name", $arguments);
 	}
@@ -741,15 +746,6 @@ abstract class zajModel {
 	 */
 	public function __toString(){
 		return $this->__get('name');
-	}
-
-	/**
-	 * An event executed when a client-side search API request is performed. By default requests are denied.
-	 * @param zajFetcher $fetcher The incoming list of objects.
-	 * @return zajFetcher|boolean The list of objects that the API request should return (filtered if needed). False and a warning is returned if it is not enabled.
-	 */
-	private static function __onSearch($fetcher){
-		return zajLib::me()->warning("You are trying to access the client-side search API and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
 	}
 
 	/**
