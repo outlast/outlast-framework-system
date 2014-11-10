@@ -3,6 +3,7 @@ namespace Enhance;
 
 ini_set('error_reporting', (string)E_ALL);
 ini_set('display_errors', '1');
+header('HTTP/1.0 500 Internal Server Error');
 
 // Public API
 class Core

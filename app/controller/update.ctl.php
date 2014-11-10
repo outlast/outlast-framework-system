@@ -137,6 +137,7 @@
 				if(count($this->zajlib->variable->test->Errors) > 0){
 					header('HTTP/1.1 500 Internal Server Error');
 				}
+				else header('HTTP/1.1 200 Ok');
 			// Display!
 				if($show_result) return $this->zajlib->template->show("update/update-test.html");
 				else return $result;
