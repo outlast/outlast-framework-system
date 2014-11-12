@@ -73,7 +73,17 @@ class zajlib_browser extends zajLibExtension {
 		return $data;
 	}
 
-
+	/**
+	 * get Facebook app status from user agent
+	 * @return bool true if it's a facebook app
+	 */
+	public function is_fbapp(){
+		//if it's not processed already run get
+			if(!$this->data) $this->get();
+		// look for "Facebook App" in browsercap comment field
+			$matches = [];
+			return preg_match('/Facebook/', $this->data->comment, $matches) ? true : false;
+	}
 	/**
 	 * The basic function will return the full browscap info.
 	 * @param string $name The name of the variable requested.
