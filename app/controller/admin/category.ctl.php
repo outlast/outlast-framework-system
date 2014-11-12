@@ -31,14 +31,16 @@
 					// search by app name
 						$this->zajlib->variable->objects->search($_GET['query']);
 				}
-			// if the list is filtered by category parent
-				if(!empty($_GET['parentcategory'])){
-					// category
-						if($_GET['parentcategory'] != 'all') $this->zajlib->variable->objects->filter('parentcategory', $_GET['parentcategory']);
-					// fetch current
-						$this->zajlib->variable->current_category = Category::fetch($_GET['parentcategory']);
+				else{
+					// if the list is filtered by category parent
+						if(!empty($_GET['parentcategory'])){
+							// category
+								if($_GET['parentcategory'] != 'all') $this->zajlib->variable->objects->filter('parentcategory', $_GET['parentcategory']);
+							// fetch current
+								$this->zajlib->variable->current_category = Category::fetch($_GET['parentcategory']);
+						}
+						else $this->zajlib->variable->objects->filter('parentcategory', '');
 				}
-				else $this->zajlib->variable->objects->filter('parentcategory', '');
 			// send to list template
 				if($this->zajlib->request->is_ajax()) return $this->zajlib->template->block("admin/category/category_list.html", "content");
 				else return $this->zajlib->template->show("admin/category/category_list.html");
