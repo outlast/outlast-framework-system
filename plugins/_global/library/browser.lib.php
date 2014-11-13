@@ -81,7 +81,7 @@ class zajlib_browser extends zajLibExtension {
 		//if it's not processed already run get
 			if(!$this->data) $this->get();
 		// look for "Facebook App" in browsercap comment field
-			$matches = [];
+			$matches = array();
 			return preg_match('/Facebook/', $this->data->comment, $matches) ? true : false;
 	}
 	/**
