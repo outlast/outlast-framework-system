@@ -14,11 +14,25 @@
 		 * @todo Allow a complete disabling of this controller. 
 		 **/
 		public function __load(){
-			// Set defaults
-				if(empty($this->zajlib->zajconf['plupload_photo_maxwidth'])) $this->zajlib->zajconf['plupload_photo_maxwidth'] = 5000;
-				if(empty($this->zajlib->zajconf['plupload_photo_maxfilesize'])) $this->zajlib->zajconf['plupload_photo_maxfilesize'] = 25600000;
-				if(empty($this->zajlib->zajconf['plupload_photo_maxuploadwidth'])) $this->zajlib->zajconf['plupload_photo_maxuploadwidth'] = 5000;
-		}
+			// load up config file
+				zajLib::me()->config->load('system/fields.conf.ini', 'photos');
+				zajLib::me()->config->load('system/fields.conf.ini', 'files');
+			// set defaults
+				$this->zajlib->zajconf['plupload_photo_maxheight'] = $this->zajlib->config->variable->field_photos_max_height_default;
+				$this->zajlib->zajconf['plupload_photo_maxuploadwidth'] = $this->zajlib->zajconf['plupload_photo_maxwidth'] = $this->zajlib->config->variable->field_photos_max_width_default;
+			// convert file size from txt to number
+				$size = substr($this->zajlib->config->variable->field_photos_max_file_size_default, 0, -2);
+				$type = substr($this->zajlib->config->variable->field_photos_max_file_size_default, -2);
+				if($type == 'mb') $size = $size * 1024 * 1024;
+				if($type == 'gb') $size = $size * 1024 * 1024 * 1024;
+				$this->zajlib->zajconf['plupload_photo_maxphotosize'] = $size;
+			// now the same for max file size
+				$size = substr($this->zajlib->config->variable->field_files_max_file_size_default, 0, -2);
+				$type = substr($this->zajlib->config->variable->field_files_max_file_size_default, -2);
+				if($type == 'mb') $size = $size * 1024 * 1024;
+				if($type == 'gb') $size = $size * 1024 * 1024 * 1024;
+				$this->zajlib->zajconf['plupload_photo_maxfilesize'] = $size;
+			}
 		
 		/**
 		 * Enable automatic file uploads.
@@ -85,20 +99,30 @@
 		 * @return boolean Returns true if successful, false if error.
 		 **/
 		private function upload_standard($process_as_image = false){
+			// Load up lang file for errors
+				$this->zajlib->lang->load('system/fields');
 			// Process this one file
 				$error = false;
 					// Check if file uploaded
 						if(empty($_FILES['file']['tmp_name'])){
-							$error = "File coud not be uploaded.";
-							$this->zajlib->warning("File could not be uploaded.".$_SERVER['HTTP_USER_AGENT']);
+							$error = $this->zajlib->lang->variable->system_field_file_upload_error;
+							$this->zajlib->warning("File could not be uploaded due to unknown error on a ".$_SERVER['HTTP_USER_AGENT']);
 						}
 						else{
 							// If process as image, then also return size
 								$width = $height = 0;
 								if($process_as_image) list($width, $height, $type, $attr) = getimagesize($_FILES['file']['tmp_name']);
-								if($process_as_image && $_FILES['file']['size'] > $this->zajlib->zajconf['plupload_photo_maxfilesize']) $error = "Image file size too big (".$_FILES['file']['size']."/".$this->zajlib->zajconf['plupload_photo_maxfilesize']." bytes)!";
+								// Check file size of image or file
+								if(
+									$process_as_image && $_FILES['file']['size'] > $this->zajlib->zajconf['plupload_photo_maxfilesize'] ||
+									!$process_as_image && $_FILES['file']['size'] > $this->zajlib->zajconf['plupload_files_maxfilesize']
+								){
+									$this->zajlib->lang->variable->system_field_file_too_big = str_ireplace('%1', $this->zajlib->zajconf['plupload_photo_maxfilesize'], $this->zajlib->lang->variable->system_field_file_too_big);
+									$this->zajlib->lang->variable->system_field_file_too_big = str_ireplace('%2', $_FILES['file']['size'], $this->zajlib->lang->variable->system_field_file_too_big);
+									$error = $this->zajlib->lang->variable->system_field_file_too_big;
+								}
 							// Check for image width max
-								if($process_as_image && $width > $this->zajlib->zajconf['plupload_photo_maxuploadwidth']) $error = "Image width too large (maximum is ".$this->zajlib->zajconf['plupload_photo_maxuploadwidth']."px wide / your image is ".$width."px wide)!";
+								if($process_as_image && !empty($this->zajlib->zajconf['plupload_photo_maxuploadwidth']) && $width > $this->zajlib->zajconf['plupload_photo_maxuploadwidth']) $error = "Image width too large (maximum is ".$this->zajlib->zajconf['plupload_photo_maxuploadwidth']."px wide / your image is ".$width."px wide)!";
 						}
 					// Process this one file			 		 	
 			 		 	$orig_name = $_FILES['file']['name'];

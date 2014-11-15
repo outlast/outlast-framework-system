@@ -91,7 +91,7 @@
 				var res = jQuery.parseJSON(result.response);
 				// check for error
 					if(res.status == 'error'){
-						zaj.alert("{{#system_field_file_too_big#|printf:field.options.max_file_size|escapejs}}");
+						zaj.alert(res.message);
 					}
 					else{
 						uploader_update_{{field.uid}}(res);

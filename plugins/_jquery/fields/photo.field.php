@@ -18,10 +18,14 @@ class zajfield_photo extends zajField {
 
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
+		// load up config file
+			zajLib::me()->config->load('system/fields.conf.ini', 'photos');
 		// set default options
-			if(empty($options['min_height'])) $options['min_height'] = 300;
-			if(empty($options['min_width'])) $options['min_width'] = 300;
-			if(empty($options['max_file_size'])) $options['max_file_size'] = '25mb';
+			if(empty($options['min_height'])) $options['min_height'] = zajLib::me()->config->variable->field_photos_min_height_default;
+			if(empty($options['min_width'])) $options['min_width'] = zajLib::me()->config->variable->field_photos_min_width_default;
+			if(empty($options['max_height'])) $options['max_height'] = zajLib::me()->config->variable->field_photos_max_height_default;
+			if(empty($options['max_width'])) $options['max_width'] = zajLib::me()->config->variable->field_photos_max_width_default;
+			if(empty($options['max_file_size'])) $options['max_file_size'] = zajLib::me()->config->variable->field_photos_max_file_size_default;
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
 	}
