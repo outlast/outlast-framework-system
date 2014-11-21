@@ -396,6 +396,8 @@ abstract class zajModel {
 		if(zajLib::me()->test->is_running()) $this->set('unit_test', true);
 		// set it in the data object
 		$this->data->save();
+		// i now exist
+		$this->exists = true;
 		// call afterSave events 
 		if($events_and_cache && !$exists_before_save) $this->fire('afterCreateSave');
 		if($events_and_cache) $this->fire('afterSave');
