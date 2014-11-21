@@ -117,7 +117,7 @@ class Photo extends zajModel {
 
 	/**
 	 * Helper function which returns the path based on the current settings.
-	 * @param string $filename Can be thumb, small, normal, etc.
+	 * @param string $filename The full file name, including extension.
 	 * @param bool $create_folders Create the subfolders if needed.
 	 * @return string Returns the file path, relative to basepath.
 	 **/
