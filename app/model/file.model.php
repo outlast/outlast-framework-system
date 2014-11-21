@@ -84,6 +84,7 @@ class File extends zajModel {
 			$this->time_create = $this->data->time_create;
 		// Set the mime type
 			$this->mime = $this->data->mime;
+			if(empty($this->mime)) $this->mime = $this->zajlib->file->get_mime_type($this->name);
 		// Get file path info
 			$this->extension = $this->zajlib->file->get_extension($this->name);
 			// Magic property 'relative', 'path'
@@ -142,6 +143,16 @@ class File extends zajModel {
 	}
 
 	/**
+	 * Get the file extension type.
+	 * @param string|boolean $file_path The path whoes extension we wish to check. Defaults to the master file path.
+	 * @return string Will return the file's extension.
+	 */
+	public function get_extension($file_path = false){
+		if($file_path !== false) return $this->zajlib->file->get_extension($file_path);
+		else return $this->extension;
+	}
+
+	/**
 	 * Forces a download dialog for the browser.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
 	 * @param string|boolean $file_name The file name to download as. Defaults to the uploaded file name.
@@ -197,5 +208,7 @@ class File extends zajModel {
 		// call parent
 			return parent::delete($complete);
 	}
+
+
 
 }
