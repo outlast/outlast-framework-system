@@ -78,6 +78,20 @@ class zajDbMap extends zajDb{}
 class zajDataPhoto extends zajData{}
 
 /**
+ * Add some dynamic properties
+ * @property string $class The class of the parent.
+ * @property string $parent The id of the parent.
+ * @property string $field The field name of the parent.
+ * @property string $name The file name.
+ * @property string $mime The file mime type.
+ * @property integer $size File size in bytes.
+ * @property string $description Any longer description of the file.
+ * @property boolean $timepath Deprecated.
+ * @property string $original Deprecated.
+ */
+class zajDataFile extends zajData{}
+
+/**
  * Adds some dynamic properties
  * @property float $lat
  * @property float $lng

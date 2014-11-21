@@ -1,97 +1,194 @@
 <?php
 /**
  * A built-in model to handle files and uploads.
- *
- * You should not directly use this model unless you are developing extensions.
- *
  * @package Model
  * @subpackage BuiltinModels
- * @todo Can this be created on-the-fly like many-to-many field tables?
+ * @todo Add additional checks to disable certain file types.
  */
 
 /**
- * Class File
- * @property string $mime
- * @property string $size
+ * @property zajDataFile $data
  * @property string $status
- * @property string $relative
- * @property string $time_create
- * @property string $timepath
- */
+ * @property string $class The class of the parent.
+ * @property string $parent The id of the parent.
+ * @property string $field The field name of the parent.
+ * @property integer $time_create
+ * @property string $mime The mime type of the file.
+ * @property string $extension Extension, not including the dot
+ *
+ * Magic properties
+ * @property string $relative Returns path/url relative to base.
+ * @property string $path Alias of relative.
+ * @property boolean $temporary If set to true, the file is not yet saved to the database.
+ *
+ * Methods
+ * @method static File|zajFetcher fetch()
+ **/
 class File extends zajModel {
-	///////////////////////////////////////////////////////////////
-	// !Model design
-	///////////////////////////////////////////////////////////////
+
+	/**
+	 * If set to true, the file is not yet saved to the database.
+	 * @var boolean
+	 **/
+	protected $temporary = false;
+
+	/**
+	 * Temporary path of files from basepath.
+	 * @var string
+	 **/
+	protected static $temporary_path = 'cache/upload/';
+
+	/**
+	 * Relative path of files from basepath.
+	 * @var string
+	 **/
+	protected static $relative_path = 'data/private/File/';
+
+	/**
+	 * __model function. creates the database fields available for objects of this class.
+	 */
 	public static function __model(){	
 		// define custom database fields
 			$f = (object) array();
+			$f->class = zajDb::text();
 			$f->parent = zajDb::text();
 			$f->field = zajDb::text();
 			$f->name = zajDb::name();
 			$f->mime = zajDb::text();
 			$f->size = zajDb::integer();
-			$f->original = zajDb::text();
 			$f->description = zajDb::textbox();
-			$f->timepath = zajDb::boolean();
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
+
+		// deprecated because everything is timepath now! Always true.
+			$f->timepath = zajDb::boolean(true);
+			$f->original = zajDb::text();
 		// do not modify the line below!
 			$f = parent::__model(__CLASS__, $f); return $f;
 	}
-	///////////////////////////////////////////////////////////////
-	// !Construction and other required methods
-	///////////////////////////////////////////////////////////////
-	public function __construct($id = ""){ parent::__construct($id, __CLASS__);	}
-	public static function __callStatic($name, $arguments){ array_unshift($arguments, __CLASS__); return call_user_func_array(array('parent', $name), $arguments); }
 
+	/**
+	 * Contruction and static calling methods. These are required and not to be modified!
+	 */
+	public function __construct($id = ""){ parent::__construct($id, __CLASS__); return true; }
+	public static function __callStatic($name, $arguments){ array_unshift($arguments, __CLASS__); return call_user_func_array(array('parent', $name), $arguments); }
 	
 	/**
 	 * Cache stuff.
 	 **/
 	public function __afterFetch(){
-		$this->mime = $this->data->mime;
-		$this->size = $this->data->size;
-		$this->status = $this->data->status;
-		$this->relative = $this->get_file_path($this->id);
-		$this->time_create = $this->data->time_create;
-		$this->timepath = $this->data->timepath;
+		// Set status and parents
+			$this->status = $this->data->status;
+			$this->class = $this->data->class;
+			$this->parent = $this->data->parent;
+			$this->field = $this->data->field;
+			$this->time_create = $this->data->time_create;
+		// Set the mime type
+			$this->mime = $this->data->mime;
+		// Get file path info
+			$this->extension = $this->zajlib->file->get_extension($this->name);
+			// Magic property 'relative', 'path'
+			// Magic property 'temporary'
+	}
+
+	/**
+	 * Returns the relative or full path.
+	 * @param string $name The name of the variable.
+	 * @return mixed Returns its value.
+	 **/
+	public function __get($name){
+		switch($name){
+			case 'tempoary':
+				return $this->temporary;
+			case 'path':
+			case 'relative':
+				return $this->get_file_path($this->id);
+			default:
+				return parent::__get($name);
+		}
 	}
 
 	/**
 	 * Helper function which returns the path based on the current settings.
-	 * @param string $filename Can be thumb, small, normal, etc.
-	 * @param bool $create_folders Create the subfolders if needed.
-	 * @return string Returns the file path.
+	 * @param string|boolean $filename Defaults to the standard file name.
+	 * @param boolean $create_folders Create the subfolders if needed.
+	 * @return string Returns the file path, relative to basepath.
 	 **/
-	public function get_file_path($filename, $create_folders = false){
+	public function get_file_path($filename = false, $create_folders = false){
+		// Default filename
+			if($filename === false) $filename = $this->id.'.'.$this->extension;
 		// First, let's determine which function to use
-			if($this->timepath) $path = $this->zajlib->file->get_time_path("data/private/File", $filename, $this->time_create, false);
-			else $path = $this->zajlib->file->get_id_path("data/private/File", $filename, false);
+			$path = $this->zajlib->file->get_time_path(self::$relative_path, $filename, $this->time_create, false);
 		// Create folders if requested
-			if($create_folders) $this->zajlib->file->create_path_for($this->zajlib->basepath.$path);
+			if($create_folders) $this->zajlib->file->create_path_for($path);
 		// Now call and return!
 			return $path;
 	}
 
+	/**
+	 * Helper function which returns the temporary path where the file is stored after upload but before save.
+	 * @param string|boolean $filename Defaults to the standard file name.
+	 * @param boolean $create_folders Create the subfolders if needed.
+	 * @return string Returns the file path, relative to basepath.
+	 **/
+	public function get_temporary_path($filename = false, $create_folders = false){
+		// Default filename
+			if($filename === false) $filename = $this->id.'.'.$this->extension;
+		// Get path
+			$path = self::$temporary_path.$filename;
+		// Create folders if requested
+			if($create_folders) $this->zajlib->file->create_path_for($path);
+		// Return temporary path
+			return $path;
+	}
 
 	/**
-	 * Download an item.
-	 * @param bool $force_download
+	 * Forces a download dialog for the browser.
+	 * @param boolean $force_download If set to true (default), this will force a download for the user.
+	 * @param string|boolean $file_name The file name to download as. Defaults to the uploaded file name.
+	 * @return void|boolean This will force a download and exit. May return false if it fails.
 	 */
-	public function download($force_download=true){
-		// generate path
-			// dont use cache because that's new
-			$file_path = $this->zajlib->basepath.$this->get_file_path($this->id);
+	public function download($force_download = true, $file_name = false){
+		// get default file name
+			if($this->temporary) $file_name = $this->get_temporary_path();
+			else $file_name = $this->get_file_path($file_name);
+		// double check that file name is ok
+			$file_name = $this->zajlib->file->file_check($file_name, "Invalid file requested for download.");
+		// get full path
+			$file_path = $this->zajlib->basepath.$file_name;
 		// pass file thru to user			
-			header('Content-Type: '.$this->data->mime);
+			header('Content-Type: '.$this->mime);
 			header('Content-Length: '.filesize($file_path));
-			if($force_download) header('Content-Disposition: attachment; filename="'.$this->data->name.'"');
-			else header('Content-Disposition: inline; filename="'.$this->data->name.'"');
+			if($force_download) header('Content-Disposition: attachment; filename="'.$this->name.'"');
+			else header('Content-Disposition: inline; filename="'.$this->name.'"');
 			ob_clean();
 			flush();
    			readfile($file_path);
 		// now exit
 		exit;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	
 	/**
 	 * This is an alias to set_file, because Photo also has one like it.
@@ -152,6 +249,7 @@ class File extends zajModel {
 			@mkdir(zajLib::me()->basepath."cache/upload/", 0777, true);
 			copy($urlORfilename, zajLib::me()->basepath."cache/upload/".$updest);
 		// now create and set image
+			/** @var File $pobj */
 			$pobj = File::create();
 			if(is_object($parent)) $parent = $parent->id;
 			if($parent !== false) $pobj->set('parent', $parent);
@@ -181,6 +279,7 @@ class File extends zajModel {
 			$photofile = file_get_contents("php://input");
 			@file_put_contents($folder.$filename, $photofile);
 		// now create object and return the object
+			/** @var File $pobj */
 			$pobj = File::create();
 		// parent and field?
 			if($parent !== false) $pobj->set('parent', $parent);
@@ -205,6 +304,7 @@ class File extends zajModel {
 		// If no file, return false
 			if(empty($tmp_name)) return false;
 		// Now create photo object and set me
+			/** @var File $obj */
 			$obj = File::create();
 		// Move uploaded file to tmp
 			@mkdir(zajLib::me()->basepath.'cache/upload/');
