@@ -167,158 +167,35 @@ class File extends zajModel {
 		exit;
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
 	/**
-	 * This is an alias to set_file, because Photo also has one like it.
-	 **/
-	public function upload($filename = ""){ return $this->set_file($filename); }
-	public function set_file($filename=""){
-		// if filename is empty, use default tempoary name
-			if(empty($filename)) $filename = $this->id.".tmp";
-		// get tmpname
-			$tmpname = $this->zajlib->basepath."cache/upload/".$filename;
-		// now enable time-based folders
-			$this->set('timepath', true);
-			$this->timepath = true;
-		// generate new path
-			$new_path = $this->zajlib->basepath.$this->get_file_path($this->id, true);
-			//@mkdir($this->zajlib->basepath."data/private/File/");
-		// move tmpname to new location
-			rename($tmpname, $new_path);
-		// now set restrictive permissions
-			chmod($new_path, 0644);
-		// now set and save me
-			// TODO: add mime-type detection here!
-			// $this->set('mime',$mimetype);
-			$this->set('size',filesize($new_path));
-			$this->set('status','saved');
-			$this->save();
-		return $this;
-	}
-
-	/**
-	 * Override the delete method.
-	 * @param bool $complete
-	 * @return bool|void Return true if successful.
+	 * Overrides the global duplicate method. Unlike the standard duplicate method, this actually saves the object.
+	 * @return File Returns a new file object with the physical file duplicated as well.
 	 */
-	public function delete($complete = false){
-		// remove photo files
-			if($complete){
-				// generate path
-					$this->zajlib->load->library('file');
-					$file_path = $this->zajlib->basepath.$this->get_file_path($this->id);
-				// delete file
-					@unlink($file_path);
-			}
-		// call parent
-			parent::delete($complete);
+	public function duplicate(){
+		// First duplicate my object
+			/** @var File $new_object */
+			$new_object = parent::duplicate();
+			$new_object->temporary = true;
+			$new_object->set('status', 'uploaded')->save();
+		// Create a copy of my original file
+			$original_file = $this->zajlib->basepath.$this->get_file_path();
+			$new_file = $this->zajlib->basepath."cache/upload/".$new_object->id.".tmp";
+			copy($original_file, $new_file);
+		// Create my object
+			$new_object->upload();
+		return $new_object;
 	}
 
 	/**
-	 * Creates a file object from a file or url.
-	 * @param string $urlORfilename The url or file name.
-	 * @param zajModel|boolean $parent My parent object. If not specified, none will be set.
-	 * @param string|boolean $field The parent-field in which the file is to be stored.
-	 * @return File Returns the new file object or false if none created.
+	 * Overrides the global delete.
+	 * @param bool $complete If set to true, the file will be deleted too and the full entry will be removed.
+	 * @return bool Returns true if successful.
 	 **/
-	public static function create_from_file($urlORfilename, $parent = false, $field = false){
-		// ok, now copy it to uploads folder
-			$updest = basename($urlORfilename);
-			@mkdir(zajLib::me()->basepath."cache/upload/", 0777, true);
-			copy($urlORfilename, zajLib::me()->basepath."cache/upload/".$updest);
-		// now create and set image
-			/** @var File $pobj */
-			$pobj = File::create();
-			if(is_object($parent)) $parent = $parent->id;
-			if($parent !== false) $pobj->set('parent', $parent);
-			if($field !== false) $pobj->set('field', $field);
-			return $pobj->set_file($updest);
+	public function delete($complete = false){
+		// Remove the files as well?
+			if($complete) @unlink($this->zajlib->basepath.$this->get_file_path());
+		// call parent
+			return parent::delete($complete);
 	}
-	/**
-	 * Included for backwards-compatibility. Will be removed. Alias of create_from_file.
-	 * @todo Remove from version release.
-	 **/
-	public static function import($urlORfilename){ return self::create_from_file($urlORfilename); }
-	
-	
-	/**
-	 * Creates a photo object from php://input stream.
-	 * @param string|boolean $parent_field The name of the field in the parent model. Defaults to $field_name.
-	 * @param zajModel|boolean $parent My parent object.
-	 * @return File Returns the file.
-	 **/
-	public static function create_from_stream($parent_field = false, $parent = false){
-		// tmp folder
-			$folder = zajLib::me()->basepath.'/cache/upload/';
-			$filename = uniqid().'.upload';
-		// make temporary folder
-			@mkdir($folder, 0777, true);
-		// write to temporary file in upload folder
-			$photofile = file_get_contents("php://input");
-			@file_put_contents($folder.$filename, $photofile);
-		// now create object and return the object
-			/** @var File $pobj */
-			$pobj = File::create();
-		// parent and field?
-			if($parent !== false) $pobj->set('parent', $parent);
-			if($parent_field !== false) $pobj->set('field', $parent);
-		// set file and delete temp
-		 	$pobj->set_file($filename);
-			@unlink($folder.$filename);
-		return $pobj;
-	}
-	
-	/**
-	 * Creates a file object from a standard upload HTML4
-	 * @param string $field_name The name of the file input field.
-	 * @param zajModel|boolean $parent My parent object.
-	 * @param string|boolean $parent_field The name of the field in the parent model. Defaults to $field_name.
-	 * @return File Returns the file.
-	 **/
-	public static function create_from_upload($field_name, $parent = false, $parent_field = false){
-		// File names
-			$orig_name = $_FILES[$field_name]['name'];
-			$tmp_name = $_FILES[$field_name]['tmp_name'];
-		// If no file, return false
-			if(empty($tmp_name)) return false;
-		// Now create photo object and set me
-			/** @var File $obj */
-			$obj = File::create();
-		// Move uploaded file to tmp
-			@mkdir(zajLib::me()->basepath.'cache/upload/');
-			move_uploaded_file($tmp_name, zajLib::me()->basepath.'cache/upload/'.$obj->id.'.tmp');
-		// Now set and save
-			$obj->set('name', $orig_name);
-			if($parent !== false){
-				$obj->set('parent', $parent);
-				if(!$parent_field) $obj->set('field', $field_name);
-				else $obj->set('field', $parent_field);
-			}
-			$obj->set_file();
-			@unlink($tmp_name);
-		return $obj;
-	}	
 
 }
