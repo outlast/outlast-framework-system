@@ -27,14 +27,9 @@
 class File extends zajModel {
 
 	/**
-	 * If set to true, the file is not yet saved to the database.
-	 * @var boolean
-	 **/
-	protected $temporary = false;
-
-	/**
 	 * Temporary path of files from basepath.
 	 * @var string
+	 * @todo move this to data folder!
 	 **/
 	protected static $temporary_path = 'cache/upload/';
 
@@ -109,7 +104,7 @@ class File extends zajModel {
 	}
 
 	/**
-	 * Helper function which returns the path based on the current settings.
+	 * Helper function which returns the final path based on the current settings.
 	 * @param string|boolean $filename Defaults to the standard file name.
 	 * @param boolean $create_folders Create the subfolders if needed.
 	 * @return string Returns the file path, relative to basepath.
@@ -160,7 +155,7 @@ class File extends zajModel {
 	 */
 	public function download($force_download = true, $file_name = false){
 		// get default file name
-			if($this->temporary) $file_name = $this->get_temporary_path();
+			if(!$this->exists || $this->data->status == 'uploaded') $file_name = $this->get_temporary_path();
 			else $file_name = $this->get_file_path($file_name);
 		// double check that file name is ok
 			$file_name = $this->zajlib->file->file_check($file_name, "Invalid file requested for download.");
@@ -179,6 +174,15 @@ class File extends zajModel {
 	}
 
 	/**
+	 * Shows the file in the browser inline (if available)
+	 * @param string|boolean $file_name The file name to download as. Defaults to the uploaded file name.
+	 * @return void|boolean This will try to show the file inline and exit.
+	 */
+	public function show($file_name = false){
+		return $this->download(false, $file_name);
+	}
+
+	/**
 	 * Overrides the global duplicate method. Unlike the standard duplicate method, this actually saves the object.
 	 * @return File Returns a new file object with the physical file duplicated as well.
 	 */
@@ -186,7 +190,6 @@ class File extends zajModel {
 		// First duplicate my object
 			/** @var File $new_object */
 			$new_object = parent::duplicate();
-			$new_object->temporary = true;
 			$new_object->set('status', 'uploaded')->save();
 		// Create a copy of my original file
 			$original_file = $this->zajlib->basepath.$this->get_file_path();
@@ -209,6 +212,176 @@ class File extends zajModel {
 			return parent::delete($complete);
 	}
 
+	/**
+	 * Method which saves file to its final location.
+	 **/
+	public function upload(){
+		// Make sure this file is currently not saved
+			if($this->data->status == 'saved') return false;
+		// Get temporary and final names
+			$temp_path = $this->get_temporary_path();
+			$new_path = $this->get_file_path(false, true);
+		// Move tmpname to new location and set permissions
+			@rename($temp_path, $new_path);
+			@chmod($new_path, 0644);
+		// Save my final meta data
+			$this->set('mime', $this->zajlib->file->get_mime_type($this->name));
+			$this->set('size', filesize($new_path));
+			$this->set('status','saved');
+			$this->save();
+		return $this;
+	}
 
+	/*****************************************
+	 * Static methods used to create uploads.
+	 *****************************************/
+
+	/**
+	 * Creates a file with a specific parent object and field.
+	 * @param zajModel|string $parent The parent object.
+	 * @param string $field The name of the field.
+	 * @return self Returns a new bare object with the parent and field set.
+	 */
+	public static function create_with_parent($parent, $field){
+		// Check parent object
+			if(!is_object($parent) || !is_a($parent, 'zajModel')){
+				$class_name = get_called_class();
+				return zajLib::me()->error("You tried to create a new $class_name with an invalid parent. You must pass an object instead of an id.");
+			}
+		// Creata a new object
+			$pobj = self::create();
+			$pobj->set('parent', $parent->id);
+			$pobj->set('class', $parent->class_name);
+			$pobj->set('field', $field);
+		return $pobj;
+	}
+
+	/**
+	 * Creates and saves a file object from a file or url. Will return false if it is not an image or not found.
+	 * @param string $url_or_file_name The url or file name.
+	 * @param zajModel|bool $parent My parent object or id. If not specified, none will be set.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return self Returns the new file object or false if none created.
+	 **/
+	public static function create_from_file($url_or_file_name, $parent = false, $field = null, $save_now_to_final_destination = true){
+		// First check to see if it is a photo
+			$image_data = @getimagesize($url_or_file_name);
+			if($image_data === false) return false;
+		// Create object
+			/** @var self $pobj **/
+			if($parent !== false) $pobj = self::create_with_parent($parent, $field);
+			else $pobj = self::create();
+		// Set basics
+			$pobj->set('name', basename($url_or_file_name));
+		// Copy to tmp destination
+			$tmp_destination = $pobj->get_temporary_path(false, true);
+			zajLib::me()->file->create_path_for($tmp_destination);
+			copy($url_or_file_name, $tmp_destination);
+		// Save or just be temporary
+			if($save_now_to_final_destination) $pobj->upload();
+			else $pobj->temporary = true;
+			$pobj->save();
+		return $pobj;
+	}
+
+	/**
+	 * Creates and saves a file object from a url. Will return false if it is not an image or not found.
+	 * @param string $url The url. Will return false if not valid url.
+	 * @param zajModel|bool $parent My parent object or id. If not specified, none will be set.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return self Returns the new file object or false if none created.
+	 **/
+	public static function create_from_url($url, $parent = false, $field = null, $save_now_to_final_destination = true){
+		if(!zajLib::me()->url->valid($url)) return false;
+		return self::create_from_file($url, $parent, $field, $save_now_to_final_destination);
+	}
+
+	/**
+	 * Creates a file object from php://input stream.
+	 * @param zajModel|bool $parent My parent object.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return self|bool Returns the file object on success, false if not.
+	 **/
+	public static function create_from_stream($parent = false, $field = null, $save_now_to_final_destination = true){
+		// Get raw data
+			$raw_data = file_get_contents("php://input");
+		// Now create from raw data!
+			return self::create_from_raw($raw_data, $parent, $field, $save_now_to_final_destination);
+	}
+
+	/**
+	 * Creates a file object from base64 data.
+	 * @param string $base64_data This is the photo file data, base64-encoded.
+	 * @param zajModel|bool $parent My parent object.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return self|bool Returns the file object on success, false if not.
+	 **/
+	public static function create_from_base64($base64_data, $parent = false, $field = null, $save_now_to_final_destination = true){
+		// Allow data-urls with base64 data
+			$base64_data = preg_replace("|data:[A-z0-9/]+;base64,|", "", $base64_data);
+		// Get raw data
+			$raw_data = base64_decode($base64_data);
+		// Now create from raw data!
+			return self::create_from_raw($raw_data, $parent, $field, $save_now_to_final_destination);
+	}
+
+	/**
+	 * Create a file object from raw data.
+	 * @param string|boolean $raw_data If specified, this will be used instead of input stream data.
+	 * @param zajModel|bool $parent My parent object.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return self|bool Returns the file object on success, false if not.
+	 */
+	public static function create_from_raw($raw_data, $parent = false, $field = null, $save_now_to_final_destination = true){
+		// Create a self object
+			/** @var self $pobj **/
+			if($parent !== false) $pobj = self::create_with_parent($parent, $field);
+			else $pobj = self::create();
+		// Create the temporary file
+			$tmp_path = $pobj->get_file_path(false, true);
+			@file_put_contents($tmp_path, $raw_data);
+		// Now set stuff
+			$pobj->set('name', 'Upload');
+			$pobj->set('status', 'uploaded');
+			if($save_now_to_final_destination) $pobj->upload();
+			else $pobj->save();
+		return $pobj;
+	}
+
+	/**
+	 * Creates a file object from a standard upload HTML4
+	 * @param string $field_name The name of the file input field.
+	 * @param zajModel|bool $parent My parent object.
+	 * @param string|bool $field The field name of the parent. This is required if $parent is set.
+	 * @param boolean $save_now_to_final_destination If set to true (the default) it will be saved in the final folder immediately. Otherwise it will stay in the tmp folder.
+	 * @return self|bool Returns the file object on success, false if not.
+	 **/
+	public static function create_from_upload($field_name, $parent = false, $field = null, $save_now_to_final_destination = true){
+		// File names
+			$orig_name = $_FILES[$field_name]['name'];
+			$tmp_name = $_FILES[$field_name]['tmp_name'];
+		// If no file, return false
+			if(empty($tmp_name)) return false;
+		// Now create file object and set me
+			/** @var self $pobj **/
+			if($parent !== false) $pobj = self::create_with_parent($parent, $field);
+			else $pobj = self::create();
+		// Move uploaded file to temporary folder
+			$tmp_folder = $pobj->get_temporary_path();
+			move_uploaded_file($tmp_name, $tmp_folder);
+		// Now set and save
+			$pobj->set('name', $orig_name);
+			$pobj->set('status', 'uploaded');
+			if($save_now_to_final_destination) $pobj->upload();
+			else $pobj->save();
+		// Remove temporary file
+			@unlink($tmp_name);
+		return $pobj;
+	}
 
 }
