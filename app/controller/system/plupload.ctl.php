@@ -53,12 +53,101 @@
 		 * Enable automatic file uploads.
 		 **/
 		public function upload_file(){
-			$this->upload(false);
+			// Load up lang file for errors
+				$this->zajlib->lang->load('system/fields');
+			// Verify file for errors
+				$this->verify_upload();
+			// Create from upload
+				$file = File::create_from_upload('file', false, null, false);
+				if($file === false){
+					$this->zajlib->warning("Unknown after file upload during File object creation.");
+					return $this->send_error("Unknown error occurred during file upload.");
+				}
+			// Return details
+				$result = array(
+					'status'=>'success',
+					'message'=>'Successfully uploaded.',
+					'id'=>$file->id,
+					'name'=>$file->name,
+					'type'=>$file->class_name,
+				);
+			return $this->zajlib->json($result);
 		}
 		
 		
 	/** PRIVATE METHODS **/
-		
+
+		/**
+		 * Verify upload for errors.
+		 * @param boolean $verify_that_it_is_image Verify that it is an image.
+		 * @return boolean Returns boolean true if success or json error if failed.
+		 */
+		private function verify_upload($verify_that_it_is_image = true){
+			// Load up lang file for errors
+				if($verify_that_it_is_image) $this->zajlib->lang->load('system/fields', 'photos');
+				else $this->zajlib->lang->load('system/fields', 'files');
+			// Look for standard errors. See @link http://php.net/manual/en/features.file-upload.errors.php
+				switch($_FILES['file']['error']){
+					/** All is ok **/
+					case UPLOAD_ERR_OK:
+						// Continue if it is ok
+						break;
+
+					/** User errors **/
+					case UPLOAD_ERR_INI_SIZE:
+					case UPLOAD_ERR_FORM_SIZE:
+						if(!empty($_POST['MAX_FILE_SIZE'])){
+							$this->zajlib->warning(" The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.");
+							$ini_setting = $_POST['MAX_FILE_SIZE'];
+						}
+						else{
+							$this->zajlib->warning("The uploaded file is larger than what the INI setting allows.");
+							$ini_setting = ini_get('upload_max_filesize');
+						}
+						$too_big = str_ireplace('%1', $ini_setting, $this->zajlib->lang->variable->system_field_file_too_big);
+						$too_big = str_ireplace('%2', $ini_setting, $too_big);
+						return $this->send_error($too_big);
+					case UPLOAD_ERR_PARTIAL:
+						return $this->send_error($this->zajlib->lang->variable->system_field_file_partial);
+					case UPLOAD_ERR_NO_FILE:
+						return $this->send_error($this->zajlib->lang->variable->system_field_file_none);
+
+					/** System errors **/
+					case UPLOAD_ERR_NO_TMP_DIR:
+						$this->zajlib->warning("Missing a temporary folder for file uploads.");
+						return $this->send_error("Unknown error occurred during file upload.");
+					case UPLOAD_ERR_CANT_WRITE:
+						$this->zajlib->warning("Failed to write file to disk during upload.");
+						return $this->send_error("Unknown error occurred during file upload.");
+					case UPLOAD_ERR_EXTENSION:
+						$this->zajlib->warning("A PHP extension stopped the file upload.");
+						return $this->send_error("Unknown error occurred during file upload.");
+					default:
+						$this->zajlib->warning("An unhandled file upload error occurred.");
+						return $this->send_error("Unknown error occurred during file upload.");
+				}
+			// Look for picture errors
+				if($verify_that_it_is_image){
+					// @todo ADDTHIS!
+				}
+			return true;
+		}
+
+		/**
+		 * Send an error to the client.
+		 * @param string $message The message to send.
+		 * @return boolean Returns boolean or json.
+		 */
+		private function send_error($message){
+			// Build array
+				$result = array(
+					'status'=>'error',
+					'message'=>$message,
+				);
+			// Return the json result
+				return $this->zajlib->json($result);
+		}
+
 		/**
 		 * Processes an uploaded file by moving it to the cache folder with the proper file name. Images thumbs are moved to /data for direct access.
 		 * @param string $orig_name The original name of the file.

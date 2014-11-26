@@ -13,7 +13,7 @@ class zajfield_file extends zajField {
 	const use_duplicate = false;	// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = false;		// boolean - true if fetcher needs to be modified
 	const search_field = false;		// boolean - true if this field is used during search()
-	const edit_template = 'field/photo.field.html';	// string - the edit template, false if not used
+	const edit_template = 'field/file.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 
 	// Construct

@@ -273,9 +273,10 @@ class zajlib_file extends zajLibExtension {
 	/**
 	 * Get mime-type of file based on the extension. This is not too reliable, since it takes the file name and not file content as the key.
 	 * @param string $filename The full filename, including extension.
+	 * @param string $file_path The relative file path to the project base path. This is optional. It will be used to check the actual file as well if the mime based on extension fails.
 	 * @return string The mime type of the file
 	 **/
-	function get_mime_type($filename) {
+	function get_mime_type($filename, $file_path){
 		// Validate path
 			$filename = $this->file_check($filename, "Invalid file requested for get_mime_type.");
 		// Define mime types
@@ -336,16 +337,16 @@ class zajlib_file extends zajLibExtension {
 	
 			$ext = $this->get_extension($filename);
 
-	        if (array_key_exists($ext, $mime_types)) {
+	        if(array_key_exists($ext, $mime_types)) {
 	            return $mime_types[$ext];
 	        }
-	        elseif (function_exists('finfo_open')) {
+	        elseif(function_exists('finfo_open') && !empty($file_path)) {
 	            $finfo = finfo_open(FILEINFO_MIME);
-	            $mimetype = finfo_file($finfo, $filename);
+	            $mimetype = finfo_file($finfo, $this->zajlib->basepath.$file_path);
 	            finfo_close($finfo);
 	            return $mimetype;
 	        }
-	        else {
+	        else{
 	            return 'application/octet-stream';
 	        }
 	}
