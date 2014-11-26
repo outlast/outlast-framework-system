@@ -62,13 +62,13 @@ class zajfield_file extends zajField {
 				$pobj = File::fetch($data);
 				if(is_object($pobj)) $data = $pobj;
 			}
-		// if data is a photo object
+		// if data is a file object
 			if(is_object($data) && is_a($data, 'File')){
 				/** @var File $data **/
 				// Check to see if already has parent (disable hijacking of photos)
 					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a file object that already has a parent!");
 				// Remove previous ones
-					$photos = File::fetch()->filter('parent',$object->id)->filter('field', $this->name);
+					$photos = File::fetch()->filter('parent', $object->id)->filter('field', $this->name);
 					foreach($photos as $pold){ $pold->delete(); }
 				// Set new one
 
@@ -76,10 +76,8 @@ class zajfield_file extends zajField {
 					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a file object that already has a parent!");
 				// now set parent
 					$data->set('class', $object->class_name);
-
 					$data->set('parent', $object->id);
 					$data->set('field', $this->name);
-					$data->set('status', 'saved');
 					$data->upload();
 				return array(false, false);
 			}

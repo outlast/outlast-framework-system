@@ -273,10 +273,10 @@ class zajlib_file extends zajLibExtension {
 	/**
 	 * Get mime-type of file based on the extension. This is not too reliable, since it takes the file name and not file content as the key.
 	 * @param string $filename The full filename, including extension.
-	 * @param string $file_path The relative file path to the project base path. This is optional. It will be used to check the actual file as well if the mime based on extension fails.
+	 * @param string|boolean $file_path The relative file path to the project base path. This is optional. It will be used to check the actual file as well if the mime based on extension fails.
 	 * @return string The mime type of the file
 	 **/
-	function get_mime_type($filename, $file_path){
+	function get_mime_type($filename, $file_path = false){
 		// Validate path
 			$filename = $this->file_check($filename, "Invalid file requested for get_mime_type.");
 		// Define mime types
