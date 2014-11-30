@@ -185,12 +185,13 @@ class File extends zajModel {
 
 	/**
 	 * Overrides the global duplicate method. Unlike the standard duplicate method, this actually saves the object.
+	 * @param string|boolean $id Use this to override random id generation.
 	 * @return File Returns a new file object with the physical file duplicated as well.
 	 */
-	public function duplicate(){
+	public function duplicate($id = false){
 		// First duplicate my object
 			/** @var File $new_object */
-			$new_object = parent::duplicate();
+			$new_object = parent::duplicate($id);
 			$new_object->set('status', 'uploaded')->save();
 		// Create a copy of my original file
 			$original_file = $this->zajlib->basepath.$this->get_file_path();
