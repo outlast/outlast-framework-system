@@ -2,7 +2,7 @@
 <!-- requires jquery! ONLY FOR A SINGLE PHOTO!!!! -->
 <script language="JavaScript" src="{{baseurl}}system/js/plupload/plupload.full.js" type="text/javascript"></script>
 
-<a id="{{field.uid}}-pickfiles" class="btn" style="cursor: pointer;"><i class="icon-folder-open"></i> Kép kiválasztása</a>
+<a id="{{field.uid}}-pickfiles" class="btn ofw-field-photo pickfiles" style="cursor: pointer;"><i class="icon-folder-open"></i> Kép kiválasztása</a>
 
 <div id="{{field.uid}}-transferbar" role="progressbar" class="hidden progress progress-striped active">
   <div class="bar progress-bar" style="width: 0%;"></div>
@@ -14,7 +14,7 @@
 -->
 <div id="{{field.id}}-uploadbutton"></div>
 <div id="{{field.id}}-errors"></div>
-<div class="foto" id="{{field.uid}}-filelist">
+<div class="foto ofw-field-photo filelist" id="{{field.uid}}-filelist">
 	{% if field.value %}
 		<img src="{{field.value.normal}}"/>
 	{% endif %}
@@ -97,7 +97,7 @@
 					$('#{{field.uid}}-filelist').html("<img src='"+imgurl+"'>");
 				// Set as my input value
 					$('#{{field.uid}}').val(res.id);
-			}
+			};
 			
 		// Run init
 			uploader_{{field.uid}}.init();
