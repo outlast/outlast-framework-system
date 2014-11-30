@@ -55,9 +55,11 @@ class zajlib_import extends zajLibExtension {
 					while(!feof($handle)){
 						$current_data = array();
 						$current_row = fgetcsv($handle, 0, $delimiter, $enclosure, $escape);
-						foreach($current_row as $key => $value){
-							if($first_row_is_header) $current_data[$first_row[$key]] = $value;
-							else $current_data[$key] = $value;
+						if(is_array($current_row)){
+							foreach($current_row as $key => $value){
+								if($first_row_is_header) $current_data[$first_row[$key]] = $value;
+								else $current_data[$key] = $value;
+							}
 						}
 						$return_data[] = (object) $current_data;
 					}

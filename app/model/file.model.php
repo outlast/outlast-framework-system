@@ -42,7 +42,7 @@ class File extends zajModel {
 	/**
 	 * __model function. creates the database fields available for objects of this class.
 	 */
-	public static function __model(){	
+	public static function __model(){
 		// define custom database fields
 			$f = (object) array();
 			$f->class = zajDb::text();
@@ -66,7 +66,7 @@ class File extends zajModel {
 	 */
 	public function __construct($id = ""){ parent::__construct($id, __CLASS__); return true; }
 	public static function __callStatic($name, $arguments){ array_unshift($arguments, __CLASS__); return call_user_func_array(array('parent', $name), $arguments); }
-	
+
 	/**
 	 * Cache stuff.
 	 **/
@@ -77,9 +77,6 @@ class File extends zajModel {
 			$this->parent = $this->data->parent;
 			$this->field = $this->data->field;
 			$this->time_create = $this->data->time_create;
-		// Set the mime type
-			$this->mime = $this->data->mime;
-			if(empty($this->mime)) $this->mime = $this->zajlib->file->get_mime_type($this->name);
 		// Get file path info
 			$this->extension = $this->zajlib->file->get_extension($this->name);
 			// Magic property 'relative', 'path'
@@ -149,25 +146,30 @@ class File extends zajModel {
 	/**
 	 * Forces a download dialog for the browser.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
-	 * @param string|boolean $file_name The file name to download as. Defaults to the uploaded file name.
+	 * @param string|boolean $download_as The file name to download as. Defaults to the uploaded file name.
 	 * @return void|boolean This will force a download and exit. May return false if it fails.
 	 */
-	public function download($force_download = true, $file_name = false){
+	public function download($force_download = true, $download_as = false){
 		// get default file name
-			if(!$this->exists || $this->data->status == 'uploaded') $file_name = $this->get_temporary_path();
-			else $file_name = $this->get_file_path($file_name);
+			if(!$this->exists || $this->data->status == 'uploaded') $file_relative_path = $this->get_temporary_path();
+			else $file_relative_path = $this->get_file_path();
 		// double check that file name is ok
-			$file_name = $this->zajlib->file->file_check($file_name, "Invalid file requested for download.");
+			$file_relative_path = $this->zajlib->file->file_check($file_relative_path, "Invalid file requested for download.");
 		// get full path
-			$file_path = $this->zajlib->basepath.$file_name;
-		// pass file thru to user			
-			header('Content-Type: '.$this->mime);
-			header('Content-Length: '.filesize($file_path));
-			if($force_download) header('Content-Disposition: attachment; filename="'.$this->name.'"');
-			else header('Content-Disposition: inline; filename="'.$this->name.'"');
+			$file_full_path = $this->zajlib->basepath.$file_relative_path;
+		// set download file name
+			if($download_as === false) $download_as = $this->name;
+		// get mime type, try to determine if not set
+			$mime = $this->data->mime;
+			if(empty($mime)) $mime = $this->zajlib->file->get_mime_type($download_as, $file_relative_path);
+		// pass file thru to user
+			header('Content-Type: '.$mime);
+			header('Content-Length: '.filesize($file_full_path));
+			if($force_download) header('Content-Disposition: attachment; filename="'.$download_as.'"');
+			else header('Content-Disposition: inline; filename="'.$download_as.'"');
 			ob_clean();
 			flush();
-   			readfile($file_path);
+   			readfile($file_full_path);
 		// now exit
 		exit;
 	}
