@@ -376,7 +376,7 @@ class File extends zajModel {
 			if($parent !== false) $pobj = self::create_with_parent($parent, $field);
 			else $pobj = self::create();
 		// Create the temporary file
-			$tmp_path = $pobj->get_temporary_path(false, true);
+			$tmp_path = $pobj->get_temporary_path(true);
 			file_put_contents(zajLib::me()->basepath.$tmp_path, $raw_data);
 			chmod(zajLib::me()->basepath.$tmp_path, 0644);
 		// Now set stuff
