@@ -35,7 +35,7 @@
 	$(document).ready(function(){
 		zaj.bootstrap = (typeof $().modal == 'function');
 		zaj.bootstrap3 = (typeof $().emulateTransitionEnd == 'function');
-		zaj.facebook = (window.parent != window) && FB && FB.Canvas;
+		zaj.facebook = (window.parent != window) && typeof FB != 'undefined' && typeof FB.Canvas != 'undefined';
 		zaj.fbcanvas = false;
 		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(info){ zaj.fbcanvas = info; });
