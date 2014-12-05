@@ -233,7 +233,7 @@
 					$modal.find('.modal-body').css({width:'auto', height: height, 'overflow-y': overflow_mode});
 					$modal.css({top: topoffset, overflow: 'hidden', 'margin-top': 0});
 			});
-			// clear and set
+			// clear and set @todo this should cancel eventually
 			setTimeout(function(){ zaj.alert_reposition($modal); }, 1000);
 		}
 	};
