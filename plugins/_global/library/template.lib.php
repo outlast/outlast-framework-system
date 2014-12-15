@@ -323,7 +323,13 @@ class zajlib_template_zajvariables {
 						else $trackevents_local = 'false';
 					// Locale
 						$locale = $this->zajlib->lang->get();
-					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$this->zajlib->baseurl}'; zaj.fullrequest = '{$protocol}:{$this->zajlib->fullrequest}'; zaj.fullurl = '{$protocol}:{$this->zajlib->fullurl}'; zaj.app = '{$this->zajlib->app}'; zaj.mode = '{$this->zajlib->mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; zaj.trackevents_local = $trackevents_local; zaj.trackevents_analytics = $trackevents_analytics; zaj.locale = '$locale'; var ofw = zaj; }</script>";
+					// Disable
+					$baseurl = htmlspecialchars($this->zajlib->baseurl);
+					$fullrequest = htmlspecialchars($this->zajlib->fullrequest);
+					$fullurl = htmlspecialchars($this->zajlib->fullurl);
+					$app = htmlspecialchars($this->zajlib->app);
+					$mode = htmlspecialchars($this->zajlib->mode);
+					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$baseurl}'; zaj.fullrequest = '{$protocol}:{$fullrequest}'; zaj.fullurl = '{$protocol}:{$fullurl}'; zaj.app = '{$app}'; zaj.mode = '{$mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; zaj.trackevents_local = $trackevents_local; zaj.trackevents_analytics = $trackevents_analytics; zaj.locale = '$locale'; var ofw = zaj; }</script>";
 
 			// By default return nothing.
 				default: return '';
