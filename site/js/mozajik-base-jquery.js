@@ -237,28 +237,51 @@
 			setTimeout(function(){ zaj.alert_reposition($modal); }, 1000);
 		}
 	};
-	zaj.confirm = function(message, urlORfunction){
-		// if the passed param is a function, then return confirmation as its param
-		if(typeof urlORfunction == 'function'){
-			var result = confirm(message);
-			urlORfunction(result);
-		}
-		// if the passed param is a url, redirect if confirm
-		else{
-			if(confirm(message)) window.location=zaj.baseurl+urlORfunction;
-		}
-	};
-	zaj.prompt = function(message){
-		return prompt(message);
-	};
 
-		/**
-		 * Track events in GA and/or locally. Event labels/etc are whatever you want them to be.
-		 * @param {string} category  A category.
-		 * @param {string} action  An action.
-		 * @param {string} label  A label.
-		 * @param {string} [value] A value.
-		 */
+	/**
+	 * A replacement for the standard js confirm() method.
+	 * @todo Add Bootstrap modal confirmation popup.
+	 * @param {string} message A message that tells what you are confirming.
+	 * @param {string|function|null} [urlORfunction=null] If this is not defined, confirm will work as a standard, blocking js confirm. Otherwise this will be the success.
+	 * @return {boolean|*} Will return different values based on parameters. Usually it returns true if the confirmation succeeds. If a function is passed, the function's return value is returned.
+	 */
+		zaj.confirm = function(message, urlORfunction){
+			// If the passed param is a function, then return confirmation as its param
+			if(typeof urlORfunction == 'function'){
+				var result = confirm(message);
+				return urlORfunction(result);
+			}
+			// If the passed param is a url, redirect if confirm
+			else if(typeof urlORfunction == 'string'){
+				if(confirm(message)){
+					zaj.redirect(urlORfunction);
+					return true;
+				}
+				else return false;
+			}
+			// If no passed param - just work like a standard confirm
+			else{
+				return confirm(message);
+			}
+		};
+
+	/**
+	 * Just does what a standard prompt message does for now.
+	 * @todo Add Bootstrap modal confirmation popup.
+	 * @param {string} message The prompt message.
+	 * @return {*} Returns the standard js prompt() value.
+	 */
+		zaj.prompt = function(message){
+			return prompt(message);
+		};
+
+	/**
+	 * Track events in GA and/or locally. Event labels/etc are whatever you want them to be.
+	 * @param {string} category  A category.
+	 * @param {string} action  An action.
+	 * @param {string} label  A label.
+	 * @param {string} [value] A value.
+	 */
 		zaj.track = function(category, action, label, value){
 			// Track via Google Analytics (ga.js or analytics.js)
 				if(zaj.trackevents_analytics){
