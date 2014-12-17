@@ -35,7 +35,7 @@
 	$(document).ready(function(){
 		zaj.bootstrap = (typeof $().modal == 'function');
 		zaj.bootstrap3 = (typeof $().emulateTransitionEnd == 'function');
-		zaj.facebook = (window.parent != window) && FB && FB.Canvas;
+		zaj.facebook = (window.parent != window) && typeof FB != 'undefined' && typeof FB.Canvas != 'undefined';
 		zaj.fbcanvas = false;
 		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(info){ zaj.fbcanvas = info; });
@@ -233,7 +233,7 @@
 					$modal.find('.modal-body').css({width:'auto', height: height, 'overflow-y': overflow_mode});
 					$modal.css({top: topoffset, overflow: 'hidden', 'margin-top': 0});
 			});
-			// clear and set
+			// clear and set @todo this should cancel eventually
 			setTimeout(function(){ zaj.alert_reposition($modal); }, 1000);
 		}
 	};
