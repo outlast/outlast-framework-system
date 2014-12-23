@@ -205,7 +205,7 @@ class zajlib_template extends zajLibExtension {
 		// capture output of this template
 			$body = $this->show($source_path, false, true);
 		// capture output of plain text template
-			$plain_text_version = $this->show($plain_text_version, false, true);
+			if($plain_text_version) $plain_text_version = $this->show($plain_text_version, false, true);
 		// load email library
 			return $this->zajlib->email->send_html($from, $to, $subject, $body, $sendcopyto, $bounceto, $plain_text_version);
 	}
