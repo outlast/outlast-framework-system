@@ -27,7 +27,7 @@ class Category extends zajModel {
 			$f->name = zajDb::name();
 			$f->abc = zajDb::text();
 			$f->photo = zajDb::photo();
-			$f->description = zajDb::text();
+			$f->description = zajDb::richtext();
 			$f->featured = zajDb::boolean();
 			$f->parentcategory = zajDb::category();
 			$f->subcategories = zajDb::onetomany('Category', 'parentcategory');
