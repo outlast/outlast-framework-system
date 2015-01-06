@@ -304,9 +304,9 @@ abstract class zajModel {
 
 	/**
 	 * Sets all the fields specified by the list of parameters. It uses GET or POST requests, and ignores fields where no value was sent (that is, not even an empty value). In cases where you need more control, use {@link set()} for each individual field.
-	 * @internal param string $field_name1 The first parameter to set.
-	 * @internal param string $field_name2 The second parameter to set.
-	 * @internal param string $field_name3 The third parameter to set...etc...
+	 * @note string $field_name1 The first parameter to set.
+	 * @note string $field_name2 The second parameter to set.
+	 * @note string $field_name3 The third parameter to set...etc...
 	 * @return zajModel Returns me to allow chaining.
 	 */
 	public function set_these(){
@@ -360,9 +360,9 @@ abstract class zajModel {
 
 	/**
 	 * Sets the translation of all the locales of all the fields specified by the list of parameters. It uses GET or POST requests, and ignores fields where no value was sent (that is, not even an empty value). In cases where you need more control, use {@link set_translation()} for each individual field.
-	 * @internal param string $field_name1 The first parameter to set.
-	 * @internal param string $field_name2 The second parameter to set.
-	 * @internal param string $field_name3 The third parameter to set...etc...
+	 * @note string $field_name1 The first parameter to set.
+	 * @note string $field_name2 The second parameter to set.
+	 * @note string $field_name3 The third parameter to set...etc...
 	 * @return zajModel Returns me to allow chaining.
 	 */
 	public function set_translations(){
