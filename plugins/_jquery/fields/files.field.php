@@ -17,10 +17,14 @@ class zajfield_files extends zajField {
 		
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
-		// set default options
-			// no options
-		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+
+        // load up config file
+        zajLib::me()->config->load('system/fields.conf.ini', 'files');
+        // set default options
+        if(empty($options['max_file_size'])) $options['max_file_size'] = zajLib::me()->config->variable->field_files_max_file_size_default;
+        // call parent constructor
+        parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+
 	}	
 
 	/**
