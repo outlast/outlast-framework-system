@@ -16,7 +16,7 @@
 <ul class="foto" id="{{field.uid}}-filelist">
     {% if field.value %}
         {% foreach field.value as val %}
-    <li><i class="glyphicon glyphicon-file"></i> {{val.name|escape}}</li>
+    <li id="{{val.id}}"><i class="glyphicon glyphicon-file"></i> {{val.name|escape}} <i class="glyphicon glyphicon-remove pointer" data-file="{{val.id}}" onclick="upload_remove_{{field.uid}}(event);"></i></li>
     {% endforeach %}
     {% endif %}
 </ul>
@@ -88,6 +88,24 @@
         file_upload_changes_{{field.uid}}.add.push(res.id);
         $('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
         return res.id;
+    };
+
+    /**
+     * Update after remove
+     * @param {object} ev The event which is passed when clicking on the delete element.
+     **/
+    upload_remove_{{field.uid}} = function(ev){
+
+        var id = $(ev.target).attr('data-file');
+        var $filediv = $('#'+id);
+        // Remove my div
+        $filediv.remove();
+        // Remove from add value
+        file_upload_changes_{{field.uid}}.add = jQuery.grep(file_upload_changes_{{field.uid}}.add, function(value) { return value != id; });
+        // Update my remove value
+        file_upload_changes_{{field.uid}}.remove.push(id);
+        // Set input
+        $('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
     };
 
     // Run init
