@@ -28,8 +28,12 @@ class zajlib_request extends zajLibExtension {
 		// Now init and send request
 			$curl = curl_init();
 			curl_setopt($curl, CURLOPT_URL, $url);
-			curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+			if(!is_array($additional_options) || !array_key_exists(CURLOPT_RETURNTRANSFER, $additional_options)){
+				curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+			}
+			if(!is_array($additional_options) || !array_key_exists(CURLOPT_SSL_VERIFYPEER, $additional_options)){
+				curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+			}
 
 			if($method == 'POST' || $method == 'PUT'){
 				curl_setopt($curl, CURLOPT_POST, true);
