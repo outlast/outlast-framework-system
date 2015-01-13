@@ -422,18 +422,21 @@ class zajFetcher implements Iterator, Countable{
 	 * Performs a search on all searchable fields. You can optionally use similarity search. This will use the wherestr parameter, 
 	 * @param string $query The text to search for.
 	 * @param boolean $similarity_search If set to true (false is the default), similar sounding results will be returned as well.
+	 * @param string $type AND or OR depending on how you want this filter to connect
 	 * @todo Add the option to specify fields.
 	 * @return zajFetcher This method can be chained.
 	 **/
-	public function search($query, $similarity_search = false){
+	public function search($query, $similarity_search = false, $type = 'AND'){
 		$class_name = $this->class_name;
 		// retrieve model
 			$model = $class_name::__model();
 		// similarity?
 			if($similarity_search) $sim = "SOUNDS";
 			else $sim = "";
+		// type?
+			if($type != 'AND') $type = 'OR';
 		// figure out search fields (searchfield=true is usually the case for text and id fields)
-			$this->wherestr .= " && (0";
+			$this->wherestr .= " $type (0";
 			foreach($model as $key=>$field){
 				if($field->search_field) $this->wherestr .= " || model.$key $sim LIKE '".$this->db->escape($query)."' || model.$key LIKE '%".$this->db->escape($query)."%'";
 			}
