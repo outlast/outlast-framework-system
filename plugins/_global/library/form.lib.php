@@ -13,8 +13,8 @@ class zajlib_form extends zajLibExtension {
 
 		/**
 		 * Check require fields - will return false if any of the fields specified were not filled out (are empty).
-		 * @internal param string $field1 The name of the first field.
-		 * @internal param string $field2 The name of the second field.
+		 * @optional param string $field1 The name of the first field.
+		 * @optional param string $field2 The name of the second field.
 		 * @return boolean Return true if all are filled out, false if not.
 		 * @todo Autoselect POST or GET instead of using REQUEST.
 		 */
