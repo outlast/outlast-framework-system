@@ -174,6 +174,9 @@ EOF;
 // this is an array or a fetcher object
 	if(!is_array({$fetcher}) && !is_object({$fetcher})) \$this->zajlib->warning("Cannot use for loop for parameter ({$fetchervar}) because it is not an an array, a fetcher, or an object!");
 	else{
+		// what is our forloop depth
+			if(empty(\$forloop_depth)) \$forloop_depth = 1;
+			else \$forloop_depth++;
 		// does a parent forloop exist?
 			if(is_object(\$this->zajlib->variable->forloop)) \$parent_forloop = \$this->zajlib->variable->forloop;
 		// create for loop variables
@@ -185,12 +188,24 @@ EOF;
  			\$this->zajlib->variable->forloop->counter = 0;
 			\$this->zajlib->variable->forloop->revcounter = \$this->zajlib->variable->forloop->length+1;
 			\$this->zajlib->variable->forloop->revcounter0 = \$this->zajlib->variable->forloop->length;
-			if(!empty(\$parent_forloop) && is_object(\$parent_forloop)) \$this->zajlib->variable->forloop->parentloop = \$parent_forloop;
-			foreach({$fetcher} as \$key=>{$item}){	
+			\$this->zajlib->variable->forloop->depth = \$forloop_depth;
+			if(\$forloop_depth != 1 && !empty(\$parent_forloop) && is_object(\$parent_forloop)){
+				\$this->zajlib->variable->forloop->parentloop = \$parent_forloop;
+				\$this->zajlib->variable->forloop->totalcounter = \$parent_forloop->totalcounter;
+				\$this->zajlib->variable->forloop->totalcounter0 = \$parent_forloop->totalcounter0;
+			}
+			else{
+				\$this->zajlib->variable->forloop->totalcounter = 0;
+				\$this->zajlib->variable->forloop->totalcounter0 = -1;
+			}
+
+			foreach({$fetcher} as \$key=>{$item}){
 				\$this->zajlib->variable->forloop->counter++;
 				\$this->zajlib->variable->forloop->counter0++;
 				\$this->zajlib->variable->forloop->revcounter--;
 				\$this->zajlib->variable->forloop->revcounter0--;
+				\$this->zajlib->variable->forloop->totalcounter++;
+				\$this->zajlib->variable->forloop->totalcounter0++;
 				\$this->zajlib->variable->forloop->odd = (\$this->zajlib->variable->forloop->counter % 2);
 				\$this->zajlib->variable->forloop->even = !(\$this->zajlib->variable->forloop->odd);
 				\$this->zajlib->variable->forloop->first = !\$this->zajlib->variable->forloop->counter0;
@@ -272,11 +287,20 @@ EOF;
 		$data[item] = $data[local];
 		unset(\$foreach_item);
 	}
+	// Remove a level from depth
+	\$forloop_depth--;
+	\$this->zajlib->variable->forloop->depth = \$forloop_depth;
 	// if I have a parent, set me
 	if(!empty(\$this->zajlib->variable->forloop->parentloop) && is_object(\$this->zajlib->variable->forloop->parentloop)){
+		// Set my parent
 		\$parent_forloop = \$this->zajlib->variable->forloop->parentloop;
+		// Set my total counters
+		\$parent_forloop->totalcounter = \$this->zajlib->variable->forloop->totalcounter;
+		\$parent_forloop->totalcounter0 = \$this->zajlib->variable->forloop->totalcounter0;
+		// Unset me and reset me
 		unset(\$this->zajlib->variable->forloop);
 		\$this->zajlib->variable->forloop = \$parent_forloop;
+		print "asdf: ".\$this->zajlib->variable->forloop->totalcounter;
 	}
 	else{
 		// unset stuff
