@@ -300,7 +300,6 @@ EOF;
 		// Unset me and reset me
 		unset(\$this->zajlib->variable->forloop);
 		\$this->zajlib->variable->forloop = \$parent_forloop;
-		print "asdf: ".\$this->zajlib->variable->forloop->totalcounter;
 	}
 	else{
 		// unset stuff
