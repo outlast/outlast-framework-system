@@ -16,7 +16,7 @@ class zajlib_signup extends zajLibExtension {
         $signup['apikey'] = $this->zajlib->config->variable->mailchimp_api_key;
         $signup['id'] = $this->zajlib->config->variable->mailchimp_list_id;
         $signup['email']['email'] = $email;
-        $url = str_replace('<dc>',$api_dc[1],$this->zajlib->config->variable->mailchimp_subscribe_url);
+        $url = str_replace('%1',$api_dc[1],$this->zajlib->config->variable->mailchimp_subscribe_url);
         $result = $this->zajlib->request->curl($url, json_encode($signup), 'POST');
         return $result;
     }
