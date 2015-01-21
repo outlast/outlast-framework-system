@@ -99,19 +99,33 @@ class zajlib_lang extends zajlib_config {
 		 **/
 		public function set_by_code($new_language = false){
 			if(!empty($new_language)){
-			// Let's see if we have a compatible locale
-	 			foreach($this->available_locales as $l){
-	 				// If found, set the locale and return me
-	 				$lcompare = substr($l, 0, 2);
-	 				if($lcompare == $new_language){
-	 					$this->set($l);
-	 					return $lcompare;
-	 				}
-	 			}
+				// Let's see if we have a compatible locale
+					$locale = $this->get_locale_by_code($new_language);
+					if($locale){
+						$set_to_locale = $this->set($locale);
+						return substr($set_to_locale, 0, 2);
+					}
 	 		}
 	 		// Not found, set to default locale and return it
 	 			if(!empty($new_language)) $this->zajlib->warning("Requested language code $new_language not found, using default locale (".$this->default_locale.") instead.");
 	 			return substr($this->set(), 0, 2);
+		}
+
+		/**
+		 * Get the locale for a two-letter code.
+		 * @param string $two_letter_code The two letter code.
+		 * @return string|boolean Returns the locale or false if not found.
+		 */
+		public function get_locale_by_code($two_letter_code){
+			// Let's see if we have a compatible locale
+	 			foreach($this->available_locales as $l){
+	 				// If found, set the locale and return me
+	 				$lcompare = substr($l, 0, 2);
+	 				if($lcompare == $two_letter_code){
+	 					return $l;
+	 				}
+	 			}
+	 		return false;
 		}
 
 		/**
