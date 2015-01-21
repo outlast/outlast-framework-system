@@ -8,7 +8,7 @@
 
 class zajlib_signup extends zajLibExtension {
 
-    public function mailchimp_signup($email){
+    public function mailchimp($email){
         $this->zajlib->config->load('signup.conf.ini');
         if(!$this->zajlib->email->valid($email)) return $this->zajlib->error('Invalid email address.',true);
         $signup = array();
@@ -17,7 +17,15 @@ class zajlib_signup extends zajLibExtension {
         $signup['id'] = $this->zajlib->config->variable->mailchimp_list_id;
         $signup['email']['email'] = $email;
         $url = str_replace('<dc>',$api_dc[1],$this->zajlib->config->variable->mailchimp_subscribe_url);
-        $result = zajLib::me()->request->curl($url, json_encode($signup), 'POST');
+        $result = $this->zajlib->request->curl($url, json_encode($signup), 'POST');
+        return $result;
+    }
+
+    public function webgalamb($email, $name = '', $group = '1'){
+        $this->zajlib->config->load('signup.conf.ini');
+        if(!$this->zajlib->email->valid($email)) return $this->zajlib->error('Invalid email address.',true);
+        $data = array('email'=>$email, 'name' => $name, 'group' => $group);
+        $result = $this->zajlib->request->curl($url, $data, 'POST');
         return $result;
     }
 }
