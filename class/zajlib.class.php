@@ -910,6 +910,7 @@ class zajLibLoader{
  * @property boolean $search_field True if this field should be included in a search().
  * @property boolean|string $edit_template The path of the template which should be displayed for {% input %} editors. If none, set to false.
  * @property boolean|string $show_template The path of the template which should be used when simply showing data from this field. If none, set to false.
+ * @method zajDb unsigned(boolean $true_if_unsigned = true) Set unsigned to true for numeric types.
  * @method zajDb default(mixed $default_value) Specify a default value for this field.
  * @method zajDb validate(boolean $validate_or_not) Set the use_validation setting for this field. (not fully supported yet)
  * @method zajDb validation($validation_function) Override the validation function for this field. (not fully supported yet)
