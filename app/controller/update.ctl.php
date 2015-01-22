@@ -129,8 +129,8 @@
 		 * @return boolean
 		 **/
 		function test($show_result = true){
-			// Default to internal error
-				header('HTTP/1.0 500 Internal Server Error');
+			// Set response code
+				http_response_code(500);
 			// Prepare the tests
 				$this->zajlib->test->prepare_all();
 			// Run all
@@ -139,7 +139,10 @@
 				if(count($this->zajlib->variable->test->Errors) > 0){
 					header('HTTP/1.1 500 Internal Server Error');
 				}
-				else header('HTTP/1.1 200 Ok');
+				else{
+					http_response_code(200);
+					header('HTTP/1.1 200 Ok');
+				}
 			// Display!
 				if($show_result) return $this->zajlib->template->show("update/update-test.html");
 				else return $result;
