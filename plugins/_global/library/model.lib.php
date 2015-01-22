@@ -154,9 +154,10 @@ class zajlib_model extends zajLibExtension {
 
 								// if my difference exists
 									if(count($my_difference) > 0 || count($my_option_difference)){
-										/*print_r($field_data);
+										/**print_r($field_data);
+										print "<Br/><br/>";
 										print_r($tables[$model_name][$field_name]);
-										exit;*/
+										exit;**/
 										// if only index is an issue
 											if(count($my_difference) == 1 && !empty($my_difference['key'])){
 												$different_indexes[$field_name] = $field_data;
@@ -354,8 +355,12 @@ class zajlib_model extends zajLibExtension {
 				$type_dec = "$type($options)";
 			}
 			else $type_dec = $type;
-		// character set			
-			if(!in_array($type, $this->numeric_types)) $char_set = "CHARACTER SET utf8";
+		// unsigned or not for numeric, character set for non numeric
+			$unsigned = $char_set = '';
+			if(in_array($type, $this->numeric_types)){
+				if(!empty($field_data['unsigned'])) $unsigned = 'UNSIGNED';
+			}
+			else $char_set = "CHARACTER SET utf8";
 		// default value: is it not a constant? then put in quotes!
 			if($default === false) $default = '';
 			else{
@@ -380,6 +385,7 @@ class zajlib_model extends zajLibExtension {
 			else{
 				$edit_mode = "ADD COLUMN `$column`";
 				$this->log("Creating $table.$column.", true);
+				$index_name = '';	// not used, just here to define it in each case
 			}
 		// remove an index?
 			if($remove_index) $this->remove_index($table, $index_name, $field_data['key']);
@@ -399,8 +405,9 @@ class zajlib_model extends zajLibExtension {
 								$this->num_of_changes++;
 								break;
 			}
+			//print "ALTER"." TABLE `$table` $edit_mode $type_dec $unsigned $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key";
 		// execute adding of this table
-			if(!$dry_run) $this->db->query("ALTER TABLE `$table` $edit_mode $type_dec $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key");
+			if(!$dry_run) $this->db->query("ALTER"." TABLE `$table` $edit_mode $type_dec $unsigned $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key");
 		// count query and action
 			$this->num_of_changes++;
 			$this->num_of_queries++;
@@ -549,18 +556,24 @@ class zajlib_model extends zajLibExtension {
 		// Create a new database connection to information_schema
 			$db = $this->zajlib->db->create_connection($this->zajlib->zajconf['mysql_server'], $this->zajlib->zajconf['mysql_user'], $this->zajlib->zajconf['mysql_password'], 'information_schema');
 			// select scheme db then revert!
-				$db->query("SELECT `COLUMN_NAME` as 'Field', `COLUMN_TYPE` as 'Type', `COLUMN_KEY` as 'Key', `COLUMN_DEFAULT` as 'Default', `EXTRA` as 'Extra', `COLUMN_COMMENT` as 'Comment' FROM `COLUMNS` WHERE `TABLE_SCHEMA`='$database_name' && `TABLE_NAME`='$table'");			
+				$db->query("SELECT"." `COLUMN_NAME` as 'Field', `COLUMN_TYPE` as 'Type', `COLUMN_KEY` as 'Key', `COLUMN_DEFAULT` as 'Default', `EXTRA` as 'Extra', `COLUMN_COMMENT` as 'Comment' FROM `COLUMNS` WHERE `TABLE_SCHEMA`='$database_name' && `TABLE_NAME`='$table'");
 				foreach($db as $col){
-					// process type
-						$tdata = explode('(', $col->Type);
-						$type = $tdata[0];
+					// get my type data
+						preg_match("/([A-z]+)[(]?([^)]+)?[)]? ?([A-z]*)/", $col->Type, $tdata);
+						$type = $tdata[1];
+					// is unsigned
+						$unsigned = false;
+						if(in_array(strtoupper($type), $this->numeric_types)){
+							if($tdata[3] == 'unsigned') $unsigned = true;
+						}
 					// process options
 						$options = array();
-						foreach(explode(',', $tdata[1]) as $option) if($option != '') $options[] = trim($option, "')");
+						foreach(explode(',', $tdata[2]) as $option) if($option != '') $options[] = trim($option, "'");
 					// create my array		
 						$columns[$col->Field] = array(
 							'field'=>$col->Field,
 							'type'=>$type,
+							'unsigned'=>$unsigned,
 							'option'=>$options,
 							'key'=>$col->Key,
 							'default'=>$col->Default,

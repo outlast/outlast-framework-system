@@ -32,17 +32,27 @@ class zajfield_integer extends zajField {
 		// Defaults to 0, but use default() if given
 			$default = 0;
 			if(!empty($this->options['default'])) $default = $this->options['default'];
+		// Unsigned integer?
+			if(!empty($this->options['unsigned']) && $this->options['unsigned'] === true){
+				$unsigned = true;
+				$comment = 'integer unsigned';
+			}
+			else{
+				$unsigned = false;
+				$comment = 'integer';
+			}
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name,
 					'type' => 'int',
+					'unsigned' => $unsigned,
 					'option' => array(
 						0 => 11,
 					),
  					'key' => 'MUL',
 					'default' => $default,
 					'extra' => '',
-					'comment' => 'integer',
+					'comment' => $comment
 			);
 		return $fields;
 	}

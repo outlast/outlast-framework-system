@@ -355,16 +355,21 @@ class OfwLibraryTest extends zajTest {
 	 **/
 	public function system_library_language(){
 		// Make sure that en_US is set and returned as default
-		zajTestAssert::areIdentical('en_US', $this->zajlib->lang->get_default_locale());
+			zajTestAssert::areIdentical('en_US', $this->zajlib->lang->get_default_locale());
 		// So now, let's set the current locale to hu_HU and ensure we get the proper result
-		$this->zajlib->lang->set('hu_HU');
-		$this->zajlib->lang->load('system/update');
-		zajTestAssert::areIdentical('magyar', $this->zajlib->lang->variable->system_update_lang);
+			$this->zajlib->lang->set('hu_HU');
+			$this->zajlib->lang->load('system/update');
+			zajTestAssert::areIdentical('magyar', $this->zajlib->lang->variable->system_update_lang);
 
 		// Let's set it to some crazy unknown language (non-existant) and make sure it works with en_US default
-		$this->zajlib->lang->set('xx_XX');
-		$this->zajlib->lang->load('system/update');
-		zajTestAssert::areIdentical('english', $this->zajlib->lang->variable->system_update_lang);
+			// Disable errors first
+			$this->zajlib->error->surpress_errors_during_test(true);
+			// Run
+			$this->zajlib->lang->set('xx_XX');
+			$this->zajlib->lang->load('system/update');
+			zajTestAssert::areIdentical('english', $this->zajlib->lang->variable->system_update_lang);
+			// Enable errors
+			$this->zajlib->error->surpress_errors_during_test(false);
 
 		// We're done...
 	}
