@@ -966,6 +966,9 @@ class zajFetcher implements Iterator, Countable{
 	 * @todo Change count_only!
 	 **/
 	public function is_connected($object){
+		// Check for errors
+			if(!is_a($object, 'zajModel')) return zajLib::me()->warning("You tried to check is_connected() status with a parameter that is not a zajModel object.");
+			if(!is_a($this->connection_parent, 'zajModel')) return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
 		// primary connection
 			if($this->connection_other) return $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}')");
 		// secondary connection
