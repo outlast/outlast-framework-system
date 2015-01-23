@@ -278,8 +278,13 @@ class OfwLibraryTest extends zajTest {
 	 * Check security.
 	 */
 	public function system_library_security(){
-		// Just load it up and do nothing
-		$this->zajlib->security;
+		// Test ip in range
+			$res = $this->zajlib->security->ip_in_range('199.59.148.209', '199.59.148.*');
+			zajTestAssert::isTrue($res);
+			$res = $this->zajlib->security->ip_in_range('199.59.148.209', array('199.59.148.123', '199.59.148.209'));
+			zajTestAssert::isTrue($res);
+			$res = $this->zajlib->security->ip_in_range('199.59.148.209', array('127.0.0.1'));
+			zajTestAssert::isFalse($res);
 	}
 
 	/**
