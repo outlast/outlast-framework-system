@@ -75,58 +75,70 @@ class zajlib_security extends zajLibExtension {
 	 * 3. Start-End IP format: 1.2.3.0-1.2.3.255
 	 * The function will return true if the supplied IP is within the range.
 	 *
-	 * @param string $ip The ip address to check.
+	 * @param string|boolean $ip The ip address to check or an array of IP addresses to check. If set to false, my current IP will be used.
 	 * @param string $range The ip address range to check in.
 	 * @return boolean Will return true if the specified IP is within the given range.
 	 **/
-	 public function ip_in_range($ip, $range) {
+	public function ip_in_range($ip, $range) {
+		// default to current ip
+			if($ip === false) $_SERVER['REMOTE_ADDR'];
+	 	// if ip range is an array, then call for each one
+	 		if(is_array($range)){
+	 			foreach($range as $range_item){
+	 				// Is item in range? Return true!
+						$result = $this->ip_in_range($ip, $range_item);
+						if($result) return true;
+	 			}
+	 			return false;
+	 		}
 		// if ip is equal to range
-		if($ip == $range) return true;
+			if($ip == $range) return true;
 		// otherwise...
-		if (strpos($range, '/') !== false) {
-		    // $range is in IP/NETMASK format
-		    list($range, $netmask) = explode('/', $range, 2);
-		    if (strpos($netmask, '.') !== false) {
-		      // $netmask is a 255.255.0.0 format
-		      $netmask = str_replace('*', '0', $netmask);
-		      $netmask_dec = ip2long($netmask);
-		      return ( (ip2long($ip) & $netmask_dec) == (ip2long($range) & $netmask_dec) );
-		    } else {
-		      // $netmask is a CIDR size block
-		      // fix the range argument
-		      $x = explode('.', $range);
-		      while(count($x)<4) $x[] = '0';
-		      list($a,$b,$c,$d) = $x;
-		      $range = sprintf("%u.%u.%u.%u", empty($a)?'0':$a, empty($b)?'0':$b,empty($c)?'0':$c,empty($d)?'0':$d);
-		      $range_dec = ip2long($range);
-		      $ip_dec = ip2long($ip);
+			if(strpos($range, '/') !== false){
+				// $range is in IP/NETMASK format
+				list($range, $netmask) = explode('/', $range, 2);
+				if(strpos($netmask, '.') !== false){
+					// $netmask is a 255.255.0.0 format
+					$netmask = str_replace('*', '0', $netmask);
+					$netmask_dec = ip2long($netmask);
+					return ( (ip2long($ip) & $netmask_dec) == (ip2long($range) & $netmask_dec) );
+				}
+				else{
+					// $netmask is a CIDR size block
+					// fix the range argument
+					$x = explode('.', $range);
+					while(count($x)<4) $x[] = '0';
+					list($a,$b,$c,$d) = $x;
+					$range = sprintf("%u.%u.%u.%u", empty($a)?'0':$a, empty($b)?'0':$b,empty($c)?'0':$c,empty($d)?'0':$d);
+					$range_dec = ip2long($range);
+					$ip_dec = ip2long($ip);
 
-		      # Strategy 1 - Create the netmask with 'netmask' 1s and then fill it to 32 with 0s
-		      #$netmask_dec = bindec(str_pad('', $netmask, '1') . str_pad('', 32-$netmask, '0'));
+					# Strategy 1 - Create the netmask with 'netmask' 1s and then fill it to 32 with 0s
+					#$netmask_dec = bindec(str_pad('', $netmask, '1') . str_pad('', 32-$netmask, '0'));
 
-		      # Strategy 2 - Use math to create it
-		      $wildcard_dec = pow(2, (32-$netmask)) - 1;
-		      $netmask_dec = ~ $wildcard_dec;
+					# Strategy 2 - Use math to create it
+					$wildcard_dec = pow(2, (32-$netmask)) - 1;
+					$netmask_dec = ~ $wildcard_dec;
 
-		      return (($ip_dec & $netmask_dec) == ($range_dec & $netmask_dec));
-		    }
-		  } else {
-		    // range might be 255.255.*.* or 1.2.3.0-1.2.3.255
-		    if (strpos($range, '*') !==false) { // a.b.*.* format
-		      // Just convert to A-B format by setting * to 0 for A and 255 for B
-		      $lower = str_replace('*', '0', $range);
-		      $upper = str_replace('*', '255', $range);
-		      $range = "$lower-$upper";
-		    }
-
-		    if (strpos($range, '-')!==false) { // A-B format
-		      list($lower, $upper) = explode('-', $range, 2);
-		      $lower_dec = (float)sprintf("%u",ip2long($lower));
-		      $upper_dec = (float)sprintf("%u",ip2long($upper));
-		      $ip_dec = (float)sprintf("%u",ip2long($ip));
-		      return ( ($ip_dec>=$lower_dec) && ($ip_dec<=$upper_dec) );
-		    }
-		    return false;
-		}
+					return (($ip_dec & $netmask_dec) == ($range_dec & $netmask_dec));
+				}
+			}
+			else{
+				// range might be 255.255.*.* or 1.2.3.0-1.2.3.255
+				if (strpos($range, '*') !==false) { // a.b.*.* format
+					// Just convert to A-B format by setting * to 0 for A and 255 for B
+					$lower = str_replace('*', '0', $range);
+					$upper = str_replace('*', '255', $range);
+					$range = "$lower-$upper";
+				}
+				if (strpos($range, '-')!==false) { // A-B format
+					list($lower, $upper) = explode('-', $range, 2);
+					$lower_dec = (float)sprintf("%u",ip2long($lower));
+					$upper_dec = (float)sprintf("%u",ip2long($upper));
+					$ip_dec = (float)sprintf("%u",ip2long($ip));
+					return ( ($ip_dec>=$lower_dec) && ($ip_dec<=$upper_dec) );
+				}
+				return false;
+			}
 	}
 }

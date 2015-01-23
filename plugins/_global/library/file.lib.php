@@ -83,7 +83,7 @@ class zajlib_file extends zajLibExtension {
 	}
 
 	/**
-	 * Returns an array of files found in this folder. If set to recursive, the file paths will be returned relative to the specified path.
+	 * Returns an array of files found in this folder.
 	 * @param string $path The absolute path to check for files.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
 	 * @param string $mode Can be 'files' or 'folders'. This should not be used. If you want to check for folders, use {@link get_folders_in_dir()} instead.	 
@@ -109,8 +109,8 @@ class zajlib_file extends zajLibExtension {
 						if($recursive){
 							$newfiles = $this->get_files_in_dir($path."/".$file, true, $mode);
 							// add to files or folders
-							if($mode == "files") $files = $this->zajlib->array->array_merge($files, $newfiles);
-							else $folders = $this->zajlib->array->array_merge($folders, $newfiles);
+							if($mode == "files") $files = $this->zajlib->array->merge($files, $newfiles);
+							else $folders = $this->zajlib->array->merge($folders, $newfiles);
 						}
 					}
 				}
@@ -121,7 +121,7 @@ class zajlib_file extends zajLibExtension {
 	}
 
 	/**
-	 * Returns an array of files found in this folder. If set to recursive, the file paths will be returned relative to the specified path. Same as get_files_in_dir, but relative to basepath.
+	 * Returns an array of files found in this folder. Same as get_files_in_dir, but path is relative to basepath.
 	 * @param string $path The path to check for files relative to the apps basepath.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
 	 * @param string $mode Can be 'files' or 'folders'. This should not be used. If you want to check for folders, use {@link get_folders_in_dir()} instead.
@@ -202,7 +202,7 @@ class zajlib_file extends zajLibExtension {
 	}
 
 	/**
-	 * Generate a list of subfolders based on the timestamp. So for example: 2010/Jan/3/example.txt could be created.
+	 * Generate a hierarchy of subfolders based on the timestamp. So for example: 2010/Jan/3/example.txt could be created.
 	 * @param string $basepath The base path of the file (this will not use the global base path!)
 	 * @param string $filename The full filename, including extension.
 	 * @param integer $timestamp The UNIX time stamp to use for generating the folders. The current timestamp will be used by default.
@@ -210,7 +210,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param bool $include_day Whether to include the day level as well.
 	 * @return string The new full path of the file.
 	 */
-	function get_time_path($basepath,$filename,$timestamp = 0,$create_folders_if_they_dont_exist = true,$include_day=true){
+	function get_time_path($basepath, $filename, $timestamp = 0, $create_folders_if_they_dont_exist = true, $include_day=true){
 		// Validate path
 			$basepath = $this->folder_check($basepath, "Invalid path requested for get_time_path.");
 		// Validate file
@@ -235,14 +235,14 @@ class zajlib_file extends zajLibExtension {
 	}
 
 	/**
-	 * Generate a list of subfolders based on the file name. So example.txt at $level 3 will generate a path of e/x/a/example.txt
+	 * Generate a hierarchy of subfolders based on the file name. So example.txt at $level 3 will generate a path of e/x/a/example.txt
 	 * @param string $basepath The base path of the file (this will not use the global base path!)
 	 * @param string $filename The full filename, including extension.
 	 * @param boolean $create_folders_if_they_dont_exist If set to true, the folders will not only be calculated, but also created.
 	 * @param integer $level The number of levels of subfolders to calculate with.
 	 * @return string The new full path of the file.
 	 **/
-	function get_id_path($basepath,$filename,$create_folders_if_they_dont_exist = true,$level = 10){
+	function get_id_path($basepath, $filename, $create_folders_if_they_dont_exist = true, $level = 10){
 		// Validate path
 			$basepath = $this->folder_check($basepath, "Invalid path requested for get_id_path.");
 		// Validate file
@@ -390,16 +390,11 @@ class zajlib_file extends zajLibExtension {
 	 * @param integer $kbps The connection speed in Kbps (kiloBITS per second!)
 	 * @return integer The time in seconds
 	 **/
-	function download_time($bytes,$kbps=512)	{
+	function download_time($bytes, $kbps=512)	{
 		// convert kbps to Bytes Per Second
 		$speed = ($kbps/8)*1024;
 		// by seconds
 		$time	= ceil($bytes / $speed);
-		// hours, mins, secs
-		$hours    = (int)floor($time/3600);
-		$minutes  = (int)floor($time/60)%60;
-		$seconds  = (int)$time%60;
-	
 		return (int)$time;
 	}
 
