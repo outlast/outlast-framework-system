@@ -250,7 +250,12 @@ class zajLib {
 				// build full request
 				$this->fullrequest = $this->fullurl.'?'.$_SERVER['QUERY_STRING'];
 			}
-			else $this->fullrequest = $this->fullurl.'?';
+			else{
+				// no query string in this case
+				$_SERVER['QUERY_STRING'] = '';
+				// build full request with ?
+				$this->fullrequest = $this->fullurl.'?';
+			}
 		// fix my app and mode to always have a single trailing slash
 			$this->app = trim($this->app, '/').'/';
 			$this->mode = trim($this->mode, '/').'/';
