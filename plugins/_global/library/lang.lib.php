@@ -117,6 +117,8 @@ class zajlib_lang extends zajlib_config {
 		 * @return string|boolean Returns the locale or false if not found.
 		 */
 		public function get_locale_by_code($two_letter_code){
+			// Lowercase it!
+				$two_letter_code = strtolower($two_letter_code);
 			// Let's see if we have a compatible locale
 	 			foreach($this->available_locales as $l){
 	 				// If found, set the locale and return me
