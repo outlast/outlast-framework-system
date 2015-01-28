@@ -861,16 +861,19 @@ EOF;
 			// blocks processed
 				$child_blocks_processed = array();
 			// define a function for recursive addition
-				$add_child_destinations = function($my_source) use ($block_name, &$child_blocks_processed){
+				$add_child_destinations = function($my_source) use ($block_name, &$child_blocks_processed, &$add_child_destinations){
 					/** @var zajCompileSource $my_source */
 					if($my_source->child_source !== false){
 						// Generate permanent name
 							$permanent_name = '__block/'.$my_source->child_source->get_requested_path().'-'.$block_name.'.html';
+						// Add destination if not already added previously
 							if(!array_key_exists($permanent_name, zajCompileSession::$blocks_processed)){
 								print "Adding $permanent_name...<br/>";
 								$this->zajlib->compile->add_destination($permanent_name);
 								$child_blocks_processed[$permanent_name] = $permanent_name;
 							}
+						// Recursive!
+							$add_child_destinations($my_source->child_source);
 					}
 				};
 				zajCompileSession::$blocks_processed = array_merge(zajCompileSession::$blocks_processed, $child_blocks_processed);
