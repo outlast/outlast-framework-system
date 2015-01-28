@@ -59,24 +59,24 @@
 		ini_set('precision', 19);
 	// check for request errors
 		if(!empty($_REQUEST['error'])){
-			if($_REQUEST['error'] == "private") exit("MOZAJIK REQUEST ERROR: cannot access this folder!");
-			if($_REQUEST['error'] == "norewrite") exit("MOZAJIK REQUEST ERROR: the required apache rewrite support not enabled!");
+			if($_REQUEST['error'] == "private") exit("OUTLAST FRAMEWORK REQUEST ERROR: cannot access this folder!");
+			if($_REQUEST['error'] == "norewrite") exit("OUTLAST FRAMEWORK REQUEST ERROR: the required apache rewrite support not enabled!");
 		}
 	// check for versions
-		if(empty($_REQUEST['zajhtver']) || $_REQUEST['zajhtver'] < MOZAJIK_HTACCESS_VERSION) exit("MOZAJIK VERSION ERROR: please update the htaccess file to the latest version!");
-		if(empty($zajconf['config_file_version']) || $zajconf['config_file_version'] < MOZAJIK_CONFIG_VERSION) exit("MOZAJIK VERSION ERROR: please update your main config file to the latest version!");
+		if(empty($_REQUEST['zajhtver']) || $_REQUEST['zajhtver'] < MOZAJIK_HTACCESS_VERSION) exit("OUTLAST FRAMEWORK VERSION ERROR: please update the htaccess file to the latest version!");
+		if(empty($zajconf['config_file_version']) || $zajconf['config_file_version'] < MOZAJIK_CONFIG_VERSION) exit("OUTLAST FRAMEWORK VERSION ERROR: please update your main config file to the latest version!");
 	// prepare my requests - trim app and mode
 		$_REQUEST['zajapp'] = trim($_REQUEST['zajapp'], " _-\"\\'/");
 		$_REQUEST['zajmode'] = trim($_REQUEST['zajmode'], " _-\"\\'/");
 		
 	// figure out my relative path
-		if(!empty($zajconf['site_folder']) && empty($zajconf['root_folder'])) exit("MOZAJIK CONFIG ERROR: If you set the site_folder parameter, you must also set the root_folder!");
+		if(!empty($zajconf['site_folder']) && empty($zajconf['root_folder'])) exit("OUTLAST FRAMEWORK CONFIG ERROR: If you set the site_folder parameter, you must also set the root_folder!");
 	// auto-detect root folder if not set already
 		if(empty($zajconf['root_folder'])) $zajconf['root_folder'] = realpath(dirname(__FILE__).'/../../');	
 	// set the default system plugins (for backwards compatibility)
 		if(empty($zajconf['system_apps'])) $zajconf['system_apps'] = array('_global', '_mootools');
 	// include the zajlib system class
-		if (!(include $zajconf['root_folder'].'/system/class/zajlib.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
+		if (!(include $zajconf['root_folder'].'/system/class/zajlib.class.php')) exit("<b>Outlast Framework error:</b> missing Outlast Framework system files or incorrect path given! set in site/index.php!");
 	// create a new zajlib object
 		$zajlib = new zajLib($zajconf['root_folder'], $zajconf);
 	// set internal error handler
@@ -127,8 +127,10 @@
 	// all init is completed, after this it's only checks and plugin loads, etcetc.
 		if(!empty($GLOBALS['ZAJ_HOOK_INIT']) && is_callable($GLOBALS['ZAJ_HOOK_INIT'])) $GLOBALS['ZAJ_HOOK_INIT']();
 
-	// load plugins
+	// load plugins, but make sure we aren't using any reserved names
+		$reserved_names = array_merge(array('local', 'plugin_apps', 'system', 'system_apps', 'temp_block', 'compiled'), $zajconf['system_apps']);
 		foreach(array_reverse($zajconf['plugin_apps']) as $plugin){
+			if(in_array($plugin, $reserved_names)) exit("<b>Outlast Framework error:</b> you tried to load up a plugin with an invalid name. '$plugin' is a reserved or system app name!");
 			$zajlib->plugin->load($plugin);
 		}
 		
@@ -143,12 +145,12 @@
 		// 2. Check if activated
 			if(!is_object($zajlib->mozajik)) $installation_valid = false;
 		// 3. Activate model support and check system file validity (fatal error if not)
-			if (!(include $zajconf['root_folder'].'/system/class/zajmodel.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
+			if (!(include $zajconf['root_folder'].'/system/class/zajmodel.class.php')) exit("<b>Outlast Framework error:</b> missing Outlast Framework system files or incorrect path given! set in site/index.php!");
 		// 4. Check database issues (if mysql is enabled) - this does not actually connect but newly installed sites should already run into (2) activation error. Again, fatal errors if missing.
 			if($zajconf['mysql_enabled']){	
 				// include the data and fetcher system class
-					if (!(include $zajconf['root_folder'].'/system/class/zajdata.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
-					if (!(include $zajconf['root_folder'].'/system/class/zajfetcher.class.php')) exit("<b>zajlib error:</b> missing zajlib system files or incorrect path given! set in site/index.php!");
+					if (!(include $zajconf['root_folder'].'/system/class/zajdata.class.php')) exit("<b>Outlast Framework error:</b> missing Outlast Framework system files or incorrect path given! set in site/index.php!");
+					if (!(include $zajconf['root_folder'].'/system/class/zajfetcher.class.php')) exit("<b>Outlast Framework error:</b> missing Outlast Framework system files or incorrect path given! set in site/index.php!");
 				// load db library
 					$zajlib->load->library("db");
 			}

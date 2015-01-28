@@ -60,7 +60,7 @@ class zajCompileSession {
 	 * Constructor for compile session. You should not create this object directly, but instead use the compile library.
 	 *
 	 * @param string $source_file Relative path of source file.
-	 * @param object $zajlib Pointer to the global zajlib object.
+	 * @param zajLib $zajlib Pointer to the global zajlib object.
 	 * @param string|boolean $destination_file Relative path of destination file. If not specified, the destination will be the same as the source, which is the preferred way of doing things. You should only specify this if you are customizing the template compilation process.
 	 * @return zajCompileSession
 	 */
@@ -145,11 +145,12 @@ class zajCompileSession {
 	/**
 	 * Add a source to this compile session. You should not call methods of this object directly, but instead use the compile library.
 	 * @param string $source_path Relative path of source file.
+	 * @param string|bool $ignore_app_level The name of app up to which all path levels should be ignored. Setting this to false will ignore nothing.
 	 * @return boolean Returns true if the source was added, false if it was added earlier.
 	 */
-	public function add_source($source_path){
+	public function add_source($source_path, $ignore_app_level = false){
 		if(!$this->is_source_added($source_path)){
-			$this->sources[$source_path] = new zajCompileSource($source_path, $this->zajlib);
+			$this->sources[$source_path] = new zajCompileSource($source_path, $this->zajlib, $ignore_app_level);
 			return true;
 		}
 		else return false;
@@ -285,6 +286,7 @@ class zajCompileSource {
 		private $requested_path;		// string - the relative path to the source file
 		private $hierarchy = array();	// array - stores info about open/close tags
 		private $level = 0;				// int - current level of hierarchy
+		private $app_level;				// string - the app level (plugin) at which this source is located
 		public $extended = false;		// boolean - true if this source is extended
 	
 	// settings	
@@ -299,18 +301,28 @@ class zajCompileSource {
 			'temp_block'=>'cache/temp/',
 			'compiled'=>'cache/view/',
 		);
-	
-	public function __construct($source_file, &$zajlib){
+
+	/**
+	 * @param string $source_file A relative path to the source.
+	 * @param zajLib $zajlib The global zajlib object.
+	 * @param string|bool $ignore_app_level The name of app up to which all path levels should be ignored. Setting this to false will ignore nothing.
+	 */
+	public function __construct($source_file, &$zajlib, $ignore_app_level = false){
 		// set zajlib & debug stats
 			$this->zajlib =& $zajlib;
 		// jail the user
-			if(strpos($source_file, '..') !== false) $this->zajlib->error("invalid source path ($source_file) found during compilation!");
+			if(strpos($source_file, '..') !== false) $this->zajlib->error("Invalid source path ($source_file) found during compilation!");
 		// does it exist?
-			if(!$path = $this->file_exists($source_file)) return $this->zajlib->error("template file $source_file could not be found.");
+			$app_level_and_path = $this->check_app_levels($source_file, $ignore_app_level);
+			if($app_level_and_path === false){
+				if($ignore_app_level === false) return $this->zajlib->error("Template file $source_file could not be found anywhere.");
+				else return $this->zajlib->error("Template file $source_file could not be found in app hierarchy levels below $ignore_app_level.");
+			}
 		// open file
+			$this->app_level = $app_level_and_path[1];
 			$this->requested_path = $source_file;
-			$this->file_path = $path;
-			return $this->file = fopen($path, 'r');
+			$this->file_path = $app_level_and_path[0];
+			return $this->file = fopen($this->file_path, 'r');
 	}	
 
 	/**
@@ -454,42 +466,55 @@ class zajCompileSource {
 	// Error methods
 	////////////////////////////////////////////////////////
 	public function warning($message){
-		echo "Template compile warning: $message (file: $this->file_path / line: $this->line_number)";
+		$this->zajlib->warning("Template compile error: $message (file: $this->file_path / line: $this->line_number)", true);
 	}
 	public function error($message){
-		echo "Template compile error: $message (file: $this->file_path / line: $this->line_number)";
-		exit;	
+		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)", true);
+		exit;
 	}
 	
 	/**
 	 * Check if template file exists in any of the paths. Returns path if yes, false if no.
 	 * @param string $source_file The path to the source file.
-	 * @return string|boolean Returns the full path or false if it does not exist.
+	 * @param string|bool $ignore_app_level The name of app up to which all path levels should be ignored. Setting this to false will ignore nothing.
+	 * @return array|boolean Returns an array with full path and app level or false if it does not exist.
 	 **/
-	public static function file_exists($source_file){
+	public static function check_app_levels($source_file, $ignore_app_level = false){
 		// run through all the paths
-		foreach(zajCompileSource::$paths as $type=>$path){
+		foreach(zajCompileSource::$paths as $level=>$path){
 			// if type is plugin_apps, then it is special!
-				if($type == 'plugin_apps' && $path){
+				if($level == 'plugin_apps' && $path){
 					// run through all of my registered plugin apps' views and return if one found!
 						foreach(zajLib::me()->loaded_plugins as $plugin_app){
 							$path = zajLib::me()->basepath.'plugins/'.$plugin_app.'/view/'.$source_file;
-							if(file_exists($path)) return $path;
+							// Return path if not ignoring and exists
+								if(!$ignore_app_level && file_exists($path)) return array($path, $plugin_app);
+							// Stop ignoring?
+								if($ignore_app_level !== false && $ignore_app_level == $plugin_app) $ignore_app_level = false;
 						}
 				}
-				elseif($type == 'system_apps' && $path){
+				elseif($level == 'system_apps' && $path){
 					// run through all of my registered system apps' views and return if one found!
-						foreach(zajLib::me()->zajconf['system_apps'] as $plugin_app){
-							$path = zajLib::me()->basepath.'system/plugins/'.$plugin_app.'/view/'.$source_file;
-							if(file_exists($path)) return $path;
+						foreach(zajLib::me()->zajconf['system_apps'] as $system_app){
+							$path = zajLib::me()->basepath.'system/plugins/'.$system_app.'/view/'.$source_file;
+							// Return path if not ignoring and exists
+								if(!$ignore_app_level && file_exists($path)) return array($path, $system_app);
+							// Stop ignoring?
+								if($ignore_app_level !== false && $ignore_app_level == $system_app) $ignore_app_level = false;
 						}
 				}
-				else $path = zajLib::me()->basepath.$path.$source_file;
-			if(file_exists($path)) return $path;
+				else{
+					$path = zajLib::me()->basepath.$path.$source_file;
+					// Return path if not ignoring and exists
+						if(!$ignore_app_level && file_exists($path)) return array($path, $level);
+					// Stop ignoring?
+						if($ignore_app_level !== false && $ignore_app_level == $level) $ignore_app_level = false;
+				}
 		}
 		// no existing files found
 		return false;
 	}
+
 }
 
 /**

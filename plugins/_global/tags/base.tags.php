@@ -921,10 +921,20 @@ EOF;
 			if($source->line_number != 1) $source->error("Extends must be on first line before any other content!");
 		// is the user jailed?
 			if(strpos($source_path, '..') !== false) $source->error("Invalid extends path ($source_path) found during compilation! Path must be give relative to the 'view' folder.");
-				
-		// check if it exists
-			if(!zajCompileSource::file_exists($source_path)) $source->error("Invalid extends path ($source_path) found during compilation! File does not exist.");
-		
+
+		// should we extend ourselves?
+			if($source_path == 'self'){
+				$ignore_app_level = $source->app_level;
+				$source_path = $source->requested_path;
+			}
+			else $ignore_app_level = false;
+
+		// check if it exists to provide friendly error message
+			if(!zajCompileSource::check_app_levels($source_path, $ignore_app_level)){
+				if($ignore_app_level) $source->error("Extends path ($source_path) not suitable for decoration! File does not exist in any app levels lower than $ignore_app_level.");
+				else $source->error("Invalid extends path ($source_path) found during compilation! File does not exist anywhere.");
+			}
+
 		// set source to be extended and set actual file path
 			$source->extended = true;
 		
@@ -932,7 +942,7 @@ EOF;
 			$this->zajlib->compile->main_dest_paused(true);
 
 		// add me to the compile queue
-			$this->zajlib->compile->add_source($source_path);
+			$this->zajlib->compile->add_source($source_path, $ignore_app_level);
 		// return true
 			return true;
 	}
