@@ -61,8 +61,11 @@ class zajlib_export extends zajLibExtension {
 			$this->zajlib->config->load('export.conf.ini');
 			// No more autoloading for OFW
 				zajLib::me()->model_autoloading = false;
+			// Get my PhpExcel path
+				$phpexcel_path = $this->zajlib->config->variable->php_excel_path;
+				if(substr($phpexcel_path, 0, 1) != '/') $phpexcel_path = $this->zajlib->basepath.$phpexcel_path;
 			// Try using PHPExcel if available
-				@include_once($this->zajlib->config->variable->php_excel_path);
+				@include_once($phpexcel_path);
 				if(!class_exists('PHPExcel', false) || $encoding){
 					// Standard CSV export
 						zajLib::me()->model_autoloading = true;
@@ -119,13 +122,16 @@ class zajlib_export extends zajLibExtension {
 			
 			// No more autoloading for OFW
 				zajLib::me()->model_autoloading = false;
+			// Get my PhpExcel path
+				$phpexcel_path = $this->zajlib->config->variable->php_excel_path;
+				if(substr($phpexcel_path, 0, 1) != '/') $phpexcel_path = $this->zajlib->basepath.$phpexcel_path;
 			// Require it if it is available
-				include_once($this->zajlib->config->variable->php_excel_path);
-				if(!class_exists('PHPExcel', false)) $this->zajlib->error("PHPExcel not found!");
+				include_once($phpexcel_path);
+				if(!class_exists('PHPExcel', false)) $this->zajlib->error("PHPExcel is required for XLS exports. See documentation.", true);
 			// Create the excel file
 				$workbook = new PHPExcel();
 			    $workbook->setActiveSheetIndex(0);
-				
+			    
 			// Write output
 				zajLib::me()->model_autoloading = true;
 				$this->send_data($workbook, $fetcher, $fields);

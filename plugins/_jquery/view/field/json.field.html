@@ -1,17 +1,31 @@
-	<div id='{{field.id}}'>
-	{% if field.value %}
-		{% foreach field.value as val %}
-			{% if not val|is_dict %}
-			<label>{{forloop.key}} <input class='field text' type='text' readonly value='{{val|escape}}'></label>
-			{% elseif %}
-				{% foreach val as subval %}
-					{% if not subval|is_dict %}
-					<label>{{forloop.parentloop.key}} / {{forloop.key}} <input class='field text' type='text' readonly value='{{subval|escape}}'></label>
-					{% elseif %}
-					<label>{{forloop.parentloop.key}} / {{forloop.key}} <input class='field text' type='text' readonly value='{{subval|tojson|escape}}'></label>
-					{% endif %}
-				{% endforeach %}
-			{% endif %}
-		{% endforeach %}
-	{% endif %}
-	</div>
+<div class="well" id='{{field.id}}'>
+	{% block jsonlist %}
+		{% if field.value %}
+			{% foreach field.value as val %}
+				{% if not val|is_dict %}
+					<div class="form-group">
+						<label class="col-sm-2 control-label">{{forloop.key}}</label>
+						<div class="col-sm-10">
+							<input class='form-control' type='text' readonly value='{{val|escape}}'>
+						</div>
+					</div>
+				{% elseif %}
+					{% foreach val as subval %}
+						<div class="form-group">
+							<label class="col-sm-2 control-label">{{forloop.parentloop.key}} / {{forloop.key}}</label>
+							{% if not subval|is_dict %}
+								<div class="col-sm-10">
+									<input class='form-control' type='text' readonly value='{{subval|escape}}'>
+								</div>
+							{% elseif %}
+								<div class="col-sm-10">
+									<input class='form-control' type='text' readonly value='{{subval|tojson|escape}}'>
+								</div>
+							{% endif %}
+						</div>
+					{% endforeach %}
+				{% endif %}
+			{% endforeach %}
+		{% endif %}
+	{% endblock %}
+</div>
