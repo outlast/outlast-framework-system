@@ -54,7 +54,12 @@ class zajCompileSession {
 		 * @var string
 		 */
 		public $id;								// string - session id
-		
+
+		/**
+		 * A list of blocks processed. Blocks are stored as paths relative to cache in the array keys.
+		 * @var array
+		 */
+		public static $blocks_processed = array();
 	
 	/**
 	 * Constructor for compile session. You should not create this object directly, but instead use the compile library.
@@ -146,12 +151,14 @@ class zajCompileSession {
 	 * Add a source to this compile session. You should not call methods of this object directly, but instead use the compile library.
 	 * @param string $source_path Relative path of source file.
 	 * @param string|bool $ignore_app_level The name of app up to which all path levels should be ignored. Setting this to false will ignore nothing.
-	 * @return boolean Returns true if the source was added, false if it was added earlier.
+	 * @param zajCompileSource|bool $child_source The zajCompileSource object of a child template, if one exists.
+	 * @return boolean|zajCompileSource Returns the source object if the source was added, false if it was added earlier.
 	 */
-	public function add_source($source_path, $ignore_app_level = false){
-		if(!$this->is_source_added($source_path)){
-			$this->sources[$source_path] = new zajCompileSource($source_path, $this->zajlib, $ignore_app_level);
-			return true;
+	public function add_source($source_path, $ignore_app_level = false, $child_source = false){
+		if(!$this->is_source_added($ignore_app_level.$source_path)){
+			$source = new zajCompileSource($source_path, $this->zajlib, $ignore_app_level, $child_source);
+			$this->sources[$ignore_app_level.$source_path] = $source;
+			return $source;
 		}
 		else return false;
 	}
@@ -287,8 +294,14 @@ class zajCompileSource {
 		private $hierarchy = array();	// array - stores info about open/close tags
 		private $level = 0;				// int - current level of hierarchy
 		private $app_level;				// string - the app level (plugin) at which this source is located
+		private $child_source = false;	// zajCompileSource|boolean - object of the child source
+
+	// these are set by the template tags @todo move to methods!
 		public $extended = false;		// boolean - true if this source is extended
-	
+		public $parent_requested = false;// string|boolean - relative path of my parent source. false if none.
+		public $parent_path = false;	// string|boolean - full path of my parent template. false if none.
+		public $parent_level = false;	// string|boolean - plugin level of my parent template. false if none.
+
 	// settings	
 		private $paused = false;		// boolean - if paused, reading from this file will not occur
 		private $parse = true;			// boolean - if parse is true, the line will be parsed before writing
@@ -306,8 +319,9 @@ class zajCompileSource {
 	 * @param string $source_file A relative path to the source.
 	 * @param zajLib $zajlib The global zajlib object.
 	 * @param string|bool $ignore_app_level The name of app up to which all path levels should be ignored. Setting this to false will ignore nothing.
+	 * @param zajCompileSource|bool $child_source The zajCompileSource object of a child template, if one exists.
 	 */
-	public function __construct($source_file, &$zajlib, $ignore_app_level = false){
+	public function __construct($source_file, &$zajlib, $ignore_app_level = false, $child_source = false){
 		// set zajlib & debug stats
 			$this->zajlib =& $zajlib;
 		// jail the user
@@ -318,6 +332,8 @@ class zajCompileSource {
 				if($ignore_app_level === false) return $this->zajlib->error("Template file $source_file could not be found anywhere.");
 				else return $this->zajlib->error("Template file $source_file could not be found in app hierarchy levels below $ignore_app_level.");
 			}
+		// set my child
+			$this->child_source = $child_source;
 		// open file
 			$this->app_level = $app_level_and_path[1];
 			$this->requested_path = $source_file;

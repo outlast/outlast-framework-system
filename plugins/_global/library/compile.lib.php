@@ -74,6 +74,7 @@ class zajlib_compile extends zajLibExtension{
 			array_pop($this->sessions);
 		// do i still have any compiling to do?
 			if(count($this->sessions) > 0) return $this->go();
+		return false;
 	}
 
 
