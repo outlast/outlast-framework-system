@@ -827,10 +827,6 @@ EOF;
 
 		/** @var zajCompileSource $source */
 
-		// pause main output
-			$this->zajlib->compile->main_dest_paused(true);
-
-
 		// prepare unparsed parameter string
 			$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
 		// validate block name (only a-z) (because the whole stucture is involved, this is a fatal error!)
@@ -841,9 +837,7 @@ EOF;
 		// generate file name from block and session id
 			//$file_name = "block/".$this->zajlib->compile->get_session_id()."-$block_name.html";
 
-		// check to see if destinations already paused and hierarchy level is more than one
-			/**$current_level = $source->get_level();
-			if($this->zajlib->compile->are_destinations_paused() && $current_level > 0){
+			/**if($this->zajlib->compile->are_destinations_paused() && $current_level > 0){
 				return $source->add_level('block', array($block_name,$file_name,false));
 			}**/
 
@@ -943,6 +937,12 @@ EOF;
 			//if($unpause_dest) $this->zajlib->compile->resume_destinations();
 		// repause the main destination if current source is extended
 			//if($source->extended) $this->zajlib->compile->main_dest_paused(true);
+			/**$current_level = $source->get_level();
+
+			if($current_level == 0 && $source->child_source === false){
+				print "Endblock at level 0<br/>";
+				$this->zajlib->compile->main_dest_paused(true);
+			}**/
 
 		// now unpause
 			//$this->zajlib->compile->main_dest_paused(false);
