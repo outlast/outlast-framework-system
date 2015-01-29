@@ -189,6 +189,17 @@ class zajCompileSession {
 		return reset($this->sources);
 	}
 
+
+	/**
+	 * Gets the the main destination object.
+	 *
+	 * @return zajCompileDestination
+	 */
+	public function get_destination(){
+		return reset($this->destinations);
+	}
+
+
 	/**
 	 * Add a destination file to this compile session. You should not call methods of this object directly, but instead use the compile library.
 	 *
@@ -581,6 +592,7 @@ class zajCompileDestination {
 	public function write($content){
 		// if paused, just return OR if exists&temp
 			if(($this->exists && $this->temporary) || $this->paused) return true;
+			print "<code>".$this->file_path." (".strlen($content).")</code><br/><pre>".$content."</pre><hr/>";
 		// write this to file
 			return fputs($this->file, $content);
 	}

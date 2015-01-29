@@ -848,6 +848,13 @@ EOF;
 			print "\n\n\n\n\n\n";
 		}**/
 
+/**			$current_level = $source->get_level();
+			if($current_level == 0 && $source->child_source === false){
+				print "Endblock at level 0<br/>";
+				$this->zajlib->compile->main_dest_paused(true);
+			}**/
+
+
 		// start writing this block to a file
 			//$file_exists = $this->zajlib->compile->add_destination($file_name, true);
 			//$unpause_dest = false;
@@ -861,24 +868,43 @@ EOF;
 			// blocks processed
 				$child_blocks_processed = array();
 			// define a function for recursive addition
-				$add_child_destinations = function($my_source) use ($block_name, &$child_blocks_processed, &$add_child_destinations){
+				$add_child_destinations = function($my_source, $permanent_name) use ($block_name, &$child_blocks_processed, &$add_child_destinations, $source){
 					/** @var zajCompileSource $my_source */
 					if($my_source->child_source !== false){
 						// Generate permanent name
-							$permanent_name = '__block/'.$my_source->child_source->get_requested_path().'-'.$block_name.'.html';
+							$my_permanent_name = '__block/'.$my_source->child_source->get_requested_path().'-'.$block_name.'.html';
 						// Add destination if not already added previously
-							if(!array_key_exists($permanent_name, zajCompileSession::$blocks_processed)){
-								print "Adding $permanent_name...<br/>";
-								$this->zajlib->compile->add_destination($permanent_name);
-								$child_blocks_processed[$permanent_name] = $permanent_name;
+							if(!array_key_exists($my_permanent_name, zajCompileSession::$blocks_processed)){
+								print "Adding $my_permanent_name...<br/>";
+								$this->zajlib->compile->add_destination($my_permanent_name);
+								$child_blocks_processed[$my_permanent_name] = $my_permanent_name;
 							}
 						// Recursive!
-							$add_child_destinations($my_source->child_source);
+							$add_child_destinations($my_source->child_source, $my_permanent_name);
+					}
+					else{
+						/**
+						 * @todo What I think needs to be done here:
+						 * - Pause main putput
+						 */
+						// Write contents of $permanent_name to main destination
+							/** @var zajCompileDestination $destination */
+							$destination = $this->zajlib->compile->get_destination();
+							if(!$source->parent_level){
+								$this->zajlib->compile->main_dest_paused(false);
+								print "Time to write contents of ".$this->zajlib->basepath.'cache/view/'.$permanent_name." into ".$destination->file_path."!<br/>";
+								$data = file_get_contents($this->zajlib->basepath.'cache/view/'.$permanent_name.'.php');
+								print "<pre>$data</pre>";
+								$destination->write($data);
+							}
+						// Pause main destination output
+							$this->zajlib->compile->main_dest_paused(true);
+
 					}
 				};
 				zajCompileSession::$blocks_processed = array_merge(zajCompileSession::$blocks_processed, $child_blocks_processed);
 			// start recursive function with current source
-				$add_child_destinations($source);
+				$add_child_destinations($source, $permanent_name);
 
 
 
@@ -928,6 +954,9 @@ EOF;
 		// remove permanent block file (if exists)
 			if($permanent_name) $this->zajlib->compile->remove_destination($permanent_name);
 
+
+		// always unpause
+			$this->zajlib->compile->main_dest_paused(false);
 /***		if($block_name == 'contenttitle'){
 			print "AFTER - ***".$source->file_path." / ".$source->app_level."***\n";
 			print $this->zajlib->basepath.'cache/view/'.$permanent_name;
