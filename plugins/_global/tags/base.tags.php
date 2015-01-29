@@ -878,6 +878,7 @@ EOF;
 								print "Adding $my_permanent_name...<br/>";
 								$this->zajlib->compile->add_destination($my_permanent_name);
 								$child_blocks_processed[$my_permanent_name] = $my_permanent_name;
+								zajCompileSession::$blocks_processed[$my_permanent_name] = $my_permanent_name;
 							}
 						// Recursive!
 							$add_child_destinations($my_source->child_source, $my_permanent_name);
@@ -902,7 +903,6 @@ EOF;
 
 					}
 				};
-				zajCompileSession::$blocks_processed = array_merge(zajCompileSession::$blocks_processed, $child_blocks_processed);
 			// start recursive function with current source
 				$add_child_destinations($source, $permanent_name);
 
