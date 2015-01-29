@@ -11,15 +11,15 @@
 /**
  * Use this constant to set a MAX() value for a database field.
  **/
-define('MYSQL_MAX', 'MAX');
+define('MYSQL_MAX', 'MYSQL_MAX');
 /**
  * Use this constant to set a MAX()+1 value for a database field.
  **/
-define('MYSQL_MAX_PLUS', 'MAX+1');
+define('MYSQL_MAX_PLUS', 'MYSQL_MAX_PLUS');
 /**
  * Use this constant to set an AVG() value for a database field.
  **/
-define('MYSQL_AVG', 'AVG');
+define('MYSQL_AVG', 'MYSQL_AVG');
 
 /**
  * Class zajlib_db
