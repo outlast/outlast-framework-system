@@ -880,14 +880,29 @@ EOF;
 								$child_blocks_processed[$my_permanent_name] = $my_permanent_name;
 								zajCompileSession::$blocks_processed[$my_permanent_name] = $my_permanent_name;
 							}
+							else{
+								// If I have a parent block...
+								if($this->block_name){
+									$parent_block = $this->block_name;
+									$x = $my_source->child_source->get_requested_path().'-'.$parent_block.'.html.php';
+									print "<p style='color: red'>We are ready to instert $my_permanent_name into $x / $block_name!</p>";
+									/**
+									 * @todo What we need to do...
+									 * - check to see if I even have this block
+									 * - if i do, remove me from the destinations
+									 * - do a manual file_get_contents / write like below
+									 * - on endblock we have to readd to destination
+									 * - will this work recursively????
+									 */
+
+								}
+
+
+							}
 						// Recursive!
 							$add_child_destinations($my_source->child_source, $my_permanent_name);
 					}
 					else{
-						/**
-						 * @todo What I think needs to be done here:
-						 * - Pause main putput
-						 */
 						// Write contents of $permanent_name to main destination
 							/** @var zajCompileDestination $destination */
 							$destination = $this->zajlib->compile->get_destination();
