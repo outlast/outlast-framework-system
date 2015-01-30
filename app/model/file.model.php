@@ -218,8 +218,11 @@ class File extends zajModel {
 	 * Method which saves file to its final location.
 	 **/
 	public function upload(){
-		// Make sure this file is currently not saved
-			if($this->data->status == 'saved') return false;
+		// Make sure this file is currently not saved. But even if so, save again because this is what we expect!
+			if($this->data->status == 'saved'){
+				$this->save();
+				return false;
+			}
 		// Get temporary and final names
 			$temp_path = $this->get_temporary_path();
 			$new_path = $this->get_file_path(false, true);
