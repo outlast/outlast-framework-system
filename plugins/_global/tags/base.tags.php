@@ -1025,7 +1025,7 @@ EOF;
 			return true;
 	}
 	public function tag_insertlocal($param_array, &$source){
-		return $this->tag_insertlocale($param_array, &$source);
+		return $this->tag_insertlocale($param_array, $source);
 	}
 
 
