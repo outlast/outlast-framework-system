@@ -988,13 +988,13 @@ EOF;
 	}
 
 	/**
-	 * Tag: insertlocal - Same as {@link insert} except that this also checks for localized versions of the HTML file before including.
+	 * Tag: insertlocale - Same as {@link insert} except that this also checks for localized versions of the HTML file before including.
 	 *
-	 *  <b>{% insertlocal '/admin/news_edit.html' 'block_name' %}</b>
+	 *  <b>{% insertlocale '/admin/news_edit.html' 'block_name' %}</b>
 	 *  1. <b>template_file</b> - The template file to insert.
 	 *  2. <b>block_section</b> - If you only want to insert the block section from the file. (optional)
 	 **/
-	public function tag_insertlocal($param_array, &$source){
+	public function tag_insertlocale($param_array, &$source){
 		// get the first parameter...
 			$var = $param_array[0]->variable;
 			$tvar = trim($var, "'\"");
@@ -1024,6 +1024,10 @@ EOF;
 		// return debug_stats
 			return true;
 	}
+	public function tag_insertlocal($param_array, &$source){
+		return $this->tag_insertlocale($param_array, &$source);
+	}
+
 
 	/**
 	 * These are special functions which return the current extend file path and block name in use. THESE ARE NOT TAGS!
