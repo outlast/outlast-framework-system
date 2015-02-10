@@ -123,7 +123,8 @@ class zajlib_lang extends zajlib_config {
 	 			foreach($this->available_locales as $l){
 	 				// If found, set the locale and return me
 	 				$lcompare = substr($l, 0, 2);
-	 				if($lcompare == $two_letter_code){
+	 				$rcompare = strtolower(substr($l, -2));
+	 				if($lcompare == $two_letter_code || $rcompare == $two_letter_code){
 	 					return $l;
 	 				}
 	 			}
