@@ -92,7 +92,7 @@
 				}
 		});			
 	// debug mode needed?
-		if(in_array($zajlib->host, $zajconf['debug_mode_domains']) || !empty($zajconf['debug_mode']) || !empty($_SERVER['DEBUG_MODE']) || !empty($_SERVER['MOZAJIK_DEBUG_MODE'])) $zajlib->debug_mode = true;
+		if(in_array($zajlib->host, $zajconf['debug_mode_domains']) || !empty($zajconf['debug_mode']) || !empty($_SERVER['DEBUG_MODE']) || !empty($_SERVER['MOZAJIK_DEBUG_MODE']) || !empty($_SERVER['OFW_DEBUG_MODE'])) $zajlib->debug_mode = true;
 	// debug mode explicity overridden?
 		if($zajlib->debug_mode && isset($_REQUEST['debug_mode'])) $zajlib->debug_mode = false;
 	// use debug database?

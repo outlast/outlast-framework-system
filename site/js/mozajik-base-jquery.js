@@ -853,7 +853,7 @@
 								if(_options.useMoreButton != null) $(_options.useMoreButton).hide();
 							}
 							// Call all of my readyFunctions
-							$.each(_this.readyFunctions, function(i, func){ func(); });
+							$.each(_this.readyFunctions, function(i, func){ func(_options.model, _currentPage); });
 						});
 						return true;
 					}
