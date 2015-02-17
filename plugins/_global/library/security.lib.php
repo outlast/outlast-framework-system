@@ -70,7 +70,7 @@ class zajlib_security extends zajLibExtension {
 	 * Check code for xss, return boolean.
 	 * @param string $string The string to run XSS detection logic on.
 	 * @link https://github.com/symphonycms/xssfilter/blob/master/extension.driver.php#L138
-	 * @return boolean True if the given string contains XSS, false otherwise.
+	 * @return boolean True if the given string contains XSS, false if clean.
 	 */
 	public static function has_xss($string) {
 		$contains_xss = false;
