@@ -65,6 +65,52 @@ class zajlib_security extends zajLibExtension {
 			header('Access-Control-Allow-Methods: '.$allow_methods);
 			header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 	}
+
+	/**
+	 * Check code for xss, return boolean.
+	 * @param string $string The string to run XSS detection logic on.
+	 * @link https://github.com/symphonycms/xssfilter/blob/master/extension.driver.php#L138
+	 * @return boolean True if the given string contains XSS, false otherwise.
+	 */
+	public static function check_xss($string) {
+		$contains_xss = false;
+		// Skip any null or non string values
+		if(is_null($string) || !is_string($string)) {
+			return $contains_xss;
+		}
+		// Keep a copy of the original string before cleaning up
+		$orig = $string;
+		// URL decode
+		$string = urldecode($string);
+		// Convert Hexadecimals
+		$string = preg_replace('!(&#|\\\)[xX]([0-9a-fA-F]+);?!e','chr(hexdec("$2"))', $string);
+		// Clean up entities
+		$string = preg_replace('!(&#0+[0-9]+)!','$1;',$string);
+		// Decode entities
+		$string = html_entity_decode($string, ENT_NOQUOTES, 'UTF-8');
+		// Strip whitespace characters
+		$string = preg_replace('!\s!','',$string);
+		// Set the patterns we'll test against
+		$patterns = array(
+			// Match any attribute starting with "on" or xmlns
+			'#(<[^>]+[\x00-\x20\"\'\/])(on|xmlns)[^>]*>?#iUu',
+			// Match javascript:, livescript:, vbscript: and mocha: protocols
+			'!((java|live|vb)script|mocha|feed|data):(\w)*!iUu',
+			'#-moz-binding[\x00-\x20]*:#u',
+			// Match style attributes
+			'#(<[^>]+[\x00-\x20\"\'\/])style=[^>]*>?#iUu',
+			// Match unneeded tags
+			'#</*(applet|meta|xml|blink|link|style|script|embed|object|iframe|frame|frameset|ilayer|layer|bgsound|title|base)[^>]*>?#i'
+		);
+		foreach($patterns as $pattern) {
+			// Test both the original string and clean string
+			if(preg_match($pattern, $string) || preg_match($pattern, $orig)){
+				$contains_xss = true;
+			}
+			if ($contains_xss === true) return true;
+		}
+		return false;
+	}
 	
 	/**
 	 * Checks if an IP address is within the specified range.

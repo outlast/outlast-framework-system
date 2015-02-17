@@ -209,6 +209,19 @@ class zajlib_template extends zajLibExtension {
 		// load email library
 			return $this->zajlib->email->send_html($from, $to, $subject, $body, $sendcopyto, $bounceto, $plain_text_version);
 	}
+
+	/**
+	 * Strip XSS and throw a warning if such code is found.
+	 * @param string $string The incoming string.
+	 * @return string Returns the string if safe and empty string (with warning()) if an error is found.
+	 */
+	public function strip_xss($string){
+		if($this->zajlib->security->check_xss($string)){
+			$this->zajlib->warning("XSS attempt found in $string");
+			return '';
+		}
+		return $string;
+	}
 }
 
 /**

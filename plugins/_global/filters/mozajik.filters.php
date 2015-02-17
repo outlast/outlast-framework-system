@@ -301,6 +301,16 @@ EOF;
 		return true;
 	}
 
+	/**
+	 * Filter: safe - Disable automatic XSS filtering on the variable.
+	 *
+	 *  <b>{{variable|safe}}</b> Will allow <script> within the variable.
+	 **/
+	public function filter_safe($parameter, &$source){
+			// Actually does nothing, just here as a placeholder. Action is performed during variable compilation.
+		return true;
+	}
+
 
 	/**
 	 * Filter: substr - Cuts a string at the given value. See also truncate.
