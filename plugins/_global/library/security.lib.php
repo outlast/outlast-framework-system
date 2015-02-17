@@ -55,7 +55,7 @@ class zajlib_security extends zajLibExtension {
 	/**
 	 * Uses CORS to allows ajax requests from cross-domain origins. Sends headers so it must be called before any output. See link for IE issues.
 	 * @param string $allow_origin The domain to allow, or * to whitelist everything. Defaults to *.
-	 * @param string $allow_methods Allow the method by which to send data. List comma-separated. Defaults to POST, GET, OPTOINS.
+	 * @param string $allow_methods Allow the method by which to send data. List comma-separated. Defaults to POST, GET, OPTIONS.
 	 * @link http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
 	 **/
 	public function cors($allow_origin = '*', $allow_methods = 'POST, GET, OPTIONS'){
@@ -72,7 +72,7 @@ class zajlib_security extends zajLibExtension {
 	 * @link https://github.com/symphonycms/xssfilter/blob/master/extension.driver.php#L138
 	 * @return boolean True if the given string contains XSS, false otherwise.
 	 */
-	public static function check_xss($string) {
+	public static function has_xss($string) {
 		$contains_xss = false;
 		// Skip any null or non string values
 		if(is_null($string) || !is_string($string)) {

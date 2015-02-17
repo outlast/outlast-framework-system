@@ -217,7 +217,7 @@ class zajlib_template extends zajLibExtension {
 	 * @return string Returns the string if safe and empty string (with warning()) if an error is found.
 	 */
 	public function strip_xss($string, $context = ""){
-		if($this->zajlib->security->check_xss($string)){
+		if($this->zajlib->security->has_xss($string)){
 			$this->zajlib->warning("XSS attempt found and has been stripped. ".$context);
 			return '';
 		}
