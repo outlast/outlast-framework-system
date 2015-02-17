@@ -772,6 +772,7 @@ class zajCompileElement{
 
 	protected function __construct($element_name, &$parent){
 		// set parent and element
+			/** @var zajCompileSource $parent */
 			$this->parent =& $parent;
 			$this->element_name = $element_name;
 		return true;
@@ -815,7 +816,7 @@ class zajCompileElement{
 						else $new_var .= '->'.$element;
 				}
 				// Add xss protection
-					if($check_xss) $new_var = '$this->zajlib->template->strip_xss('.$new_var.')';
+					if($check_xss) $new_var = '$this->zajlib->template->strip_xss('.$new_var.', "Found in {{'.$variable.'}} for '.$this->parent->get_requested_path().' / '.$this->parent->line_number.'.")';
 				return $new_var;
 			}
 	}

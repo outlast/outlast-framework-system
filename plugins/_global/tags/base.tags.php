@@ -70,7 +70,7 @@ class zajlib_tag_base extends zajElementCollection{
 	// choose which one to display now
 		\$which_one = abs($var_name_counter % count($var_name));
 	// choose
-		echo $this->zajlib->template->strip_xss({$var_name}{$which_one_var});
+		echo $this->zajlib->template->strip_xss({$var_name}{$which_one_var}, 'Found in {% cycle %} tag.');
 ?>
 EOF;
 		// write to file
@@ -116,7 +116,7 @@ EOF;
 		$my_array
 	// first which is true
 		foreach($firstof_array as $el->variable){
-			if($el->variable) echo $this->zajlib->template->strip_xss($el->variable);
+			if($el->variable) echo $this->zajlib->template->strip_xss($el->variable, 'Found in {% firstof %} tag.');
 			break;
 		}
 EOF;
