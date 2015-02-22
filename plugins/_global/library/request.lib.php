@@ -36,7 +36,8 @@ class zajlib_request extends zajLibExtension {
 			}
 
 			if($method == 'POST' || $method == 'PUT'){
-				curl_setopt($curl, CURLOPT_POST, true);
+				if($method == 'POST') curl_setopt($curl, CURLOPT_POST, true);
+				if($method == 'PUT') curl_setopt($curl, CURLOPT_PUT, true);
 				if($params && (is_array($params) || is_object($params))) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
 				if($params && is_string($params)) curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
 			}
