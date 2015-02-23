@@ -350,11 +350,13 @@ abstract class zajModel {
 	 */
 	public function set_translation($field_name, $value, $locale){
 		// disable for non-database objects
-		if(!$this::$in_database) return false;
+			if(!$this::$in_database) return false;
+		// if default locale, use set
+			if($locale == $this->zajlib->lang->get_default_locale()) return $this->set($field_name, $value);
 		// init the data object if not done already
-		$tobj = Translation::create_by_properties($this->class_name, $this->id, $field_name, $locale);
-		$tobj->set('value', $value);
-		$tobj->save();
+			$tobj = Translation::create_by_properties($this->class_name, $this->id, $field_name, $locale);
+			$tobj->set('value', $value);
+			$tobj->save();
 		return $this;
 	}
 
