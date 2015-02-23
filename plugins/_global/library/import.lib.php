@@ -12,7 +12,7 @@ define("OFW_IMPORT_MAX_EXECUTION_TIME", 300);
 class zajlib_import extends zajLibExtension {
 
 	/**
-	 * Reads a tab of a published Google Document in CSV format returns an array of objects. In order to use this you must use the File / Publish to the web... feature. Also, check Automatically republish changes to make sure it stays in sync.
+	 * Reads a tab of a publicly shared Google Document in CSV format returns an array of objects.
 	 * @param string $url A CSV-formatted url that is displayed in the Publish to the web... feature of Google docs.
 	 * @param boolean $first_row_is_header If set to true, the values of the first row will be used as keys (converted to compatible chars).
 	 * @param string $delimiter Set the field delimiter (one character only).
@@ -21,12 +21,19 @@ class zajlib_import extends zajLibExtension {
 	 * @return array An array of objects where the keys are either numbers or taken from the header row.
 	 **/
 	public function gdocs_spreadsheet($url, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
-
-		// @todo The gdocs URL has changed. If the document is shared publicly, then it can be accessed like this:
-		// https://docs.google.com/spreadsheets/d/DOC_KEY/export?format=csv&key=DOC_KEY
-
 		// Must be a valid url
 			if(!$this->zajlib->url->valid($url)) return $this->zajlib->warning("Gdocs import must be a valid url.");
+		// If url is not an export url convert it now
+			if(strstr($url, 'export') === false){
+				// Get my document key
+					preg_match("|spreadsheets/d/([A-z0-9]+)/edit|", $url, $matches);
+				// Get my tab fragment
+					$urldata = parse_url($url);
+					if(substr($urldata['fragment'], 0, 4) == 'gid=') $tab = '&'.$urldata['fragment'];
+					else $tab = '';
+				// Now set my url
+					$url = "https://docs.google.com/spreadsheets/d/".$matches[1]."/export?format=csv&key=".$matches[1].$tab;
+			}
 		return $this->csv($url, $first_row_is_header, $delimiter, $enclosure, $escape);
 	}
 
