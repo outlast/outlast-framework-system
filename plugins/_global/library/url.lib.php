@@ -48,6 +48,15 @@ class zajlib_url extends zajLibExtension {
 			return $matches[2];
 	}
 
+	/**
+	 * Get HTTP response code for a url.
+	 * @param string $url The url to fetch.
+	 * @return integer Returns the HTTP response code.
+	 */
+	function response_code($url){
+		$headers = get_headers($url);
+    	return substr($headers[0], 9, 3);
+	}
 
 	/**
 	 * Generates a friendly url based on an input string.
