@@ -147,6 +147,16 @@ class zajlib_request extends zajLibExtension {
 	}
 
 	/**
+	 * Get HTTP response code for a url.
+	 * @param string $url The url to fetch.
+	 * @return integer Returns the HTTP response code.
+	 */
+	function response_code($url){
+		$headers = get_headers($url);
+    	return substr($headers[0], 9, 3);
+	}
+
+	/**
 	 * Is the current request an ajax request? Requires a Javascript library to work properly cross-browser (jquery, moo, etc.)
 	 * @return boolean Return true if ajax request, false otherwise.
 	 */

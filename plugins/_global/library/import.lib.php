@@ -24,7 +24,7 @@ class zajlib_import extends zajLibExtension {
 		// Must be a valid url
 			if(!$this->zajlib->url->valid($url)) return $this->zajlib->warning("Gdocs import must be a valid url.");
 		// Check if we have access
-			if($this->zajlib->url->response_code($url) != 200) return $this->zajlib->warning("No access to Gdocs document. Is the link publicly shared?");
+			if($this->zajlib->request->response_code($url) != 200) return $this->zajlib->warning("No access to Gdocs document. Is the link publicly shared?");
 
 		// If url is not an export url convert it now
 			if(strstr($url, 'export') === false){
