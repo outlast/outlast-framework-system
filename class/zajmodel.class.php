@@ -42,7 +42,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @property string $name The name of the object.
  * @property boolean $exists
  */
-abstract class zajModel {
+abstract class zajModel implements JsonSerializable {
 	// Instance variables
 	/**
 	 * Stores the unique id of this object
@@ -470,6 +470,13 @@ abstract class zajModel {
 				}
 			}
 		return $array_data;
+	}
+
+	/**
+	 * Implement json serialize method.
+	 */
+	public function jsonSerialize(){
+		return $this->to_array();
 	}
 
 	/**
@@ -1206,13 +1213,14 @@ class zajModelLocalizer {
 	public function __get($name){
 		return new zajModelLocalizerItem($this->parent, $name, $this->locale);
 	}
+
 }
 
 /**
  * Helper class for a specific localization item. You can 'print' it (__toString) to get the translation
  * @todo Caching needs to be added to these!
  **/
-class zajModelLocalizerItem {
+class zajModelLocalizerItem implements JsonSerializable {
 
 	/** Make all variables private **/
 	private $parent;
@@ -1287,4 +1295,12 @@ class zajModelLocalizerItem {
 		if($value !== '') return $value;
 		else return $this->parent->data->$fieldname;
 	}
+
+	/**
+	 * Implement json serialize method.
+	 */
+	public function jsonSerialize(){
+		return $this->__toString();
+	}
+
 }
