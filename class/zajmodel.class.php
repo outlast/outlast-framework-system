@@ -1241,6 +1241,7 @@ class zajModelLocalizerItem implements JsonSerializable {
 
 	/**
 	 * Returns the translation for the object's set locale.
+	 * @return mixed Return the translated value according to the object's locale.
 	 **/
 	public function get(){
 		return $this->get_by_locale($this->locale);
