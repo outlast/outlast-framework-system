@@ -29,7 +29,7 @@ class zajlib_import extends zajLibExtension {
 		// If url is not an export url convert it now
 			if(strstr($url, 'export') === false){
 				// Get my document key
-					preg_match("|spreadsheets/d/([A-z0-9]+)/edit|", $url, $matches);
+					preg_match("|spreadsheets/d/([A-z0-9-_]+)/edit|", $url, $matches);
 				// Get my tab fragment
 					$urldata = parse_url($url);
 					if(substr($urldata['fragment'], 0, 4) == 'gid=') $tab = '&'.$urldata['fragment'];
