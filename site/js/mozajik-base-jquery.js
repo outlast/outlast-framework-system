@@ -446,8 +446,11 @@
 									var el = $('[data-submit-toggle-class]');
 									if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
 								}
+							// Try to decode as json data
+								var jsondata = null;
+    							try{ jsondata = $.parseJSON(data); }catch(error){ }
 							// Handle my results
-								if(typeof result == "function") result(data);
+								if(typeof result == "function") result(data, jsondata);
 								else if(typeof result == "object"){
 									$(result).html(data);
 								}
