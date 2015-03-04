@@ -345,7 +345,7 @@ class zajlib_model extends zajLibExtension {
 			$table = addslashes($table);
 			$column = addslashes($field_data['field']);
 			$type = addslashes(strtoupper($field_data['type']));
-			$default = $field_data['default']; // sql-safe later!
+			$default = addslashes($field_data['default']); // sql-safe later!
 			$extra = $field_data['extra']; // sql-safe later!
 			$remove_index = false;
 		// generate options & type declaration
