@@ -48,7 +48,7 @@ class zajlib_model extends zajLibExtension {
 	 * Number of queries waiting for manual execution.
 	 **/
 	public $num_of_todo = 0;
-	
+
 	/**
 	 * @var string
 	 * A string of queries waiting for manual execution.
@@ -60,7 +60,7 @@ class zajlib_model extends zajLibExtension {
 	 * The log of what has happened.
 	 **/
 	public $log = '';
-	
+
 	/**
 	 * @var array
 	 * An associated array of models already loaded with the name of the model as its key.
@@ -105,7 +105,7 @@ class zajlib_model extends zajLibExtension {
 
 				// let's check for tables that dont exist!
 					$existing_tables = array_keys($tables);
-					$existing_models = array_keys($model_tables);			
+					$existing_models = array_keys($model_tables);
 					$old_tables = array_diff($existing_tables, $existing_models);
 					$new_tables = array_diff($existing_models, $existing_tables);
 				// let's find old tables
@@ -119,7 +119,7 @@ class zajlib_model extends zajLibExtension {
 						}
 						//return $this->update();	// recursively reload everything
 					}
-					
+
 			///////////////////////////////////////////////////////////////////////////////////////////////
 			// PROCESS COLUMNS
 			///////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,11 +135,11 @@ class zajlib_model extends zajLibExtension {
 					$different_fields = array();
 					$different_indexes = array();
 					$rename_fields = array();
-				
+
 				///////////////////////////////////////////////////////////////////////////////////////////////
 				// Look for: missing fields, different fields, different indexes
 				///////////////////////////////////////////////////////////////////////////////////////////////
-				
+
 				// check each column within this model
 					foreach($model_array as $field_name=>$field_data){
 						// this is a field, so add to all fields
@@ -163,7 +163,7 @@ class zajlib_model extends zajLibExtension {
 												$different_indexes[$field_name] = $field_data;
 												unset($my_difference['key']);
 											}
-											
+
 										// add to different_fields (if other than key also different)
 											if(count($my_difference) > 0 || count($my_option_difference) > 0){
 												$different_fields[$field_name] = $field_data;
@@ -196,8 +196,8 @@ class zajlib_model extends zajLibExtension {
 								}
 						}
 					}
-					
-					
+
+
 				///////////////////////////////////////////////////////////////////////////////////////////////
 				// Execute: remove
 				///////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ class zajlib_model extends zajLibExtension {
 						$this->remove_column($model_name, $field_database['field'], $dry_run);
 						$cols_changed = true;
 					}
-									
+
 				///////////////////////////////////////////////////////////////////////////////////////////////
 				// Execute: add
 				///////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,7 +221,7 @@ class zajlib_model extends zajLibExtension {
 						$this->edit_column($model_name, $field_database, 'edit', '', $dry_run);
 						$cols_changed = true;
 					}
-					
+
 				///////////////////////////////////////////////////////////////////////////////////////////////
 				// Execute: modify index types
 				///////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ class zajlib_model extends zajLibExtension {
 				if(!empty($this->sql_todo)){
 					$this->log .= '<br/>Please manually run the queries below. (Since this will remove data it is not automatic.)<pre>'.$this->sql_todo.'</pre>';
 				}
-			
+
 			// return num and log
 				return array('num_of_changes'=>$this->num_of_changes, 'num_of_todo'=>$this->num_of_todo, 'log'=>$this->log);
 	}
@@ -288,7 +288,7 @@ class zajlib_model extends zajLibExtension {
 								$field_tables = array_merge($field_tables, $my_table);
 						}
 				}
-				
+
 			}
 		// do i have any field tables?
 			if(count($field_tables) > 0){
@@ -297,7 +297,7 @@ class zajlib_model extends zajLibExtension {
 				// send a log message
 					$this->log('Found '.count($field_tables).' field tables.');
 				// now merge with existing model_tables
-					$model_tables = array_merge($model_tables, $field_tables);	
+					$model_tables = array_merge($model_tables, $field_tables);
 					$this->log('Total of '.count($model_tables).' tables.');
 			}
 		return $model_tables;
@@ -346,7 +346,6 @@ class zajlib_model extends zajLibExtension {
 			$column = addslashes($field_data['field']);
 			$type = addslashes(strtoupper($field_data['type']));
 			$default = $field_data['default']; // sql-safe later!
-			$default = addslashes($field_data['default']); // sql-safe later!
 			$extra = $field_data['extra']; // sql-safe later!
 			$remove_index = false;
 		// generate options & type declaration
@@ -412,7 +411,7 @@ class zajlib_model extends zajLibExtension {
 		// count query and action
 			$this->num_of_changes++;
 			$this->num_of_queries++;
-		return true;		
+		return true;
 	}
 
 	/**
@@ -441,7 +440,7 @@ class zajlib_model extends zajLibExtension {
 			$this->log("Found extra column $table.$name. This can be deleted.");
 		// count query and action
 			$this->num_of_todo++;
-		return true;	
+		return true;
 	}
 
 	/**
@@ -489,7 +488,7 @@ class zajlib_model extends zajLibExtension {
 			$this->log("Adding index of type $index on $table.$column.", true);
 			$this->num_of_changes++;
 			$this->num_of_queries++;
-		return true;	
+		return true;
 	}
 
 	/**
@@ -542,7 +541,7 @@ class zajlib_model extends zajLibExtension {
 					}
 			}
 		return $tables_array;
-		
+
 	}
 
 	/**
@@ -570,7 +569,7 @@ class zajlib_model extends zajLibExtension {
 					// process options
 						$options = array();
 						foreach(explode(',', $tdata[2]) as $option) if($option != '') $options[] = trim($option, "'");
-					// create my array		
+					// create my array
 						$columns[$col->Field] = array(
 							'field'=>$col->Field,
 							'type'=>$type,
@@ -628,7 +627,7 @@ class zajlib_model extends zajLibExtension {
 	private function get_model($model_name){
 		$model = array();
 		// Load the model
-			$model_def = $model_name::__model();				
+			$model_def = $model_name::__model();
 		// Load the field definition for each
 			foreach($model_def as $field=>$array){
 				$model[$field] = $model_name::__field($field);
