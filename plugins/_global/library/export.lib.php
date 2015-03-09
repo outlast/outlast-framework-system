@@ -49,7 +49,7 @@ class zajlib_export extends zajLibExtension {
 
 		/**
 		 * Export model data as csv.
-		 * @param array|zajlib_db_session|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
+		 * @param array|zajlib_db_session|zajlib_mssql_resultset|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
 		 * @param string $file_name The name of the file which will be used during download.
 		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
@@ -111,7 +111,7 @@ class zajlib_export extends zajLibExtension {
 
 		/**
 		 * Export model data as excel. It should be noted that CSV export is much less memory and processor intensive, so for large exports we recommend that.
-		 * @param array|zajlib_db_session|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
+		 * @param array|zajlib_db_session|zajlib_mssql_resultset|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
 		 * @param string $file_name The name of the file which will be used during download.
 		 * @require Requires the Spreadsheet_Excel_Writer PEAR module.
@@ -151,7 +151,7 @@ class zajlib_export extends zajLibExtension {
 		/**
 		 * Write data to an output.
 		 * @param resource|PHPExcel $output The output object or handle.
-		 * @param zajFetcher|zajlib_db_session|array $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
+		 * @param zajFetcher|zajlib_db_session|zajlib_mssql_resultset|array $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array $fields A list of fields from the model which should be included in the export.
 		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
