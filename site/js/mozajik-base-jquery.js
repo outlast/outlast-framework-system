@@ -707,8 +707,12 @@
 	 * Enables sortable features on a list of items. Requires jquery-ui sortable feature.
 	 * @param {string|jQuery} target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
 	 * @param {string} url The url which will handle this sortable request.
+	 * @param {function} callback A callback function to call after sort. An array of ids in the new order are passed.
 	 **/
-		zaj.sortable = function(target, url){
+		zaj.sortable = function(target, url, callback){
+			// Destroy any previous
+			if($(target).hasClass('ui-sortable')) $(target).sortable('destroy');
+
 			// Make sortable
 			$(target).sortable({
 			    start: function(event, ui) {
@@ -723,7 +727,9 @@
 							if(!my_id) zaj.error("Cannot sort: data-sortable not set!");
 							else my_array.push(my_id);
 						});
-						zaj.ajax.post(url+'?reorder='+JSON.stringify(my_array));
+						zaj.ajax.post(url+'?reorder='+JSON.stringify(my_array), function(){
+							if(typeof callback == 'function') callback(my_array);
+						});
 			    }
 			});
 		};
@@ -1172,7 +1178,7 @@
 	  		post: function(url, response){ return zaj.ajax.post(zaj.querymode(url)+target.serialize(), response); },
 	  		submit: function(url, response){ return zaj.ajax.submit(zaj.querymode(url)+target.serialize(), response); },
 	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
-	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
+	  		sortable: function(receiver, callback){ return zaj.sortable(target, receiver, callback); },
 	  		alert: function(msg){ zaj.alert(msg, target); },
 	  		search: function(url, receiver, options){
 	  			if(typeof receiver == 'function'){
