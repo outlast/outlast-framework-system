@@ -405,7 +405,7 @@ class zajlib_model extends zajLibExtension {
 								$this->num_of_changes++;
 								break;
 			}
-			//print "ALTER"." TABLE `$table` $edit_mode $type_dec $unsigned $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key";
+			print "ALTER"." TABLE `$table` $edit_mode $type_dec $unsigned $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key";
 		// execute adding of this table
 			if(!$dry_run) $this->db->query("ALTER"." TABLE `$table` $edit_mode $type_dec $unsigned $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key");
 		// count query and action
