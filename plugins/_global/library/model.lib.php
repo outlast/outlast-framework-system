@@ -568,7 +568,14 @@ class zajlib_model extends zajLibExtension {
 						}
 					// process options
 						$options = array();
-						foreach(explode(',', $tdata[2]) as $option) if($option != '') $options[] = trim($option, "'");
+						foreach(explode(',', $tdata[2]) as $option){
+							if($option != ''){
+								$option = trim($option, "'");
+									// replace mysql style apostroph escapes : '' to '
+								$option = str_replace("''", "'", $option);
+								$options[] = $option;
+							}
+						}
 					// create my array		
 						$columns[$col->Field] = array(
 							'field'=>$col->Field,
