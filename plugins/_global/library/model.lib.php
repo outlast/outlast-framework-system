@@ -154,10 +154,6 @@ class zajlib_model extends zajLibExtension {
 
 								// if my difference exists
 									if(count($my_difference) > 0 || count($my_option_difference)){
-										/**print_r($field_data);
-										print "<Br/><br/>";
-										print_r($tables[$model_name][$field_name]);
-										exit;**/
 										// if only index is an issue
 											if(count($my_difference) == 1 && !empty($my_difference['key'])){
 												$different_indexes[$field_name] = $field_data;
@@ -405,7 +401,6 @@ class zajlib_model extends zajLibExtension {
 								$this->num_of_changes++;
 								break;
 			}
-			//print "ALTER"." TABLE `$table` $edit_mode $type_dec $unsigned $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key";
 		// execute adding of this table
 			if(!$dry_run) $this->db->query("ALTER"." TABLE `$table` $edit_mode $type_dec $unsigned $char_set NOT NULL $default $extra $primary COMMENT '".$field_data['comment']."' $key");
 		// count query and action
@@ -568,8 +563,17 @@ class zajlib_model extends zajLibExtension {
 						}
 					// process options
 						$options = array();
-						foreach(explode(',', $tdata[2]) as $option) if($option != '') $options[] = trim($option, "'");
 					// create my array
+						foreach(explode(',', $tdata[2]) as $option){
+							if($option != ''){
+								// Trim apostrophes
+								$option = trim($option, "'");
+								// Replace mysql style apostrophes escapes '' to ' for comparison
+								$option = str_replace("''", "'", $option);
+								$options[] = $option;
+							}
+						}
+					// create my array		
 						$columns[$col->Field] = array(
 							'field'=>$col->Field,
 							'type'=>$type,
