@@ -54,6 +54,7 @@ class zajlib_import extends zajLibExtension {
 			}
 		// Open the url
 			$return_data = array();
+			ini_set("auto_detect_line_endings", true);
 			if (($handle = fopen($urlORfile, "r")) !== FALSE) {
 				// Use first row as header?
 					if($first_row_is_header) $first_row = fgetcsv($handle, 0, $delimiter, $enclosure, $escape);
