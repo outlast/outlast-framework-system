@@ -25,7 +25,7 @@ class zajlib_signup extends zajLibExtension {
         $this->zajlib->config->load('signup.conf.ini');
         if(!$this->zajlib->email->valid($email)) return $this->zajlib->error('Invalid email address.',true);
         $data = array('email'=>$email, 'name' => $name, 'group' => $group);
-        $result = $this->zajlib->request->curl($url, $data, 'POST');
+        $result = $this->zajlib->request->curl($this->zajlib->config->variable->webgalamb_url, $data, 'POST');
         return $result;
     }
 }
