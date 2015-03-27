@@ -780,11 +780,14 @@ EOF;
 	 **/
 	public function tag_with($param_array, &$source){
 		// add level
-			$source->add_level('with', $param_array[2]->variable);
+			$my_variable_name = '$before_with_'.uniqid();
+			$source->add_level('with', array($param_array[2]->variable, $my_variable_name));
 		// generate with
 		// TODO: add save the previous value of param_array[2] and restore on end
 			$contents = <<<EOF
 <?php
+// save previous value for restore
+	{$my_variable_name} = {$param_array[2]->variable};
 // start with
 	{$param_array[2]->variable} = {$param_array[0]->variable};
 ?>
@@ -799,12 +802,12 @@ EOF;
 	 **/
 	public function tag_endwith($param_array, &$source){
 		// get the data
-			$localvar = $source->remove_level('with');
+			list($localvar, $restorevar) = $source->remove_level('with');
 		// generate code
 			$contents = <<<EOF
 <?php
-// end with
-	unset($localvar);
+// restore it
+	$localvar = $restorevar;
 ?>
 EOF;
 		// write to file
