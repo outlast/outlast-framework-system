@@ -80,6 +80,39 @@ EOF;
 	}
 
 	/**
+	 * Tag: random - Randomly cycle among the given strings or variables each time this tag is encountered.
+	 *
+	 *  <b>{% random var1 'text' var3 %}</b>
+	 *  1. <b>var1</b> - Choose this randomly.
+	 *  2. <b>var2</b> - Choose this randomly.
+	 *  etc.
+	 **/
+	public function tag_random($param_array, &$source){
+		// generate random array
+			$var_name = '$random_array_'.uniqid("");
+			$my_array = 'if(empty('.$var_name.')) '.$var_name.' = array(';
+			foreach($param_array as $el) $my_array .= "$el->variable, ";
+			$my_array .= ');';
+			$which_one_var = "[\$which_one]";
+		// generate content
+			$contents = <<<EOF
+<?php
+	// define my choices and my default
+		$my_array
+	// choose which one to display now
+		\$which_one = rand(0, count($var_name));
+	// choose
+		echo {$var_name}{$which_one_var};
+?>
+EOF;
+		// write to file
+			$this->zajlib->compile->write($contents);
+		// return true
+			return true;
+	}
+
+
+	/**
 	 * Tag: filter - Applies a filter to all text within tag.
 	 *
 	 *  <b>{% filter lowercase|escapejs %}</b>
