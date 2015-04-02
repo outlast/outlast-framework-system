@@ -391,41 +391,9 @@
 		</div>
 	</div>
 </body>
-			
-			
-			
-			
 			<?php
 			
 			exit();
-		}	
-
-		/**
-		 * Display error log
-		 **/
-		function errors(){
-			// get my errors
-				$this->zajlib->variable->errors = MozajikError::fetch()->paginate(50);
-			// send to template
-				return $this->zajlib->template->show('update/update-errors.html');
-		}
-
-		/**
-		 * Display error details
-		 * @param MozajikError $eobj An error object.
-		 **/
-		function error_details($eobj){
-			$backtrace = unserialize($eobj->data->backtrace);
-			if(is_array($backtrace)){
-				foreach($backtrace as $key=>$data){
-					$this->zajlib->variable->number = $key;
-					$this->zajlib->variable->detail = (object) $data;
-					$this->zajlib->template->show('update/update-error-detail.html');
-				}
-			}
-			else{
-				print "No backtrace available for this error.";
-			}
 		}
 	
 	}

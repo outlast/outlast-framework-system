@@ -1,6 +1,6 @@
 <?php
 /**
- * Library helps Mozajik report nice, informative errors.
+ * Library helps Outlast Framework report nice, informative errors.
  * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
@@ -129,6 +129,7 @@ class zajlib_error extends zajLibExtension {
 	 * Log the error to the database and to the screen (if in debug mode)
 	 * @param string $errortext 
 	 * @param string $errorlevel Can be 'error', 'warning', or 'notice' to specify the mode of reporting.
+	 * @param boolean $display_to_users If set to true, the error message will display to users. This is not recommended for most errors, defaults to false.
 	 * @return boolean Will return true if logging was successful.
 	 */
 	private function log($errortext, $errorlevel='error', $display_to_users = false){
@@ -213,22 +214,23 @@ class zajlib_error extends zajLibExtension {
 				// if its an error, its a 500 error
 					if($errorlevel == 'error') @header('HTTP/1.1 500 Internal Server Error');
 
-				// print it to screen
+				// generate error text
 					if(!zajLib::me()->debug_mode){
 						if($display_to_users) $errortext = "Sorry, there has been a system error: ".$original_error_text;
 						else $errortext = "Sorry, there has been a system error. The webmaster has been notified of the issue.";
 					}
-					else "OUTLAST FRAMEWORK ".strtoupper($errorlevel).": ".$errortext;
-		
-						// display the error?
-							$uid = $error_details['id'];
-							print "<div style='border: 2px red solid; padding: 5px; font-family: Arial; font-size: 13px;'>$errortext";
+
+				// decide what to display
+					$uid = $error_details['id'];
+					print "<div style='border: 2px red solid; padding: 5px; font-family: Arial; font-size: 13px;'>$errortext";
+
+					// For debug mode display full backtrace
 					if(zajLib::me()->debug_mode){
-								print " <a href='#' onclick=\"document.getElementById('error_$uid').style.display='block';\">details</a><pre id='error_$uid' style='width: 98%; font-size: 13px; border: 1px solid black; overflow: scroll; display: none;'>";
-								print_r($backtrace);//print substr(debug_backtrace(), 0, 1000);
-								print "</pre>";
+						print " <a href='#' onclick=\"document.getElementById('error_$uid').style.display='block';\">details</a><pre id='error_$uid' style='width: 98%; font-size: 13px; border: 1px solid black; overflow: scroll; display: none;'>";
+						print_r($backtrace);
+						print "</pre>";
 					}
-							print "</div>";
+					print "</div>";
 			}
 		return true;
 	}
@@ -238,11 +240,10 @@ class zajlib_error extends zajLibExtension {
 	 * Logs the message to a file.
 	 * @param string $message The message to be logged.
 	 * @return boolean Returns true if successful, false otherwise.
-	 * @todo Remove MYSQL. That is only there for backwards compatibility.
-	 **/ 
+	 **/
 	private function file_log($message){
 		// Is logging to a specific file enabled?
-			if(zajLib::me()->zajconf['error_log_enabled'] && !empty(zajLib::me()->zajconf['error_log_file']) && zajLib::me()->zajconf['error_log_file'] != 'MYSQL') return @error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, zajLib::me()->zajconf['error_log_file']);
+			if(zajLib::me()->zajconf['error_log_enabled'] && !empty(zajLib::me()->zajconf['error_log_file'])) return @error_log('['.date("Y.m.d. G:i:s").'] '.$message."\n", 3, zajLib::me()->zajconf['error_log_file']);
 			else return @error_log($message);
 	}
 
