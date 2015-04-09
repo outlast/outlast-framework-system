@@ -492,14 +492,14 @@ abstract class zajModel {
 
 	/**
 	 * A static method which deletes all objects that were created during unit testing.
-	 * @param integer $max_to_delete The maximum number of objects to remove. Defaults to 3. Fatal error if more than this amount found.
+	 * @param boolean|integer $max_to_delete The maximum number of objects to remove. Defaults to false which means it is unlimited. Fatal error if more than this amount found.
 	 * @param boolean $permanent If set to true, object is permanently removed from db. Defaults to true.
 	 * @return integer Returns the number of objects deleted.
 	 */
-	public static function delete_tests($max_to_delete = 3, $permanent = true){
+	public static function delete_tests($max_to_delete = false, $permanent = true){
 		// Fetch the test objects
 			$test_objects = self::fetch()->filter('unit_test', true);
-			if($test_objects->total > $max_to_delete) return zajLib::me()->error("Reached maximum number of test object deletes during unit test for ".get_called_class().". Allowance is ".$max_to_delete." but found ".$test_objects->total." objects. Delete manually or raise limit!", true);
+			if($max_to_delete !== false && $test_objects->total > $max_to_delete) return zajLib::me()->error("Reached maximum number of test object deletes during unit test for ".get_called_class().". Allowance is ".$max_to_delete." but found ".$test_objects->total." objects. Delete manually or raise limit!", true);
 		// Now remove!
 			$test_objects_deleted = 0;
 			/** @var zajModel $obj */
