@@ -150,7 +150,7 @@ class zajlib_request extends zajLibExtension {
 	 * @return boolean Return true if ajax request, false otherwise.
 	 */
 	public function is_ajax(){
-		if(empty($_SERVER['HTTP_X_REQUESTED_WITH'])) return false;
-		else return true;
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') return true;
+		else return false;
 	}
 }
