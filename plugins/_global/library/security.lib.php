@@ -72,10 +72,10 @@ class zajlib_security extends zajLibExtension {
 	 * @link https://github.com/symphonycms/xssfilter/blob/master/extension.driver.php#L138
 	 * @return boolean True if the given string contains XSS, false if clean.
 	 */
-	public static function has_xss($string) {
+	public static function has_xss($string){
 		$contains_xss = false;
 		// Skip any null or non string values
-		if(is_null($string) || !is_string($string)) {
+		if(is_null($string) || !is_string($string)){
 			return $contains_xss;
 		}
 		// Keep a copy of the original string before cleaning up
@@ -102,7 +102,7 @@ class zajlib_security extends zajLibExtension {
 			// Match unneeded tags
 			'#</*(applet|meta|xml|blink|link|style|script|embed|object|iframe|frame|frameset|ilayer|layer|bgsound|title|base)[^>]*>?#i'
 		);
-		foreach($patterns as $pattern) {
+		foreach($patterns as $pattern){
 			// Test both the original string and clean string
 			if(preg_match($pattern, $string) || preg_match($pattern, $orig)){
 				$contains_xss = true;
@@ -110,6 +110,15 @@ class zajlib_security extends zajLibExtension {
 			if ($contains_xss === true) return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Check to see if the string is a valid ID. Valid IDs are anything with A-z0-9.
+	 * @param string $id The id to check.
+	 * @return boolean Will return true if valid, false if not.
+	 */
+	public function is_valid_id($id){
+		return (boolean) preg_match('/^[A-z0-9]$/', $id);
 	}
 	
 	/**
@@ -125,7 +134,7 @@ class zajlib_security extends zajLibExtension {
 	 * @param string $range The ip address range to check in.
 	 * @return boolean Will return true if the specified IP is within the given range.
 	 **/
-	public function ip_in_range($ip, $range) {
+	public function ip_in_range($ip, $range){
 		// default to current ip
 			if($ip === false) $ip = $_SERVER['REMOTE_ADDR'];
 	 	// if ip range is an array, then call for each one

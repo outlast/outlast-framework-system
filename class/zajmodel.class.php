@@ -161,13 +161,13 @@ abstract class zajModel implements JsonSerializable {
 	public function __construct($id, $class_name = ''){
 		$class_name = get_called_class();
 		// check for errors
-		if($id && !is_string($id) && !is_integer($id)) zajLib::me()->error("Invalid ID value given as parameter for model constructor! You probably tried to use an object instead of a string or integer!");
+			if($id && !is_string($id) && !is_integer($id) && zajLib::me()->security->is_valid_id($id)) zajLib::me()->error("Invalid ID ($id) value given as parameter for model constructor! You probably tried to use an object instead of a string or integer!");
 		// set class and table names
-		$this->table_name = strtolower($class_name);
-		$this->class_name = $class_name;
+			$this->table_name = strtolower($class_name);
+			$this->class_name = $class_name;
 		// set id if its empty
-		if($id == false) $this->id = uniqid("");
-		else $this->id = $id;
+			if($id == false) $this->id = uniqid("");
+			else $this->id = $id;
 
 		// everything else is loaded on request!
 		return true;
@@ -198,7 +198,7 @@ abstract class zajModel implements JsonSerializable {
 				// Merge my field objects together.
 				$fields = (object) array_merge((array) $fields, (array) $ext::__model());
 			}
-			// now set defaults (if not already set)
+		// now set defaults (if not already set)
 			if(!isset($fields->unit_test)) $fields->unit_test = zajDb::unittest();
 			if(!isset($fields->time_create)) $fields->time_create = zajDb::time();
 			if(!isset($fields->time_edit)) $fields->time_edit = zajDb::time();
@@ -215,16 +215,16 @@ abstract class zajModel implements JsonSerializable {
 	 */
 	public static function __field($field_name){
 		// Get my class_name
-		/* @var string|zajModel $class_name */
-		$class_name = get_called_class();
+			/* @var string|zajModel $class_name */
+			$class_name = get_called_class();
 		// make sure $field is chrooted
-		if(strpos($field_name, '.')) return zajLib::me()->error('Invalid field name "'.$field_name.'" used in model "'.$class_name.'".');
+			if(strpos($field_name, '.')) return zajLib::me()->error('Invalid field name "'.$field_name.'" used in model "'.$class_name.'".');
 		// TODO: can I create a version where $this is set?
 		// get model
-		$field_def = $class_name::__model()->$field_name;
-		if(empty($field_def)) return zajLib::me()->error('Undefined field name "'.$field_name.'" used in model "'.$class_name.'".');
+			$field_def = $class_name::__model()->$field_name;
+			if(empty($field_def)) return zajLib::me()->error('Undefined field name "'.$field_name.'" used in model "'.$class_name.'".');
 		// create my field object
-		$field_object = zajField::create($field_name, $field_def, $class_name);
+			$field_object = zajField::create($field_name, $field_def, $class_name);
 		return $field_object;
 	}
 
@@ -235,27 +235,27 @@ abstract class zajModel implements JsonSerializable {
 	 */
 	public static function fetch($id=false){
 		// Get my class_name
-		/* @var string|zajModel $class_name */
-		$class_name = get_called_class();
+			/* @var string|zajModel $class_name */
+			$class_name = get_called_class();
 		// if id is specifically  empty, then return false
-		if($id !== false && $id == '') return false;
+			if($id !== false && $id == '') return false;
 		// call event
-		$class_name::fire_static('onFetch', array($class_name, $id));
+			$class_name::fire_static('onFetch', array($class_name, $id));
 		// disable for non-database objects if id not given!
-		if($id === false && !$class_name::$in_database) return false;
+			if($id === false && !$class_name::$in_database) return false;
 		// if id is false, then this is a multi-row fetch
-		if($id === false) return new zajFetcher($class_name);
+			if($id === false) return new zajFetcher($class_name);
 		// let's see if i can resume it!
-		else{
-			// first, is it already resumed? in this case let's make sure its the proper kind of object and just return it
-			if(is_object($id)){
-				// is it the proper kind of object? if not, warning, if so, return it
-				if($class_name != $id->class_name) return zajLib::me()->warning("You passed an object to $class_name::fetch(), but it was not a(n) $class_name object. It is a $id->class_name instead.");
-				else return $id;
+			else{
+				// first, is it already resumed? in this case let's make sure its the proper kind of object and just return it
+				if(is_object($id)){
+					// is it the proper kind of object? if not, warning, if so, return it
+						if($class_name != $id->class_name) return zajLib::me()->warning("You passed an object to $class_name::fetch(), but it was not a(n) $class_name object. It is a $id->class_name instead.");
+						else return $id;
+				}
+				// not resumed, so let's assume its a string and return the cache
+				else return $class_name::get_cache($id);
 			}
-			// not resumed, so let's assume its a string and return the cache
-			else return $class_name::get_cache($id);
-		}
 	}
 
 	/**
@@ -263,25 +263,30 @@ abstract class zajModel implements JsonSerializable {
 	 * @param bool|string $id Id's are automatically generated by default, but you can force one here. Once created, id's cannot be changed.
 	 * @return zajModel Returns a brand new zajModel object.
 	 */
-	public static function create($id=false){
+	public static function create($id = false){
 		// Get my class_name
-		/* @var zajModel $class_name */
-		$class_name = get_called_class();
+			/* @var zajModel $class_name */
+			$class_name = get_called_class();
 		// call event
-		$class_name::fire_static('onCreate', array($class_name));
+			$class_name::fire_static('onCreate', array($class_name));
 		// create the new object
-		$new_object = new $class_name(false, $class_name);
+			$new_object = new $class_name(false, $class_name);
 		// if id specified
-		if($id) $new_object->id = $id;
+			if($id){
+				// Make sure ID is valid
+					if(!zajLib::me()->security->is_valid_id($id)) return zajLib::me()->warning("Tried to create object with invalid id: $id");
+				// All ok, set it!
+					$new_object->id = $id;
+			}
 		// do i have any extenders?
-		/* @var zajModelExtender $ext */
-		$ext = $class_name::extension();
-		/* @var zajModel $new_object */
-		if($ext) $new_object = $ext::create($new_object, $id);
+			/* @var zajModelExtender $ext */
+			$ext = $class_name::extension();
+			/* @var zajModel $new_object */
+			if($ext) $new_object = $ext::create($new_object, $id);
 		// call the callback function
-		$new_object->fire('afterCreate');
+			$new_object->fire('afterCreate');
 		// and return
-		return $new_object;
+			return $new_object;
 	}
 
 	/**
@@ -292,13 +297,13 @@ abstract class zajModel implements JsonSerializable {
 	 */
 	public function set($field_name, $value){
 		// disable for non-database objects
-		if(!$this::$in_database) return false;
+			if(!$this::$in_database) return false;
 		// only allow unit_test when tests are running
-		if($field_name == 'unit_test' && !$this->zajlib->test->is_running()) return $this->zajlib->error("Cannot set field unit_test while not running a test!");
+			if($field_name == 'unit_test' && !$this->zajlib->test->is_running()) return $this->zajlib->error("Cannot set field unit_test while not running a test!");
 		// init the data object if not done already
-		if(!$this->data) $this->data = new zajData($this);
+			if(!$this->data) $this->data = new zajData($this);
 		// set it in the data object
-		$this->data->__set($field_name, $value);
+			$this->data->__set($field_name, $value);
 		return $this;
 	}
 
@@ -765,6 +770,9 @@ abstract class zajModel implements JsonSerializable {
 	public static function get_cache($id){
 		// get current class
 		$class_name = get_called_class();
+		// sanitize id just to be safe
+		if(!zajLib::me()->security->is_valid_id($id)) return zajLib::me()->warning("Tried to get_cache with invalid id: $id");
+
 		// return the resumed class
 		$filename = zajLib::me()->file->get_id_path(zajLib::me()->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
 		// try opening the file
@@ -826,8 +834,9 @@ abstract class zajModel implements JsonSerializable {
 	public function uncache(){
 		// call __beforeUncache event
 		if($this->fire('beforeUncache') === false) return false;
+		// sanitize id just to be safe
+		if(!zajLib::me()->security->is_valid_id($this->id)) return zajLib::me()->warning("Tried to uncache with invalid id: $this->id");
 		// return the resumed class
-		$this->zajlib->load->library("file");
 		$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name, $this->id.".cache", false, CACHE_DIR_LEVEL);
 		// if remove is successful, call __afterUncache event and return true. false otherwise
 		if(!@unlink($filename)) return false;
@@ -846,8 +855,9 @@ abstract class zajModel implements JsonSerializable {
 		if($this->fire('beforeCache') === false) return false;
 		// if not in_database, then this is creating it, so exists will equal to true
 		if(!$this::$in_database) $this->exists = true;
+		// sanitize id just to be safe
+		if(!zajLib::me()->security->is_valid_id($this->id)) return zajLib::me()->warning("Tried to save cache with invalid id: $this->id");
 		// get filename
-		$this->zajlib->load->library("file");
 		$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name,$this->id.".cache", true, CACHE_DIR_LEVEL);
 		// model, data do not need to be saved!
 		$data = $this->data;
