@@ -118,7 +118,7 @@ class zajlib_security extends zajLibExtension {
 	 * @return boolean Will return true if valid, false if not.
 	 */
 	public function is_valid_id($id){
-		return (boolean) preg_match('/^[A-z0-9]$/', $id);
+		return (boolean) preg_match('/^[A-z0-9]+$/', $id);
 	}
 	
 	/**
