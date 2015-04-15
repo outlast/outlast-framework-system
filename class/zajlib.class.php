@@ -388,7 +388,7 @@ class zajLib {
 			}
 			$this->num_of_notices++;
 		// log notices?
-			if($this->zajconf['mysql_enabled'] && $this->zajconf['error_log_enabled'] && $this->zajconf['error_log_notices']) MozajikError::log($message, 'notice');
+			// @todo add notice logging!
 	}
 	
 	/**

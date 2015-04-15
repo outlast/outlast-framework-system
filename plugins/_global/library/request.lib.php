@@ -158,10 +158,11 @@ class zajlib_request extends zajLibExtension {
 
 	/**
 	 * Is the current request an ajax request? Requires a Javascript library to work properly cross-browser (jquery, moo, etc.)
+	 * @see For cross-domain ajax detection see http://stackoverflow.com/questions/8163703/cross-domain-ajax-doesnt-send-x-requested-with-header
 	 * @return boolean Return true if ajax request, false otherwise.
 	 */
 	public function is_ajax(){
-		if(empty($_SERVER['HTTP_X_REQUESTED_WITH'])) return false;
-		else return true;
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') return true;
+		else return false;
 	}
 }
