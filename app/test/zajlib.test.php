@@ -31,7 +31,7 @@ class OfwZajlibTest extends zajTest {
 			zajTestAssert::areIdentical('//www.example.com/', $z->baseurl);
 			zajTestAssert::areIdentical('//www.example.com/update/test/', $z->fullurl);
 
-		// Set some fake info
+		// Set some fake info again
 			$_SERVER['OFW_BASEURL'] = 'https://test.example.com/asdf/';
 		// Create
 			$z = new zajLib('/', $this->zajlib->zajconf);
