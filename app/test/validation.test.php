@@ -8,6 +8,8 @@
 		 * Set up stuff.
 		 **/
 		public function setUp(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Load up my _test plugin (if not already done)
 				$this->zajlib->plugin->load('_test', true, true);
 		}
@@ -16,6 +18,8 @@
 		 * Check validation.
 		 */
 		public function system_validation_test(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Explicitly pass the value and error
 				$result = $this->zajlib->form->validate('OfwTest', array('email'), array('Invalid email!'), array('email'=>'asdf'));
 				zajTestAssert::areIdentical('{"status":"error","errors":{"email":"Invalid email!"}}', $result);
@@ -51,6 +55,8 @@
 		 * Reset stuff, cleanup.
 		 **/
 		public function tearDown(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 		}
 
 	}

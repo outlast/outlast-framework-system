@@ -30,7 +30,7 @@
 		<hr/>
 
 		{% if test.testcount %}
-			<p align="center">Ran {{test.testcount}} tests in {{test.filecount}} files, completed in {{test.Duration}}</p>
+			<p align="center">Ran {{test.testcount}} tests in {{test.filecount}} files, completed in {{test.Duration|round:2}} seconds</p>
 		{% elseif %}
 			<p align="center">No tests have been defined. You can <a href="http://outlast.hu/test-driven-development-in-mozajik/" target="_blank">create unit tests like this</a>.</p>
 		{% endif %}
