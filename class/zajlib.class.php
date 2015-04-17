@@ -226,23 +226,47 @@ class zajLib {
 				$this->mode = $this->zajconf['default_mode'];
 				$default_mode = true;
 			}
-		// autodetect my url
-			if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off") $this->https = false;
+		// if my OFW_BASEURL is explicitly set
+			if(!empty($_SERVER['OFW_BASEURL'])){
+				// Parse my baseurl
+					$parsed_baseurl = parse_url($_SERVER['OFW_BASEURL']);
+				// Make sure it is an array
+					if($parsed_baseurl === false) return $this->error("Malformed OFW_BASEURL set as Apache environmental variable: ".$_SERVER['OFW_BASEURL'].".");
+				// Set protcol
+					if($parsed_baseurl['scheme'] == 'http') $this->https = false;
+					elseif($parsed_baseurl['scheme'] == 'https'){
+						$this->https = true;
+						$this->protocol = 'https:';
+					}
+					else{
+						return $this->error("Malformed OFW_BASEURL set as Apache environmental variable: ".$_SERVER['OFW_BASEURL'].".");
+					}
+				// Set host, base url, subfolder
+					$this->host = $parsed_baseurl['host'];
+					$this->subfolder = $parsed_baseurl['path'];
+					$this->baseurl = "//".$this->host.$this->subfolder.'/';
+					$this->fullurl = addslashes($_SERVER['REQUEST_URI']).'/';
+			}
+		// otherwise, autodetect
 			else{
-				$this->https = true;
-				$this->protocol = 'https:';
+				// autodetect my url
+					if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off") $this->https = false;
+					else{
+						$this->https = true;
+						$this->protocol = 'https:';
+					}
+				// disable empty hosts
+					if(empty($_SERVER['HTTP_HOST'])){
+						print "Invalid request. Please contact site administrator.";
+						$this->error("Empty host detected. Request denied. If you experience this error from a legitimate browser please notify us!", true);
+					}
+				// save host
+					else $this->host = $_SERVER['HTTP_HOST'];
+				// base url detection
+					$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($this->host).addslashes($_SERVER['REQUEST_URI'])).'/');
+					$this->subfolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
+					$this->baseurl = "//".$this->host.$this->subfolder.'/';
 			}
-		// disable empty hosts
-			if(empty($_SERVER['HTTP_HOST'])){
-				print "Invalid request. Please contact site administrator.";
-				$this->error("Empty host detected. Request denied.");
-			}
-		// save host
-			else $this->host = $_SERVER['HTTP_HOST'];
-		// base url detection
-			$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($this->host).addslashes($_SERVER['REQUEST_URI'])).'/');
-			$this->subfolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
-			$this->baseurl = "//".$this->host.$this->subfolder.'/';
 		// full request detection (includes query string)
 			if(!empty($_GET)){
 				// reset query string
