@@ -303,7 +303,8 @@ class zajLib {
 			$this->load = new zajLibLoader($this);
 		// template variable object
 			$this->variable = new zajVariable();				// for all variables
-			$this->variable->field = (object) array();			// for field templates
+			$this->variable->field = (object) array();			// for field templates scope
+			$this->variable->plugins = (object) array();		// for plugins scope
 
 		// check and load installation version (only for database format tracking)
 			$installation = @file_get_contents($this->basepath.'cache/install.dat');
