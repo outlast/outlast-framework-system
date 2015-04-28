@@ -48,7 +48,6 @@ class zajlib_url extends zajLibExtension {
 			return $matches[2];
 	}
 
-
 	/**
 	 * Generates a friendly url based on an input string.
 	 * @param string $title Any string such as a name or title.

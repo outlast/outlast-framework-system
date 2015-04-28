@@ -36,7 +36,8 @@ class zajlib_request extends zajLibExtension {
 			}
 
 			if($method == 'POST' || $method == 'PUT'){
-				curl_setopt($curl, CURLOPT_POST, true);
+				if($method == 'POST') curl_setopt($curl, CURLOPT_POST, true);
+				if($method == 'PUT') curl_setopt($curl, CURLOPT_PUT, true);
 				if($params && (is_array($params) || is_object($params))) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
 				if($params && is_string($params)) curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
 			}
@@ -143,6 +144,16 @@ class zajlib_request extends zajLibExtension {
 		// now return what was requested
 		if($returnheaders) return $buf;
 		else return $content;
+	}
+
+	/**
+	 * Get HTTP response code for a url.
+	 * @param string $url The url to fetch.
+	 * @return integer Returns the HTTP response code.
+	 */
+	function response_code($url){
+		$headers = get_headers($url);
+    	return substr($headers[0], 9, 3);
 	}
 
 	/**

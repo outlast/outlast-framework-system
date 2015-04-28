@@ -23,10 +23,13 @@ class zajlib_import extends zajLibExtension {
 	public function gdocs_spreadsheet($url, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
 		// Must be a valid url
 			if(!$this->zajlib->url->valid($url)) return $this->zajlib->warning("Gdocs import must be a valid url.");
+		// Check if we have access
+			if($this->zajlib->request->response_code($url) != 200) return $this->zajlib->warning("No access to Gdocs document. Is the link publicly shared?");
+
 		// If url is not an export url convert it now
 			if(strstr($url, 'export') === false){
 				// Get my document key
-					preg_match("|spreadsheets/d/([A-z0-9]+)/edit|", $url, $matches);
+					preg_match("|spreadsheets/d/([A-z0-9-_]+)/edit|", $url, $matches);
 				// Get my tab fragment
 					$urldata = parse_url($url);
 					if(substr($urldata['fragment'], 0, 4) == 'gid=') $tab = '&'.$urldata['fragment'];

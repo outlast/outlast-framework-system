@@ -70,7 +70,7 @@ class zajlib_tag_base extends zajElementCollection{
 	// choose which one to display now
 		\$which_one = abs($var_name_counter % count($var_name));
 	// choose
-		echo {$var_name}{$which_one_var};
+		echo $this->zajlib->template->strip_xss({$var_name}{$which_one_var}, 'Found in {% cycle %} tag.');
 ?>
 EOF;
 		// write to file
@@ -149,7 +149,7 @@ EOF;
 		$my_array
 	// first which is true
 		foreach($firstof_array as $el->variable){
-			if($el->variable) echo $el->variable;
+			if($el->variable) echo $this->zajlib->template->strip_xss($el->variable, 'Found in {% firstof %} tag.');
 			break;
 		}
 EOF;
@@ -813,11 +813,14 @@ EOF;
 	 **/
 	public function tag_with($param_array, &$source){
 		// add level
-			$source->add_level('with', $param_array[2]->variable);
+			$my_variable_name = '$before_with_'.uniqid();
+			$source->add_level('with', array($param_array[2]->variable, $my_variable_name));
 		// generate with
 		// TODO: add save the previous value of param_array[2] and restore on end
 			$contents = <<<EOF
 <?php
+// save previous value for restore
+	{$my_variable_name} = {$param_array[2]->variable};
 // start with
 	{$param_array[2]->variable} = {$param_array[0]->variable};
 ?>
@@ -832,12 +835,12 @@ EOF;
 	 **/
 	public function tag_endwith($param_array, &$source){
 		// get the data
-			$localvar = $source->remove_level('with');
+			list($localvar, $restorevar) = $source->remove_level('with');
 		// generate code
 			$contents = <<<EOF
 <?php
-// end with
-	unset($localvar);
+// restore it
+	$localvar = $restorevar;
 ?>
 EOF;
 		// write to file
