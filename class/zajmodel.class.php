@@ -282,7 +282,7 @@ abstract class zajModel implements JsonSerializable {
 			/* @var zajModelExtender $ext */
 			$ext = $class_name::extension();
 			/* @var zajModel $new_object */
-			if($ext) $new_object = $ext::create($new_object, $id);
+			if($ext) $new_object = $ext::create($id, $new_object);
 		// call the callback function
 			$new_object->fire('afterCreate');
 		// and return
@@ -540,7 +540,7 @@ abstract class zajModel implements JsonSerializable {
 			$ext = self::extension();
 			if($ext){
 				// Create my child object, set event fired to true, and fire it!
-				$child = $ext::create($this);
+				$child = $ext::create($this->id, $this);
 				$this->event_child_fired = true;
 				return $child->fire($event, $arguments);
 			}
