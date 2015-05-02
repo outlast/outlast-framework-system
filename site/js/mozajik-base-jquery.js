@@ -8,6 +8,7 @@
  **/
  
 // Create a new class which will contain the sections
+	var ofw;
 	var zaj = {
 		baseurl:'',
 		fullrequest:'',
@@ -40,6 +41,7 @@
 		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(info){ zaj.fbcanvas = info; });
 		}
+		ofw = zaj;
 	});
 
 	/**
