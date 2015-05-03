@@ -47,7 +47,12 @@ echo $result;
 
 class zajlib_signup extends zajLibExtension {
 
-    public function mailchimp($email){
+	/**
+	 * @param string $email
+	 * @param string $merge_vars array of merge vars
+	 * @return string
+	 */
+    public function mailchimp($email, $merge_vars){
         $this->zajlib->config->load('signup.conf.ini');
         if(!$this->zajlib->email->valid($email)) return $this->zajlib->error('Invalid email address.',true);
         $signup = array();
@@ -55,6 +60,7 @@ class zajlib_signup extends zajLibExtension {
         $signup['apikey'] = $this->zajlib->config->variable->mailchimp_api_key;
         $signup['id'] = $this->zajlib->config->variable->mailchimp_list_id;
         $signup['email']['email'] = $email;
+		$signup['merge_vars'] = $merge_vars;
         $url = str_replace('%1',$api_dc[1],$this->zajlib->config->variable->mailchimp_subscribe_url);
         $result = $this->zajlib->request->curl($url, json_encode($signup), 'POST');
         return $result;
