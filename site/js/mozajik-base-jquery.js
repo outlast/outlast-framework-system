@@ -710,13 +710,18 @@
 	 * @param {string|jQuery} target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
 	 * @param {string} url The url which will handle this sortable request.
 	 * @param {function} callback A callback function to call after sort. An array of ids in the new order are passed.
+	 * @param {string|jQuery|boolean} handle The handle is the item which can be used to drag. This can be a selector, a jQuery object, or false. The default is false which means the whole item is draggable.
 	 **/
-		zaj.sortable = function(target, url, callback){
+		zaj.sortable = function(target, url, callback, handle){
 			// Destroy any previous
 			if($(target).hasClass('ui-sortable')) $(target).sortable('destroy');
 
+			// Defaults handle to false
+			if(typeof handle == 'undefined') handle = false;
+
 			// Make sortable
 			$(target).sortable({
+				handle: handle,
 			    start: function(event, ui) {
 			    	ui.item.addClass('sortableinprogress');
 			    },
@@ -1180,7 +1185,7 @@
 	  		post: function(url, response){ return zaj.ajax.post(zaj.querymode(url)+target.serialize(), response); },
 	  		submit: function(url, response){ return zaj.ajax.submit(zaj.querymode(url)+target.serialize(), response); },
 	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
-	  		sortable: function(receiver, callback){ return zaj.sortable(target, receiver, callback); },
+	  		sortable: function(receiver, callback, handle){ return zaj.sortable(target, receiver, callback, handle); },
 	  		alert: function(msg){ zaj.alert(msg, target); },
 	  		search: function(url, receiver, options){
 	  			if(typeof receiver == 'function'){
