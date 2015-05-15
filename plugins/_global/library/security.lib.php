@@ -72,10 +72,10 @@ class zajlib_security extends zajLibExtension {
 	 * @link https://github.com/symphonycms/xssfilter/blob/master/extension.driver.php#L138
 	 * @return boolean True if the given string contains XSS, false if clean.
 	 */
-	public static function has_xss($string){
+	public function has_xss($string){
 		$contains_xss = false;
-		// Skip any null or non string values
-		if(is_null($string) || !is_string($string)){
+		// Skip any null or non string values or if xss protection is disabled
+		if(is_null($string) || !is_string($string) || empty($this->zajlib->zajconf['feature_xss_protection_enabled'])){
 			return $contains_xss;
 		}
 		// Keep a copy of the original string before cleaning up
