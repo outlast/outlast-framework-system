@@ -695,7 +695,7 @@ abstract class zajModel implements JsonSerializable {
 		// check for events
 		switch($name){
 			case '__onSearch':
-				if(!method_exists($arguments[0], $name)) return zajLib::me()->warning("You are trying to access the client-side search API and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
+				if(!method_exists($arguments[0], $name)) return zajLib::me()->warning("You are trying to access the client-side search API for ".$class_name." and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
 		}
 		// redirect static method calls to local private ones
 		if(!method_exists($arguments[0], $name)) zajLib::me()->error("called undefined method '$name'!"); return call_user_func_array("$arguments[0]::$name", $arguments);
