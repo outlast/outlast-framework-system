@@ -25,7 +25,8 @@ class OfwZajlibTest extends zajTest {
 			$_SERVER['OFW_BASEURL'] = 'http://www.example.com/';
 		// Create
 			$z = new zajLib('/', $this->zajlib->zajconf);
-			zajTestAssert::areIdentical('http:', $z->protocol);
+			if($z->https) zajTestAssert::areIdentical('https:', $z->protocol);
+			else zajTestAssert::areIdentical('http:', $z->protocol);
 			zajTestAssert::areIdentical('example.com', $z->domain);
 			zajTestAssert::areIdentical('', $z->subdomain);
 			zajTestAssert::areIdentical('//www.example.com/', $z->baseurl);
