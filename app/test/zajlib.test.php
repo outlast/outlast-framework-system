@@ -23,10 +23,10 @@ class OfwZajlibTest extends zajTest {
 	public function baseurl_detection(){
 		// Set some fake info
 			$_SERVER['OFW_BASEURL'] = 'http://www.example.com/';
+			$_SERVER['HTTPS'] = 'off';
 		// Create
 			$z = new zajLib('/', $this->zajlib->zajconf);
-			if($z->https) zajTestAssert::areIdentical('https:', $z->protocol);
-			else zajTestAssert::areIdentical('http:', $z->protocol);
+			zajTestAssert::areIdentical('http:', $z->protocol);
 			zajTestAssert::areIdentical('example.com', $z->domain);
 			zajTestAssert::areIdentical('', $z->subdomain);
 			zajTestAssert::areIdentical('//www.example.com/', $z->baseurl);
@@ -34,6 +34,7 @@ class OfwZajlibTest extends zajTest {
 
 		// Set some fake info again
 			$_SERVER['OFW_BASEURL'] = 'https://test.example.com/asdf/';
+			$_SERVER['HTTPS'] = 'on';
 		// Create
 			$z = new zajLib('/', $this->zajlib->zajconf);
 			zajTestAssert::areIdentical('https:', $z->protocol);
