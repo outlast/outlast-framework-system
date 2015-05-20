@@ -478,17 +478,33 @@ class zajLib {
 	/**
 	 * Redirect the user to relative or absolute URL
 	 * @param string $url The specific url to redirect the user to.
-	 * @param boolean $frame_breakout If set to true, it will use javascript redirect to break out of iframe.
+     * @param integer $status_code HTTP status code of the redirection
+     * @param boolean $frame_breakout If set to true, it will use javascript redirect to break out of iframe.
 	 * @return bool Does not yet return anything.
 	 **/
-	public function redirect($url, $frame_breakout = false){
+	public function redirect($url, $status_code = 301, $frame_breakout = false){
+        // For backward compatibility
+			if (is_bool($status_code)) {
+				$frame_breakout = $status_code;
+				$status_code = 301;
+			}
+
+		// Get HTTP protocol
+	        $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
+
 		// Now redirect if real
 			if(!$this->url->valid($url)) $url = $this->baseurl.$url;
 		// If test return url
 			if($this->test->is_running()) return $url;
 		// Frame breakout or standard?
-			if($frame_breakout) exit("<script>window.top.location='".addslashes($url)."';</script>");
-			else header("Location: ".$url);
+			if($frame_breakout){
+                exit("<script>window.top.location='".addslashes($url)."';</script>");
+            }
+            else{
+				// Push headers
+					header($protocol." ".$status_code." ".$this->request->get_http_status_name($status_code));
+					header("Location: ".$url);
+            }
 		exit;
 	}
 
@@ -509,6 +525,8 @@ class zajLib {
 
 	/**
 	 * Magic method to automatically load libraries on first request.
+	 * @param string $name The name of the library.
+	 * @return zajLibExtension Return the library class.
 	 **/
 	public function __get($name){
 		// return from loader
@@ -646,7 +664,7 @@ class zajLibLoader{
 		// try to load the file
 			$result = $this->file("library/$name.lib.php", false);			
 		// if library does not exist
-			if(!$result) $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+			if(!$result) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
 			else{
 				// return the new lib object
 					$library_class = 'zajlib_'.$name;
@@ -660,10 +678,11 @@ class zajLibLoader{
 	/**
 	 * Load a model file.
 	 * @param string $name The name of the model to load.
-	 * @param array $optional_parameters This will be passed to the __load method (not yet implemented)
+	 * @param array|boolean $optional_parameters This will be passed to the __load method (not yet implemented)
 	 * @todo Implement optional parameters.
+	 * @return boolean Will return true if successfully loaded, false if not.
 	 **/
-	public function model($name, $optional_parameters=false){
+	public function model($name, $optional_parameters = false){
 		// is it loaded already?
 			if(isset($this->loaded['model'][$name])) return true;
 		// now just load the file
