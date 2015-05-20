@@ -484,74 +484,29 @@ class zajLib {
 	 **/
 	public function redirect($url, $status_code = 301, $frame_breakout = false){
         // For backward compatibility
-        if (is_bool($status_code)) {
-            $frame_breakout = $status_code;
-            $status_code = 301;
-        }
+			if (is_bool($status_code)) {
+				$frame_breakout = $status_code;
+				$status_code = 301;
+			}
 
-        $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
+		// Get HTTP protocol
+	        $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
 
 		// Now redirect if real
 			if(!$this->url->valid($url)) $url = $this->baseurl.$url;
 		// If test return url
 			if($this->test->is_running()) return $url;
 		// Frame breakout or standard?
-			if($frame_breakout) {
+			if($frame_breakout){
                 exit("<script>window.top.location='".addslashes($url)."';</script>");
-            } else {
-                header($protocol . " " . $status_code . " " . $this->get_http_status_name($status_code));
-                header("Location: ".$url);
+            }
+            else{
+				// Push headers
+					header($protocol." ".$status_code." ".$this->request->get_http_status_name($status_code));
+					header("Location: ".$url);
             }
 		exit;
 	}
-
-    public function get_http_status_name($status_code) {
-        switch ($status_code) {
-
-            case 100: $text = 'Continue'; break;
-            case 101: $text = 'Switching Protocols'; break;
-            case 200: $text = 'OK'; break;
-            case 201: $text = 'Created'; break;
-            case 202: $text = 'Accepted'; break;
-            case 203: $text = 'Non-Authoritative Information'; break;
-            case 204: $text = 'No Content'; break;
-            case 205: $text = 'Reset Content'; break;
-            case 206: $text = 'Partial Content'; break;
-            case 300: $text = 'Multiple Choices'; break;
-            case 301: $text = 'Moved Permanently'; break;
-            case 302: $text = 'Moved Temporarily'; break;
-            case 303: $text = 'See Other'; break;
-            case 304: $text = 'Not Modified'; break;
-            case 305: $text = 'Use Proxy'; break;
-            case 400: $text = 'Bad Request'; break;
-            case 401: $text = 'Unauthorized'; break;
-            case 402: $text = 'Payment Required'; break;
-            case 403: $text = 'Forbidden'; break;
-            case 404: $text = 'Not Found'; break;
-            case 405: $text = 'Method Not Allowed'; break;
-            case 406: $text = 'Not Acceptable'; break;
-            case 407: $text = 'Proxy Authentication Required'; break;
-            case 408: $text = 'Request Time-out'; break;
-            case 409: $text = 'Conflict'; break;
-            case 410: $text = 'Gone'; break;
-            case 411: $text = 'Length Required'; break;
-            case 412: $text = 'Precondition Failed'; break;
-            case 413: $text = 'Request Entity Too Large'; break;
-            case 414: $text = 'Request-URI Too Large'; break;
-            case 415: $text = 'Unsupported Media Type'; break;
-            case 500: $text = 'Internal Server Error'; break;
-            case 501: $text = 'Not Implemented'; break;
-            case 502: $text = 'Bad Gateway'; break;
-            case 503: $text = 'Service Unavailable'; break;
-            case 504: $text = 'Gateway Time-out'; break;
-            case 505: $text = 'HTTP Version not supported'; break;
-            default:
-                trigger_error('Unknown http status code ' . $status_code, E_USER_ERROR);
-                break;
-        }
-
-        return $text;
-    }
 
 	/**
 	 * Reroute processing to another app controller.
@@ -570,6 +525,8 @@ class zajLib {
 
 	/**
 	 * Magic method to automatically load libraries on first request.
+	 * @param string $name The name of the library.
+	 * @return zajLibExtension Return the library class.
 	 **/
 	public function __get($name){
 		// return from loader
@@ -707,7 +664,7 @@ class zajLibLoader{
 		// try to load the file
 			$result = $this->file("library/$name.lib.php", false);			
 		// if library does not exist
-			if(!$result) $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+			if(!$result) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
 			else{
 				// return the new lib object
 					$library_class = 'zajlib_'.$name;
@@ -721,10 +678,11 @@ class zajLibLoader{
 	/**
 	 * Load a model file.
 	 * @param string $name The name of the model to load.
-	 * @param array $optional_parameters This will be passed to the __load method (not yet implemented)
+	 * @param array|boolean $optional_parameters This will be passed to the __load method (not yet implemented)
 	 * @todo Implement optional parameters.
+	 * @return boolean Will return true if successfully loaded, false if not.
 	 **/
-	public function model($name, $optional_parameters=false){
+	public function model($name, $optional_parameters = false){
 		// is it loaded already?
 			if(isset($this->loaded['model'][$name])) return true;
 		// now just load the file
