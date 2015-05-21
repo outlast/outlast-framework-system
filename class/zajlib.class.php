@@ -483,7 +483,7 @@ class zajLib {
 	 * @return bool Does not yet return anything.
 	 **/
 	public function redirect($url, $status_code = 301, $frame_breakout = false){
-        // For backward compatibility
+        // For backward compatibility @todo Remove this
 			if (is_bool($status_code)) {
 				$frame_breakout = $status_code;
 				$status_code = 301;
