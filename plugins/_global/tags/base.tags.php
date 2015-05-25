@@ -14,6 +14,8 @@
 
 class zajlib_tag_base extends zajElementCollection{
 
+	private $debug_me = false;
+
 	/**
 	 * Tag: comment - Comments are sections which are completely ignored during compilation.
 	 *
@@ -854,7 +856,6 @@ EOF;
 	 *
 	 *  <br><b>{% block 'name_of_block' %}Content of block.{% endblock %}</b>	 
 	 *  1. <b>block name</b> - A unique name used to identify this block. Blocks with the same names will override each other according to the rules of {@link http://docs.djangoproject.com/en/1.2/topics/templates/#template-inheritance Template inheritance}
-	 * @todo Either merge or somehow optimize $permanent_name and $file_name
 	 **/
 	private $block_name = "";
 	public function tag_block($param_array, &$source){
@@ -911,7 +912,7 @@ EOF;
 							$my_permanent_name = '__block/'.$my_source->child_source->get_requested_path().'-'.$block_name.'.html';
 						// Add destination if not already added previously
 							if(!array_key_exists($my_permanent_name, zajCompileSession::$blocks_processed)){
-								print "Adding $my_permanent_name...<br/>";
+								if($this->debug_me) print "Adding $my_permanent_name...<br/>";
 								$this->zajlib->compile->add_destination($my_permanent_name);
 								$child_blocks_processed[$my_permanent_name] = $my_permanent_name;
 								zajCompileSession::$blocks_processed[$my_permanent_name] = $my_permanent_name;
@@ -920,17 +921,22 @@ EOF;
 								// If I have a parent block...
 								if($this->block_name){
 									$parent_block = $this->block_name;
-									$x = $my_source->child_source->get_requested_path().'-'.$parent_block.'.html.php';
-									print "<p style='color: red'>We are ready to instert $my_permanent_name into $x / $block_name!</p>";
-									/**
-									 * @todo What we need to do...
-									 * - check to see if I even have this block
-									 * - if i do, remove me from the destinations
-									 * - do a manual file_get_contents / write like below
-									 * - on endblock we have to readd to destination
-									 * - will this work recursively????
-									 */
+									$current_child_block = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
+									if($this->debug_me) print "<p style='color: red'>We are ready to insert $my_permanent_name into $current_child_block / $block_name!</p>";
 
+
+									//$data = file_get_contents($this->zajlib->basepath.'cache/view/'.$my_permanent_name.'.php');
+
+									//if($this->debug_me) print "<pre>$data</pre><hr/>";
+
+									// Let's pause all destinations
+										$this->zajlib->compile->pause_destinations();
+									// Unpause only me
+										$dest = $this->zajlib->compile->get_destination_by_path($current_child_block);
+										$dest->resume();
+										$this->zajlib->compile->insert_file($my_permanent_name.'.php');
+										$this->zajlib->compile->resume_destinations();
+										$dest->pause();
 								}
 
 
@@ -940,14 +946,9 @@ EOF;
 					}
 					else{
 						// Write contents of $permanent_name to main destination
-							/** @var zajCompileDestination $destination */
-							$destination = $this->zajlib->compile->get_destination();
 							if(!$source->parent_level){
 								$this->zajlib->compile->main_dest_paused(false);
-								print "Time to write contents of ".$this->zajlib->basepath.'cache/view/'.$permanent_name." into ".$destination->file_path."!<br/>";
-								$data = file_get_contents($this->zajlib->basepath.'cache/view/'.$permanent_name.'.php');
-								print "<pre>$data</pre>";
-								$destination->write($data);
+								$this->zajlib->compile->insert_file($permanent_name.'.php');
 							}
 						// Pause main destination output
 							$this->zajlib->compile->main_dest_paused(true);
@@ -963,7 +964,7 @@ EOF;
 			if($source->child_source !== false){
 
 				$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
-				print "***".$source->file_path." has child at / ".$source->child_source->file_path."***\n";
+				if($this->debug_me) print "***".$source->file_path." has child at / ".$source->child_source->file_path."***\n";
 				exit;
 			}**/
 
@@ -976,7 +977,7 @@ EOF;
 					$this->zajlib->compile->pause_destinations();
 					$unpause_dest = true;
 			}**/
-			print "Block $block_name in $source->file_path<br/>";
+			if($this->debug_me) print "Block $block_name in $source->file_path<br/>";
 
 		// add the level with block parent as last param
 			$source->add_level('block', array($block_name, $child_blocks_processed, $permanent_name, $this->block_name));
@@ -992,14 +993,12 @@ EOF;
 	 * {@link tag_block()}
 	 **/
 	public function tag_endblock($param_array, &$source){
-		// Note: unlike previous versions, the parameter is simply ignored. It ends the 
-		//		last opened block. If none open, then fatal error is issued.
-
+		/** @var zajCompileSource $source */
 		// remove level
 			list($block_name, $child_blocks_processed, $permanent_name, $parent_block) = $source->remove_level('block');
 		// remove child blocks for all
 			foreach($child_blocks_processed as $block_file){
-				print "Remove $block_file<br/>";
+				if($this->debug_me) print "Remove $block_file<br/>";
 				$this->zajlib->compile->remove_destination($block_file);
 			}
 		// remove permanent block file (if exists)
@@ -1016,7 +1015,7 @@ EOF;
 		}***/
 
 		// unpause the destination?
-			print "Endblock $block_name in $source->file_path<br/>";
+			if($this->debug_me) print "Endblock $block_name in $source->file_path<br/>";
 			//if($unpause_dest) $this->zajlib->compile->resume_destinations();
 		// repause the main destination if current source is extended
 			//if($source->extended) $this->zajlib->compile->main_dest_paused(true);

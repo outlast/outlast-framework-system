@@ -14,7 +14,7 @@ define('MAX_GLOBAL_EVENT_STACK', 50);
  * @property zajlib_array $array
  * @property zajlib_browser $browser
  * @property zajlib_cache $cache
- * @property zajlib_compile $compile
+ * @property zajlib_compile|zajCompileSession $compile
  * @property zajlib_config $config
  * @property zajlib_cookie $cookie
  * @property zajlib_db|zajlib_db_session $db

@@ -48,6 +48,7 @@ class zajCompileSession {
 		private $sources = array();				// array of objects - an array of source files
 		private $destinations = array();		// array of objects - an array of destination files
 		private $unlinks = array();				// array of objects - these are destination files which will be unlinked
+
      // public
      	/**
 		 * A unique id generated to identify this session.
@@ -189,7 +190,6 @@ class zajCompileSession {
 		return reset($this->sources);
 	}
 
-
 	/**
 	 * Gets the the main destination object.
 	 *
@@ -198,7 +198,6 @@ class zajCompileSession {
 	public function get_destination(){
 		return reset($this->destinations);
 	}
-
 
 	/**
 	 * Add a destination file to this compile session. You should not call methods of this object directly, but instead use the compile library.
@@ -211,6 +210,7 @@ class zajCompileSession {
 		$this->destinations[$dest_path] = new zajCompileDestination($dest_path, $this->zajlib, $temporary);
 		return $this->destinations[$dest_path]->exists;
 	}
+
 	/**
 	 * Remove a destination file to this compile session. You should not call methods of this object directly, but instead use the compile library.
 	 *
@@ -221,24 +221,40 @@ class zajCompileSession {
 		unset($this->destinations[$dest_path]);
 		return true;
 	}
+
+	/**
+	 * Get destination by path and block.
+	 *
+	 * @param string $dest_path Relative path of destination file.
+	 * @return zajCompileDestination|false Return false if not found or the object if found.
+	 */
+	public function get_destination_by_path($dest_path){
+		if(!array_key_exists($dest_path, $this->destinations)) return false;
+		else return $this->destinations[$dest_path];
+	}
+
 	/**
 	 * Pause all destination files. All writing will be ignored while pause is active.
 	 *
 	 * @return boolean Always returns true.
 	 */
 	public function pause_destinations(){
+		/** @var zajCompileDestination $dest */
 		foreach($this->destinations as $dest) $dest->pause();
 		return true;
 	}
+
 	/**
 	 * Resume all destination files. All writing will be resumed.
 	 *
 	 * @return boolean Always returns true.
 	 */
 	public function resume_destinations(){
+		/** @var zajCompileDestination $dest */
 		foreach($this->destinations as $dest) $dest->resume();
 		return true;
 	}
+
 	/**
 	 * Returns true if destinations are paused, false otherwise.
 	 *
@@ -260,6 +276,7 @@ class zajCompileSession {
 		if($bool) reset($this->destinations)->pause();
 		else reset($this->destinations)->resume();
 	}
+
 	/**
 	 * Returns true if main destination is paused, false otherwise.
 	 *
@@ -291,7 +308,13 @@ class zajCompileSession {
  *
  * @package Template
  * @subpackage CompilingBackend
- */
+ *
+ * Typically used read-only properties:
+ * @property zajCompileSource|boolean $child_source
+ * @property string $file_path
+ * @property string $requested_path
+ * @property integer $line_number
+  */
 class zajCompileSource {
 	public $zajlib;				// object - pointer to global zajlib object
 
@@ -305,7 +328,7 @@ class zajCompileSource {
 		private $hierarchy = array();	// array - stores info about open/close tags
 		private $level = 0;				// int - current level of hierarchy
 		private $app_level;				// string - the app level (plugin) at which this source is located
-		private $child_source = false;	// zajCompileSource|boolean - object of the child source
+		private $child_source = false;	// zajCompileSource|boolean - child source object
 
 	// these are set by the template tags @todo move to methods!
 		public $extended = false;		// boolean - true if this source is extended
@@ -555,6 +578,8 @@ class zajCompileSource {
 class zajCompileDestination {
 	private $zajlib;				// object - pointer to global zajlib object
 
+		private $debug_me = false;
+
 	// instance variables
 		private $file;					// file pointer - source file
 		private $line_number = 0;		// int - number of the current line in this file
@@ -592,7 +617,7 @@ class zajCompileDestination {
 	public function write($content){
 		// if paused, just return OR if exists&temp
 			if(($this->exists && $this->temporary) || $this->paused) return true;
-			print "<code>".$this->file_path." (".strlen($content).")</code><br/><pre>".$content."</pre><hr/>";
+			if($this->debug_me) print "<code>".$this->file_path." (".strlen($content).")</code><br/><pre>".$content."</pre><hr/>";
 		// write this to file
 			return fputs($this->file, $content);
 	}
