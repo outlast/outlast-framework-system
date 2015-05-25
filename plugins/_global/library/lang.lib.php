@@ -143,7 +143,7 @@ class zajlib_lang extends zajlib_config {
 						else $this->set($_GET['lang']);
 					}
 				// If a cookie is set, use that
-					elseif(!empty($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
+					elseif(!empty($_COOKIE['lang']) && isset($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
 				// If an Apache variable is set, use that
 					elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
 				// If the subdomain is two letters, it will consider it a language code
