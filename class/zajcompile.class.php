@@ -358,8 +358,8 @@ class zajCompileSource {
 	public function __construct($source_file, &$zajlib, $ignore_app_level = false, $child_source = false){
 		// set zajlib & debug stats
 			$this->zajlib =& $zajlib;
-		// jail the user
-			if(strpos($source_file, '..') !== false) $this->zajlib->error("Invalid source path ($source_file) found during compilation!");
+		// jail the source path
+			$this->zajlib->file->file_check($source_file);
 		// does it exist?
 			$app_level_and_path = $this->check_app_levels($source_file, $ignore_app_level);
 			if($app_level_and_path === false){
@@ -593,8 +593,8 @@ class zajCompileDestination {
 	public function __construct($dest_file, &$zajlib, $temporary = false){
 		// set zajlib & debug stats
 			$this->zajlib =& $zajlib;
-		// jail the user
-			if(strpos($dest_file, '..') !== false) $this->zajlib->error("invalid destination path ($dest_file) found during compilation!");
+		// jail the destination path
+			$this->zajlib->file->file_check($dest_file);
 		// tmp or not?
 			$this->temporary = $temporary;
 			if($this->temporary) $subfolder = "temp";

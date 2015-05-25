@@ -871,31 +871,6 @@ EOF;
 
 		// generate file name for permanent block store
 			$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
-		// generate file name from block and session id
-			//$file_name = "block/".$this->zajlib->compile->get_session_id()."-$block_name.html";
-
-			/**if($this->zajlib->compile->are_destinations_paused() && $current_level > 0){
-				return $source->add_level('block', array($block_name,$file_name,false));
-			}**/
-
-		/**if($block_name == 'contenttitle'){
-			print "***".$source->file_path." / ".$source->app_level."***\n";
-			print $this->zajlib->basepath.'cache/view/'.$permanent_name;
-			print @file_get_contents($this->zajlib->basepath.'cache/view/'.$permanent_name.'.php');
-			print "\n\n\n\n\n\n";
-		}**/
-
-/**			$current_level = $source->get_level();
-			if($current_level == 0 && $source->child_source === false){
-				print "Endblock at level 0<br/>";
-				$this->zajlib->compile->main_dest_paused(true);
-			}**/
-
-
-		// start writing this block to a file
-			//$file_exists = $this->zajlib->compile->add_destination($file_name, true);
-			//$unpause_dest = false;
-
 
 		// start writing my own block file
 			$this->zajlib->compile->add_destination($permanent_name);
@@ -946,9 +921,16 @@ EOF;
 					}
 					else{
 						// Write contents of $permanent_name to main destination
+							/** @var zajCompileDestination $destination */
+							$destination = $this->zajlib->compile->get_destination();
 							if(!$source->parent_level){
-								$this->zajlib->compile->main_dest_paused(false);
-								$this->zajlib->compile->insert_file($permanent_name.'.php');
+								// Validate the file path
+									$relative_path = 'cache/view/'.$permanent_name.'.php';
+									$this->zajlib->file->file_check($relative_path);
+								// @todo Why can't this work with compile->insert_file()?
+									$this->zajlib->compile->main_dest_paused(false);
+									$data = file_get_contents($this->zajlib->basepath.$relative_path);
+									$destination->write($data);
 							}
 						// Pause main destination output
 							$this->zajlib->compile->main_dest_paused(true);
@@ -977,7 +959,7 @@ EOF;
 					$this->zajlib->compile->pause_destinations();
 					$unpause_dest = true;
 			}**/
-			if($this->debug_me) print "Block $block_name in $source->file_path<br/>";
+			if($this->debug_me) print "Starting block $block_name in $source->file_path<br/>";
 
 		// add the level with block parent as last param
 			$source->add_level('block', array($block_name, $child_blocks_processed, $permanent_name, $this->block_name));
