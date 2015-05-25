@@ -436,6 +436,7 @@ class zajCompileSource {
 	/**
 	 * Write a single line of content to each destination.
 	 * @param string $content The content to be written to each file.
+	 * @return boolean Always returns true.
 	 **/
 	public function write($content){
 		return $this->zajlib->compile->write($content);
@@ -578,8 +579,6 @@ class zajCompileSource {
 class zajCompileDestination {
 	private $zajlib;				// object - pointer to global zajlib object
 
-		private $debug_me = false;
-
 	// instance variables
 		private $file;					// file pointer - source file
 		private $line_number = 0;		// int - number of the current line in this file
@@ -617,7 +616,6 @@ class zajCompileDestination {
 	public function write($content){
 		// if paused, just return OR if exists&temp
 			if(($this->exists && $this->temporary) || $this->paused) return true;
-			if($this->debug_me) print "<code>".$this->file_path." (".strlen($content).")</code><br/><pre>".$content."</pre><hr/>";
 		// write this to file
 			return fputs($this->file, $content);
 	}

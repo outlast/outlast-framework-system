@@ -14,8 +14,6 @@
 
 class zajlib_tag_base extends zajElementCollection{
 
-	private $debug_me = false;
-
 	/**
 	 * Tag: comment - Comments are sections which are completely ignored during compilation.
 	 *
@@ -42,7 +40,7 @@ class zajlib_tag_base extends zajElementCollection{
 			$source->remove_level('comment');
 		// write line
 			$this->zajlib->compile->write("*/?>");
-		// return debug_stats
+		// return
 			return true;	
 	}
 	
@@ -399,7 +397,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;	
 	}
 	/**
@@ -418,7 +416,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;	
 	}
 	/**
@@ -454,7 +452,7 @@ EOF;
 
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;	
 	}
 	/**
@@ -540,7 +538,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;		
 	}
 	/**
@@ -561,7 +559,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;		
 	}
 
@@ -829,7 +827,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;	
 	}
 	/**
@@ -887,7 +885,6 @@ EOF;
 							$my_permanent_name = '__block/'.$my_source->child_source->get_requested_path().'-'.$block_name.'.html';
 						// Add destination if not already added previously
 							if(!array_key_exists($my_permanent_name, zajCompileSession::$blocks_processed)){
-								if($this->debug_me) print "Adding $my_permanent_name...<br/>";
 								$this->zajlib->compile->add_destination($my_permanent_name);
 								$child_blocks_processed[$my_permanent_name] = $my_permanent_name;
 								zajCompileSession::$blocks_processed[$my_permanent_name] = $my_permanent_name;
@@ -895,15 +892,9 @@ EOF;
 							else{
 								// If I have a parent block...
 								if($this->block_name){
-									$parent_block = $this->block_name;
-									$current_child_block = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
-									if($this->debug_me) print "<p style='color: red'>We are ready to insert $my_permanent_name into $current_child_block / $block_name!</p>";
-
-
-									//$data = file_get_contents($this->zajlib->basepath.'cache/view/'.$my_permanent_name.'.php');
-
-									//if($this->debug_me) print "<pre>$data</pre><hr/>";
-
+									// Get parent and child
+										$parent_block = $this->block_name;
+										$current_child_block = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
 									// Let's pause all destinations
 										$this->zajlib->compile->pause_destinations();
 									// Unpause only me
@@ -940,27 +931,6 @@ EOF;
 			// start recursive function with current source
 				$add_child_destinations($source, $permanent_name);
 
-
-
-/**
-			if($source->child_source !== false){
-
-				$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
-				if($this->debug_me) print "***".$source->file_path." has child at / ".$source->child_source->file_path."***\n";
-				exit;
-			}**/
-
-
-		// if file already exists && main destination not paused (not extended)! so, insert file here to main destination!
-			/**if($file_exists){ // && !$this->zajlib->compile->is_main_dest_paused()){
-				// insert the file
-					$this->zajlib->compile->insert_file($file_name.".php");
-				// now pause main destination
-					$this->zajlib->compile->pause_destinations();
-					$unpause_dest = true;
-			}**/
-			if($this->debug_me) print "Starting block $block_name in $source->file_path<br/>";
-
 		// add the level with block parent as last param
 			$source->add_level('block', array($block_name, $child_blocks_processed, $permanent_name, $this->block_name));
 		// set as current global block (overwriting parent)
@@ -980,38 +950,13 @@ EOF;
 			list($block_name, $child_blocks_processed, $permanent_name, $parent_block) = $source->remove_level('block');
 		// remove child blocks for all
 			foreach($child_blocks_processed as $block_file){
-				if($this->debug_me) print "Remove $block_file<br/>";
 				$this->zajlib->compile->remove_destination($block_file);
 			}
 		// remove permanent block file (if exists)
 			if($permanent_name) $this->zajlib->compile->remove_destination($permanent_name);
 
-
 		// always unpause
 			$this->zajlib->compile->main_dest_paused(false);
-/***		if($block_name == 'contenttitle'){
-			print "AFTER - ***".$source->file_path." / ".$source->app_level."***\n";
-			print $this->zajlib->basepath.'cache/view/'.$permanent_name;
-			print @file_get_contents($this->zajlib->basepath.'cache/view/'.$permanent_name.'.php');
-			print "\n\n\n\n\n\n";
-		}***/
-
-		// unpause the destination?
-			if($this->debug_me) print "Endblock $block_name in $source->file_path<br/>";
-			//if($unpause_dest) $this->zajlib->compile->resume_destinations();
-		// repause the main destination if current source is extended
-			//if($source->extended) $this->zajlib->compile->main_dest_paused(true);
-			/**$current_level = $source->get_level();
-
-			if($current_level == 0 && $source->child_source === false){
-				print "Endblock at level 0<br/>";
-				$this->zajlib->compile->main_dest_paused(true);
-			}**/
-
-		// now unpause
-			//$this->zajlib->compile->main_dest_paused(false);
-			//$this->zajlib->compile->insert_file($permanent_name.".php");
-
 
 		// reset current block to parent block
 			$this->block_name = $parent_block;
@@ -1132,7 +1077,7 @@ EOF;
 				// write to file
 					$this->zajlib->compile->write($contents);
 			}
-		// return debug_stats
+		// return
 			return true;
 	}
 
@@ -1170,7 +1115,7 @@ EOF;
 				// write to file
 					$this->zajlib->compile->write($contents);
 			//}
-		// return debug_stats
+		// return
 			return true;
 	}
 	public function tag_insertlocal($param_array, &$source){
