@@ -142,12 +142,12 @@ class zajlib_lang extends zajlib_config {
 						if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
 						else $this->set($_GET['lang']);
 					}
+				// If a cookie is set, use that
+					elseif(!empty($_COOKIE['lang']) && isset($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
 				// If an Apache variable is set, use that
 					elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
 				// If the subdomain is two letters, it will consider it a language code
 					elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
-				// If a cookie is set, use that
-					elseif(!empty($_COOKIE['lang']) && isset($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
 				// If the tld is two letters, it will consider it a language code
 					elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
 				// Finally, just set to default
