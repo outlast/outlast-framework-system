@@ -11,12 +11,12 @@ class MozajikVersion extends zajModel {
 	 * Major version count
 	 * @var integer
 	 **/
-	static $major = 14;			// major version count
+	static $major = 15;			// major version count
 	/**
 	 * Minor version count
 	 * @var integer
 	 **/
-	static $minor = 8;			// minor version count
+	static $minor = 4;			// minor version count
 	/**
 	 * Build count (based on svn repo revision)
 	 * @var integer
@@ -82,7 +82,7 @@ class MozajikVersion extends zajModel {
 
 	/**
 	 * Check current version and return appropriate value
-	 * @return Returns negative if db is too new, zero if db is too old and upgrade of db required, and positive (true) if all is good.
+	 * @return integer Returns negative if db is too new, zero if db is too old and upgrade of db required, and positive (true) if all is good.
 	 **/
 	public static function check(){
 		// if no installation or db is too old return 0

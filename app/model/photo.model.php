@@ -22,9 +22,10 @@ if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'sm
  * @property string $large
  * @property string $full
  * Orientation properties
- * @property string $orientation Can be 'portrait' or 'landscape'.
+ * @property string $orientation Can be 'portrait' or 'landscape'. Will be 'landscape' even for square photos.
  * @property boolean $portrait True if portrait.
  * @property boolean $landscape True if landscape.
+ * @property boolean $square True if 1:1
  *
  * @method static Photo|zajFetcher fetch()
  **/
@@ -87,7 +88,7 @@ class Photo extends zajModel {
 				$this->imagetype = IMAGETYPE_JPEG;
 			}
 		// Calculate photo orientation
-			$this->landscape = $this->portrait = false;
+			$this->landscape = $this->portrait = $this->square = false;
 			if(is_object($this->data->dimensions)){
 				if($this->data->dimensions->small->w >= $this->data->dimensions->small->h){
 					$this->orientation = 'landscape';
@@ -96,6 +97,9 @@ class Photo extends zajModel {
 				else{
 					$this->orientation = 'portrait';
 					$this->portrait = true;
+				}
+				if($this->data->dimensions->small->w == $this->data->dimensions->small->h){
+					$this->square = true;
 				}
 			}
 	}

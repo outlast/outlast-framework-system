@@ -458,15 +458,18 @@ class EnhanceTestFramework
             $result = $test->run();
             if ($result) {
                 $message = $test->getTestName() . ' - ' . $this->Text->Passed;
+				$this->Duration = microtime(true) - $start;
+				$message .= "<span class='label label-success pull-right'>".number_format($this->Duration, 2)." seconds</span>";
                 $this->Results[] = new TestMessage($message, $test, true);
             } else {
                 $message = '['. str_replace('{0}', $test->getLine(), str_replace('{1}', $test->getFile(), $this->Text->LineFile)) . '] ' .
                     $test->getTestName() . ' - ' .
                     $this->Text->Failed . ' - ' . $test->getMessage();
+				$this->Duration = microtime(true) - $start;
+				$message .= "<span class='label label-important pull-right'>".number_format($this->Duration, 2)." seconds</span>";
                 $this->Errors[] = new TestMessage($message, $test, false);
             }
         }
-        $this->Duration = microtime(true) - $start;
     }
 
     /**

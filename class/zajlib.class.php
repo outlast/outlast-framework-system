@@ -235,14 +235,38 @@ class zajLib {
 		// disable empty hosts
 			if(empty($_SERVER['HTTP_HOST'])){
 				print "Invalid request. Please contact site administrator.";
-				$this->error("Empty host detected. Request denied.");
+				$this->error("Empty host detected. Request denied. If you experience this error from a legitimate browser please notify us!", true);
 			}
 		// save host
 			else $this->host = $_SERVER['HTTP_HOST'];
 		// base url detection
 			$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($this->host).addslashes($_SERVER['REQUEST_URI'])).'/');
 			$this->subfolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
-			$this->baseurl = "//".$this->host.$this->subfolder.'/';
+			$this->baseurl = "//".$this->host.$this->subfolder.'/';		// if my OFW_BASEURL is explicitly set
+		// Now override base url if needed
+			if(!empty($_SERVER['OFW_BASEURL'])){
+				// Parse my baseurl
+					$parsed_baseurl = parse_url($_SERVER['OFW_BASEURL']);
+				// Make sure it is an array
+					if($parsed_baseurl === false) return $this->error("Malformed OFW_BASEURL set as Apache environmental variable: ".$_SERVER['OFW_BASEURL'].".");
+				// Set protcol
+					if($parsed_baseurl['scheme'] == 'http') $this->https = false;
+					elseif($parsed_baseurl['scheme'] == 'https'){
+						$this->https = true;
+						$this->protocol = 'https:';
+					}
+					else{
+						return $this->error("Malformed OFW_BASEURL set as Apache environmental variable: ".$_SERVER['OFW_BASEURL'].".");
+					}
+				// Originals
+					$original_fullurl = $this->fullurl;
+					$original_baseurl = $this->baseurl;
+				// Set host, base url, subfolder
+					$this->host = $parsed_baseurl['host'];
+					$this->subfolder = $parsed_baseurl['path'];
+					$this->baseurl = '//'.trim($this->host.$this->subfolder, '/').'/';
+					$this->fullurl = $this->baseurl.str_ireplace($original_baseurl, '', $original_fullurl);
+			}
 		// full request detection (includes query string)
 			if(!empty($_GET)){
 				// reset query string
@@ -279,7 +303,8 @@ class zajLib {
 			$this->load = new zajLibLoader($this);
 		// template variable object
 			$this->variable = new zajVariable();				// for all variables
-			$this->variable->field = (object) array();			// for field templates
+			$this->variable->field = (object) array();			// for field templates scope
+			$this->variable->plugins = (object) array();		// for plugins scope
 
 		// check and load installation version (only for database format tracking)
 			$installation = @file_get_contents($this->basepath.'cache/install.dat');
@@ -388,7 +413,7 @@ class zajLib {
 			}
 			$this->num_of_notices++;
 		// log notices?
-			if($this->zajconf['mysql_enabled'] && $this->zajconf['error_log_enabled'] && $this->zajconf['error_log_notices']) MozajikError::log($message, 'notice');
+			// @todo add notice logging!
 	}
 	
 	/**
@@ -453,17 +478,33 @@ class zajLib {
 	/**
 	 * Redirect the user to relative or absolute URL
 	 * @param string $url The specific url to redirect the user to.
-	 * @param boolean $frame_breakout If set to true, it will use javascript redirect to break out of iframe.
+     * @param integer $status_code HTTP status code of the redirection
+     * @param boolean $frame_breakout If set to true, it will use javascript redirect to break out of iframe.
 	 * @return bool Does not yet return anything.
 	 **/
-	public function redirect($url, $frame_breakout = false){
+	public function redirect($url, $status_code = 301, $frame_breakout = false){
+        // For backward compatibility @todo Remove this
+			if (is_bool($status_code)) {
+				$frame_breakout = $status_code;
+				$status_code = 301;
+			}
+
+		// Get HTTP protocol
+	        $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
+
 		// Now redirect if real
 			if(!$this->url->valid($url)) $url = $this->baseurl.$url;
 		// If test return url
 			if($this->test->is_running()) return $url;
 		// Frame breakout or standard?
-			if($frame_breakout) exit("<script>window.top.location='".addslashes($url)."';</script>");
-			else header("Location: ".$url);
+			if($frame_breakout){
+                exit("<script>window.top.location='".addslashes($url)."';</script>");
+            }
+            else{
+				// Push headers
+					header($protocol." ".$status_code." ".$this->request->get_http_status_name($status_code));
+					header("Location: ".$url);
+            }
 		exit;
 	}
 
@@ -484,6 +525,8 @@ class zajLib {
 
 	/**
 	 * Magic method to automatically load libraries on first request.
+	 * @param string $name The name of the library.
+	 * @return zajLibExtension Return the library class.
 	 **/
 	public function __get($name){
 		// return from loader
@@ -621,7 +664,7 @@ class zajLibLoader{
 		// try to load the file
 			$result = $this->file("library/$name.lib.php", false);			
 		// if library does not exist
-			if(!$result) $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+			if(!$result) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
 			else{
 				// return the new lib object
 					$library_class = 'zajlib_'.$name;
@@ -635,10 +678,11 @@ class zajLibLoader{
 	/**
 	 * Load a model file.
 	 * @param string $name The name of the model to load.
-	 * @param array $optional_parameters This will be passed to the __load method (not yet implemented)
+	 * @param array|boolean $optional_parameters This will be passed to the __load method (not yet implemented)
 	 * @todo Implement optional parameters.
+	 * @return boolean Will return true if successfully loaded, false if not.
 	 **/
-	public function model($name, $optional_parameters=false){
+	public function model($name, $optional_parameters = false){
 		// is it loaded already?
 			if(isset($this->loaded['model'][$name])) return true;
 		// now just load the file

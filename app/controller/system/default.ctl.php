@@ -234,7 +234,7 @@
 			// now send this to the magic method
 				$relations = $other_model::fire_static('onSearch', array($relations, $type));
 			// error?
-				if(!is_object($relations)) return zajLib::me()->error("You are trying to access the client-side search API and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
+				if(!is_object($relations)) return zajLib::me()->error("You are trying to access the client-side search API for $other_model and access was denied by this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
 		 	// now output to relations json
 				$my_relations = array();
 				foreach($relations as $rel){

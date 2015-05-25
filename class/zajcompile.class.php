@@ -655,7 +655,7 @@ class zajCompileTag extends zajCompileElement {
 						foreach($param_matches[0] as $param){
 							if(trim($param) != ''){
 								// create a compile variable
-									$pobj = new zajCompileVariable($param, $this->parent);
+									$pobj = new zajCompileVariable($param, $this->parent, false);
 								// set to parameter mode
 									$pobj->set_parameter_mode(true);
 								// set as a parameter
@@ -677,7 +677,7 @@ class zajCompileTag extends zajCompileElement {
 						$random_var = 'tmp_'.uniqid("");
 						$this->parent->write('<?php $this->zajlib->variable->'.$random_var.' = $'.$random_var.' = $filter_var; ?>');
 					// reset parameter in array of objects (TODO: there may be a more memory-efficient way of doing this?)
-						$this->parameters[$pkey] = new zajCompileVariable($random_var, $this->parent);
+						$this->parameters[$pkey] = new zajCompileVariable($random_var, $this->parent, false);
 				}
 			}
 		// now call me
@@ -719,7 +719,7 @@ class zajCompileVariable extends zajCompileElement {
 	private $parameter_mode = false;	// bool - true if this is part of the parameter
 	public $filter_count = 0;			// int - number of filters
 
-	public function __construct($element_name, &$parent){
+	public function __construct($element_name, &$parent, $check_xss = true){
 		// call parent
 			parent::__construct($element_name, $parent);
 		// now match all the filters
@@ -728,6 +728,10 @@ class zajCompileVariable extends zajCompileElement {
 			$trim_from_end = 0;
 			foreach($filter_matches as $filter){
 				if(!empty($filter[0])){
+					// if this is safe, then disable check xss
+					if($filter[2] == 'safe'){
+						$check_xss = false;
+					}
 					// pass: full filter text, filter value, file pointer, debug stats
 					if(!empty($filter[5])) $filter[5] = $this->convert_variable($filter[5]);
 					$this->filters[$this->filter_count++] = array(
@@ -737,12 +741,17 @@ class zajCompileVariable extends zajCompileElement {
 					$trim_from_end -= strlen($filter[0]);
 				}
 			}
+		// temporarily allow ofw.js and zaj.js, error out in debug mode @todo Remove this eventually!
+			if($check_xss && ($element_name == 'ofw.js' || $element_name == 'zaj.js')){
+				if($this->parent->zajlib->debug_mode) $this->parent->zajlib->error("Deprecated: {{ofw.js}} or {{zaj.js}} is missing the |safe filter!");
+				$check_xss = false;
+			}
 		// trim filters from me
 			if($trim_from_end < 0) $element_name = substr($element_name, 0, $trim_from_end);
 		// original text
 			$this->vartext = $element_name;
 		// convert me
-			$this->variable = $this->convert_variable($element_name);
+			$this->variable = $this->convert_variable($element_name, $check_xss);
 			$this->element_name = $element_name;
 		return true;
 	}
@@ -782,9 +791,9 @@ class zajCompileVariable extends zajCompileElement {
 		return true;	
 	}
 	
-	public static function compile($element_name, &$parent){
+	public static function compile($element_name, &$parent, $check_xss = true){
 		// create new
-			$var = new zajCompileVariable($element_name, $parent);
+			$var = new zajCompileVariable($element_name, $parent, $check_xss);
 		// write
 			$var->write();
 	}
@@ -814,13 +823,14 @@ class zajCompileElement{
 
 	protected function __construct($element_name, &$parent){
 		// set parent and element
+			/** @var zajCompileSource $parent */
 			$this->parent =& $parent;
 			$this->element_name = $element_name;
 		return true;
 	}
 
 	// convert variable to the format used in the final php output
-	protected function convert_variable($variable){
+	protected function convert_variable($variable, $check_xss = true){
 		// leaves 'asdf' as is but converts asdf.qwer to $this->zajlib->variable->asdf->qwer
 		// config variables #asdf# now supported!
 		// and so are filters...
@@ -856,6 +866,8 @@ class zajCompileElement{
 						}
 						else $new_var .= '->'.$element;
 				}
+				// Add xss protection
+					if($check_xss && !empty(zajLib::me()->zajconf['feature_xss_protection_enabled'])) $new_var = '$this->zajlib->template->strip_xss('.$new_var.', "Found in {{'.$variable.'}} for '.$this->parent->get_requested_path().' / '.$this->parent->line_number.'.")';
 				return $new_var;
 			}
 	}

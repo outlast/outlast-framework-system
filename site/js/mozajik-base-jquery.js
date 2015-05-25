@@ -8,6 +8,7 @@
  **/
  
 // Create a new class which will contain the sections
+	var ofw;
 	var zaj = {
 		baseurl:'',
 		fullrequest:'',
@@ -40,6 +41,7 @@
 		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(info){ zaj.fbcanvas = info; });
 		}
+		ofw = zaj;
 	});
 
 	/**
@@ -283,6 +285,7 @@
 	 * @param {string} [value] A value.
 	 */
 		zaj.track = function(category, action, label, value){
+            if(zaj.debug_mode) zaj.log("Event sent: "+category+", "+action+", "+label);
 			// Track via Google Analytics (ga.js or analytics.js)
 				if(zaj.trackevents_analytics){
 					if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
@@ -445,8 +448,11 @@
 									var el = $('[data-submit-toggle-class]');
 									if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
 								}
+							// Try to decode as json data
+								var jsondata = null;
+    							try{ jsondata = $.parseJSON(data); }catch(error){ }
 							// Handle my results
-								if(typeof result == "function") result(data);
+								if(typeof result == "function") result(data, jsondata);
 								else if(typeof result == "object"){
 									$(result).html(data);
 								}
@@ -703,10 +709,19 @@
 	 * Enables sortable features on a list of items. Requires jquery-ui sortable feature.
 	 * @param {string|jQuery} target The items to sort. Each item must have an data-sortable field corresponding to the id of item.
 	 * @param {string} url The url which will handle this sortable request.
+	 * @param {function} callback A callback function to call after sort. An array of ids in the new order are passed.
+	 * @param {string|jQuery|boolean} handle The handle is the item which can be used to drag. This can be a selector, a jQuery object, or false. The default is false which means the whole item is draggable.
 	 **/
-		zaj.sortable = function(target, url){
+		zaj.sortable = function(target, url, callback, handle){
+			// Destroy any previous
+			if($(target).hasClass('ui-sortable')) $(target).sortable('destroy');
+
+			// Defaults handle to false
+			if(typeof handle == 'undefined') handle = false;
+
 			// Make sortable
 			$(target).sortable({
+				handle: handle,
 			    start: function(event, ui) {
 			    	ui.item.addClass('sortableinprogress');
 			    },
@@ -719,7 +734,9 @@
 							if(!my_id) zaj.error("Cannot sort: data-sortable not set!");
 							else my_array.push(my_id);
 						});
-						zaj.ajax.post(url+'?reorder='+JSON.stringify(my_array));
+						zaj.ajax.post(url+'?reorder='+JSON.stringify(my_array), function(){
+							if(typeof callback == 'function') callback(my_array);
+						});
 			    }
 			});
 		};
@@ -853,7 +870,7 @@
 								if(_options.useMoreButton != null) $(_options.useMoreButton).hide();
 							}
 							// Call all of my readyFunctions
-							$.each(_this.readyFunctions, function(i, func){ func(); });
+							$.each(_this.readyFunctions, function(i, func){ func(_options.model, _currentPage); });
 						});
 						return true;
 					}
@@ -1168,7 +1185,7 @@
 	  		post: function(url, response){ return zaj.ajax.post(zaj.querymode(url)+target.serialize(), response); },
 	  		submit: function(url, response){ return zaj.ajax.submit(zaj.querymode(url)+target.serialize(), response); },
 	  		inviewport: function(partially){ return zaj.inviewport(target, partially); },
-	  		sortable: function(receiver){ return zaj.sortable(target, receiver); },
+	  		sortable: function(receiver, callback, handle){ return zaj.sortable(target, receiver, callback, handle); },
 	  		alert: function(msg){ zaj.alert(msg, target); },
 	  		search: function(url, receiver, options){
 	  			if(typeof receiver == 'function'){

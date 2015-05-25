@@ -23,6 +23,7 @@ define('CUSTOM_SORT', 'CUSTOM_SORT');
 /**
  * This is the fetcher class for getting and traversing lists in Outlast Framework.
  * These are read-only properties available.
+ * @property zajModel $first The first item in the list.
  * @property integer $total The total number of items on all pages.
  * @property integer $count The number of items in the current limit / page.
  * @property integer $affected The number affected items.
@@ -723,7 +724,7 @@ class zajFetcher implements Iterator, Countable{
 		switch($name){
 			case "first":	// if query not yet executed, do it now
 							if(!$this->query_done) $this->query();
-							return $this->next();
+							return $this->reset()->next();
 			case "total":	// if total not yet loaded, then retrieve and return it...otherwise just return it
 							if($this->total === false) return $this->count_total();
 							return $this->total;

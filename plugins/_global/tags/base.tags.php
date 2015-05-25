@@ -70,6 +70,38 @@ class zajlib_tag_base extends zajElementCollection{
 	// choose which one to display now
 		\$which_one = abs($var_name_counter % count($var_name));
 	// choose
+		echo \$this->zajlib->template->strip_xss({$var_name}{$which_one_var}, 'Found in {% cycle %} tag.');
+?>
+EOF;
+		// write to file
+			$this->zajlib->compile->write($contents);
+		// return true
+			return true;
+	}
+
+	/**
+	 * Tag: random - Randomly cycle among the given strings or variables each time this tag is encountered.
+	 *
+	 *  <b>{% random var1 'text' var3 %}</b>
+	 *  1. <b>var1</b> - Choose this randomly.
+	 *  2. <b>var2</b> - Choose this randomly.
+	 *  etc.
+	 **/
+	public function tag_random($param_array, &$source){
+		// generate random array
+			$var_name = '$random_array_'.uniqid("");
+			$my_array = 'if(empty('.$var_name.')) '.$var_name.' = array(';
+			foreach($param_array as $el) $my_array .= "$el->variable, ";
+			$my_array .= ');';
+			$which_one_var = "[\$which_one]";
+		// generate content
+			$contents = <<<EOF
+<?php
+	// define my choices and my default
+		$my_array
+	// choose which one to display now
+		\$which_one = rand(0, count($var_name));
+	// choose
 		echo {$var_name}{$which_one_var};
 ?>
 EOF;
@@ -78,6 +110,7 @@ EOF;
 		// return true
 			return true;
 	}
+
 
 	/**
 	 * Tag: filter - Applies a filter to all text within tag.
@@ -116,7 +149,7 @@ EOF;
 		$my_array
 	// first which is true
 		foreach($firstof_array as $el->variable){
-			if($el->variable) echo $el->variable;
+			if($el->variable) echo $this->zajlib->template->strip_xss($el->variable, 'Found in {% firstof %} tag.');
 			break;
 		}
 EOF;
@@ -780,11 +813,14 @@ EOF;
 	 **/
 	public function tag_with($param_array, &$source){
 		// add level
-			$source->add_level('with', $param_array[2]->variable);
+			$my_variable_name = '$before_with_'.uniqid();
+			$source->add_level('with', array($param_array[2]->variable, $my_variable_name));
 		// generate with
 		// TODO: add save the previous value of param_array[2] and restore on end
 			$contents = <<<EOF
 <?php
+// save previous value for restore
+	{$my_variable_name} = {$param_array[2]->variable};
 // start with
 	{$param_array[2]->variable} = {$param_array[0]->variable};
 ?>
@@ -799,12 +835,12 @@ EOF;
 	 **/
 	public function tag_endwith($param_array, &$source){
 		// get the data
-			$localvar = $source->remove_level('with');
+			list($localvar, $restorevar) = $source->remove_level('with');
 		// generate code
 			$contents = <<<EOF
 <?php
-// end with
-	unset($localvar);
+// restore it
+	$localvar = $restorevar;
 ?>
 EOF;
 		// write to file
@@ -1120,13 +1156,13 @@ EOF;
 	}
 
 	/**
-	 * Tag: insertlocal - Same as {@link insert} except that this also checks for localized versions of the HTML file before including.
+	 * Tag: insertlocale - Same as {@link insert} except that this also checks for localized versions of the HTML file before including.
 	 *
-	 *  <b>{% insertlocal '/admin/news_edit.html' 'block_name' %}</b>
+	 *  <b>{% insertlocale '/admin/news_edit.html' 'block_name' %}</b>
 	 *  1. <b>template_file</b> - The template file to insert.
 	 *  2. <b>block_section</b> - If you only want to insert the block section from the file. (optional)
 	 **/
-	public function tag_insertlocal($param_array, &$source){
+	public function tag_insertlocale($param_array, &$source){
 		// get the first parameter...
 			$var = $param_array[0]->variable;
 			$tvar = trim($var, "'\"");
@@ -1156,6 +1192,10 @@ EOF;
 		// return debug_stats
 			return true;
 	}
+	public function tag_insertlocal($param_array, &$source){
+		return $this->tag_insertlocale($param_array, $source);
+	}
+
 
 	/**
 	 * These are special functions which return the current extend file path and block name in use. THESE ARE NOT TAGS!

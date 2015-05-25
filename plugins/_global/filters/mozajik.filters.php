@@ -301,6 +301,16 @@ EOF;
 		return true;
 	}
 
+	/**
+	 * Filter: safe - Disable automatic XSS filtering on the variable.
+	 *
+	 *  <b>{{variable|safe}}</b> Will allow <script> within the variable.
+	 **/
+	public function filter_safe($parameter, &$source){
+			// Actually does nothing, just here as a placeholder. Action is performed during variable compilation.
+		return true;
+	}
+
 
 	/**
 	 * Filter: substr - Cuts a string at the given value. See also truncate.
@@ -393,7 +403,7 @@ EOF;
 		// If parameter is not defined, then the parameter is the current locale
 		if(empty($parameter) && $parameter != 0) return $source->warning('You must specify a variable name to get the value of for filter "keyvalue".');
 		// Write to file. Note: we need to use ArrayObject because $obj->{0} notation not working always.
-		$this->zajlib->compile->write('if(empty($filter_var)) $filter_var=""; elseif(is_array($filter_var) || is_object($filter_var)){ if(is_object($filter_var)){ $filter_var = new ArrayObject($filter_var); } $filter_var = $filter_var['.$parameter.']; } else $this->zajlib->warning("You tried to use the keyvalue filter on something other than an object or an array. A common mistake is to use {{zaj.lang}} instead of {{zaj.conf}} for variable variables. <a href=\'http://framework.outlast.hu/advanced/internationalization/using-language-files/#docs-using-variable-language-variables\'>See docs</a>.");');
+		$this->zajlib->compile->write('if(empty($filter_var)) $filter_var=""; elseif(is_array($filter_var) || is_object($filter_var)){ if(is_object($filter_var)){ $filter_var = new ArrayObject($filter_var); } $filter_var = $filter_var['.$parameter.']; } else $this->zajlib->warning("You tried to use the keyvalue filter on something other than an object or an array. A common mistake is to use {{zaj.lang}} instead of {{zaj.config}} for variable variables. <a href=\'http://framework.outlast.hu/advanced/internationalization/using-language-files/#docs-using-variable-language-variables\'>See docs</a>.");');
 		return true;
 	}
 

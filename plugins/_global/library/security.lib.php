@@ -55,7 +55,7 @@ class zajlib_security extends zajLibExtension {
 	/**
 	 * Uses CORS to allows ajax requests from cross-domain origins. Sends headers so it must be called before any output. See link for IE issues.
 	 * @param string $allow_origin The domain to allow, or * to whitelist everything. Defaults to *.
-	 * @param string $allow_methods Allow the method by which to send data. List comma-separated. Defaults to POST, GET, OPTOINS.
+	 * @param string $allow_methods Allow the method by which to send data. List comma-separated. Defaults to POST, GET, OPTIONS.
 	 * @link http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
 	 **/
 	public function cors($allow_origin = '*', $allow_methods = 'POST, GET, OPTIONS'){
@@ -64,6 +64,61 @@ class zajlib_security extends zajLibExtension {
 			header('Access-Control-Allow-Credentials: true');
 			header('Access-Control-Allow-Methods: '.$allow_methods);
 			header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+	}
+
+	/**
+	 * Check code for xss, return boolean.
+	 * @param string $string The string to run XSS detection logic on.
+	 * @link https://github.com/symphonycms/xssfilter/blob/master/extension.driver.php#L138
+	 * @return boolean True if the given string contains XSS, false if clean.
+	 */
+	public function has_xss($string){
+		$contains_xss = false;
+		// Skip any null or non string values or if xss protection is disabled
+		if(is_null($string) || !is_string($string) || empty($this->zajlib->zajconf['feature_xss_protection_enabled'])){
+			return $contains_xss;
+		}
+		// Keep a copy of the original string before cleaning up
+		$orig = $string;
+		// URL decode
+		$string = urldecode($string);
+		// Convert Hexadecimals
+		$string = preg_replace('!(&#|\\\)[xX]([0-9a-fA-F]+);?!e','chr(hexdec("$2"))', $string);
+		// Clean up entities
+		$string = preg_replace('!(&#0+[0-9]+)!','$1;',$string);
+		// Decode entities
+		$string = html_entity_decode($string, ENT_NOQUOTES, 'UTF-8');
+		// Strip whitespace characters
+		$string = preg_replace('!\s!','',$string);
+		// Set the patterns we'll test against
+		$patterns = array(
+			// Match any attribute starting with "on" or xmlns
+			'#(<[^>]+[\x00-\x20\"\'\/])(on|xmlns)[^>]*>?#iUu',
+			// Match javascript:, livescript:, vbscript: and mocha: protocols
+			'!((java|live|vb)script|mocha|feed|data):(\w)*!iUu',
+			'#-moz-binding[\x00-\x20]*:#u',
+			// Match style attributes
+			'#(<[^>]+[\x00-\x20\"\'\/])style=[^>]*>?#iUu',
+			// Match unneeded tags
+			'#</*(applet|meta|xml|blink|link|style|script|embed|object|iframe|frame|frameset|ilayer|layer|bgsound|title|base)[^>]*>?#i'
+		);
+		foreach($patterns as $pattern){
+			// Test both the original string and clean string
+			if(preg_match($pattern, $string) || preg_match($pattern, $orig)){
+				$contains_xss = true;
+			}
+			if ($contains_xss === true) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Check to see if the string is a valid ID. Valid IDs are anything with A-z0-9.
+	 * @param string $id The id to check.
+	 * @return boolean Will return true if valid, false if not.
+	 */
+	public function is_valid_id($id){
+		return (boolean) preg_match('/^[A-z0-9]+$/', $id);
 	}
 	
 	/**
@@ -79,7 +134,7 @@ class zajlib_security extends zajLibExtension {
 	 * @param string $range The ip address range to check in.
 	 * @return boolean Will return true if the specified IP is within the given range.
 	 **/
-	public function ip_in_range($ip, $range) {
+	public function ip_in_range($ip, $range){
 		// default to current ip
 			if($ip === false) $ip = $_SERVER['REMOTE_ADDR'];
 	 	// if ip range is an array, then call for each one

@@ -123,7 +123,8 @@ class zajlib_lang extends zajlib_config {
 	 			foreach($this->available_locales as $l){
 	 				// If found, set the locale and return me
 	 				$lcompare = substr($l, 0, 2);
-	 				if($lcompare == $two_letter_code){
+	 				$rcompare = strtolower(substr($l, -2));
+	 				if($lcompare == $two_letter_code || $rcompare == $two_letter_code){
 	 					return $l;
 	 				}
 	 			}
@@ -143,6 +144,8 @@ class zajlib_lang extends zajlib_config {
 					}
 				// If a cookie is set, use that
 					elseif(!empty($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
+				// If an Apache variable is set, use that
+					elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
 				// If the subdomain is two letters, it will consider it a language code
 					elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
 				// If the tld is two letters, it will consider it a language code

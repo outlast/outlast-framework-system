@@ -68,8 +68,8 @@ class zajfield_file extends zajField {
 				// Check to see if already has parent (disable hijacking of photos)
 					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a file object that already has a parent!");
 				// Remove previous ones
-					$photos = File::fetch()->filter('parent', $object->id)->filter('field', $this->name);
-					foreach($photos as $pold){ $pold->delete(); }
+					$file = File::fetch()->filter('parent', $object->id)->filter('field', $this->name);
+					foreach($file as $pold){ $pold->delete(); }
 				// Set new one
 
 				// check to see if already has parent (disable hijacking of photos)

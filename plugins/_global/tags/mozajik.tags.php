@@ -373,7 +373,7 @@ EOF;
 	public function tag_cachebuster($param_array, &$source){
 		$my_fixed_timestamp = time() - 1362430170;
 		// write to file
-		$this->zajlib->compile->write("<?php print '?v{$my_fixed_timestamp}';?>");
+		$this->zajlib->compile->write("<?php echo '?v{$my_fixed_timestamp}';?>");
 		// return debug_stats
 		return true;
 	}

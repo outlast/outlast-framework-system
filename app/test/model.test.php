@@ -56,6 +56,8 @@
 		 * Let's test model extensions (and dynamic plugin loading)
 		 */
 		public function system_check_model_extending(){
+			// Disabled if mysql not enabled
+				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Load up my _test plugin (if not already done)
 				$load_test = $this->zajlib->plugin->load('_test', true, true);
 				zajTestAssert::areIdentical('__plugin working!', $load_test);

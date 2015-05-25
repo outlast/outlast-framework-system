@@ -16,7 +16,7 @@ class zajlib_request extends zajLibExtension {
 	 * @param array|bool $additional_options An associative array of additional curl options. {@link http://www.php.net/manual/en/function.curl-setopt.php} Example: array(CURLOPT_URL => 'http://www.example.com/')
 	 * @return string Returns a string with the content received.
 	 **/
-	function curl($url, $params = false, $method = "GET", $additional_options = false) {
+	public function curl($url, $params = false, $method = "GET", $additional_options = false) {
 		// Check for curl support
 			if(!function_exists('curl_init')) return $this->zajlib->error("Curl support not installed.");
 		// Check to see if url needs to be parsed
@@ -36,7 +36,8 @@ class zajlib_request extends zajLibExtension {
 			}
 
 			if($method == 'POST' || $method == 'PUT'){
-				curl_setopt($curl, CURLOPT_POST, true);
+				if($method == 'POST') curl_setopt($curl, CURLOPT_POST, true);
+				if($method == 'PUT') curl_setopt($curl, CURLOPT_PUT, true);
 				if($params && (is_array($params) || is_object($params))) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
 				if($params && is_string($params)) curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
 			}
@@ -60,7 +61,7 @@ class zajlib_request extends zajLibExtension {
 	 * @param integer|boolean $port The port number. If not set, it will default to 80 or 443 depending on the request type.
 	 * @return string Returns a string with the content received.
 	 */
-	function post($url, $content=false, $returnheaders = false, $customheaders = false, $port = false){
+	public function post($url, $content=false, $returnheaders = false, $customheaders = false, $port = false){
 		// Set the content based on url query string
 			if($content === false){
 				// parse the url
@@ -87,7 +88,7 @@ class zajlib_request extends zajLibExtension {
 	 * @return string Returns a string with the content received.
 	 * @todo Optimize so that calling post() doesnt run parse_url twice.
 	 */
-	function get($url ,$content="", $returnheaders = false, $customheaders = false, $port = false, $method = 'GET'){
+	public function get($url ,$content="", $returnheaders = false, $customheaders = false, $port = false, $method = 'GET'){
 		// add backwards compatiblity for method parameter order (if port is used as method)
 			if(!is_numeric($port) && $port !== false){
 				$method = $port;
@@ -146,11 +147,76 @@ class zajlib_request extends zajLibExtension {
 	}
 
 	/**
+	 * Get HTTP response code for a url.
+	 * @param string $url The url to fetch.
+	 * @return integer Returns the HTTP response code.
+	 */
+	public function response_code($url){
+		$headers = get_headers($url);
+    	return substr($headers[0], 9, 3);
+	}
+
+	/**
+	 * Returns the name of a status code based on the code.
+	 * @param integer $status_code The status code.
+	 * @return string The name.
+	 */
+	public function get_http_status_name($status_code){
+		// Decide which one
+		switch ($status_code){
+			case 100: $text = 'Continue'; break;
+			case 101: $text = 'Switching Protocols'; break;
+			case 200: $text = 'OK'; break;
+			case 201: $text = 'Created'; break;
+			case 202: $text = 'Accepted'; break;
+			case 203: $text = 'Non-Authoritative Information'; break;
+			case 204: $text = 'No Content'; break;
+			case 205: $text = 'Reset Content'; break;
+			case 206: $text = 'Partial Content'; break;
+			case 300: $text = 'Multiple Choices'; break;
+			case 301: $text = 'Moved Permanently'; break;
+			case 302: $text = 'Moved Temporarily'; break;
+			case 303: $text = 'See Other'; break;
+			case 304: $text = 'Not Modified'; break;
+			case 305: $text = 'Use Proxy'; break;
+			case 400: $text = 'Bad Request'; break;
+			case 401: $text = 'Unauthorized'; break;
+			case 402: $text = 'Payment Required'; break;
+			case 403: $text = 'Forbidden'; break;
+			case 404: $text = 'Not Found'; break;
+			case 405: $text = 'Method Not Allowed'; break;
+			case 406: $text = 'Not Acceptable'; break;
+			case 407: $text = 'Proxy Authentication Required'; break;
+			case 408: $text = 'Request Time-out'; break;
+			case 409: $text = 'Conflict'; break;
+			case 410: $text = 'Gone'; break;
+			case 411: $text = 'Length Required'; break;
+			case 412: $text = 'Precondition Failed'; break;
+			case 413: $text = 'Request Entity Too Large'; break;
+			case 414: $text = 'Request-URI Too Large'; break;
+			case 415: $text = 'Unsupported Media Type'; break;
+			case 500: $text = 'Internal Server Error'; break;
+			case 501: $text = 'Not Implemented'; break;
+			case 502: $text = 'Bad Gateway'; break;
+			case 503: $text = 'Service Unavailable'; break;
+			case 504: $text = 'Gateway Time-out'; break;
+			case 505: $text = 'HTTP Version not supported'; break;
+			default:
+				return $this->zajlib->warning("Unkown HTTP status code requested ".$status_code);
+			break;
+		}
+		return $text;
+	}
+
+
+
+	/**
 	 * Is the current request an ajax request? Requires a Javascript library to work properly cross-browser (jquery, moo, etc.)
+	 * @see For cross-domain ajax detection see http://stackoverflow.com/questions/8163703/cross-domain-ajax-doesnt-send-x-requested-with-header
 	 * @return boolean Return true if ajax request, false otherwise.
 	 */
 	public function is_ajax(){
-		if(empty($_SERVER['HTTP_X_REQUESTED_WITH'])) return false;
-		else return true;
+		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') return true;
+		else return false;
 	}
 }
