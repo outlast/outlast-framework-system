@@ -478,15 +478,15 @@ class zajLib {
 	/**
 	 * Redirect the user to relative or absolute URL
 	 * @param string $url The specific url to redirect the user to.
-     * @param integer $status_code HTTP status code of the redirection
+     * @param integer|boolean $status_code HTTP status code of the redirection. None by default.
      * @param boolean $frame_breakout If set to true, it will use javascript redirect to break out of iframe.
 	 * @return bool Does not yet return anything.
 	 **/
-	public function redirect($url, $status_code = 301, $frame_breakout = false){
+	public function redirect($url, $status_code = false, $frame_breakout = false){
         // For backward compatibility @todo Remove this
-			if (is_bool($status_code)) {
+			if(is_bool($status_code)){
 				$frame_breakout = $status_code;
-				$status_code = 301;
+				$status_code = false;
 			}
 
 		// Get HTTP protocol
@@ -502,7 +502,7 @@ class zajLib {
             }
             else{
 				// Push headers
-					header($protocol." ".$status_code." ".$this->request->get_http_status_name($status_code));
+					if($status_code) header($protocol." ".$status_code." ".$this->request->get_http_status_name($status_code));
 					header("Location: ".$url);
             }
 		exit;
