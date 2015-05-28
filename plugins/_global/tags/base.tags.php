@@ -211,9 +211,10 @@ EOF;
 			if(empty(\$forloop_depth)) \$forloop_depth = 1;
 			else \$forloop_depth++;
 		// does a parent forloop exist?
-			if(is_object(\$this->zajlib->variable->forloop)) \$parent_forloop = \$this->zajlib->variable->forloop;
+			if(is_object(\$this->zajlib->variable->forloop)) \$parent_forloop = clone \$this->zajlib->variable->forloop;
+			else \$parent_forloop = false;
 		// create for loop variables
-			\$this->zajlib->variable->forloop = (object) '';
+			\$this->zajlib->variable->forloop = new stdClass();
 			\$this->zajlib->variable->forloop->counter0 = -1;
 			// If not countable object, then typecast to array first (todo: can we do this in lib->array_to_object?)
 			if(is_object({$fetcher}) && !is_a({$fetcher}, 'Countable')) \$this->zajlib->variable->forloop->length = count((array) {$fetcher});
@@ -221,15 +222,16 @@ EOF;
  			\$this->zajlib->variable->forloop->counter = 0;
 			\$this->zajlib->variable->forloop->revcounter = \$this->zajlib->variable->forloop->length+1;
 			\$this->zajlib->variable->forloop->revcounter0 = \$this->zajlib->variable->forloop->length;
-			\$this->zajlib->variable->forloop->depth = \$forloop_depth;
-			if(\$forloop_depth != 1 && !empty(\$parent_forloop) && is_object(\$parent_forloop)){
+			if(is_object(\$parent_forloop)){
 				\$this->zajlib->variable->forloop->parentloop = \$parent_forloop;
 				\$this->zajlib->variable->forloop->totalcounter = \$parent_forloop->totalcounter;
 				\$this->zajlib->variable->forloop->totalcounter0 = \$parent_forloop->totalcounter0;
+				\$this->zajlib->variable->forloop->depth = \$this->zajlib->variable->forloop->parentloop->depth + 1;
 			}
 			else{
 				\$this->zajlib->variable->forloop->totalcounter = 0;
 				\$this->zajlib->variable->forloop->totalcounter0 = -1;
+				\$this->zajlib->variable->forloop->depth = 1;
 			}
 
 			foreach({$fetcher} as \$key=>{$item}){
@@ -320,19 +322,14 @@ EOF;
 		$data[item] = $data[local];
 		unset(\$foreach_item);
 	}
-	// Remove a level from depth
-	\$forloop_depth--;
-	\$this->zajlib->variable->forloop->depth = \$forloop_depth;
-	// if I have a parent, set me
-	if(!empty(\$this->zajlib->variable->forloop->parentloop) && is_object(\$this->zajlib->variable->forloop->parentloop)){
-		// Set my parent
-		\$parent_forloop = \$this->zajlib->variable->forloop->parentloop;
+	// if I had a parent, set me
+	if(is_object(\$this->zajlib->variable->forloop->parentloop)){
 		// Set my total counters
 		\$parent_forloop->totalcounter = \$this->zajlib->variable->forloop->totalcounter;
 		\$parent_forloop->totalcounter0 = \$this->zajlib->variable->forloop->totalcounter0;
 		// Unset me and reset me
-		unset(\$this->zajlib->variable->forloop);
-		\$this->zajlib->variable->forloop = \$parent_forloop;
+		\$this->zajlib->variable->forloop = \$this->zajlib->variable->forloop->parentloop;
+		print_r(\$this->zajlib->variable->forloop);
 	}
 	else{
 		// unset stuff
