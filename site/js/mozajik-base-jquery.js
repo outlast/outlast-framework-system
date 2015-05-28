@@ -21,7 +21,9 @@
 		jslibver:1.10,
 		trackevents_analytics:true,
 		trackevents_local:false,
-		fields: {}
+		fields: {},
+		lang: {},
+		config: {}
 	};
 
 // Detect various fixed features (pushstate)
@@ -898,6 +900,23 @@
 				this.readyFunctions.push(func);
 			}
 		};
+
+	/**
+	 * Localizations
+	 * @param {string|object} keyOrObject This can be an object with key/value pairs or just the key.
+	 * @param {string} value If you are using a key in the first param, this is the value.
+	 */
+		zaj.setLang = function(keyOrObject, value){
+			// @todo implement object.
+			// Set key/value
+				zaj.lang[keyOrObject] = value;
+			// Also set config
+				zaj.config = zaj.lang;
+			// Backwards compatibility
+				ofw.lang = zaj.lang;
+				ofw.config = zaj.config;
+		};
+
 	/**
 	 * Provide helper for file uploads.
 	 */
