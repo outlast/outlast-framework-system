@@ -167,7 +167,9 @@ class zajlib_export extends zajLibExtension {
 				if(is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
 					$class_name = $fetcher->class_name;
 					$my_fields = $class_name::__model();
-					foreach($my_fields as $field=>$val) $fields[] = $field;
+					foreach($my_fields as $field=>$val){
+						if(!$val->disable_export) $fields[] = $field;
+					}
 				}
 			// Get fields of db object if fields not passed (the property names of the object)
 				if(!is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
@@ -222,6 +224,11 @@ class zajlib_export extends zajLibExtension {
 							// Time or date field
 								elseif(is_string($type) && $type == 'time' && is_numeric($field_value)) $data[$field] = date("D M j G:i:s T Y", $field_value);
 								elseif(is_string($type) && $type == 'date' && is_numeric($field_value)) $data[$field] = date("D M j Y", $field_value);
+							// Skip password fields
+								elseif(is_string($type) && $type == 'password'){
+									exit("here");
+								}
+								// continue;
 							// Standard field
 								else $data[$field] = $field_value;
 							// Convert encoding if excel mode selected

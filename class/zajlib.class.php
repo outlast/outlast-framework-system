@@ -956,6 +956,7 @@ class zajLibLoader{
  * @property boolean $use_save True if it has a custom save() method.
  * @property boolean $use_duplicate True if it has a custom duplicate() method.
  * @property boolean $use_filter True if it has a custom filter() method.
+ * @property boolean $disable_export True if export is disabled on this field. This is used in export helper.
  * @property boolean $search_field True if this field should be included in a search().
  * @property boolean|string $edit_template The path of the template which should be displayed for {% input %} editors. If none, set to false.
  * @property boolean|string $show_template The path of the template which should be used when simply showing data from this field. If none, set to false.
@@ -992,6 +993,7 @@ class zajDb {
 				$zdb->use_save = $cname::use_save;
 				$zdb->use_duplicate = $cname::use_duplicate;
 				$zdb->use_filter = $cname::use_filter;
+				$zdb->disable_export = $cname::disable_export;
 				$zdb->search_field = $cname::search_field;
 				$zdb->edit_template = $cname::edit_template;
 				$zdb->show_template = $cname::show_template;
@@ -1056,6 +1058,7 @@ class zajField {
 	const use_save = false;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = true;		// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = false;		// boolean - true if fetch is modified
+	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = true;		// boolean - true if this field is used during search()
 	const edit_template = 'field/base.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
