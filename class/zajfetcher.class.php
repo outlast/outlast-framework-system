@@ -896,6 +896,9 @@ class zajFetcher implements Iterator, Countable{
 		// if not an object
 			if(!is_object($object)) zajLib::me()->error('tried to edit a relationship with something that is not a model or fetcher object.');
 			//if(!$object->exists) zajLib::me()->error('tried to add a relationship that was not an object');
+		// if parent does not exist
+			if(!$this->connection_parent->exists) zajLib::me()->error('You tried to add a '.$object->class_name.' connection where the '.$this->connection_parent->class_name.' does not yet exist!');
+
 		// if manytomany, write in separate table
 			if($this->connection_type == 'manytomany'){
 				$row = array('time_create'=>time());

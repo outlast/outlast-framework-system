@@ -488,6 +488,8 @@
 										}
 									// Send a log
 										zaj.error("Ajax request ("+request+") failed with status "+textStatus, true);
+									// If we are in debug mode popup
+										if(textStatus == 'error' && zaj.debug_mode) zaj.alert("Ajax request failed with error:<hr/>"+jqXHR.responseText);
 								}
 						},
 						data: datarequest,
