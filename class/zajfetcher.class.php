@@ -46,7 +46,7 @@ class zajFetcher implements Iterator, Countable{
 		private $count = false;								// the instance count (limit included)
 		private $affected = false;							// the number returned (limit is taken into account)
 	// instance variables needed for generating the sql
-		private $select_what = array();					// what to select from db
+		private $select_what = array();						// what to select from db. the index is the 'as' value.
 		private $select_from = array();						// the tables to select from
 		private $limit = "";								// the limit parameter
 		private $orderby = "ORDER BY model.ordernum";		// ordered by ordernum by default
@@ -250,8 +250,8 @@ class zajFetcher implements Iterator, Countable{
 		// if replace
 			if($replace) $this->reset_field_sources();
 		// if an as name was chosen
-			if($as_name) $this->select_what[] = $source_field.' as '.$as_name;
-			else $this->select_what[] = $source_field;
+			if($as_name) $this->select_what[$as_name] = $source_field.' as '.$as_name;
+			else $this->select_what[$source_field] = $source_field;
 		// changes query, so reset me
 			$this->reset();
 		return $this;
@@ -531,7 +531,7 @@ class zajFetcher implements Iterator, Countable{
 	public function query($force = false){		
 		// if query already done
 			if($this->query_done === true && !$force) return $this;
-		// get query and execute it			
+		// get query and execute it
 			$this->db->query($this->get_query());
 		// count rows
 			$this->total = $this->db->get_total_rows();
@@ -572,38 +572,6 @@ class zajFetcher implements Iterator, Countable{
 			return $this->total;
 	}
 
-	/****************************************************************************************
-	 * Control methods used to retrieve objects from the database.
-	 * External use is now depricated and you should use foreach, next() and other standard
-	 *		php functions, structures.
-	 ***************************************************************************************/
-
-	/**
-	 * Retrieves the next row data
-	 * @todo Set this to private in 1.0
-	 **/
-	public function next_row($num = 1){
-		// if query not yet run, run now
-			if($this->query_done == false) $this->query();
-		// now return the next row
-			return $this->db->get($num, 0);
-	}
-
-	/**
-	 * Retrieves the next object
-	 * @param string $id If id is set, next_row is not called.
-	 * @todo Set this to private in 1.0
-	 **/
-	public function next_object($id = false){
-		$class_name = $this->class_name; // i havent found a syntax to do the following in one line!
-		if(!$id){
-			$data = $this->next_row();
-			if(empty($data[0])) return false;
-			else $id = $data[0]['id'];
-		}
-		return $class_name::fetch($id);
-	}
-
 	/**
 	 * Reset will force the fetcher to reload the next time it is accessed
 	 * @todo This should return the actual object not the fetcher. If you fix this, you must fix filter_first().
@@ -624,8 +592,8 @@ class zajFetcher implements Iterator, Countable{
 	/****************************************************************************************
 	 *	!Iterator methods
 	 *		- These are used by foreach
-	 *		- TODO: clean up this mess and remove the old next_row() stuff!
 	 ***************************************************************************************/
+
 	/**
 	 * Returns the current object in the iteration.
 	 **/
@@ -678,10 +646,9 @@ class zajFetcher implements Iterator, Countable{
 		return is_object($this->current_object);
 	}
 
-
 	/**
 	 * Converts the current database row to the current fetched object. Also sets current_key and current_object vars.
-	 * @param resource $result The database result row object.
+	 * @param stdClass $result The database result row object.
 	 * @return zajModel Returns the currently selected zajModel object.
 	 **/
 	public function row_to_current_object($result){
@@ -689,8 +656,16 @@ class zajFetcher implements Iterator, Countable{
 			if(!is_object($result) || empty($result->id)) $this->current_object = false;
 			else{
 				// Now fetch based on my id result
+					/** @var zajModel $class_name */
 					$class_name = $this->class_name;
 					$this->current_object = $class_name::fetch($result->id);
+				// Add fetcher data if it exists
+					$this->current_object->fetchdata = new stdClass();
+					foreach($this->select_what as $as_name => $val){
+						if(property_exists($result, $as_name) && !is_null($result->$as_name)){
+							$this->current_object->fetchdata->$as_name = $result->$as_name;
+						}
+					}
 			}
 		// Set current key, but only if current object is successful
 			if(is_object($this->current_object)) $this->current_key = $this->current_object->id;

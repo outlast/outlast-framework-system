@@ -124,6 +124,12 @@ abstract class zajModel implements JsonSerializable {
 	private $data;
 
 	/**
+	 * Access to the database-stored data that is retrieved as custom query via the {@link zajFetcher} object's add_field_source method.
+	 * @var stdClass|boolean
+	 **/
+	public $fetchdata = false;
+
+	/**
 	 * Access to the database-stored translation data through the object's own {@link zajModelLocalizer} object.
 	 * @var zajModelLocalizer
 	 **/
@@ -709,7 +715,8 @@ abstract class zajModel implements JsonSerializable {
 		// the zajlib
 		switch($name){
 			case "zajlib": 		return zajLib::me();
-			case "data":		if(!$this::$in_database) return false; 	// disable for non-database objects
+			case "data":
+				if(!$this::$in_database) return false; 	// disable for non-database objects
 				if(!$this->data) return $this->data = new zajData($this);
 				return $this->data;
 			case "translation":
