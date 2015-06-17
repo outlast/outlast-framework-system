@@ -222,6 +222,7 @@ EOF;
  			\$this->zajlib->variable->forloop->counter = 0;
 			\$this->zajlib->variable->forloop->revcounter = \$this->zajlib->variable->forloop->length+1;
 			\$this->zajlib->variable->forloop->revcounter0 = \$this->zajlib->variable->forloop->length;
+			\$this->zajlib->variable->forloop->value = false;
 			if(is_object(\$parent_forloop)){
 				\$this->zajlib->variable->forloop->parentloop = \$parent_forloop;
 				\$this->zajlib->variable->forloop->totalcounter = \$parent_forloop->totalcounter;
@@ -246,6 +247,8 @@ EOF;
 				\$this->zajlib->variable->forloop->first = !\$this->zajlib->variable->forloop->counter0;
 				\$this->zajlib->variable->forloop->last = !\$this->zajlib->variable->forloop->revcounter0;
 				\$this->zajlib->variable->forloop->key = \$key;
+				\$this->zajlib->variable->forloop->previous = \$this->zajlib->variable->forloop->value;
+				\$this->zajlib->variable->forloop->value = {$item};
 ?>
 EOF;
 		// write to file
