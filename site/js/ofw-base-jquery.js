@@ -150,6 +150,10 @@
 					// Create bs modal and append
 					$zaj_bs_modal = $('<div id="zaj_bootstrap_modal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
 					$('body').append($zaj_bs_modal);
+					// Prevent 'stuck scroll' bug
+					$(window).on('shown.bs.modal', function() {
+						$('#zaj_bootstrap_modal').css('overflow','hidden').css('overflow','auto');
+					});
 				}
 			// Reset repositioning event
 				$zaj_bs_modal.off('show.bs.modal').on('show.bs.modal', zaj.alert_reposition);
