@@ -370,7 +370,8 @@ class zajLib {
 		// Manually load error reporting lib
 			/* @var zajlib_error $error */
 			$error = $this->load->library('error');
-		// Now report the error
+		// Now report the error and send 500 error in debug mode
+			if(!$this->output_started && $this->debug_mode) header('HTTP/1.1 500 Internal Server Error');
 			return $error->warning($message);
 	}
 
