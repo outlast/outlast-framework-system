@@ -179,6 +179,11 @@
 						else $modal = $('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
 					// Append it!
 						$('body').append($modal);
+					// Prevent 'stuck scroll' bug
+						$(window).on('shown.bs.modal', function() {
+							zaj.log('modal fix');
+							$('#zaj_bootstrap_modal').css('overflow','hidden').css('overflow','auto');
+						});
 				}
 			// Reset and init button
 				// Set action
