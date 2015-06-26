@@ -292,7 +292,7 @@
 	 * @param {string} [value] A value.
 	 */
 		zaj.track = function(category, action, label, value){
-            if(zaj.debug_mode) zaj.log("Event sent: "+category+", "+action+", "+label);
+            if(zaj.debug_mode) zaj.log("Event sent: "+category+", "+action+", "+label+", "+value);
 			// Track via Google Analytics (ga.js or analytics.js)
 				if(zaj.trackevents_analytics){
 					if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
