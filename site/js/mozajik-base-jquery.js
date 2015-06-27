@@ -386,6 +386,15 @@
 			};
 
 			/**
+			 * Send AJAX request via GET and alert it.
+			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
+			 */
+			zaj.ajax.alert = function(request, pushstate){
+				zaj.ajax.request('get', request, function(r){ zaj.alert(r); }, pushstate);
+			};
+
+			/**
 			 * Send AJAX request via POST.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
