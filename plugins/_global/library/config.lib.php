@@ -58,7 +58,7 @@ class zajlib_config extends zajLibExtension{
 			if($force_compile || $this->zajlib->debug_mode || !file_exists($file_name)) $result = $this->compile($source_path, $fail_on_error);
 		// If compile failed or if include fails
 			if(!$result || !(@include($file_name))){
-				if($fail_on_error) $this->error("Could not load ".$this->type_of_file." file $source_path / $section! Section not found ($file_name)!");
+				if($fail_on_error) return $this->error("Could not load ".$this->type_of_file." file $source_path / $section! Section not found ($file_name)!");
 				else return false;
 			}
 		// set as loaded
