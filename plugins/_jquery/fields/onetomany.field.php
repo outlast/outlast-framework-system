@@ -84,7 +84,7 @@ class zajfield_onetomany extends zajField {
 					$data->set($this->options['field'], $object);
 					$data->save();
 			}
-		// is data an array?
+		// is data a string?
 		 	elseif(is_string($data)){
 			 	$othermodel = $this->options['model'];
 		 		$data = json_decode($data);

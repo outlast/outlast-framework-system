@@ -185,6 +185,13 @@ class zajfield_manytomany extends zajField {
 		 			// TODO: add order support for manytomany fields
 		 		}				
 		 	}
+		 // data is empty, so remove all connections
+		 	elseif(empty($data)){
+				// Remove missing old data
+				foreach($object->data->$field_name as $current_item){
+					$object->data->$field_name->remove($current_item);
+				}
+		 	}
 				
 		// unload this field to make sure the data is reloaded next time around
 			$object->data->unload($this->name);				
