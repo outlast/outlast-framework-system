@@ -282,7 +282,10 @@ class zajlib_lang extends zajlib_config {
 					// Now if load failed, set load to the default locale
 						if(!$result && $load_default_locale_on_error){
 							// throw a warning (if not testing)
-							if(!$this->zajlib->test->is_running()) $this->zajlib->warning("The language file $name_OR_source_path was not found, reverting to default locale.");
+							if(!$this->zajlib->test->is_running()){
+								if($section === false) $this->zajlib->warning("The language file $name_OR_source_path was not found, trying default locale.");
+								else $this->zajlib->warning("The section $section in language file $name_OR_source_path was not found, trying default locale.");
+							}
 							$name_OR_source_path = $original_source_path.'.'.$this->get_default_locale().'.lang.ini';
 						}
 						else return true;
