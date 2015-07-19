@@ -19,19 +19,19 @@ die("This file is for documentation.");
  * @method static zajDb json
  * @method static zajDb locale
  * @method static zajDb locales
- * @method static zajDb manytomany
- * @method static zajDb manytoone
+ * @method static zajDb manytomany(string $other_object, string $other_field='')
+ * @method static zajDb manytoone($other_object)
  * @method static zajDbMap map
  * @method static zajDb name
- * @method static zajDb onetoone
- * @method static zajDb onetomany
+ * @method static zajDb onetoone($other_object, $other_field='')
+ * @method static zajDb onetomany($other_object, $other_field='')
  * @method static zajDb ordernum
  * @method static zajDb password
  * @method static zajDbPhoto photo
  * @method static zajDbPhoto photos
  * @method static zajDb rating
  * @method static zajDb richtext
- * @method static zajDb select
+ * @method static zajDb select($array)
  * @method static zajDb serialized
  * @method static zajDb text
  * @method static zajDb textarea
