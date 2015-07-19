@@ -181,7 +181,6 @@
 						$('body').append($modal);
 					// Prevent 'stuck scroll' bug
 						$(window).on('shown.bs.modal', function() {
-							zaj.log('modal fix');
 							$('#zaj_bootstrap_modal').css('overflow','hidden').css('overflow','auto');
 						});
 				}
