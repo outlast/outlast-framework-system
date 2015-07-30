@@ -782,7 +782,7 @@ abstract class zajModel implements JsonSerializable {
 
 		// return the resumed class
 		$filename = zajLib::me()->file->get_id_path(zajLib::me()->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
-		// try opening the file
+		// try opening the file and unserializing
 		$item_cached = false;
 		if(!file_exists($filename)){
 			// create object
@@ -792,12 +792,12 @@ abstract class zajModel implements JsonSerializable {
 		}
 		else{
 			$new_object = unserialize(file_get_contents($filename));
-			$new_object->zajlib = zajLib::me();
-			$item_cached = true;
+			if(is_object($new_object)){
+				$new_object->zajlib = zajLib::me();
+				$item_cached = true;
+			}
 		}
-		if(!method_exists($new_object, 'fire') ||
-			$new_object->class_name != $class_name){
-
+		if(!method_exists($new_object, 'fire') || $new_object->class_name != $class_name){
 			// @todo Remove this logging once the problem has been solved!
 			//zajLib::me()->warning("Class mismatch for cache ($item_cached): ".$class_name." / ".$new_object->class_name." / $id / ".$new_object->id);
 			copy($filename, zajLib::me()->basepath.'cache/_mismatched/'.$class_name.'-'.$id.'.cache');
