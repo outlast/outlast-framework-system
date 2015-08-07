@@ -135,6 +135,7 @@ class zajFetcher implements Iterator, Countable{
 			// done by limit
 		return $this;
 	}
+
 	/**
 	 * Sort by a specific field and by an order.
 	 * @param string $by The field name to sort by. Or RANDOM if you want it randomly. Or CUSTOM_SORT if you want the second parameter to just be used directly.
@@ -159,6 +160,17 @@ class zajFetcher implements Iterator, Countable{
 		// changes query, so reset me
 			$this->reset();
 		return $this;
+	}
+
+	/**
+	 * Custom order by.
+	 * @param string $orderby The ORDER BY clause in full. Nothing is checked or escaped here, so be careful!
+	 * @return zajFetcher This method can be chained.
+	 */
+	public function orderby($orderby = "model.ordernum DESC"){
+		$this->orderby = "ORDER BY ".$orderby;
+		$this->ordermode = '';
+		$this->reset();
 	}
 
 	/**
