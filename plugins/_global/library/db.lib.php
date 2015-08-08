@@ -95,7 +95,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// connect to server
 				$this->default_connection = @mysql_connect($server, $user, $pass, true);
 				if($this->default_connection === false){
-					if($fatal_error) return $this->zajlib->error("Unable to connect to sql server. Disable sql or correct the server/user/pass!");
+					if($fatal_error) return $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
 					else return false;
 				}
 				$this->current_session->conn = $this->default_connection;
@@ -141,7 +141,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 */
 		public function create_connection($server="", $user="", $pass="", $db="", $id = false){
 			// connect to server
-				$conn = mysql_connect($server, $user, $pass, true) or $this->zajlib->error("Unable to connect to sql server. Disable sql or correct the server/user/pass!");
+				$conn = mysql_connect($server, $user, $pass, true) or $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
 			// select db
 				mysql_select_db($db, $conn) or $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
 			// set to connection encoding setting
