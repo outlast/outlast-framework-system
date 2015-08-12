@@ -1231,11 +1231,13 @@ class zajVariable {
 /** 
  * Autoloads object files
  **/
-function __autoload($class_name){	
+function ofwAutoload($class_name){
 	// If autoloading enabled or not
-		if(!zajLib::me()->model_autoloading) return false;
+		if(!zajLib::me()->model_autoloading) return;
 	// check if models enabled
 		if(!zajLib::me()->zajconf['mysql_enabled']) zajLib::me()->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
 	// load the model
 		return zajLib::me()->load->model($class_name);
 }
+
+spl_autoload_register('ofwAutoload');
