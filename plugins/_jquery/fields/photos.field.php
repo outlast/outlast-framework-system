@@ -47,13 +47,7 @@ class zajfield_photos extends zajField {
 	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
-		// Compatibility mode? Remove this eventually, it's because of a bug earlier.
-		if(!defined('OFW_PHOTO_COMPATIBILTY_MODE') || OFW_PHOTO_COMPATIBILTY_MODE === true){
-			return Photo::fetch()->filter('parent',$object->id)->sort('ordernum', 'ASC');
-		}
-		else{
-			return Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
-		}
+		return Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
 	}
 	
 	/**
