@@ -1242,7 +1242,7 @@
 	/**
 	 * Now add some attribute sniffer helpers
 	 **/
-	zaj.ready(function(){
+	zaj.addSniffers = function(){
 
 		/**
 		 * Single click handler.
@@ -1294,4 +1294,5 @@
 					}));
 			});
 
-	});
+	};
+	zaj.ready(zaj.addSniffers);
