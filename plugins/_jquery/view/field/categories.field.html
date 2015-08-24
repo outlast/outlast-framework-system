@@ -28,8 +28,13 @@
 	ofw.ready(function(){
 		$('#nestable-{{field.uid}}').nestable({enableDragAndDrop: false});
 		$('#nestable-{{field.uid}}').nestable('collapseAll');
+		$('input').on('ifClicked', function(ev){
+			ev.stopPropagation();
+			toggleCategoryCheckbox(ev, this);
+		});
 	});
 	function toggleCategoryCheckbox(ev, el){
+		ofw.log('trig');
 		var $me = $(el);
 		// Check what type of target
 			if(ev.target.type == 'button') return true;
@@ -44,6 +49,7 @@
 		// If I was just turned off, turn off my children
 			if(!$myinput[0].checked) $me.find('.dd-item').find('input').iCheck('uncheck');
 	}
+
 	{% if field.value %}
 		{% foreach field.value as selcat %}
 			$('#{{selcat.id}}').iCheck('toggle');
