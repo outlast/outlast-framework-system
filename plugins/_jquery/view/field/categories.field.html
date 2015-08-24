@@ -34,20 +34,28 @@
 		});
 	});
 	function toggleCategoryCheckbox(ev, el){
-		ofw.log('trig');
-		var $me = $(el);
+		ofw.log(el[0]);
+		var $me = $(el),
+			$myinput,
+			isInput = false;
 		// Check what type of target
 			if(ev.target.type == 'button') return true;
+			if($(this).hasClass('.field')) {
+				$myinput = $me;
+				isInput = true;
+			}
+			else {
+				$myinput = $me.find('input').first();
+			}
 		// Toggle me, plus stop propagation
-			var $myinput = $me.hasClass('.field') ? $me : $me.find('input').first();
 			$myinput.iCheck('toggle');
 			ev.stopPropagation();
 		// If I was just turned on, turn on my parents
-			if($myinput[0].checked) $me.parents('.dd-item').each(function() {
+			if((!isInput && $myinput[0].checked) || (isInput && $myinput.parent().hasClass('checked'))) $me.parents('.dd-item').each(function() {
 				$(this).find('input').first().iCheck('check');
 			});
 		// If I was just turned off, turn off my children
-			if(!$myinput[0].checked) $me.find('.dd-item').find('input').iCheck('uncheck');
+			if((!isInput && !$myinput[0].checked) || (isInput && !$myinput.parent().hasClass('checked'))) $me.find('.dd-item').find('input').iCheck('uncheck');
 	}
 
 	{% if field.value %}
