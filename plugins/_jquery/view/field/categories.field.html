@@ -25,7 +25,7 @@
 <script src="{{baseurl}}plugins/outlast/js/jquery.nestable.js?v2"></script>
 <script>
 	// Nestable without drag and drop
-	zaj.ready(function(){
+	ofw.ready(function(){
 		$('#nestable-{{field.uid}}').nestable({enableDragAndDrop: false});
 		$('#nestable-{{field.uid}}').nestable('collapseAll');
 	});
@@ -34,11 +34,13 @@
 		// Check what type of target
 			if(ev.target.type == 'button') return true;
 		// Toggle me, plus stop propagation
-			var $myinput = $me.find('input').first();
+			var $myinput = $me.hasClass('.field') ? $me : $me.find('input').first();
 			$myinput.iCheck('toggle');
 			ev.stopPropagation();
 		// If I was just turned on, turn on my parents
-			if($myinput[0].checked) $me.parents('.dd-item').find('input').first().iCheck('check');
+			if($myinput[0].checked) $me.parents('.dd-item').each(function() {
+				$(this).find('input').first().iCheck('check');
+			});
 		// If I was just turned off, turn off my children
 			if(!$myinput[0].checked) $me.find('.dd-item').find('input').iCheck('uncheck');
 	}
