@@ -471,6 +471,7 @@
 								if(typeof result == "function") result(data, jsondata);
 								else if(typeof result == "object"){
 									$(result).html(data);
+									zaj.activateHandlers($(result));
 								}
 								else{
 									var validationResult = zaj.validate(data);
@@ -1240,16 +1241,19 @@
 	})(jQuery);
 
 	/**
-	 * Now add some attribute sniffer helpers
+	 * Now activate the handler data attributes.
+	 * @param {jQuery} [$parent=$(body)] The jQuery object in which the handlers are searched for.
 	 **/
-	zaj.ready(function(){
+	zaj.activateHandlers = function($parent){
+		// Defaults to body
+		if(typeof $parent == 'undefined') $parent = $(window);
 
 		/**
 		 * Single click handler.
 		 * @attr data-single-click Defines any javascript that is to be executed once even if the user double clicks.
 		 * @attr data-single-click-delay Defines the number of ms before the user can click again. Defaults to 1500. (optional)
 		 **/
-			$('[data-single-click]').click(function(){
+			$parent.find('[data-single-click]').click(function(){
 				var el =  $(this);
 				var delay = el.attr('data-single-click-delay');
 				if(!delay) delay = 1500;
@@ -1268,7 +1272,7 @@
 		 * @attr data-autopagination-block You can override the default 'autopagination' block name by specifying this attribute.
 		 * @attr data-autopagination-button A selector for a button that will be used for loading more results. In this case additional results are not loaded on scroll.
 		 **/
-			$('[data-autopagination]').each(function(){
+			$parent.find('[data-autopagination]').each(function(){
 				// Set defaults and data
 					var $el =  $(this);
 					var _rawdata = $el.attr('data-autopagination');
@@ -1294,4 +1298,5 @@
 					}));
 			});
 
-	});
+	};
+	zaj.ready(function(){ zaj.activateHandlers() });
