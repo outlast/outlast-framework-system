@@ -47,10 +47,15 @@ class zajlib_config extends zajLibExtension{
 	public function load($source_path, $section=false, $force_compile=false, $fail_on_error = true){
 		// check chroot
 			if(strpos($source_path, '..') !== false) return $this->zajlib->error($this->type_of_file.' source file must be relative to conf path.');
-		// generate the file name
+		// generate section
 			if($section) $fsection = '.'.$section;
 			else $fsection = '';
+		// allow names without .conf.ini
+			if(strstr($source_path, '.') === false) $source_path = $source_path.'.conf.ini';
+
+		// create full file name
 			$file_name = $this->zajlib->basepath.$this->dest_path.$source_path.$fsection.'.php';
+
 		// was it already loaded?
 			if(!empty($this->loaded_files[$file_name])) return true;
 		// does it exist? if not, compile now!
