@@ -67,6 +67,14 @@ class zajfield_photo extends zajField {
 				$pobj = Photo::fetch($data);
 				if(is_object($pobj)) $data = $pobj;
 			}
+			elseif(empty($data)){
+				// Remove previous ones
+				$photos = Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
+				if($photos->count > 0){
+					foreach($photos as $pold){ $pold->delete(); }
+				}
+
+			}
 		// if data is a photo object
 			if(is_object($data) && is_a($data, 'Photo')){
 				// Check to see if already has parent (disable hijacking of photos)
