@@ -37,13 +37,13 @@
 	{% endif %}
 
 </div>
-<input type="hidden" name="{{field.name}}" id="{{field.uid}}" {% if field.value %} value="{{field.value.id}}" {% endif %}>
+<input type="hidden" name="{{field.name}}" id="{{field.uid}}">
 <div class="clearfix"></div>
 <br/>
 
 
 <script type="text/javascript">
-    var file_upload_changes_{{field.uid}} = {add: [], remove: [], order: [] };
+    var file_upload_changes_{{field.uid}} = {add: [], remove: [] };
 	
 	// create uploader and list
 		var uploader_{{field.uid}};
@@ -115,8 +115,11 @@
                     var el = $("<div class='col-sm-2' id='"+res.id+"' style='position: relative; cursor: pointer;'><img class='pull-left img-thumbnail img-responsive' src='"+imgurl+"'></div>");
 					$('#{{field.uid}}-filelist').html(el);
                     zaj.addMyPhotoPopover_{{field.uid}}(el, imgurl);
-				// Set as my input value
-					$('#{{field.uid}}').val(res.id);
+                    // Remove from add value
+                    file_upload_changes_{{field.uid}}.add = jQuery.grep(file_upload_changes_{{field.uid}}.add, function(value) { return value != id; });
+                    // Set as my input value
+                    file_upload_changes_{{field.uid}}.add.push(res.id);
+                    $('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
 			};
 
             /**
@@ -130,9 +133,12 @@
                 $photodiv.popover('hide');
                 // Remove my div
                 $photodiv.remove();
-
+                // Remove from add value
+                file_upload_changes_{{field.uid}}.add  = '';
+                // Update my remove value
+                file_upload_changes_{{field.uid}}.remove.push(id);
                 // Set input
-                $('#{{field.uid}}').val('');
+                $('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
             };
 			
 		// Run init
