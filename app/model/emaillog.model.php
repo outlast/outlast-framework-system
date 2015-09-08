@@ -44,7 +44,7 @@ class EmailLog extends zajModel {
 		$emaillog->set('subject', $subject);
 		$emaillog->set('from', $from);
 		$emaillog->set('to', $to);
-		$emaillog->set('text_html', $body_html);
+		$emaillog->set('html_body', $body_html);
 		$emaillog->set('text_body', $body_txt);
 		$emaillog->set('bounceto', $bounce);
 		$emaillog->set('bcc', $bcc);
