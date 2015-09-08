@@ -39,25 +39,18 @@ class EmailLog extends zajModel {
 
 	}
 
-	public static function create_from_email($subject, $from, $to, $body_html = "", $body_txt = "", $bounce = "", $bcc = "", $header = ""){
+	public static function create_from_email($subject, $from, $to, $body_html, $body_txt, $bounce, $bcc, $header, $status, $log){
 		$emaillog = EmailLog::create();
 		$emaillog->set('subject', $subject);
 		$emaillog->set('from', $from);
 		$emaillog->set('to', $to);
-		if($body_html != "")
-			$emaillog->set('text_html', $body_html);
-		if($body_txt != ""){
-			$emaillog->set('text_body', $body_txt);
-		}
-		if($bounce != ""){
-			$emaillog->set('bounceto', $bounce);
-		}
-		if($bcc != ""){
-			$emaillog->set('bcc', $bcc);
-		}
-		if($header != ""){
-			$emaillog->set('headers', $header);
-		}
+		$emaillog->set('text_html', $body_html);
+		$emaillog->set('text_body', $body_txt);
+		$emaillog->set('bounceto', $bounce);
+		$emaillog->set('bcc', $bcc);
+		$emaillog->set('headers', $header);
+		$emaillog->set('status', $status);
+		$emaillog->set('log', $log);
 		$emaillog->save();
 	}
 }
