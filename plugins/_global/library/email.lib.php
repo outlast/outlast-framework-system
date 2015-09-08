@@ -71,15 +71,22 @@ class zajlib_email extends zajLibExtension {
 				case 'postmark':
 					if($html_body) $failures = $this->postmark($from, $to, $subject, $html_body, $sendcopyto);
 					else $failures = $this->postmark($from, $to, $subject, $body, $sendcopyto);
-					if($failures->Message == 'OK') $status = 'sent';
-					else $status = 'failed';
-					EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, $failures->ErrorCode. ' '.$failures->Message);
+					if($this->zajlib->zajconf['mysql_enabled']){
+						if($failures->Message == 'OK') $status = 'sent';
+						else $status = 'failed';
+						EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, $failures->ErrorCode. ' '.$failures->Message);
+					}
 					if($failures->Message == 'OK') return true;
 					break;
 				case 'mandrill':
 				default:
 					if($html_body) $failures = $this->mandrill($from, $to, $subject, $html_body, $sendcopyto);
 					else $failures = $this->mandrill($from, $to, $subject, $body, $sendcopyto);
+					if($this->zajlib->zajconf['mysql_enabled']){
+						if(empty($failures->code)) $status = 'sent';
+						else $status = 'failed';
+						EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, $failures->code. ', '.$failures->name. ', ' . $failures->message);
+					}
 					if(empty($failures->code)) return true;
 					break;
 			}
