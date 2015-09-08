@@ -452,7 +452,17 @@ EOF;
 		// If parameter is not defined, then the parameter is the current locale
 		if(empty($parameter)) $parameter = 50;
 		// write to file
-		$this->zajlib->compile->write('$filter_var = "//www.gravatar.com/avatar/" . md5( strtolower( trim( $filter_var ) ) ) . "?d=" . urlencode("") . "&s=" . '.$parameter.';');
+		$this->zajlib->config->load('filters.conf.ini', 'gravatar');
+
+		if ($this->zajlib->url->valid($this->zajlib->config->variable->default_image_url)) {
+			$default_image_url = urlencode($this->zajlib->config->variable->default_image_url);
+		} elseif ($this->zajlib->config->variable->default_image_url) {
+			$default_image_url = urlencode($this->zajlib->baseurl . $this->zajlib->config->variable->default_image_url);
+		} else {
+			$default_image_url = $this->zajlib->config->variable->default_image_url;
+		}
+
+		$this->zajlib->compile->write('$filter_var = "//www.gravatar.com/avatar/" . md5( strtolower( trim( $filter_var ) ) ) . "?d='.$default_image_url.'&s=" . '.$parameter.';');
 		return true;
 	}
 
