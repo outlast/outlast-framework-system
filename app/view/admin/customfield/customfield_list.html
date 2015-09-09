@@ -1,0 +1,72 @@
+{% extends 'admin/base.html' %}
+
+{% block contenttitle %}
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="page-title">Customfields</h2>
+    </div>
+</div>
+{% endblock contenttitle %}
+
+{% block selectmenu %}
+<script language="javascript">$('#customfield-menu').addClass('active');</script>
+{% endblock %}
+
+{% block submenu %}
+<input type="button" class="btn btn-success" onclick="zaj.redirect('admin/customfield/add/');" value="Add new">
+<input class="pull-right" id="search-box" value="{{zaj.get.query|escape}}" type="search" placeholder="Search...">
+
+<input type="hidden" name="query" value="{{zaj.get.query|escape}}" id="queryfilter">
+
+<script language="javascript">
+    zaj.ready(function(){
+        $('#search-box').$zaj().search('/admin/customfield/', $('#admincontent'));
+    });
+</script>
+{% endblock submenu %}
+
+{% block content %}
+{% if zaj.get.error %}<div class="alert alert-error center">{{zaj.get.error}}</div>{% endif %}
+
+{% block customfieldlist %}
+{{customfields|pagination:'custom fields'}}
+
+<table class="table table-striped table-hover" id="customfieldlist">
+    <tbody>
+    {% foreach customfields as customfield %}
+    <tr data-sortable='{{customfield.id}}'>
+        <td colspan="3">
+            {{customfield.name}}
+            <span class="label label-info">{{customfield.data.type}}</span>
+            <a class="btn btn-small btn-danger pull-right" onclick="if(confirm('Are you sure you want to delete?')) window.location='{{baseurl}}admin/customfield/delete/?id={{customfield.id}}';"><i class="glyphicon glyphicon-trash"></i></a>
+            <a class="btn btn-primary btn-small pull-right" onclick="zaj.redirect('admin/customfield/edit/?id={{customfield.id}}');">Edit</a>
+            <a class="btn btn-small featured pull-right" title="{{#category_featured#|escape:'html'}}" onclick="feature_object_toggle('{{customfield.id}}');"><i class="glyphicon glyphicon-star{% if not customfield.data.featured %}-empty{% endif %}"></i></a>
+        </td>
+    </tr>
+    {% elseforeach %}
+    <tr><td>No custom fields found.</td></tr>
+    {% endforeach %}
+    </tbody>
+</table>
+
+{{customfields|pagination:'custom fields'}}
+{% endblock customfieldlist %}
+
+<script src="{{baseurl}}system/js/jquery/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.min.js"></script>
+<script>
+    function feature_object_toggle(objectid){
+        var el = $('tr[data-sortable='+objectid+'] a.featured i');
+        // Remove and add thinking class
+        el.removeClass('glyphicon-star-empty').removeClass('glyphicon-star').addClass('glyphicon-refresh');
+        // Now update data
+        zaj.ajax.post('admin/customfield/toggle/featured/?id='+objectid, function(r){
+            el.removeClass('glyphicon-refresh');
+            if(r == 'yes') el.addClass('glyphicon-star');
+            else el.addClass('glyphicon-star-empty');
+        });
+    }
+
+    zaj.ready(function(){ $('table tbody').$zaj().sortable('/admin/customfield/reorder/'); });
+</script>
+
+{% endblock content %}
