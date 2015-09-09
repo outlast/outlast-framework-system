@@ -44,4 +44,6 @@ class CustomField extends zajModel
 	public function __afterFetch()
 	{
 	}
+
+	public static function __onSearch($fetcher){ return $fetcher; }
 }

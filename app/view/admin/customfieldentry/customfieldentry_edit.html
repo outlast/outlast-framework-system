@@ -1,0 +1,40 @@
+{% extends 'admin/customfieldentry/customfieldentry_list.html' %}
+
+{% block submenu %}
+{% endblock submenu %}
+
+{% block content %}
+<form id='saverform' onsubmit="save_form(); return false;" class="form-horizontal label-left" role="form">
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Custom field</label>
+        <div class="col-sm-10">
+            {% input customfieldentry.customfield customfieldentry.data.customfield %}
+            <span class="help-block">Required.</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">Value</label>
+        <div class="col-sm-10">
+            {% input customfieldentry.value customfieldentry.data.value %}
+            <span class="help-block">Required.</span>
+        </div>
+    </div>
+
+    <input type='hidden' name='id' value="{{customfieldentry.id}}">
+</form>
+
+<div class="col-sm-12">
+    <a class='btn btn-danger' href='{{baseurl}}admin/sample/'>Cancel</a>
+    <a class='btn btn-success pull-right' onclick="save_form();">Save</a>
+</div>
+
+<div class="clearfix"></div>
+
+
+<script language="javascript">
+    function save_form(){
+        $('#saverform').$zaj().submit('admin/customfieldentry/save/', 'admin/customfieldentry/');
+    }
+</script>
+{% endblock content %}
