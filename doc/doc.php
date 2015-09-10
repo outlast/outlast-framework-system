@@ -120,3 +120,19 @@ class zajDataCategory extends zajData {}
  * @property string $locale
  */
 class zajTranslationData extends zajData {}
+
+
+/**
+ * Class EmailLogData
+ * @property string $subject Subject of email.
+ * @property string $from From email address.
+ * @property string $to To email address.
+ * @property string $html_body Body html.
+ * @property string $text_body Body text.
+ * @property string $bounceto Bounce email to.
+ * @property string $bcc Bcc email address.
+ * @property array|stdClass $headers Additional headers.
+ * @property string $status Status of email. Can be sent or failed (or new/deleted).
+ * @property string $log The log message.
+ */
+class EmailLogData extends zajData {}
