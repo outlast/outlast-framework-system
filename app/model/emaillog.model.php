@@ -1,8 +1,12 @@
 <?php
 /**
- * A class for log email sending.
+ * A class for logging sent emails.
  */
 
+/**
+ * Class EmailLog
+ * @property EmailLogData $data
+ */
 class EmailLog extends zajModel {
 
 	///////////////////////////////////////////////////////////////
@@ -31,14 +35,19 @@ class EmailLog extends zajModel {
 	public function __construct($id = ""){ parent::__construct($id, __CLASS__); return true; }
 	public static function __callStatic($name, $arguments){ array_unshift($arguments, __CLASS__); return call_user_func_array(array('parent', $name), $arguments); }
 
-	///////////////////////////////////////////////////////////////
-	// !Custom methods
-	///////////////////////////////////////////////////////////////
-
-	public function __afterFetch(){
-
-	}
-
+	/**
+	 * Creates a new object from parameters.
+	 * @param string $subject Subject of email.
+	 * @param string $from From email address.
+	 * @param string $to To email address.
+	 * @param string $body_html Body html.
+	 * @param string $body_txt Body text.
+	 * @param string $bounce Bounce email to.
+	 * @param string $bcc Bcc email address.
+	 * @param string|array|stdClass $header Additional headers.
+	 * @param string $status Status of email. Can be sent or failed (or new/deleted).
+	 * @param string $log The log message.
+	 */
 	public static function create_from_email($subject, $from, $to, $body_html, $body_txt, $bounce, $bcc, $header, $status, $log){
 		$emaillog = EmailLog::create();
 		$emaillog->set('subject', $subject);
