@@ -69,32 +69,32 @@ class zajlib_email extends zajLibExtension {
 			// Choose which API to use
 			switch($this->zajlib->config->variable->email_provider){
 				case 'postmark':
-					if($html_body) $failures = $this->postmark($from, $to, $subject, $html_body, $sendcopyto);
-					else $failures = $this->postmark($from, $to, $subject, $body, $sendcopyto);
+					if($html_body) $responses = $this->postmark($from, $to, $subject, $html_body, $sendcopyto);
+					else $responses = $this->postmark($from, $to, $subject, $body, $sendcopyto);
 					if($this->zajlib->zajconf['mysql_enabled']){
-						if($failures->Message == 'OK') $status = 'sent';
+						if($responses->Message == 'OK') $status = 'sent';
 						else $status = 'failed';
-						EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, $failures->ErrorCode. ' '.$failures->Message);
+						EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, json_encode($responses));
 					}
-					if($failures->Message == 'OK') return true;
+					if($responses->Message == 'OK') return true;
 					break;
 				case 'mandrill':
 				default:
-					if($html_body) $failures = $this->mandrill($from, $to, $subject, $html_body, $sendcopyto);
-					else $failures = $this->mandrill($from, $to, $subject, $body, $sendcopyto);
+					if($html_body) $responses = $this->mandrill($from, $to, $subject, $html_body, $sendcopyto);
+					else $responses = $this->mandrill($from, $to, $subject, $body, $sendcopyto);
 					if($this->zajlib->zajconf['mysql_enabled']){
-						if(empty($failures->code)) $status = 'sent';
+						if(empty($responses->code)) $status = 'sent';
 						else $status = 'failed';
-						EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, $failures->code. ', '.$failures->name. ', ' . $failures->message);
+						EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, json_encode($responses));
 					}
-					if(empty($failures->code)) return true;
+					if(empty($responses->code)) return true;
 					break;
 			}
 
 
 		}
 		else return $this->zajlib->warning("Failed to send email to $to, no email API activated.");
-		return $this->zajlib->warning("Failed to send email to $to ".print_r($failures, true));
+		return $this->zajlib->warning("Failed to send email to $to ".print_r($responses, true));
 	}
 
 	/**
