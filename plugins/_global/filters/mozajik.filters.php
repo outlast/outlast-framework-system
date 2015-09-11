@@ -54,6 +54,16 @@ EOF;
 			$this->zajlib->compile->write($content);
 		return true;
 	}
+
+	/**
+	 * Filter: srcset - Returns the HTML5 compatible srcset attribute of an image
+	 *
+	 *  <b>{{ user.data.photos|photo:'4' }}</b> The url of the photo will be displayed, without the baseurl.
+	 **/
+	public function filter_srcset($parameter, &$source){
+
+	}
+
 	/**
 	 * Filter: count - Return the LIMITed count of a fetcher object. (This will be the number of rows returned taking into account LIMITs). This also works on arrays (where the number of items are returned) or any other data type (where 1 will be returned).
 	 *

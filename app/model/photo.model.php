@@ -607,4 +607,8 @@ class Photo extends zajModel {
 			@unlink($tmp_name);
 		return $pobj;
 	}
+
+	public static function get_srcset() {
+
+	}
 }
