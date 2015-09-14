@@ -56,12 +56,24 @@ EOF;
 	}
 
 	/**
-	 * Filter: srcset - Returns the HTML5 compatible srcset attribute of an image
+	 * Filter: srcset - Returns the HTML5 compatible srcset attribute value of an image
 	 *
-	 *  <b>{{ user.data.photos|photo:'4' }}</b> The url of the photo will be displayed, without the baseurl.
+	 *  <b>{{ user.data.photos|srcset }}</b> The srcset="[value comes here]" of the <img> will be displayed.
 	 **/
 	public function filter_srcset($parameter, &$source){
-
+		$content = <<<EOF
+if(is_object(\$filter_var) && is_a(\$filter_var, "Photo")){
+	\$filter_var = \$filter_var->get_srcset($parameter);
+}
+elseif(is_object(\$filter_var) && is_a(\$filter_var, "zajFetcher") && \$obj = \$filter_var->rewind()){
+	\$filter_var=\$obj->get_srcset($parameter);
+}
+else{
+	\$filter_var=false;
+}
+EOF;
+		$this->zajlib->compile->write($content);
+		return true;
 	}
 
 	/**

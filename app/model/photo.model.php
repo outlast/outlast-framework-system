@@ -608,7 +608,16 @@ class Photo extends zajModel {
 		return $pobj;
 	}
 
-	public static function get_srcset() {
+	public function get_srcset($size = null) {
 
+		$srcset_count = 1;
+		$srcset_str = '';
+
+		foreach ($this->data->dimensions as $size => $data) {
+			$srcset_str .= (($srcset_count > 1)?",\n":"").$this->get_image($size) . " " . $data->w . "w";
+			$srcset_count++;
+		}
+
+		return $srcset_str;
 	}
 }
