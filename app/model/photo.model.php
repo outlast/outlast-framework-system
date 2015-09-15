@@ -608,7 +608,7 @@ class Photo extends zajModel {
 		return $pobj;
 	}
 
-	public function get_srcset($size = null) {
+	public function get_srcset() {
 
 		$srcset_count = 1;
 		$srcset_str = '';

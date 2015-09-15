@@ -63,10 +63,10 @@ EOF;
 	public function filter_srcset($parameter, &$source){
 		$content = <<<EOF
 if(is_object(\$filter_var) && is_a(\$filter_var, "Photo")){
-	\$filter_var = \$filter_var->get_srcset($parameter);
+	\$filter_var = \$filter_var->get_srcset();
 }
 elseif(is_object(\$filter_var) && is_a(\$filter_var, "zajFetcher") && \$obj = \$filter_var->rewind()){
-	\$filter_var=\$obj->get_srcset($parameter);
+	\$filter_var=\$obj->get_srcset();
 }
 else{
 	\$filter_var=false;
