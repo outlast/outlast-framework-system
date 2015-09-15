@@ -34,13 +34,13 @@
 		});
 	});
 	function toggleCategoryCheckbox(ev, el){
-		ofw.log(el[0]);
 		var $me = $(el),
 			$myinput,
 			isInput = false;
 		// Check what type of target
 			if(ev.target.type == 'button') return true;
-			if($(this).hasClass('.field')) {
+			if($(this).hasClass('.iCheck-helper')) {
+				console.log('asdfasdf!');
 				$myinput = $me;
 				isInput = true;
 			}
