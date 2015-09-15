@@ -342,6 +342,23 @@ class Photo extends zajModel {
 	}
 
 	/**
+	 * Get the HTML5 image source set attribute value.
+	 * @return string Return the generated srcset attribute value based on the available sizes.
+	 */
+	public function get_srcset() {
+
+		$srcset_count = 1;
+		$srcset_str = '';
+
+		foreach ($this->data->dimensions as $size => $data) {
+			$srcset_str .= (($srcset_count > 1)?",\n":"").$this->get_image($size) . " " . $data->w . "w";
+			$srcset_count++;
+		}
+
+		return $srcset_str;
+	}
+
+	/**
 	 * Forces a download dialog for the browser.
 	 * @param string $size One of the standard photo sizes.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
@@ -608,16 +625,4 @@ class Photo extends zajModel {
 		return $pobj;
 	}
 
-	public function get_srcset() {
-
-		$srcset_count = 1;
-		$srcset_str = '';
-
-		foreach ($this->data->dimensions as $size => $data) {
-			$srcset_str .= (($srcset_count > 1)?",\n":"").$this->get_image($size) . " " . $data->w . "w";
-			$srcset_count++;
-		}
-
-		return $srcset_str;
-	}
 }
