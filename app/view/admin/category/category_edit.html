@@ -23,6 +23,12 @@
 					<input class='field text form-control' type='text' id='field[name]' name='name' value='{{object.data.name|escape}}' onkeyup="suggest();" onblur="suggest();"/>
 				</div>
 			</div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Test custom field</label>
+                <div class="col-sm-10">
+                    {% input category.something object.data.something %}
+                </div>
+            </div>
 			<div class="form-group">
 				<label class="col-sm-2 control-label">{{#category_description#}}</label>
 				<div class="col-sm-10">
