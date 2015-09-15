@@ -54,6 +54,28 @@ EOF;
 			$this->zajlib->compile->write($content);
 		return true;
 	}
+
+	/**
+	 * Filter: srcset - Returns the HTML5 compatible srcset attribute value of an image
+	 *
+	 *  <b>{{ user.data.photos|srcset }}</b> The srcset="[value comes here]" of the <img> will be displayed.
+	 **/
+	public function filter_srcset($parameter, &$source){
+		$content = <<<EOF
+if(is_object(\$filter_var) && is_a(\$filter_var, "Photo")){
+	\$filter_var = \$filter_var->get_srcset();
+}
+elseif(is_object(\$filter_var) && is_a(\$filter_var, "zajFetcher") && \$obj = \$filter_var->rewind()){
+	\$filter_var=\$obj->get_srcset();
+}
+else{
+	\$filter_var=false;
+}
+EOF;
+		$this->zajlib->compile->write($content);
+		return true;
+	}
+
 	/**
 	 * Filter: count - Return the LIMITed count of a fetcher object. (This will be the number of rows returned taking into account LIMITs). This also works on arrays (where the number of items are returned) or any other data type (where 1 will be returned).
 	 *
