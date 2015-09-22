@@ -33,7 +33,7 @@
     <div class='text' contenteditable="true" spellcheck="false">
         {{field.value|strip_attribute:'style'|safe}}
     </div>
-	<textarea class='field textarea hide' id='{{field.uid}}' name='{{field.name}}'>{{field.value|escape:'htmlall'}}</textarea>
+	<textarea class='field textarea hide' id='{{field.uid}}' name='{{field.name}}'>{{field.value|safe|escape:'htmlall'}}</textarea>
 </div>
 
 <script>
