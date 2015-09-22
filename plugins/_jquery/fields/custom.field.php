@@ -40,7 +40,6 @@ class zajfield_custom extends zajField {
 	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
-
 		return CustomFieldEntry::fetch()->filter('parent',$object->id)->filter('class', $this->class_name);
 	}
 
@@ -52,7 +51,18 @@ class zajfield_custom extends zajField {
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
 	public function save($data, &$object){
-
+		// it's always a JSON
+		$data = json_decode($data);
+		if(!empty($data)){
+			foreach($data as $key=>$value){
+				$cf = CustomFieldEntry::create();
+				$cf->set('customfield', $value->field);
+				$cf->set('value', $value->value);
+				$cf->set('parent', $object->id);
+				$cf->set('class', $object->class_name);
+				$cf->save();
+			}
+		}
 	}
 
 	/**
@@ -62,10 +72,6 @@ class zajfield_custom extends zajField {
 	 * @return bool
 	 */
 	public function __onInputGeneration($param_array, &$source){
-		// override to print all choices
-		// use search method with all
-		$class_name = $this->options['model'];
-		$customfields = CustomField::fetch();
 		// write to compile destination
 		$this->zajlib->compile->write('<?php $this->zajlib->variable->field->customfields = CustomField::__onSearch(CustomField::fetch()); if($this->zajlib->variable->field->customfields === false) $this->zajlib->warning("__onSearch method required for CustomField for this input."); ?>');
 		return true;

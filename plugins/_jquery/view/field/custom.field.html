@@ -1,30 +1,34 @@
 <!-- A key/value object editor for custom fields -->
-<div id='{{field.uid}}-fields'></div>
+<div id='{{field.uid}}-fields' class="row"></div>
 <input type="hidden" name="{{field.name}}" id="{{field.uid}}">
-<a class="btn btn-mini btn-success" onclick="add_field_{{field.uid}}('', '');">New</a>
+<a class="btn btn-mini btn-success" onclick="add_field_{{field.uid}}('','');">New</a>
 
 <script language="javascript">
-    var custom_field_changes_{{field.uid}} = {add: [], remove: [], order: [] };
 
     function add_field_{{field.uid}}(key, val){
         // create field with JS
-        var el = $("<div class='alert alert-info keyvalues'>" +
-        "<div class='col-md-6'>" +
-        "<select class='field col-md-6 col-sm-6 form-control {{field.uid}}-select' id='{{field.uid}}-select' name='{{field.name}}[key][]' placeholder='key' onchange='update_field_{{field.uid}}($(this).val());'>" +
-        {% foreach field.customfields as cf %}
-        "<option value='{{cf.id}}'>{{cf.name}}</option>" +
-        {% endforeach %}
-        "</select></div><div class='col-md-6'>" +
-        " - <input class='field text input-small {{field.uid}}-text' id='{{field.uid}}-text' type='text' name='{{field.name}}[value][]' placeholder='value' value='"+val+"'> <a class='close' href='#delete' onclick=\"$(this).parents('div.alert').first().remove();\">&times;</a></div>" +
-        "</div>");
+        var el = $(
+                //"<div class='alert alert-info keyvalues'>" +
+            "<div class='col-md-6'>" +
+            "<select class='field col-md-5 col-sm-5 form-control {{field.uid}}-select' id='{{field.uid}}-select' name='{{field.name}}[key][]' placeholder='key' onchange='update_field_{{field.uid}}($(this).val());'>" +
+            {% foreach field.customfields as cf %}
+            "<option value='{{cf.id}}'>{{cf.name}}</option>" +
+            {% endforeach %}
+            "</select></div><div class='col-md-5'>" +
+            "<input class='field form-control text input-small {{field.uid}}-text' id='{{field.uid}}-text' type='text' name='{{field.name}}[value][]' placeholder='value' value='"+val+"'> <a class='close' href='#delete' onclick=\"remove_field_{{field.uid}}($(this))\">&times;</a></div>"
+            //"</div>"
+        );
         // append a new key-value field
         $('#{{field.uid}}-fields').append(el);
+        update_field_{{field.uid}}();
     }
     {% if field.value %}
 
         zaj.ready(function(){
+
             {% foreach field.value as val %}
-            add_field_{{field.uid}}('{{forloop.key|escapejs}}', '{{val|escapejs}}');
+            console.log({{forloop.counter}});
+            add_field_{{field.uid}}('',val);
             {% endforeach %}
         });
     {% endif %}
@@ -33,14 +37,21 @@
         update_field_{{field.uid}}();
     });
 
+    remove_field_{{field.uid}} = function(el){
+        el.parents('div.alert').first().remove();
+        update_field_{{field.uid}}();
+    };
+
+
     update_field_{{field.uid}} = function(){
         var fieldvalues = [];
 
         $('.keyvalues').each(function(e){
             var keyvalues = {};
-            var key = $(this).find('.{{field.uid}}-select').val();
+            var cf = $(this).find('.{{field.uid}}-select').val();
             var value = $(this).find('.{{field.uid}}-text').val();
-            keyvalues[key] = value;
+            keyvalues['field'] = cf;
+            keyvalues['value'] = value;
             fieldvalues.push(keyvalues);
         })
         // Set input
