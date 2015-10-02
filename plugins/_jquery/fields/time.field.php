@@ -100,7 +100,7 @@ class zajfield_time extends zajField {
 	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
 	 */
 	public function export($data, &$object){
-		if(is_numeric($data)) $data = date("D M j G:i:s T Y", $data);
+		if(is_numeric($data) && $data != 0) $data = date("Y.m.d. H:i:s", $data);
 		return $data;
 	}
 
