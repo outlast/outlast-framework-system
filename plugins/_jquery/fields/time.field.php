@@ -12,6 +12,7 @@ class zajfield_time extends zajField {
 	const use_save = true;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = true;		// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = false;		// boolean - true if fetch is modified
+	const use_export = true;		// boolean - true if preprocessing required before exporting data
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
 	const edit_template = 'field/time.field.html';	// string - the edit template, false if not used
