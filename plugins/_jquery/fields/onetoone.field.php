@@ -11,7 +11,8 @@ class zajfield_onetoone extends zajField {
 	const use_get = true;			// boolean - true if preprocessing required before getting data
 	const use_save = true;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = false;	// boolean - true if data should be duplicated when duplicate() is called
-	const use_filter = false;			// boolean - true if fetcher needs to be modified
+	const use_filter = false;		// boolean - true if fetcher needs to be modified
+	const use_export = true;		// boolean - true if preprocessing required before exporting data
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
 	const edit_template = 'field/onetoone.field.html';	// string - the edit template, false if not used
@@ -112,5 +113,18 @@ class zajfield_onetoone extends zajField {
 				}
 		// Now return me.
 		return array($data->id, $data);
+	}
+
+	/**
+	 * Preprocess the data and convert it to a string before exporting.
+	 * @param mixed $data The data to process. This will typically be whatever is returned by {@link get()}
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
+	 */
+	public function export($data, &$object){
+		// Decide how to format it
+			if(!empty($data->name)) $data = $data->name.' ('.$data->id.')';
+			else $data = $data->id;
+		return $data;
 	}
 }

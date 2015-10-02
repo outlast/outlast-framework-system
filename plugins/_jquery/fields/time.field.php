@@ -93,4 +93,15 @@ class zajfield_time extends zajField {
 		return array($data, $data);
 	}
 
+	/**
+	 * Preprocess the data and convert it to a string before exporting.
+	 * @param mixed $data The data to process. This will typically be whatever is returned by {@link get()}
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
+	 */
+	public function export($data, &$object){
+		if(is_numeric($data)) $data = date("D M j G:i:s T Y", $data);
+		return $data;
+	}
+
 }

@@ -164,9 +164,10 @@ class zajlib_export extends zajLibExtension {
 				ini_set('memory_limit', '2048M');
 				set_time_limit(OFW_EXPORT_MAX_EXECUTION_TIME);
 			// Initialize zajdbs
-				$field_zajdbs = [];
+				$field_objects = [];
 			// Get fields of fetcher class if fields not passed
 				if(is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
+					/** @var zajModel $class_name */
 					$class_name = $fetcher->class_name;
 					$my_fields = $class_name::__model();
 					$fields = [];
@@ -176,8 +177,8 @@ class zajlib_export extends zajLibExtension {
 							// Add fields to export
 								$fields[$field] = $field;
 							// Set the zajDb object if export formatting requiesd
-								if($val->use_export) $field_zajdbs[$field] = $val;
-								else $field_zajdbs[$field] = false;
+								if($val->use_export) $field_objects[$field] = $class_name::__field($field);
+								else $field_objects[$field] = false;
 						}
 
 					}
@@ -216,9 +217,9 @@ class zajlib_export extends zajLibExtension {
 								if($model_mode){
 									$field_value = $s->data->$field;
 									// Do we need export formatting?
-									if($field_zajdbs[$field] !== false && $field_zajdbs[$field]->use_export){
+									if($field_objects[$field] !== false){
 										/** @var zajDb|zajField $zajdb_obj */
-										$zajdb_obj = $field_zajdbs[$field];
+										$zajdb_obj = $field_objects[$field];
 										$field_value = $zajdb_obj->export($field_value, $s);
 									}
 								}
@@ -228,39 +229,15 @@ class zajlib_export extends zajLibExtension {
 									else $field_value = $s->$field;
 								}
 
+							// If field value is an array or object then split into key/value columns
+								if(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
+									foreach($field_value as $key=>$value) $data[$field.'_'.$key] = $value;
+								}
+
 							// Set to array
 								$data[$field] = $field_value;
 							// Convert encoding if excel mode selected
 								if($encoding) $data[$field] = mb_convert_encoding($data[$field], $encoding, 'UTF-8');
-
-
-							/** Todo move all of these to export() */
-							/**
-							// Relationship field support (for manytoone only)
-								if(is_object($field_value) && is_a($field_value, 'zajModel')){
-									$data[$field] = $field_value->name;
-								}
-							// Relationship field support (for manytomany and onetomany)
-								elseif(is_object($field_value) && is_a($field_value, 'zajFetcher')){
-									$data[$field] = $field_value->total.' items';
-								}
-							// See if field value is an array
-								elseif(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
-									foreach($field_value as $key=>$value) $data[$field.'_'.$key] = $value;
-								}								
-							// Time or date field
-								elseif(is_string($type) && $type == 'time' && is_numeric($field_value)) $data[$field] = date("D M j G:i:s T Y", $field_value);
-								elseif(is_string($type) && $type == 'date' && is_numeric($field_value)){
-									$data[$field] = date("D M j Y", $field_value);
-									exit($data[$field].' '.$field_value);
-								}
-							// Skip password fields
-								elseif(is_string($type) && $type == 'password'){
-									exit("here");
-								}
-								// continue;**/
-
-
 						}
 
 					// If firstline, display fields
