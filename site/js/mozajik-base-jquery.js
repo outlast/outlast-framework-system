@@ -1246,7 +1246,7 @@
 	 **/
 	zaj.activateHandlers = function($parent){
 		// Defaults to body
-		if(typeof $parent == 'undefined') $parent = $(window);
+		if(typeof $parent == 'undefined') $parent = $(document);
 
 		/**
 		 * Single click handler.
