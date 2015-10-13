@@ -1285,7 +1285,9 @@
 					var _useMoreButton = null;
 					if(typeof button != 'undefined') _useMoreButton = $(button);
 				// Create my autopagination object
-					zaj.autopagination.objects.push(zaj.autopagination.initialize({
+					// @todo this is REALLY bad, but it works for now. time to rework this entire shit....
+					var zap = $.extend(true, {}, zaj.autopagination);
+					zaj.autopagination.objects.push(zap.initialize({
 						model: data.model,
 						url: data.url,
 						startPage: data.startPage,
