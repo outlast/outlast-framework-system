@@ -714,6 +714,16 @@
 	 	};
 
 	/**
+	 * Is email valid?
+	 * @param {string} email The email address to test.
+	 * @return {boolean} True if valid, false if not.
+	 */
+ 		zaj.isEmailValid = function(email){
+			var patt = /^[_A-z0-9-]+(\.[_A-z0-9-]+)*@[A-z0-9-]+(\.[A-z0-9-]+)*(\.[A-z]{2,10})$/i;
+			return patt.test(email);
+ 		};
+
+	/**
 	 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
 	 * @param {string} url The url to inspect and prepare for a query string.
 	 * @return {string} Returns a url with ? added if no query string or & added if it already has a query string.
