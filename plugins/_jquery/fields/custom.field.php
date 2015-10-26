@@ -54,13 +54,25 @@ class zajfield_custom extends zajField {
 		// it's always a JSON
 		$data = json_decode($data);
 		if(!empty($data)){
-			foreach($data as $key=>$value){
-				$cf = CustomFieldEntry::create();
-				$cf->set('customfield', $value->field);
-				$cf->set('value', $value->value);
-				$cf->set('parent', $object->id);
-				$cf->set('class', $object->class_name);
-				$cf->save();
+			if(!empty($data->add)){
+				foreach($data->add as $additem){
+					$cf = CustomFieldEntry::create();
+					$cf->set('customfield', $additem->customfield);
+					$cf->set('value', $additem->value);
+					$cf->set('parent', $object->id);
+					$cf->set('class', $object->class_name);
+					$cf->save();
+				}
+			}
+			if(!empty($data->update)){
+				foreach($data->update as $additem){
+					$cf = CustomFieldEntry::fetch($additem->id);
+					$cf->set('customfield', $additem->customfield);
+					$cf->set('value', $additem->value);
+					$cf->set('parent', $object->id);
+					$cf->set('class', $object->class_name);
+					$cf->save();
+				}
 			}
 		}
 	}
