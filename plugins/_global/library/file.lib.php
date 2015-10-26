@@ -109,7 +109,7 @@ class zajlib_file extends zajLibExtension {
 					// if it is a dir
 					elseif(is_dir($path."/".$file)){
 						if($return_relative_to_input_path) $folders[] = trim($file, '/').'/';
-						else $folders[] = $path."/".$file.'/';
+						else $folders[] = rtrim($path, '/')."/".$file.'/';
 						// is recursive?
 						if($recursive){
 							$newfiles = $this->get_files_in_dir($path."/".$file, true, $mode);
@@ -145,10 +145,11 @@ class zajlib_file extends zajLibExtension {
 	 * @param string $path The path to check for folders.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
 	 * @param boolean $hidden_files_and_folders If set to true, hidden files and folders (beginning with .) will also be included. False by default.
+	 * @param boolean $return_relative_to_input_path If set to true, the returned path will relative to the input path you set.
 	 * @return array An array of folder paths within the directory.
 	 **/
-	function get_folders_in_dir($path, $recursive = false, $hidden_files_and_folders=false){
-		$folders = $this->get_files_in_dir($path, $recursive, "folders", $hidden_files_and_folders);
+	function get_folders_in_dir($path, $recursive = false, $hidden_files_and_folders=false, $return_relative_to_input_path = false){
+		$folders = $this->get_files_in_dir($path, $recursive, "folders", $hidden_files_and_folders, $return_relative_to_input_path);
 		return $folders;
 	}
 
@@ -157,12 +158,13 @@ class zajlib_file extends zajLibExtension {
 	 * @param string $path The path to check for folders.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
 	 * @param boolean $hidden_files_and_folders If set to true, hidden files and folders (beginning with .) will also be included. False by default.
+	 * @param boolean $return_relative_to_input_path If set to true, the returned path will relative to the input path you set.
 	 * @return array An array of absolute folder paths within the directory.
 	 **/
-	function get_folders($path, $recursive = false, $hidden_files_and_folders = false){
+	function get_folders($path, $recursive = false, $hidden_files_and_folders = false, $return_relative_to_input_path = false){
 		// jail my path
 		$this->folder_check($this->zajlib->basepath.$path);
-		return $this->get_folders_in_dir($this->zajlib->basepath.$path, $recursive, $hidden_files_and_folders);
+		return $this->get_folders_in_dir($this->zajlib->basepath.$path, $recursive, $hidden_files_and_folders, $return_relative_to_input_path);
 	}
 	
 	/**
