@@ -203,7 +203,6 @@ class zajLib {
 		// store configuration
 			$this->zajconf = $zajconf;
 		// parse query string
-			$default_mode = false;
 			if(isset($_GET['zajapp'])){
 			// autodetect my app
 				$this->app = $_GET['zajapp'];
@@ -224,14 +223,20 @@ class zajLib {
 			if(empty($this->app)){
 				$this->app = $this->zajconf['default_app'];
 				$this->mode = $this->zajconf['default_mode'];
-				$default_mode = true;
 			}
-		// autodetect my url
-			if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off") $this->https = false;
-			else{
+		// autodetect https protocol, if set
+			if(
+				// Apache normal mode
+				(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "off") ||
+				// Apache in proxy mode
+				(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] != "off") ||
+				// Nginx and certain Apache configs
+				(!empty($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] != "off")
+			  ){
 				$this->https = true;
 				$this->protocol = 'https:';
 			}
+
 		// disable empty hosts
 			if(empty($_SERVER['HTTP_HOST'])){
 				print "Invalid request. Please contact site administrator.";
