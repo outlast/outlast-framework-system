@@ -168,11 +168,11 @@ class OfwLibraryTest extends zajTest {
 		// File listing check
 			$files = $this->zajlib->file->get_files('system/doc');
 			zajTestAssert::isArray($files);
-			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system/doc//doc.php', $files));
+			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system/doc/doc.php', $files));
 		// Folder listing check
 			$folders = $this->zajlib->file->get_folders('system/');
 			zajTestAssert::isArray($folders);
-			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system//doc/', $folders));
+			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system/doc/', $folders));
 		// Test download security
 			$this->zajlib->error->surpress_errors_during_test(true);
 			$this->zajlib->file->download('/etc/shadow');
