@@ -229,7 +229,7 @@ class zajLib {
 				// Apache normal mode
 				(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "off") ||
 				// Apache in proxy mode
-				(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] != "off") ||
+				(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == "https") ||
 				// Nginx and certain Apache configs
 				(!empty($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] != "off")
 			  ){
