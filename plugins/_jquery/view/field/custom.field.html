@@ -55,8 +55,30 @@
     });
 
     remove_field_{{field.uid}} = function(el){
+        var element = el.parents('div.alert').first();
         el.parents('div.alert').first().remove();
-        //update_field_{{field.uid}}();
+        if(element.data('id') != ''){
+            var cf = element.find('.{{field.uid}}-select').val();
+            var value = element.find('.{{field.uid}}-text').val();
+            custom_upload_changes_{{field.uid}}.remove.push({id: element.data('id'), customfield: cf, value: value});
+            for(var i = 0; i < custom_upload_changes_{{field.uid}}.update.length; i++){
+                if(custom_upload_changes_{{field.uid}}.update[i].id == element.data('id')){
+                    custom_upload_changes_{{field.uid}}.update.splice(i, 1);
+                }
+            }
+
+
+        }
+        else{
+            for(var i = 0; i < custom_upload_changes_{{field.uid}}.add.length; i++){
+                if(custom_upload_changes_{{field.uid}}.add[i].field == element.data('fieldid')){
+                    custom_upload_changes_{{field.uid}}.add.splice(i, 1);
+                }
+            }
+        }
+
+        // Set input
+        $('#{{field.uid}}').val(JSON.stringify(custom_upload_changes_{{field.uid}}));
     };
 
 
@@ -70,9 +92,9 @@
             var field_found = false;
             for(var i = 0; i < custom_upload_changes_{{field.uid}}.update.length; i++){
                 if(custom_upload_changes_{{field.uid}}.update[i].id == element.data('id')){
-                field_found = true;
-                custom_upload_changes_{{field.uid}}.update[i]['customfield'] = cf;
-                custom_upload_changes_{{field.uid}}.update[i]['value'] = value;
+                    field_found = true;
+                    custom_upload_changes_{{field.uid}}.update[i]['customfield'] = cf;
+                    custom_upload_changes_{{field.uid}}.update[i]['value'] = value;
                 }
             }
             if(field_found == false){
@@ -81,7 +103,6 @@
         }
         else{
             var field_found = false;
-            console.log(element.data('fieldid'));
             for(var i = 0; i < custom_upload_changes_{{field.uid}}.add.length; i++){
                 if(custom_upload_changes_{{field.uid}}.add[i].field == element.data('fieldid')){
                     field_found = true;

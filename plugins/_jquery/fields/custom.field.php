@@ -74,6 +74,12 @@ class zajfield_custom extends zajField {
 					$cf->save();
 				}
 			}
+			if(!empty($data->remove)){
+				foreach($data->remove as $removeitem){
+					$cf = CustomFieldEntry::fetch($removeitem->id);
+					$cf->delete();
+				}
+			}
 		}
 	}
 
