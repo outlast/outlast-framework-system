@@ -232,16 +232,19 @@ class zajlib_request extends zajLibExtension {
 	}
 
 	/**
-	 * Get the client's IP address. Because of forwarding, this may actually be different from REMOTE_ADDR.
+	 * Get the client's IP address. Because of forwarding or clusters, this may actually be different from REMOTE_ADDR.
 	 */
 	public function client_ip(){
-		if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)){
-			return  $_SERVER["HTTP_X_FORWARDED_FOR"];
+		if(array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)){
+			return $_SERVER["HTTP_X_FORWARDED_FOR"];
 		}
-		else if (array_key_exists('REMOTE_ADDR', $_SERVER)){
+		else if(array_key_exists('HTTP_X_CLUSTER_CLIENT_IP', $_SERVER)){
+			return $_SERVER["HTTP_X_CLUSTER_CLIENT_IP"];
+		}
+		else if(array_key_exists('REMOTE_ADDR', $_SERVER)){
 			return $_SERVER["REMOTE_ADDR"];
 		}
-		else if (array_key_exists('HTTP_CLIENT_IP', $_SERVER)){
+		else if(array_key_exists('HTTP_CLIENT_IP', $_SERVER)){
 			return $_SERVER["HTTP_CLIENT_IP"];
 		}
 		return '';
