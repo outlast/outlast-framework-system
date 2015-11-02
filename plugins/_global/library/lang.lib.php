@@ -157,7 +157,12 @@ class zajlib_lang extends zajlib_config {
 				// Get current
 					$current = $this->get();
 				// Set a cookie if not the same as current
-					if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) $this->zajlib->cookie->add('lang', $current);
+					if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) {
+						if(headers_sent() === false)
+							$this->zajlib->cookie->add('lang', $current);
+						else
+							$this->zajlib->warning('Headers already sent, cannot set cookie for locale '. $current);
+					}
 			return $current;
 		}
 
