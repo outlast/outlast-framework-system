@@ -28,6 +28,11 @@ class zajlib_lang extends zajlib_config {
 	 	private $available_locales;
 
 	/**
+	 * Set to true if lang was already set at any point.
+	 */
+		private $was_set = false;
+
+	/**
 	 * Extend the config file loading mechanism.
 	 **/
 		protected $dest_path = 'cache/lang/';	// string - subfolder where compiled conf files are stored (cannot be changed)
@@ -88,6 +93,8 @@ class zajlib_lang extends zajlib_config {
 				}
 			// Set locale
 				setlocale(LC_TIME, $this->current_locale);
+			// Set as set
+				$this->was_set = true;
 	 		// Return new locale
 	 			return $this->current_locale;
 		}
@@ -180,6 +187,13 @@ class zajlib_lang extends zajlib_config {
 		 **/
 		public function is_default_locale(){
 			return ($this->default_locale == $this->get());
+		}
+
+		/**
+		 * Returns true if the language was already set at some point.
+		 */
+		public function is_already_set(){
+			return $this->was_set;
 		}
 
 	/**
