@@ -114,7 +114,7 @@
 						$whitelisted_ips = explode(',', $_SERVER['MOZAJIK_LOGIN_WHITELIST']);
 					// Check against my ip
 						foreach($whitelisted_ips as $whitelisted_ip){
-							if($zajlib->security->ip_in_range($_SERVER['REMOTE_ADDR'], $whitelisted_ip)) $whitelisted = true;
+							if($zajlib->security->ip_in_range($zajlib->request->client_ip(), $whitelisted_ip)) $whitelisted = true;
 						}
 				}
 			// Redirect to authentication

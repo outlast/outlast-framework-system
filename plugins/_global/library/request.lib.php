@@ -42,9 +42,14 @@ class zajlib_request extends zajLibExtension {
 				if($params && is_string($params)) curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
 			}
 		// Set any other options?
-			if(is_array($additional_options)) foreach($additional_options as $key=>$value) curl_setopt($curl, $key, $value);
+			if(is_array($additional_options)){
+				foreach($additional_options as $key=>$value){
+					curl_setopt($curl, $key, $value);
+				}
+			}
 		// Send and close
 			$ret = curl_exec($curl);
+
 		// Check to see if an error occurred
 			if($ret === false) $this->zajlib->warning("Curl error (".curl_errno($curl)."): ".curl_error($curl));
 		// Close and return
@@ -161,7 +166,7 @@ class zajlib_request extends zajLibExtension {
 	 * @param integer $status_code The status code.
 	 * @return string The name.
 	 */
-	public function get_http_status_name($status_code){
+	public function http_status_name($status_code){
 		// Decide which one
 		switch ($status_code){
 			case 100: $text = 'Continue'; break;
@@ -208,7 +213,13 @@ class zajlib_request extends zajLibExtension {
 		return $text;
 	}
 
-
+	/**
+	 * Use http_status_name instead.
+	 * @deprecated
+	 */
+	public function get_http_status_name($status_code){
+		return $this->http_status_name($status_code);
+	}
 
 	/**
 	 * Is the current request an ajax request? Requires a Javascript library to work properly cross-browser (jquery, moo, etc.)
@@ -219,4 +230,24 @@ class zajlib_request extends zajLibExtension {
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') return true;
 		else return false;
 	}
+
+	/**
+	 * Get the client's IP address. Because of forwarding or clusters, this may actually be different from REMOTE_ADDR.
+	 */
+	public function client_ip(){
+		if(array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)){
+			return $_SERVER["HTTP_X_FORWARDED_FOR"];
+		}
+		else if(array_key_exists('HTTP_X_CLUSTER_CLIENT_IP', $_SERVER)){
+			return $_SERVER["HTTP_X_CLUSTER_CLIENT_IP"];
+		}
+		else if(array_key_exists('REMOTE_ADDR', $_SERVER)){
+			return $_SERVER["REMOTE_ADDR"];
+		}
+		else if(array_key_exists('HTTP_CLIENT_IP', $_SERVER)){
+			return $_SERVER["HTTP_CLIENT_IP"];
+		}
+		return '';
+    }
+
 }

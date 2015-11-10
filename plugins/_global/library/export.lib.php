@@ -163,12 +163,24 @@ class zajlib_export extends zajLibExtension {
 			// Set my time limit and memory limit
 				ini_set('memory_limit', '2048M');
 				set_time_limit(OFW_EXPORT_MAX_EXECUTION_TIME);
+			// Initialize zajdbs
+				$field_objects = [];
 			// Get fields of fetcher class if fields not passed
 				if(is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
+					/** @var zajModel $class_name */
 					$class_name = $fetcher->class_name;
 					$my_fields = $class_name::__model();
+					$fields = [];
+					/** @var zajDb $val */
 					foreach($my_fields as $field=>$val){
-						if(!$val->disable_export) $fields[] = $field;
+						if(!$val->disable_export){
+							// Add fields to export
+								$fields[$field] = $field;
+							// Set the zajDb object if export formatting requiesd
+								if($val->use_export) $field_objects[$field] = $class_name::__field($field);
+								else $field_objects[$field] = false;
+						}
+
 					}
 				}
 			// Get fields of db object if fields not passed (the property names of the object)
@@ -198,48 +210,36 @@ class zajlib_export extends zajLibExtension {
 							// Convert encoding if it is set
 								if($encoding) $data['name'] = mb_convert_encoding($data['name'], $encoding, 'UTF-8');
 						}
-						
+
 					// Add my values for each field
-						foreach($fields as $type => $field){
-							// Set to value
-								if($model_mode) $field_value = $s->data->$field;
+						foreach($fields as $field_key => $field){
+							// Figure out my string value
+								if($model_mode){
+									$field_value = $s->data->$field;
+									// Do we need export formatting?
+									if($field_objects[$field] !== false){
+										/** @var zajDb|zajField $zajdb_obj */
+										$zajdb_obj = $field_objects[$field];
+										$field_value = $zajdb_obj->export($field_value, $s);
+									}
+								}
 								else{
 									// Either an array or an object
 									if(is_array($s)) $field_value = $s[$field];
 									else $field_value = $s->$field;
 								}
-							
-							// Relationship field support (for manytoone only)
-								if(is_object($field_value) && is_a($field_value, 'zajModel')){
-									$data[$field] = $field_value->name;
-								}
-							// Relationship field support (for manytomany and onetomany)
-								elseif(is_object($field_value) && is_a($field_value, 'zajFetcher')){
-									$data[$field] = $field_value->total.' items';
-								}
-							// See if field value is an array
-								elseif(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
+
+							// If field value is an array or object then split into key/value columns
+								if(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
 									foreach($field_value as $key=>$value) $data[$field.'_'.$key] = $value;
-								}								
-							// Time or date field
-								elseif(is_string($type) && $type == 'time' && is_numeric($field_value)) $data[$field] = date("D M j G:i:s T Y", $field_value);
-								elseif(is_string($type) && $type == 'date' && is_numeric($field_value)) $data[$field] = date("D M j Y", $field_value);
-							// Skip password fields
-								elseif(is_string($type) && $type == 'password'){
-									exit("here");
 								}
-								// continue;
-							// Standard field
-								else $data[$field] = $field_value;
+
+							// Set to array
+								$data[$field] = $field_value;
 							// Convert encoding if excel mode selected
 								if($encoding) $data[$field] = mb_convert_encoding($data[$field], $encoding, 'UTF-8');
 						}
-					// Add default values (only if model_mode)
-						if($model_mode){						
-							$data['ordernum'] = $s->data->ordernum;
-							$data['time_create'] = date("D M j G:i:s T Y", $s->data->time_create);
-							$data['id'] = $s->data->id;
-						}
+
 					// If firstline, display fields
 						if($linecount == 1){
 							// Write XLS
@@ -260,6 +260,7 @@ class zajlib_export extends zajLibExtension {
 								}
 							$linecount++;
 						}
+						
 					// Display values
 						// Write XLS
 						if(is_a($output, 'PHPExcel')){

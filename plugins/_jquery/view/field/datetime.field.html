@@ -2,7 +2,22 @@
 <link rel="stylesheet" href="{{baseurl}}system/css/bootstrap/3.0/plugins/datepicker/bootstrap-datepicker.css"/>
 <script src="{{baseurl}}system/js/bootstrap/3.2/plugins/timepicker/bootstrap-timepicker.min.js?"></script>
 <link rel="stylesheet" href="{{baseurl}}system/css/bootstrap/3.2/css/bootstrap-timepicker.min.css"/>
-
+<script>
+    zaj.ready(function(){
+        {% if field.value > 0 %}
+            $('#{{field.uid}}').val(parseInt({{field.value}}));
+            var sd = new Date({{field.value}} * 1000);
+            $('#{{field.uid}}-time').timepicker('setTime', sd.getHours() + ":" + sd.getMinutes());
+            act_time_{{field.uid}} = sd.getHours() * 3600 + sd.getMinutes() * 60;
+            act_date_{{field.uid}} = Math.round(sd.getTime() / 1000) - parseInt(act_time_{{field.uid}});
+            setDateValue_{{field.uid}}();
+        {% else %}
+            $('#{{field.uid}}').val(0);
+            act_time_{{field.uid}} = act_date_{{field.uid}} = 0;
+            $('#{{field.uid}}-time').timepicker('setTime', "00:00");
+        {% endif %}
+    });
+</script>
 <div class="input-append bootstrap-datepicker">
     <input name="{{field.id}}[date]" class="input-small" type="text" id="{{field.uid}}-date" value="{% if field.value > 0 %}{{field.value|date:'Y-m-d'}}{% endif %}">
     <span class="add-on" onclick="jQuery('#date').datepicker('show');"><i class="icon-th"></i></span>
@@ -13,10 +28,10 @@
 </div>
 
 <input type='hidden' id='{{field.uid}}[format]' name='{{field.name}}[format]' value='Y-m-d H:i:s'>
-<input type='hidden' id='{{field.uid}}' name='{{field.name}}' value='{{field.value}}'>
+<input type='hidden' id='{{field.uid}}' name='{{field.name}}' value='{{field.value|strftime:"%s"}}'>
 <script>
-    var act_date = [];
-    var act_time = [];
+    var act_date_{{field.uid}} = null;
+    var act_time_{{field.uid}} = null;
 
     $("#{{field.uid}}-date").datepicker({
         format: 'yyyy-mm-dd',
@@ -24,7 +39,7 @@
         language: 'hu'
     }).on('changeDate', function(e){
         if(typeof e.date == 'object'){
-            act_date['{{field.uid}}'] = e.date.getTime() / 1000;
+            act_date_{{field.uid}} = e.date.getTime() / 1000;
             setDateValue_{{field.uid}}();
         }
     });;
@@ -36,26 +51,12 @@
         showMeridian: false
     }).on('changeTime.timepicker', function(e){
         var time = e.time.hours * 3600 + e.time.minutes*60;
-        act_time['{{field.uid}}'] = time;
+        act_time_{{field.uid}} = time;
         setDateValue_{{field.uid}}();
         return;
     });
 
     function setDateValue_{{field.uid}}(){
-        $('#{{field.uid}}').val(act_date['{{field.uid}}'] + act_time['{{field.uid}}']);
+        $('#{{field.uid}}').val(parseInt(act_date_{{field.uid}}) + parseInt(act_time_{{field.uid}}));
     }
-
-    zaj.ready(function(){
-        {% if field.value > 0 %}
-            $('#{{field.uid}}').val({{field.value}});
-            var sd = new Date({{field.value}} * 1000);
-            $('#{{field.uid}}-time').timepicker('setTime', sd.getHours() + ":" + sd.getMinutes());
-            act_time['{{field.uid}}'] = sd.getHours() * 3600 + sd.getMinutes() * 60;
-            act_date['{{field.uid}}'] = (sd.getTime() / 1000) - act_time['{{field.uid}}'];
-        {% else %}
-            $('#{{field.uid}}').val(0);
-            act_time['{{field.uid}}'] = act_date['{{field.uid}}'] = 0;
-            $('#{{field.uid}}-time').timepicker('setTime', "00:00");
-        {% endif %}
-    });
 </script>

@@ -136,7 +136,7 @@ class zajlib_security extends zajLibExtension {
 	 **/
 	public function ip_in_range($ip, $range){
 		// default to current ip
-			if($ip === false) $ip = $_SERVER['REMOTE_ADDR'];
+			if($ip === false) $ip = $this->zajlib->request->client_ip();
 	 	// if ip range is an array, then call for each one
 	 		if(is_array($range)){
 	 			foreach($range as $range_item){

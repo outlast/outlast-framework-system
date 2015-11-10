@@ -36,7 +36,7 @@ class zajfield_datetime extends zajField {
 			'type' => 'datetime',
 			'option' => array(),
 			'key' => 'MUL',
-			'default' => 0,
+			'default' => '0000-00-00 00:00:00',
 			'extra' => '',
 			'comment' => 'datetime',
 		);

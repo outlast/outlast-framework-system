@@ -470,6 +470,7 @@
 								if(typeof result == "function") result(data, jsondata);
 								else if(typeof result == "object"){
 									$(result).html(data);
+									zaj.activateHandlers($(result));
 								}
 								else{
 									var validationResult = zaj.validate(data);
@@ -710,6 +711,16 @@
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
 	 	};
+
+	/**
+	 * Is email valid?
+	 * @param {string} email The email address to test.
+	 * @return {boolean} True if valid, false if not.
+	 */
+ 		zaj.isEmailValid = function(email){
+			var patt = /^[_A-z0-9-]+(\.[_A-z0-9-]+)*@[A-z0-9-]+(\.[A-z0-9-]+)*(\.[A-z]{2,10})$/i;
+			return patt.test(email);
+ 		};
 
 	/**
 	 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
@@ -1239,16 +1250,19 @@
 	})(jQuery);
 
 	/**
-	 * Now add some attribute sniffer helpers
+	 * Now activate the handler data attributes.
+	 * @param {jQuery} [$parent=$(body)] The jQuery object in which the handlers are searched for.
 	 **/
-	zaj.ready(function(){
+	zaj.activateHandlers = function($parent){
+		// Defaults to body
+		if(typeof $parent == 'undefined') $parent = $(document);
 
 		/**
 		 * Single click handler.
 		 * @attr data-single-click Defines any javascript that is to be executed once even if the user double clicks.
 		 * @attr data-single-click-delay Defines the number of ms before the user can click again. Defaults to 1500. (optional)
 		 **/
-			$('[data-single-click]').click(function(){
+			$parent.find('[data-single-click]').click(function(){
 				var el =  $(this);
 				var delay = el.attr('data-single-click-delay');
 				if(!delay) delay = 1500;
@@ -1267,7 +1281,7 @@
 		 * @attr data-autopagination-block You can override the default 'autopagination' block name by specifying this attribute.
 		 * @attr data-autopagination-button A selector for a button that will be used for loading more results. In this case additional results are not loaded on scroll.
 		 **/
-			$('[data-autopagination]').each(function(){
+			$parent.find('[data-autopagination]').each(function(){
 				// Set defaults and data
 					var $el =  $(this);
 					var _rawdata = $el.attr('data-autopagination');
@@ -1280,7 +1294,9 @@
 					var _useMoreButton = null;
 					if(typeof button != 'undefined') _useMoreButton = $(button);
 				// Create my autopagination object
-					zaj.autopagination.objects.push(zaj.autopagination.initialize({
+					// @todo this is REALLY bad, but it works for now. time to rework this entire shit....
+					var zap = $.extend(true, {}, zaj.autopagination);
+					zaj.autopagination.objects.push(zap.initialize({
 						model: data.model,
 						url: data.url,
 						startPage: data.startPage,
@@ -1293,4 +1309,5 @@
 					}));
 			});
 
-	});
+	};
+	zaj.ready(function(){ zaj.activateHandlers() });
