@@ -63,10 +63,10 @@
 			// Get test results
 				$this->zajlib->variable->testresults = $this->zajlib->template->block("update/update-test.html", "testresults", false, false, true);
 
-				$this->zajlib->variable->db_enabled = $zajconf['mysql_enabled'];
+				$this->zajlib->variable->db_enabled = $this->zajlib->zajconf['mysql_enabled'];
 
 			// Run dry run and throw 500 error if changes needed
-			if ($zajconf['mysql_enabled']) {
+			if ($this->zajlib->zajconf['mysql_enabled']) {
 				$this->zajlib->variable->dbresults = (object)$this->zajlib->model->update(true);
 				if ($this->zajlib->variable->dbresults->num_of_changes > 0) header('HTTP/1.1 500 Internal Server Error');
 			}
