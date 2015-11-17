@@ -338,7 +338,7 @@ class zajFetcher implements Iterator, Countable{
 				if($filter[0] == $field) unset($this->filters[$key]);
 			}
 		}
-		print_r($this->filters);
+		return $this;
 	}
 
 	/**
