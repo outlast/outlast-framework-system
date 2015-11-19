@@ -120,6 +120,7 @@ class zajlib_config extends zajLibExtension{
 			$this->zajlib->file->create_path_for($global_file);
 			$this->add_file($global_file);
 			$section_file = false;
+			$actual_section = false;
 			$global_scope = '';
 		// start debug stats
 			$this->debug_stats['source'] = $full_path;
@@ -140,6 +141,7 @@ class zajlib_config extends zajLibExtension{
 												// add new one
 													$section = trim($line, '[]');
 													if(preg_replace('/^[a-zA-Z_][a-zA-Z0-9_]*/', '', $section) != '') $this->error('Illegal section definition. A-z, numbers, and _ allowed!');
+													$actual_section = $section;
 													$section_file = $this->zajlib->basepath.$this->dest_path.$source_path.'.'.$section.'.php';
 													$this->add_file($section_file, $global_scope);
 											break;
@@ -150,8 +152,17 @@ class zajlib_config extends zajLibExtension{
 													if($current_line === false) break;
 												// write this data
 													$this->write_line($current_line);
+
+													if($actual_section != '' && $actual_section != false){
+														$section_line = $this->process_section_line($line, $actual_section);
+														if($section_line === false) break;
+														$this->write_line($section_line);
+													}
 												// while not in any section, add the current line to the "global" scope
-													if(!$section_file) $global_scope .= $current_line;
+													if(!$section_file) {
+														$global_scope .= $current_line;
+														$global_scope .= $section_line;
+													}
 											
 						
 						}
@@ -161,29 +172,48 @@ class zajlib_config extends zajLibExtension{
 			return true;
 	}
 
+	public function process_section_line($line, $section){
+		$processed_line = $this->process_variable($line);
+		$varcontent = $processed_line['varcontent'];
+		$varname = $processed_line['varname'];
+		// generate variable
+		// treat booleans and numbers separately
+		if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->sections->'.$section.'->'.$varname.' = '.addslashes($varcontent).";\n";
+		else $current_line = '$this->zajlib->config->sections->'.$section.'->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n";
+		return $current_line;
+	}
+
 	/**
 	 * Process a standard variable line for a configuration input file.
 	 * @param string $line The line data.
 	 * @return string|boolean Returns the new data or boolean false if error.
 	 */
 	public function process_standard_line($line){
-		// separate by =
-			list($varname, $varcontent) = explode('=', $line, 2);
-			$varname = trim($varname);
-			$varcontent = trim($varcontent);
-		// is varname not valid?
-			if(preg_replace('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', '', $varname) != ''){
-				$this->error('Invalid variable found!');
-				return false;
-			}
-		// check for other malicious stuff (php tags)
-			if(strpos($varcontent,'?>') !== false) $this->error('Illegal characters found in variable content');
-			if(strpos($varcontent,'<?') !== false) $this->error('Illegal characters found in variable content');
+		$processed_line = $this->process_variable($line);
+		$varcontent = $processed_line['varcontent'];
+		$varname = $processed_line['varname'];
 		// generate variable
 			// treat booleans and numbers separately
 				if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n";
 				else $current_line = '$this->zajlib->config->variable->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n";
 		return $current_line;
+	}
+
+	public function process_variable($line){
+		// separate by =
+		list($varname, $varcontent) = explode('=', $line, 2);
+		$varname = trim($varname);
+		$varcontent = trim($varcontent);
+		// is varname not valid?
+		if(preg_replace('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/', '', $varname) != ''){
+			$this->error('Invalid variable found!');
+			return false;
+		}
+		// check for other malicious stuff (php tags)
+		if(strpos($varcontent,'?>') !== false) $this->error('Illegal characters found in variable content');
+		if(strpos($varcontent,'<?') !== false) $this->error('Illegal characters found in variable content');
+
+		return array('varcontent' => $varcontent, 'varname' => $varname);
 	}
 
 	/**
