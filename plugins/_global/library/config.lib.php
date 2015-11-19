@@ -23,6 +23,7 @@ class zajlib_config extends zajLibExtension{
 	 * object - config variables are stored here
 	 **/
 	private $variable;
+	private $sections;
 
 	/**
 	 * Creates a new zajlib_config
@@ -34,6 +35,7 @@ class zajlib_config extends zajLibExtension{
 		parent::__construct($zajlib, $system_library);
 		// init variables
 		$this->variable = new stdClass();
+		$this->sections = new stdClass();
 	}
 	
 	/**
@@ -76,6 +78,7 @@ class zajlib_config extends zajLibExtension{
 	 **/
 	 	public function __get($name){
 		 	if($name == 'variable') return $this->zajlib->config->variable;
+			if($name == 'sections') return $this->zajlib->config->sections;
 		 	return $this->$name;
 	 	}
 
