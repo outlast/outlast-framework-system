@@ -864,13 +864,7 @@ class zajFetcher implements Iterator, Countable{
 			$other_model = $field_model->options['model'];
 		// return the one object
 			$fetcher = $other_model::fetch($id);
-		// if it exists, perform additional stuff!
-			if(is_object($fetcher)){
-				// if it is deleted then do not return
-					if($fetcher->data->status == 'deleted') $fetcher = false;
-				// set connection type and return
-					$fetcher->connection_type = 'manytoone';
-			}
+			if(is_object($fetcher)) $fetcher->connection_type = 'manytoone';
 			return $fetcher;
 	}
 
