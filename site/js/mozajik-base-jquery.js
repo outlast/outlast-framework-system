@@ -437,8 +437,6 @@
 					var psused = zaj.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object' || (typeof pushstate == 'boolean' && pushstate === true));
 					var psdata = false;
 					if(typeof pushstate == 'object' && pushstate != null && pushstate.data) psdata = pushstate.data;
-				// Send to Analytics
-					zaj.track('Ajax', mode, request);
 				// Figure out query string
 					var datarequest;
 					if(mode == 'post'){
@@ -456,8 +454,6 @@
 				// Now send request and call callback function, set callback element, or alert
 					$.ajax(request, {
 						success: function(data, textStatus, jqXHR){
-							// Send to Analytics
-								zaj.track('AjaxSuccess', mode, request);
 							// Set my submitting to false
 								if(set_submitting){
 									zaj.ajax.submitting = false;
@@ -501,8 +497,6 @@
 											var el = $('[data-submit-toggle-class]');
 											if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
 										}
-									// Send a log
-										zaj.error("Ajax request ("+request+") failed with status "+textStatus, true);
 									// If we are in debug mode popup
 										if(textStatus == 'error' && zaj.debug_mode) zaj.alert("Ajax request failed with error:<hr/>"+jqXHR.responseText);
 								}
