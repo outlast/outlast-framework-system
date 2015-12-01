@@ -1,7 +1,8 @@
+{% lang 'system/fields' 'custom' %}
 <!-- A key/value object editor for custom fields -->
 <div id='{{field.uid}}-fields'></div>
 <input type="hidden" name="{{field.name}}" id="{{field.uid}}">
-<a class="btn btn-mini btn-success" onclick="create_field_{{field.uid}}('','','');">New</a>
+<a class="btn btn-mini btn-success" onclick="create_field_{{field.uid}}('','','');">{{#system_field_custom_new#}}</a>
 
 <script language="javascript">
     var global_counter = 0;
@@ -28,7 +29,7 @@
                 "<select class='field form-control {{field.uid}}-select' id='{{field.uid}}-select' name='{{field.name}}[key][]' placeholder='key'>" +
                 options+
                 "</select></div><div class='col-md-5'>" +
-                "<input class='field form-control text input-small {{field.uid}}-text' id='{{field.uid}}-text' type='text' name='{{field.name}}[value][]' placeholder='value' value='"+val+"'></div><div class='col-md-2'> <a class='close' href='#delete' onclick=\"remove_field_{{field.uid}}($(this))\">&times;</a></div>"+
+                "<input class='field form-control text input-small {{field.uid}}-text' id='{{field.uid}}-text' type='text' name='{{field.name}}[value][]' placeholder='{{#system_field_custom_value_placeholder#|escape}}' value='"+val+"'></div><div class='col-md-2'> <a class='close' href='#delete' onclick=\"remove_field_{{field.uid}}($(this))\">&times;</a></div>"+
                 "</div>"
         );
 
