@@ -2,14 +2,12 @@
 /**
  * A class for storing custom fields
  */
-class CustomField extends zajModel
-{
+class CustomField extends zajModel{
 
 	///////////////////////////////////////////////////////////////
 	// !Model design
 	///////////////////////////////////////////////////////////////
-	public static function __model()
-	{
+	public static function __model(){
 		// define custom database fields
 		$f = (object)array();
 		$f->name = zajDb::name();
@@ -25,14 +23,12 @@ class CustomField extends zajModel
 	/**
 	 * Construction and required methods
 	 */
-	public function __construct($id = "")
-	{
+	public function __construct($id = ""){
 		parent::__construct($id, __CLASS__);
 		return true;
 	}
 
-	public static function __callStatic($name, $arguments)
-	{
+	public static function __callStatic($name, $arguments){
 		array_unshift($arguments, __CLASS__);
 		return call_user_func_array(array('parent', $name), $arguments);
 	}
@@ -41,8 +37,7 @@ class CustomField extends zajModel
 	// !Custom methods
 	///////////////////////////////////////////////////////////////
 
-	public function __afterFetch()
-	{
+	public function __afterFetch(){
 	}
 
 	public static function __onSearch($fetcher){ return $fetcher; }

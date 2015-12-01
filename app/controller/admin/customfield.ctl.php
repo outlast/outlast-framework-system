@@ -5,16 +5,14 @@
  * @subpackage CustomField
  **/
 
-class zajapp_admin_customfield extends zajController
-{
+class zajapp_admin_customfield extends zajController{
 
 	/**
 	 * The __load() magic method is run each time this particular controller is used to process the request. You should place code here which is general for all
 	 *        related requests. For example, an admin.ctl.php file's __load() method will likely contain an authentication process, so that anyone requesting
 	 *        any admin pages will need to login first...
 	 **/
-	public function __load()
-	{
+	public function __load(){
 		// This is set any time any request is made to this controller (so every time we call /sample/anything/ or even just /sample/)
 		$this->zajlib->load->controller('admin/default.ctl.php');
 	}
@@ -22,8 +20,7 @@ class zajapp_admin_customfield extends zajController
 	/**
 	 * The main() method is the default for any controller.
 	 **/
-	public function main()
-	{
+	public function main(){
 		// Fetch my objects
 		$this->zajlib->variable->customfields = CustomField::fetch()->paginate(25);
 		// Search
@@ -36,8 +33,7 @@ class zajapp_admin_customfield extends zajController
 	/**
 	 * Add new template
 	 **/
-	function add()
-	{
+	function add(){
 		// Create and cache
 		$this->zajlib->variable->customfield = CustomField::create();
 		$this->zajlib->variable->customfield->cache();
@@ -47,8 +43,7 @@ class zajapp_admin_customfield extends zajController
 	/**
 	 * Edit template
 	 **/
-	function edit()
-	{
+	function edit(){
 		// Resume the object
 		$this->zajlib->variable->customfield = CustomField::fetch($_GET['id']);
 		return $this->zajlib->template->show("admin/customfield/customfield_edit.html");
@@ -57,8 +52,7 @@ class zajapp_admin_customfield extends zajController
 	/**
 	 * Save template
 	 */
-	function save()
-	{
+	function save(){
 		// Resume the object
 		/** @var CustomField $obj */
 		$obj = CustomField::fetch($_POST['id']);
@@ -74,8 +68,7 @@ class zajapp_admin_customfield extends zajController
 	/**
 	 * Delete template
 	 */
-	function delete()
-	{
+	function delete(){
 		// Resume product and delete
 		$this->zajlib->variable->customfield = CustomField::fetch($_GET['id']);
 		$this->zajlib->variable->customfield->delete();
@@ -86,8 +79,7 @@ class zajapp_admin_customfield extends zajController
 	/**
 	 * Reorder objects
 	 */
-	function reorder()
-	{
+	function reorder(){
 		// reorder
 		CustomField::reorder($_POST['reorder']);
 		// okay
@@ -107,4 +99,5 @@ class zajapp_admin_customfield extends zajController
 		// redirect
 		return $this->zajlib->json($existing_object->data->featured);
 	}
+
 }
