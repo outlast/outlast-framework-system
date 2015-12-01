@@ -437,8 +437,6 @@
 					var psused = zaj.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object' || (typeof pushstate == 'boolean' && pushstate === true));
 					var psdata = false;
 					if(typeof pushstate == 'object' && pushstate != null && pushstate.data) psdata = pushstate.data;
-				// Send to Analytics
-					zaj.track('Ajax', mode, request);
 				// Figure out query string
 					var datarequest;
 					if(mode == 'post'){
@@ -456,8 +454,6 @@
 				// Now send request and call callback function, set callback element, or alert
 					$.ajax(request, {
 						success: function(data, textStatus, jqXHR){
-							// Send to Analytics
-								zaj.track('AjaxSuccess', mode, request);
 							// Set my submitting to false
 								if(set_submitting){
 									zaj.ajax.submitting = false;
@@ -501,8 +497,6 @@
 											var el = $('[data-submit-toggle-class]');
 											if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
 										}
-									// Send a log
-										zaj.error("Ajax request ("+request+") failed with status "+textStatus, true);
 									// If we are in debug mode popup
 										if(textStatus == 'error' && zaj.debug_mode) zaj.alert("Ajax request failed with error:<hr/>"+jqXHR.responseText);
 								}
@@ -712,6 +706,16 @@
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
 	 	};
+
+	/**
+	 * Is email valid?
+	 * @param {string} email The email address to test.
+	 * @return {boolean} True if valid, false if not.
+	 */
+ 		zaj.isEmailValid = function(email){
+			var patt = /^[_A-z0-9-]+(\.[_A-z0-9-]+)*@[A-z0-9-]+(\.[A-z0-9-]+)*(\.[A-z]{2,10})$/i;
+			return patt.test(email);
+ 		};
 
 	/**
 	 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
@@ -1246,7 +1250,7 @@
 	 **/
 	zaj.activateHandlers = function($parent){
 		// Defaults to body
-		if(typeof $parent == 'undefined') $parent = $(window);
+		if(typeof $parent == 'undefined') $parent = $(document);
 
 		/**
 		 * Single click handler.
@@ -1285,7 +1289,9 @@
 					var _useMoreButton = null;
 					if(typeof button != 'undefined') _useMoreButton = $(button);
 				// Create my autopagination object
-					zaj.autopagination.objects.push(zaj.autopagination.initialize({
+					// @todo this is REALLY bad, but it works for now. time to rework this entire shit....
+					var zap = $.extend(true, {}, zaj.autopagination);
+					zaj.autopagination.objects.push(zap.initialize({
 						model: data.model,
 						url: data.url,
 						startPage: data.startPage,

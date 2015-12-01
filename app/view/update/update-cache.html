@@ -12,7 +12,7 @@ for the next few minutes.
 <pre>{{log}}</pre>
 {% elseif %}
 You will now delete object cache files in <code>{{folder}}</code>. This will possibly take a long time. Are you sure you want to continue?<br/><br/>
-<a class="btn" href='{{baseurl}}update/cache/?force=yes'>Yeah, understood. Go ahead with it!</a><br/>
+<a class="btn" href='{{baseurl}}update/cache/?force=yes{% if ofw.get.update_user %}&update_user={{ofw.get.update_user|escape}}&update_password={{ofw.get.update_password|escape}}{% endif %}'>Yeah, understood. Go ahead with it!</a><br/>
 {% endif %}
 
 {% endblock updatecontent %}

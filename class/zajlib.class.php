@@ -203,7 +203,6 @@ class zajLib {
 		// store configuration
 			$this->zajconf = $zajconf;
 		// parse query string
-			$default_mode = false;
 			if(isset($_GET['zajapp'])){
 			// autodetect my app
 				$this->app = $_GET['zajapp'];
@@ -224,14 +223,20 @@ class zajLib {
 			if(empty($this->app)){
 				$this->app = $this->zajconf['default_app'];
 				$this->mode = $this->zajconf['default_mode'];
-				$default_mode = true;
 			}
-		// autodetect my url
-			if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off") $this->https = false;
-			else{
+		// autodetect https protocol, if set
+			if(
+				// Apache normal mode
+				(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "off") ||
+				// Apache in proxy mode
+				(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == "https") ||
+				// Nginx and certain Apache configs
+				(!empty($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] != "off")
+			  ){
 				$this->https = true;
 				$this->protocol = 'https:';
 			}
+
 		// disable empty hosts
 			if(empty($_SERVER['HTTP_HOST'])){
 				print "Invalid request. Please contact site administrator.";
@@ -957,6 +962,7 @@ class zajLibLoader{
  * @property boolean $use_save True if it has a custom save() method.
  * @property boolean $use_duplicate True if it has a custom duplicate() method.
  * @property boolean $use_filter True if it has a custom filter() method.
+ * @property boolean $use_export True if it has a custom export() method.
  * @property boolean $disable_export True if export is disabled on this field. This is used in export helper.
  * @property boolean $search_field True if this field should be included in a search().
  * @property boolean|string $edit_template The path of the template which should be displayed for {% input %} editors. If none, set to false.
@@ -994,6 +1000,7 @@ class zajDb {
 				$zdb->use_save = $cname::use_save;
 				$zdb->use_duplicate = $cname::use_duplicate;
 				$zdb->use_filter = $cname::use_filter;
+				$zdb->use_export = $cname::use_export;
 				$zdb->disable_export = $cname::disable_export;
 				$zdb->search_field = $cname::search_field;
 				$zdb->edit_template = $cname::edit_template;
@@ -1059,6 +1066,7 @@ class zajField {
 	const use_save = false;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = true;		// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = false;		// boolean - true if fetch is modified
+	const use_export = false;		// boolean - true if export is formatted
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = true;		// boolean - true if this field is used during search()
 	const edit_template = 'field/base.field.html';	// string - the edit template, false if not used
@@ -1102,6 +1110,16 @@ class zajField {
 	 **/
 	public function save($data, &$object){
 		return $data;	
+	}
+
+	/**
+	 * Preprocess the data and convert it to a string before exporting.
+	 * @param mixed $data The data to process. This will typically be whatever is returned by {@link get()}
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
+	 */
+	public function export($data, &$object){
+		return $data;
 	}
 
 	/**

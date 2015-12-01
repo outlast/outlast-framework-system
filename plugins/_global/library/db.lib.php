@@ -93,14 +93,14 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 **/
 		public function connect($server="", $user="", $pass="", $db="", $fatal_error = true){
 			// connect to server
-				$this->default_connection = @mysql_connect($server, $user, $pass, true);
+				$this->default_connection = @mysqli_connect($server, $user, $pass);
 				if($this->default_connection === false){
 					if($fatal_error) return $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
 					else return false;
 				}
 				$this->current_session->conn = $this->default_connection;
 			// select db
-				$result = mysql_select_db($db, $this->current_session->conn);
+				$result = mysqli_select_db($this->current_session->conn, $db);
 				if($result === false){
 					if($fatal_error) return $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
 					else return false;
@@ -141,9 +141,9 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 */
 		public function create_connection($server="", $user="", $pass="", $db="", $id = false){
 			// connect to server
-				$conn = mysql_connect($server, $user, $pass, true) or $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
+				$conn = mysqli_connect($server, $user, $pass) or $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
 			// select db
-				mysql_select_db($db, $conn) or $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
+				mysqli_select_db($conn, $db) or $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
 			// set to connection encoding setting
 				$this->set_encoding(false, $conn);
 			// Now create a session and return
@@ -172,7 +172,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 */
 		public function delete_session($id){
 			// remove the result set
-				mysql_free_result($this->session[$id]->query);
+				mysqli_free_result($this->session[$id]->query);
 			// remove from array
 				unset($this->session[$id]);
 			return true;
@@ -193,9 +193,9 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 					else $encoding = $this->zajlib->zajconf['mysql_encoding'];
 				}
 			// Set encoding!
-				mysql_query("SET NAMES ".$encoding, $connection);
-				mysql_query("SET CHARACTER SET ".$encoding, $connection);
-				mysql_set_charset($encoding, $connection);
+				mysqli_query($connection, "SET NAMES ".$encoding);
+				mysqli_query($connection, "SET CHARACTER SET ".$encoding);
+				mysqli_set_charset($connection, $encoding);
 			return $encoding;
 		}
 
@@ -364,7 +364,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// get a fixed number or the num remaining, whichever is less
 				for($i = 0; ($i < $num && $i < $num_rows); $i++){
 					 // fetch the row
-						 $my_row = mysql_fetch_assoc($this->current_session->query);
+						 $my_row = mysqli_fetch_assoc($this->current_session->query);
 					 // if column as key
 						 if($column_as_key) $key = $my_row[$column_as_key];
 						 else $key = $i;
@@ -475,7 +475,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				if($this->current_session->row_pointer > 0){
 					// reset row pointer
 						$this->current_session->row_pointer = 0;
-						mysql_data_seek($this->current_session->query, 0);
+						mysqli_data_seek($this->current_session->query, 0);
 				}
 			// return the next one
 				return $this->next();
@@ -572,14 +572,14 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// send query to server
 				// TODO: change this to debug timer, which doesn't do it unless debug_mode is enabled!
 				$before_query = microtime(true);
-				$this->current_session->query = mysql_query($sql, $this->current_session->conn);
-				if($this->current_session->query == false) $this->current_session->last_error = mysql_error($this->current_session->conn);
+				$this->current_session->query = mysqli_query($this->current_session->conn, $sql);
+				if($this->current_session->query == false) $this->current_session->last_error = mysqli_error($this->current_session->conn);
 			// count affected
-				if(is_resource($this->current_session->query)) $this->current_session->affected = mysql_num_rows($this->current_session->query);
-				else $this->current_session->affected = mysql_affected_rows($this->current_session->conn);
+				if(is_resource($this->current_session->query)) $this->current_session->affected = mysqli_num_rows($this->current_session->query);
+				else $this->current_session->affected = mysqli_affected_rows($this->current_session->conn);
 			// now count total
-				$res = mysql_query('SELECT FOUND_ROWS() as total;', $this->current_session->conn);
-				$data = mysql_fetch_assoc($res);
+				$res = mysqli_query($this->current_session->conn, 'SELECT FOUND_ROWS() as total;');
+				$data = mysqli_fetch_assoc($res);
 				$this->current_session->total = $data['total'];
 			// end the timer	
 				$time_it_took = microtime(true) - $before_query;
@@ -663,7 +663,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// create the connection if it doesnt already exist
 				if(!$this->current_session->conn) $this->connect($this->zajlib->zajconf['mysql_server'], $this->zajlib->zajconf['mysql_user'], $this->zajlib->zajconf['mysql_password'], $this->zajlib->zajconf['mysql_db']);
 			// now escape
-				return mysql_real_escape_string($string_to_escape, $this->current_session->conn);
+				return mysqli_real_escape_string($this->current_session->conn, $string_to_escape);
 		}
 
 		/**
@@ -740,12 +740,12 @@ class zajlib_db_session implements Countable, Iterator {
 		public $last_error = '';
 		/**
 		 * The resource of the current connection. Usually this is the same as the global db object's connection.
-		 * @var resource
+		 * @var mysqli
 		 **/
 		public $conn = false;
 		/**
 		 * The resource of the current query.
-		 * @var resource
+		 * @var mysqli_result
 		 **/
 		public $query;
 		/**

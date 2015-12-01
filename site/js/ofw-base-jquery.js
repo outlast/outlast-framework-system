@@ -156,7 +156,7 @@
 					});
 				}
 			// Reset repositioning event
-				$zaj_bs_modal.off('show.bs.modal').on('show.bs.modal', zaj.alert_reposition);
+				$zaj_bs_modal.off('show.bs.modal').on('show.bs.modal', zaj.alertReposition);
 
 			// Reset and init button
 				// Set action
@@ -172,7 +172,7 @@
 				$('#zaj_bootstrap_modal div.modal-body').html(message);
 				$('#zaj_bootstrap_modal').modal({backdrop: backdrop, keyboard: false});
 			// Reposition the modal if needed
-				zaj.alert_reposition($('#zaj_bootstrap_modal'));
+				zaj.alertReposition($('#zaj_bootstrap_modal'));
 		}
 		else{
 			// Alert sent via bootstrap
@@ -184,8 +184,8 @@
 		}
 		return false;
 	};
-	var alert_reposition_interval;
-	zaj.alert_reposition = function($modal){
+	var alertRepositionInterval;
+	zaj.alertReposition = function($modal){
 		if(zaj.facebook){
 			FB.Canvas.getPageInfo(function(e){
 				// Top bar
@@ -207,8 +207,8 @@
 					$modal.css({top: topoffset, overflow: 'hidden', 'margin-top': 0});
 			});
 			// clear and set
-			clearInterval(alert_reposition_interval);
-			alert_reposition_interval = setInterval(function(){ zaj.alert_reposition($modal); }, 1000);
+			clearInterval(alertRepositionInterval);
+			alertRepositionInterval = setInterval(function(){ zaj.alertReposition($modal); }, 1000);
 		}
 	};
 	zaj.confirm = function(message, urlORfunction){
@@ -632,6 +632,17 @@
 	 	zaj.urlencode = function(url){
 	 		return encodeURIComponent(url);
 	 	};
+	 	zaj.urlEncode = zaj.urlencode;
+
+	/**
+	 * Is email valid?
+	 * @param {string} email The email address to test.
+	 * @return {boolean} True if valid, false if not.
+	 */
+ 		zaj.isEmailValid = function(email){
+			var patt = /^[_A-z0-9-]+(\.[_A-z0-9-]+)*@[A-z0-9-]+(\.[A-z0-9-]+)*(\.[A-z]{2,10})$/i;
+			return patt.test(email);
+ 		};
 
 	/**
 	 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
@@ -642,6 +653,7 @@
 			if(url.indexOf('?') > -1) return url+'&';
 			else return url+'?';
 		};
+		zaj.queryMode = zaj.querymode;
 
 
 	/**
@@ -723,6 +735,7 @@
 				);
 			}
 		};
+		zaj.inViewPort = zaj.inviewport;
 
 	/**
 	 * Enable auto pagination
@@ -826,6 +839,8 @@
 				this.readyFunctions.push(func);
 			}
 		};
+		zaj.autoPagination = zaj.autopagination;
+
 	/**
 	 * Provide helper for file uploads.
 	 */

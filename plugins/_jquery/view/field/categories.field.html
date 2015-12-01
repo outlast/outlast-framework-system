@@ -25,23 +25,39 @@
 <script src="{{baseurl}}plugins/outlast/js/jquery.nestable.js?v2"></script>
 <script>
 	// Nestable without drag and drop
-	zaj.ready(function(){
+	ofw.ready(function(){
 		$('#nestable-{{field.uid}}').nestable({enableDragAndDrop: false});
 		$('#nestable-{{field.uid}}').nestable('collapseAll');
+		$('input').on('ifClicked', function(ev){
+			ev.stopPropagation();
+			toggleCategoryCheckbox(ev, this);
+		});
 	});
 	function toggleCategoryCheckbox(ev, el){
-		var $me = $(el);
+		var $me = $(el),
+			$myinput,
+			isInput = false;
 		// Check what type of target
 			if(ev.target.type == 'button') return true;
+		// Check if checkbox helper was clicked or simply the horizontal bar
+			if($me.hasClass('iCheck-helper')) {
+					$myinput = $me;
+					isInput = true;
+				}
+				else {
+					$myinput = $me.find('input').first();
+				}
 		// Toggle me, plus stop propagation
-			var $myinput = $me.find('input').first();
 			$myinput.iCheck('toggle');
 			ev.stopPropagation();
 		// If I was just turned on, turn on my parents
-			if($myinput[0].checked) $me.parents('.dd-item').find('input').first().iCheck('check');
+			if((!isInput && $myinput[0].checked) || (isInput && $myinput.parent().hasClass('checked'))) $me.parents('.dd-item').each(function() {
+				$(this).find('input').first().iCheck('check');
+			});
 		// If I was just turned off, turn off my children
-			if(!$myinput[0].checked) $me.find('.dd-item').find('input').iCheck('uncheck');
+			if((!isInput && !$myinput[0].checked) || (isInput && !$myinput.parent().hasClass('checked'))) $me.find('.dd-item').find('input').iCheck('uncheck');
 	}
+
 	{% if field.value %}
 		{% foreach field.value as selcat %}
 			$('#{{selcat.id}}').iCheck('toggle');

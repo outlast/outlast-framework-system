@@ -325,6 +325,22 @@ class zajFetcher implements Iterator, Countable{
 			$this->reset();
 		return $this;
 	}
+
+	/**
+	 * Remove all filters or a specific filter.
+	 * @param string|boolean $field The name of the field who's filter should be reset. If omitted (or if false), all are removed.
+	 * @return zajFetcher This method can be chained.
+	 */
+	public function remove_filters($field = false){
+		if($field === false) $this->filters = [];
+		else{
+			foreach($this->filters as $key => $filter){
+				if($filter[0] == $field) unset($this->filters[$key]);
+			}
+		}
+		return $this;
+	}
+
 	/**
 	 * Exclude/remove filter is just an alias of filter but with different defaults
 	 * @param string $field The name of the field to be filtered

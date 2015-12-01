@@ -451,22 +451,30 @@ abstract class zajModel implements JsonSerializable {
 	 * Convert model data to a standard single-dimensional array format.
 	 * @todo Move these conversions to field definition files.
 	 * @todo Add support for model extensions.
+	 * @param boolean $localized Set to true if you want the localized version.
 	 * @return array Return a single-dimensional array.
 	 */
-	public function to_array(){
+	public function to_array($localized = true){
 		// Get my class name
 			/* @var zajModel $class_name */
 			$class_name = $this->class_name;
 		// Get my model data
 			$mymodel = $class_name::__model();
 		// Load up data if not yet loaded
-			if(!$this->data) $this->data = new zajData($this);
+			if($localized){
+				if(!$this->translations) $this->translations = new zajModelLocalizer($this);
+				$data = $this->translations;
+			}
+			else{
+				if(!$this->data) $this->data = new zajData($this);
+				$data = $this->data;
+			}
 		// Now fetch array data
 			$array_data = array();
 			foreach($mymodel as $field_name => $field_type){
 				switch($field_type->type){
 					case 'manytoone':
-						$array_data[$field_name] = $this->data->$field_name->id;
+						$array_data[$field_name] = $data->$field_name->id;
 						break;
 					case 'categories':
 					case 'files':
@@ -476,7 +484,7 @@ abstract class zajModel implements JsonSerializable {
 						// Just skip these
 						break;
 					default:
-						$array_data[$field_name] = $this->data->$field_name;
+						$array_data[$field_name] = $data->$field_name;
 						break;
 				}
 			}
