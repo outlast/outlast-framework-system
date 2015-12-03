@@ -1,0 +1,15 @@
+<input class='ofw-field-friendly form-control' type='text' id='{{field.id}}' name='{{field.name}}' value='{{field.value|escape}}'>
+{% if not field.value %}
+<script>
+	ofw.ready(function(){
+		$('[name="{{field.options.from|escape}}"]').keyup(function(){
+			var val = $(this).val();
+			// @todo add logic for friendly conversion here!
+			var friendlyVal = val;
+
+
+			$('[name="{{field.name|escape}}"]').val(friendlyVal);
+		});
+	});
+</script>
+{% endif %}
