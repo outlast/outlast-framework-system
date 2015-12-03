@@ -14,6 +14,7 @@ die("This file is for documentation.");
  * @method static zajDb file
  * @method static zajDb files
  * @method static zajDb float
+ * @method static zajDbFriendly friendly
  * @method static zajDb id
  * @method static zajDb integer
  * @method static zajDb json
@@ -52,6 +53,11 @@ class zajDb{}
  * @method zajDbPhoto max_file_size
  */
 class zajDbPhoto extends zajDb{}
+
+/**
+ * @method zajDbFriendly from(string $field_name) Defines which field the friendly url is generated from.
+ **/
+class zajDbFriendly extends zajDb{}
 
 
 /**
