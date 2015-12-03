@@ -5,9 +5,7 @@
 		$('[name="{{field.options.from|escape}}"]').keyup(function(){
 			var val = $(this).val();
 			// @todo add logic for friendly conversion here!
-			var friendlyVal = val;
-
-
+			var friendlyVal = val.toLowerCase().replace(/ /, '-');
 			$('[name="{{field.name|escape}}"]').val(friendlyVal);
 		});
 	});
