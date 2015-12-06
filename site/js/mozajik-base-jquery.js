@@ -1200,7 +1200,34 @@
 				this.cropper(options)
 			}
 		};
+		
+		/**
+         * Encode html characters.
+         * @param {string} str The incoming string.
+         * @return {string} Returns a string in which html entities are escaped.
+         **/
+        zaj.htmlEscape = function(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
 
+		/**
+         * Decode html characters.
+         * @param {string} str The incoming string.
+         * @return {string} Returns a string in which escaped html entities are converted back to their normal state.
+         **/
+        zaj.htmlUnescape = function(str) {
+            return String(str)
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&');
+        }
 
 	/**
 	 * Pushstate excitement
