@@ -23,7 +23,7 @@ class zajlib_config extends zajLibExtension{
 	 * object - config variables are stored here
 	 **/
 	private $variable;
-	private $sections;
+	private $section;
 
 	/**
 	 * Creates a new zajlib_config
@@ -78,7 +78,7 @@ class zajlib_config extends zajLibExtension{
 	 **/
 	 	public function __get($name){
 		 	if($name == 'variable') return $this->zajlib->config->variable;
-			if($name == 'sections') return $this->zajlib->config->sections;
+			if($name == 'section') return $this->zajlib->config->section;
 		 	return $this->$name;
 	 	}
 
@@ -123,7 +123,7 @@ class zajlib_config extends zajLibExtension{
 			$this->zajlib->file->create_path_for($global_file);
 			$this->add_file($global_file);
 			$section_file = false;
-			$actual_section = false;
+		$current_section = false;
 			$global_scope = '';
 		// start debug stats
 			$this->debug_stats['source'] = $full_path;
@@ -144,29 +144,31 @@ class zajlib_config extends zajLibExtension{
 												// add new one
 													$section = trim($line, '[]');
 													if(preg_replace('/^[a-zA-Z_][a-zA-Z0-9_]*/', '', $section) != '') $this->error('Illegal section definition. A-z, numbers, and _ allowed!');
-													$actual_section = $section;
+					$current_section = $section;
 													$section_file = $this->zajlib->basepath.$this->dest_path.$source_path.'.'.$section.'.php';
 													$this->add_file($section_file, $global_scope);
 											break;
 							default:		// it's a variable line
-												// process it as a standard line
-													$current_line = $this->process_standard_line($line);
+					// let's first process the data
+					$vardata = $this->process_variable($line);
+
+					// are we in a section?
+					if($current_section != '' && $current_section != false) {
+						$current_line = $this->section_variable_to_php($vardata, $current_section);
+					}
+					else {
+						$current_line = $this->global_variable_to_php($vardata);
+					}
+
 												// check if problems
 													if($current_line === false) break;
 												// write this data
 													$this->write_line($current_line);
 
-													if($actual_section != '' && $actual_section != false){
-														$section_line = $this->process_section_line($line, $actual_section);
-														if($section_line === false) break;
-														$this->write_line($section_line);
-													}
 												// while not in any section, add the current line to the "global" scope
 													if(!$section_file) {
 														$global_scope .= $current_line;
-														$global_scope .= $section_line;
 													}
-											
 						
 						}
 					$this->debug_stats['line']++;				
@@ -175,26 +177,30 @@ class zajlib_config extends zajLibExtension{
 			return true;
 	}
 
-	public function process_section_line($line, $section){
-		$processed_line = $this->process_variable($line);
-		$varcontent = $processed_line['varcontent'];
-		$varname = $processed_line['varname'];
+	/**
+	 * Turn a section variable into php data. The generated php data also includes global_variable_to_php(), so you do not need to call that if in a section.
+	 * @param array $vardata The variable data as returned from process_variable()
+	 * @param string $section The name of the section we are in.
+	 * @return string|boolean Returns the new data or boolean false if error.
+	 */
+	public function section_variable_to_php($vardata, $section){
+		$varcontent = $vardata['varcontent'];
+		$varname = $vardata['varname'];
 		// generate variable
 		// treat booleans and numbers separately
-		if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->sections->'.$section.'->'.$varname.' = '.addslashes($varcontent).";\n";
-		else $current_line = '$this->zajlib->config->sections->'.$section.'->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n";
+		if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = $this->zajlib->config->section->'.$section.'->'.$varname.' = '.addslashes($varcontent).";\n";
+		else $current_line = '$this->zajlib->config->variable->'.$varname.' = $this->zajlib->config->section->'.$section.'->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n";
 		return $current_line;
 	}
 
 	/**
-	 * Process a standard variable line for a configuration input file.
-	 * @param string $line The line data.
+	 * Turn a global variable into php data.
+	 * @param array $vardata The variable data as returned from process_variable()
 	 * @return string|boolean Returns the new data or boolean false if error.
 	 */
-	public function process_standard_line($line){
-		$processed_line = $this->process_variable($line);
-		$varcontent = $processed_line['varcontent'];
-		$varname = $processed_line['varname'];
+	public function global_variable_to_php($vardata){
+		$varcontent = $vardata['varcontent'];
+		$varname = $vardata['varname'];
 		// generate variable
 			// treat booleans and numbers separately
 				if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n";
@@ -202,6 +208,11 @@ class zajlib_config extends zajLibExtension{
 		return $current_line;
 	}
 
+	/**
+	 * Process a standard variable line using regex and turn it into usable data.
+	 * @param string $line The line data.
+	 * @return array|boolean Returns an array of data (varcontent, varname) or boolean false if error.
+	 */
 	public function process_variable($line){
 		// separate by =
 		list($varname, $varcontent) = explode('=', $line, 2);
@@ -216,7 +227,7 @@ class zajlib_config extends zajLibExtension{
 		if(strpos($varcontent,'?>') !== false) $this->error('Illegal characters found in variable content');
 		if(strpos($varcontent,'<?') !== false) $this->error('Illegal characters found in variable content');
 
-		return array('varcontent' => $varcontent, 'varname' => $varname);
+		return ['varcontent' => $varcontent, 'varname' => $varname];
 	}
 
 	/**
@@ -230,17 +241,18 @@ class zajlib_config extends zajLibExtension{
 		fputs($this->destination_files[$file_name], "<?php\n".$global_scope);
 		return $this->destination_files[$file_name];
 	}
+
 	/**
 	 * Removes a configuration output file.
 	 * @param string $file_name The name of the file.
 	 * @return boolean Returns true.
 	 **/
 	private function remove_file($file_name){
-		fputs($this->destination_files[$file_name], "\n?>");
 		fclose($this->destination_files[$file_name]);
 		unset($this->destination_files[$file_name]);
 		return true;
 	}
+
 	/**
 	 * Removes all configuration output files.
 	 **/
