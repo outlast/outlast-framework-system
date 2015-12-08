@@ -23,8 +23,6 @@ class OfwLangTest extends zajTest {
 			$this->zajlib->zajconf['locale_available'] = 'fr_FR,hu_HU,en_US';
 			$this->zajlib->lang->reload_locale_settings();
 			$this->zajlib->lang->set('hu_HU');
-
-
 	}
 
 	/**
@@ -33,8 +31,10 @@ class OfwLangTest extends zajTest {
 	public function system_language_sections(){
 		$this->zajlib->lang->load('system/fields', 'files');
 		// Let's see if we loaded everything properly
-			zajTestAssert::areIdentical($this->zajlib->config->variable->system_field_files_upload, $this->zajlib->lang->variable->system_field_files_upload);
-
+		zajTestAssert::areIdentical($this->zajlib->config->variable->system_field_files_upload, $this->zajlib->lang->variable->system_field_files_upload);
+		zajTestAssert::areIdentical($this->zajlib->config->variable->section->files->system_field_files_upload, $this->zajlib->lang->variable->system_field_files_upload);
+		zajTestAssert::areIdentical("Fájl feltöltése", $this->zajlib->lang->variable->system_field_files_upload);
+		zajTestAssert::areIdentical($this->zajlib->config->variable->section->files->system_field_files_upload, $this->zajlib->lang->section->files->system_field_files_upload);
 	}
 
 	/**
