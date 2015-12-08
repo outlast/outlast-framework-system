@@ -10,7 +10,8 @@ $GLOBALS['regexp_config_variable'] = "";
 $GLOBALS['regexp_config_comment'] = "//";
 
 /**
- * @property stdClass $variable The config variables.
+ * @property zajlibConfigVariable $variable The config variables.
+ * @property stdClass $section The config variables broken into sections.
  */
 class zajlib_config extends zajLibExtension{
 	protected $dest_path = 'cache/conf/';		// string - subfolder where compiled conf files are stored (cannot be changed)
@@ -35,7 +36,8 @@ class zajlib_config extends zajLibExtension{
 		parent::__construct($zajlib, $system_library);
 		// init variables
 		$this->variable = new stdClass();
-		$this->sections = new stdClass();
+		$this->section = new stdClass();
+		$this->variable->section = &$this->section;
 	}
 	
 	/**
@@ -188,8 +190,8 @@ class zajlib_config extends zajLibExtension{
 		$varname = $vardata['varname'];
 		// generate variable
 		// treat booleans and numbers separately
-		if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = $this->zajlib->config->section->'.$section.'->'.$varname.' = '.addslashes($varcontent).";\n";
-		else $current_line = '$this->zajlib->config->variable->'.$varname.' = $this->zajlib->config->section->'.$section.'->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n";
+		if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n".'$this->zajlib->config->section->'.$section.'->'.$varname.' = &$this->zajlib->config->variable->'.$varname.";\n";
+		else $current_line = '$this->zajlib->config->variable->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n".'$this->zajlib->config->section->'.$section.'->'.$varname.' = &$this->zajlib->config->variable->'.$varname.";\n";
 		return $current_line;
 	}
 
@@ -223,6 +225,12 @@ class zajlib_config extends zajLibExtension{
 			$this->error('Invalid variable found!');
 			return false;
 		}
+		// reserved varname?
+		if($varname == 'ofw' || $varname == 'section'){
+			$this->error('You tried to use a reserved variable (section or ofw)!');
+			return false;
+		}
+
 		// check for other malicious stuff (php tags)
 		if(strpos($varcontent,'?>') !== false) $this->error('Illegal characters found in variable content');
 		if(strpos($varcontent,'<?') !== false) $this->error('Illegal characters found in variable content');
@@ -284,7 +292,9 @@ class zajlib_config extends zajLibExtension{
 	public function warning($message, $debug_stats=false){
 		// get the object debug_stats
 			if(!is_array($debug_stats)) $debug_stats = $this->debug_stats;
-		echo $this->type_of_file." file compile warning: $message (file: $debug_stats[source] / line: $debug_stats[line])<br/>";
+		// send zajlib warning if in live mode, otherwise just echo
+			if($this->zajlib->debug_mode) echo $this->type_of_file." file compile warning: $message (file: $debug_stats[source] / line: $debug_stats[line])<br/>";
+			else $this->zajlib->warning("Warning during ".$this->type_of_file." file compile: $message (file: $debug_stats[source] / line: $debug_stats[line])");
 	}
 
 	/**

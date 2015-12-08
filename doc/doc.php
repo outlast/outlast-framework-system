@@ -136,3 +136,9 @@ class zajTranslationData extends zajData {}
  * @property string $log The log message.
  */
 class EmailLogData extends zajData {}
+
+/**
+ * Class zajlibConfigVariable
+ * @property stdClass $section The variables broken into sections.
+ */
+class zajlibConfigVariable extends stdClass{}
