@@ -1201,6 +1201,23 @@
 			}
 		};
 
+    /**
+     * Trigger inporgress class on inporgress elements
+     *
+     * @param show boolean add/remove inprogress class to/from the element
+     */
+    zaj.inprogress = function(show) {
+        if (show) {
+            $('[data-inprogress-class]').each(function() {
+                $(this).addClass($(this).data('inprogress-class'))
+            });
+        } else {
+            $('[data-inprogress-class]').each(function() {
+                $(this).removeClass($(this).data('inprogress-class'))
+            });
+        }
+    }
+
 
 	/**
 	 * Pushstate excitement
