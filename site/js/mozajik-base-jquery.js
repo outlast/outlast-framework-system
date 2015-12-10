@@ -1229,6 +1229,23 @@
                 .replace(/&amp;/g, '&');
         }
 
+    /**
+     * Trigger inprogress class on inprogress elements
+     * @param {boolean} show Set to true or false to add or  remove inprogress class to/from the element.
+     */
+    zaj.inProgress = function(show) {
+        if (show) {
+            $('[data-inprogress-class]').each(function() {
+                $(this).addClass($(this).data('inprogress-class'))
+            });
+        } else {
+            $('[data-inprogress-class]').each(function() {
+                $(this).removeClass($(this).data('inprogress-class'))
+            });
+        }
+    }
+
+
 	/**
 	 * Pushstate excitement
 	 */
