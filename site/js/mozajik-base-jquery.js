@@ -1202,11 +1202,11 @@
 		};
 
     /**
-     * Trigger inporgress class on inporgress elements
+     * Trigger inprogress class on inprogress elements
      *
      * @param show boolean add/remove inprogress class to/from the element
      */
-    zaj.inprogress = function(show) {
+    zaj.inProgress = function(show) {
         if (show) {
             $('[data-inprogress-class]').each(function() {
                 $(this).addClass($(this).data('inprogress-class'))
