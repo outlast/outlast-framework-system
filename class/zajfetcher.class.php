@@ -33,7 +33,7 @@ define('CUSTOM_SORT', 'CUSTOM_SORT');
  * @property string $groupby The generated GROUP BY clause
  * @property string $limit The generated LIMIT clause.
  **/
-class zajFetcher implements Iterator, Countable{
+class zajFetcher implements Iterator, Countable, JsonSerializable{
 	// create a fetch class
 		public $class_name;									// the class name
 		public $table_name;									// the table name
@@ -89,6 +89,25 @@ class zajFetcher implements Iterator, Countable{
 			$this->ordermode = $classname::$fetch_order;
 			$this->orderby = "ORDER BY model.".$classname::$fetch_order_field;
 		return $this;
+	}
+
+	/**
+	 * Implement json serialize method.
+	 */
+	public function jsonSerialize(){
+		return $this->to_array();
+	}
+
+	public function to_array(){
+		$array_data = array();
+		$className = $this->class_name;
+		$myModel = $className::__model();
+		echo $myModel;
+		foreach($this as $row){
+			$array_data[] = $row->to_array(true);
+		}
+
+		return $array_data;
 	}
 
 	
