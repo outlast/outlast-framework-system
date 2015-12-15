@@ -98,15 +98,15 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		return $this->to_array();
 	}
 
+  	/**
+     * Return the model data as an array.
+     * @return array The list as an array.
+     **/
 	public function to_array(){
 		$array_data = array();
-		$className = $this->class_name;
-		$myModel = $className::__model();
-		echo $myModel;
 		foreach($this as $row){
 			$array_data[] = $row->to_array(true);
 		}
-
 		return $array_data;
 	}
 
