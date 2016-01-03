@@ -190,8 +190,8 @@ class zajlib_config extends zajLibExtension{
 		$varname = $vardata['varname'];
 		// generate variable
 		// treat booleans and numbers separately
-		if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n".'$this->zajlib->config->section->'.$section.'->'.$varname.' = &$this->zajlib->config->variable->'.$varname.";\n";
-		else $current_line = '$this->zajlib->config->variable->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n".'$this->zajlib->config->section->'.$section.'->'.$varname.' = &$this->zajlib->config->variable->'.$varname.";\n";
+		if($varcontent == 'false' || $varcontent == 'true' || is_numeric($varcontent)) $current_line = '$this->zajlib->config->section->'.$section.'->'.$varname.' = $this->zajlib->config->variable->'.$varname.' = '.addslashes($varcontent).";\n";
+		else $current_line = '$this->zajlib->config->section->'.$section.'->'.$varname.' = $this->zajlib->config->variable->'.$varname.' = \''.str_ireplace("'", "\\'", $varcontent)."';\n";
 		return $current_line;
 	}
 
