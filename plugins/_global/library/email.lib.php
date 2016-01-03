@@ -63,36 +63,39 @@ class zajlib_email extends zajLibExtension {
 	public function send_single($from, $to, $subject, $body, $sendcopyto = false, $bounceto = false, $additional_headers = false, $html_body = false, $send_at = false){
 		// Load up my info
 		$this->zajlib->config->load('email_smtp.conf.ini');
+      
 		// Get my email data for from and to
 		$from_data = $this->get_named_email($from);
 		$to_data = $this->get_named_email($to);
+      
 		// Check if $to is valid
 		if(!$this->valid($to_data->email, true)) return $this->zajlib->warning("Invalid email provided in To: ".$to);
 		if(!$this->valid($from_data->email, true)) return $this->zajlib->warning("Invalid email provided in From: ".$from);
 
-		if ($send_at) {
-			if (!$this->postmark_warning_sent && $this->zajlib->config->variable->email_provider == 'postmark') {
+      	// Check if $send_at is valid, send warning if not
+		if($send_at){
+			if(!$this->postmark_warning_sent && $this->zajlib->config->variable->email_provider == 'postmark') {
 				$this->zajlib->warning("Postmark does not support delayed mail delivery!");
 				$this->postmark_warning_sent = true;
-			} elseif (!is_numeric($send_at)) {
-
-				return $this->zajlib->warning('Invalid unix timestamp '.$send_at.' for "send_at" parameter!');
+			}
+          	elseif(!is_numeric($send_at)){
+				$this->zajlib->warning('Invalid unix timestamp '.$send_at.' for "send_at" parameter!');
 			}
 		}
 
 		// Email API required
 		if($this->zajlib->config->variable->email_use_api) {
-
+			// Use html or text body
 			$body = ($html_body)?$html_body:$body;
 			$email_provider = $this->zajlib->config->variable->email_provider;
 
+          	// Check if provider is supported
 			if(method_exists($this, $email_provider)){
 				$responses = $this->$email_provider($from, $to, $subject, $body, $sendcopyto, $false, $send_at);
 			}
           	else{
               	$this->zajlib->warning("Email delivery provider $email_provider is not supported.");
           	}
-          	
 
 			// Set API specific responses
 			switch($email_provider){
@@ -113,25 +116,29 @@ class zajlib_email extends zajLibExtension {
 					$status_ok = ($send_at > time())?'scheduled':'sent';
 					break;
 				default:
-					$status_prop = $responses->code;
-					$status_ok = false;
+              		// Failed send, since unsupported provider was requested
+					$status_prop = false;
+					$status_ok = true;
 					break;
 			}
 
-			$success = ((isset($status_prop) && $status_prop == $status_ok) || (false === $status_ok && empty($status_prop)));
+          	// Was it a success? Let's compare the status property to the ok status...
+			$success = (isset($status_prop) && $status_prop == $status_ok);
 
+          	// If database is enabled, create a log entry
 			if($this->zajlib->zajconf['mysql_enabled']) {
 				$status = ($success) ? 'sent' : 'failed';
 				EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, json_encode($responses));
 			}
 
-			if ($success) {
+			if($success){
 				return true;
-			} else {
+			}
+          	else{
 				return $this->zajlib->warning("Failed to send email to $to ".print_r($responses, true));
 			}
 		}
-		else {
+		else{
 			return $this->zajlib->warning("Failed to send email to $to, no email API activated.");
 		}
 
