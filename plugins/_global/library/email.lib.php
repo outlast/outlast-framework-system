@@ -73,14 +73,8 @@ class zajlib_email extends zajLibExtension {
 		if(!$this->valid($from_data->email, true)) return $this->zajlib->warning("Invalid email provided in From: ".$from);
 
       	// Check if $send_at is valid, send warning if not
-		if($send_at){
-			if(!$this->postmark_warning_sent && $this->zajlib->config->variable->email_provider == 'postmark') {
-				$this->zajlib->warning("Postmark does not support delayed mail delivery!");
-				$this->postmark_warning_sent = true;
-			}
-          	elseif(!is_numeric($send_at)){
-				$this->zajlib->warning('Invalid unix timestamp '.$send_at.' for "send_at" parameter!');
-			}
+		if($send_at && !is_numeric($send_at)){
+			$this->zajlib->warning('Invalid unix timestamp '.$send_at.' for "send_at" parameter!');
 		}
 
 		// Email API required
@@ -234,7 +228,13 @@ class zajlib_email extends zajLibExtension {
 	 * @return object The answer from the API.
 	 */
 	public function postmark($from, $to, $subject, $body, $bcc = false, $tag = false, $send_at = false){
-		// Create defaults
+      // Warn if send at used with Postmark
+        if(!$this->postmark_warning_sent && $send_at !== false) {
+          $this->zajlib->warning("Postmark does not support delayed mail delivery!");
+          $this->postmark_warning_sent = true;
+        }
+      
+      // Create defaults
 		if(empty($tag)) $tag = $this->zajlib->domain;
 		// Build my headers
 		$pheader = array(
