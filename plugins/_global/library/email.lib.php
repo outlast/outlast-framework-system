@@ -86,9 +86,13 @@ class zajlib_email extends zajLibExtension {
 			$body = ($html_body)?$html_body:$body;
 			$email_provider = $this->zajlib->config->variable->email_provider;
 
-			if (method_exists($this, $email_provider)) {
+			if(method_exists($this, $email_provider)){
 				$responses = $this->$email_provider($from, $to, $subject, $body, $sendcopyto, $false, $send_at);
 			}
+          	else{
+              	$this->zajlib->warning("Email delivery provider $email_provider is not supported.");
+          	}
+          	
 
 			// Set API specific responses
 			switch($email_provider){
