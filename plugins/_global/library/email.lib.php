@@ -212,8 +212,6 @@ class zajlib_email extends zajLibExtension {
 
 		// Post it and return it!
 		return json_decode($response);
-		// Post it and return it!
-		// return json_decode($this->zajlib->request->post(MANDRILL_API_SEND_URL, json_encode($pbody), false, $pheader));
 	}
 
 	/**
