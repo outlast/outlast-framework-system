@@ -32,7 +32,7 @@ die("This file is for documentation.");
  * @method static zajDbPhoto photos
  * @method static zajDb rating
  * @method static zajDb richtext
- * @method static zajDb select($array)
+ * @method static zajDb select($array, $default='')
  * @method static zajDb serialized
  * @method static zajDb text(integer $length=255)
  * @method static zajDb textarea
