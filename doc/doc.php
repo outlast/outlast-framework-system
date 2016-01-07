@@ -5,7 +5,7 @@
 die("This file is for documentation.");
 
 /**
- * @method static zajDb boolean
+ * @method static zajDb boolean(boolean $default=false)
  * @method static zajDb category
  * @method static zajDb categories
  * @method static zajDb color
