@@ -280,9 +280,19 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	public function add_field_source($source_field, $as_name=false, $replace = false){
 		// if replace
 			if($replace) $this->reset_field_sources();
+		// Set source field
+
+			if (false === strpos($source_field, ".")) {
+				// It's not in table.column format
+				$sfield = '`'.$source_field.'`';
+			} else {
+				// It's in table.column format
+				list($table, $field) = explode(".", $source_field);
+				$sfield = $table.'.`'.$field.'`';
+			}
 		// if an as name was chosen
-			if($as_name) $this->select_what[$as_name] = $source_field.' as '.$as_name;
-			else $this->select_what[$source_field] = $source_field;
+			if($as_name) $this->select_what[$as_name] = $sfield.' as "'.$as_name.'"';
+			else $this->select_what[$source_field] = $sfield;
 		// changes query, so reset me
 			$this->reset();
 		return $this;
