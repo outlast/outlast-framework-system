@@ -591,8 +591,8 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		// get query and execute it
 			$this->db->query($this->get_query());
 		// count rows
-			$this->total = $this->db->get_total_rows();
-			$this->count = $this->db->get_num_rows();
+			$this->total = (int) $this->db->get_total_rows();
+			$this->count = (int) $this->db->get_num_rows();
 		// set pagination stuff
 			if(is_object($this->pagination)){
 				$this->pagination->pagecount = ceil($this->total/$this->pagination->perpage);
