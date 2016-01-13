@@ -40,7 +40,7 @@ class zajfield_custom extends zajField {
 	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
-		return CustomFieldEntry::fetch()->filter('parent',$object->id)->filter('class', $object->class_name)->filter('field', $this->name)->next();
+		return CustomFieldEntry::fetch()->filter('parent',$object->id)->filter('class', $object->class_name)->filter('field', $this->name);
 	}
 
 	/**
