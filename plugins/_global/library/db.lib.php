@@ -607,7 +607,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->send_error();
 				return 0;
 			}
-			return $this->current_session->affected;
+			return (integer) $this->current_session->affected;
 		}
 
 		/**
@@ -619,7 +619,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->send_error();
 				return 0;
 			}
-			return $this->current_session->total;
+			return (integer) $this->current_session->total;
 		}
 		
 		/**
