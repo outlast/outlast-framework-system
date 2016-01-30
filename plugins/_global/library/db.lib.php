@@ -31,7 +31,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * @var resource
 		 **/
 		private $default_connection;
-		
+
 		/**
 		 * An array of {@link zajlib_db_session} objects used to manage different session without using different connections.
 		 * @var array
@@ -58,7 +58,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 **/
 		private $last_query='';
 
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// !Init methods
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->current_session = (object) array();
 			// create my default session
 				$this->create_session('default');
-		}	
+		}
 
 		/**
 		 * Connects to the database using the specified parameters.
@@ -109,7 +109,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->set_encoding();
 			return true;
 		}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// !Session management - sessions allow the user to not have to worry about query resources
 	//							during simultaneously running queries.
@@ -265,7 +265,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 					$keys = array_keys($array);
 					$fieldnames = "`".join("`,`", $keys)."`";
 				// join the values
-					$values = join(",", $field);	
+					$values = join(",", $field);
 			// execute sql (use SELECT to enable functions)
 				$sql = "INSERT INTO `$table` ($fieldnames) SELECT $values $fromtable";
 				return $this->query($sql);
@@ -292,7 +292,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 												break;
 							case MYSQL_MAX:		//print $value.'*'.MYSQL_MAX.'<br/>';
 												$value = "MAX($key)";
-												
+
 												break;
 							case MYSQL_MAX_PLUS:$value = "MAX($key) +1";
 												break;
@@ -306,7 +306,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				}
 				if(is_array($field)) $newfielddata = join(", ", $field);
 				else return $this->send_error(false, "mysql edit did not execute because parameter array is empty. nothing to change!");
-			
+
 			// Multiple conditions
 				if(is_array($column)){
 					foreach($column as $key => $value){
@@ -320,12 +320,12 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 					$condition = addslashes($condition);
 					$whereStr = "`$column` LIKE '$condition'";
 				}
-			
+
 			// Now execute
 				$sql = "UPDATE LOW_PRIORITY `$table` SET $newfielddata WHERE $whereStr";
 				return $this->query($sql);
 		}
-		
+
 		/**
 		 * Delete a row from a table.
 		 * @param string $table The table to edit in.
@@ -358,7 +358,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->current_session->selected_row = false;
 			// count the num of rows
 				if(!$this->current_session->query || !$this->current_session->conn) return $this->send_error(true);
-				$num_rows = $this->current_session->affected;			
+				$num_rows = $this->current_session->affected;
 			// get all remaining by setting num to the number remaining
 				if($num == -1) $num = $num_rows - $this->current_session->row_pointer - $startat;
 			// get a fixed number or the num remaining, whichever is less
@@ -376,7 +376,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 						$this->current_session->selected_row = (object) $my_row;
 					// increment the row pointer variable
 						$this->current_session->row_pointer++;
-				}				
+				}
 			return $result_set;
 		}
 
@@ -413,7 +413,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			}
 			return $my_objects;
 		}
-		
+
 		/**
 		 * This is an alias of rewind. This is depricated.
 		 **/
@@ -454,7 +454,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// now return the current row pointer
 				return $this->current_session->row_pointer;
 		}
-		
+
 		/**
 		 * Returns the next object in the iteration.
 		 * @return object Returns the selected row as an object.
@@ -465,7 +465,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// return the current row
 				return $this->current_session->selected_row;
 		}
-		
+
 		/**
 		 * Rewinds the iterator.
 		 * @return boolean Always returns true
@@ -480,7 +480,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// return the next one
 				return $this->next();
 		}
-		
+
 		/**
 		 * Returns true if the current object of the iterator is a valid object.
 		 * @return boolean Returns true or false depending on whether the currently select row is valid.
@@ -516,7 +516,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		}
 		/**
 		 * Return the count of a given column. This is depricated and will be removed.
-		 **/		
+		 **/
 		private function count_only($table, $wherestr = ""){
 			// static, so cannot reference $this
 			if($wherestr) $wherestr = "WHERE $wherestr";
@@ -526,15 +526,15 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$row = $this->get_one();
 			return $row['c'];
 		}
-		
+
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// !Search
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		private function search($table, $query, $columns, $max_results = 5, $return_columns="", $similarity_search = true){
  			// TODO: implement $similarity_search = false
-			
-						
+
+
  			// generate where string
 				// query should be escaped
 					$condition = addslashes($query);
@@ -581,7 +581,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$res = mysqli_query($this->current_session->conn, 'SELECT FOUND_ROWS() as total;');
 				$data = mysqli_fetch_assoc($res);
 				$this->current_session->total = $data['total'];
-			// end the timer	
+			// end the timer
 				$time_it_took = microtime(true) - $before_query;
 				$this->num_of_queries++;
 				$this->total_time += round($time_it_took,5);
@@ -597,7 +597,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->current_session->row_pointer = 0;
 			return $this->current_session;
 		}
-		
+
 		/**
 		 * Gets the total number of rows affected by the last query, taking into account the LIMIT clause.
 		 * @return integer The total number of rows LIMITed.
@@ -621,7 +621,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			}
 			return (integer) $this->current_session->total;
 		}
-		
+
 		/**
 		 * Send an error to the user or to the log.
 		 * @param boolean $display_warning Will display the warning even if debug mode is off. When debug mode is on, the warning is displayed regardless of this setting.
@@ -675,7 +675,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// use regexp to allow letters, numbers, and _
 				return preg_match("/[A-z0-9_]+/", $field_name);
 		}
-		
+
 		/**
 		 * Magic method to handle session calls to the default session.
 		 * @param string $name The name of the method to call.
@@ -721,7 +721,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
  * @method zajlib_db_session query()
  **/
 class zajlib_db_session implements Countable, Iterator {
-	// private instance variables 
+	// private instance variables
 		/**
 		 * A reference to the global zajlib object.
 		 * @var zajLib
@@ -779,7 +779,7 @@ class zajlib_db_session implements Countable, Iterator {
 		 * @var float
 		 **/
 		public $total_time = 0;
-	
+
 
 	/**
 	 * Creates a new session.
@@ -795,15 +795,14 @@ class zajlib_db_session implements Countable, Iterator {
 		// connection
 		$this->conn = $connection;
 	}
-	
+
 	/**
 	 * Magic method to reroute methods to the {@link zajlib_db} class
 	 **/
 	public function __call($name, $arguments){
-		if(!is_object($this->zajlib)){ print "Could not access db object!"; debug_print_backtrace(); exit; return false; } 
 		return $this->zajlib->db->__call_session($name, $arguments, $this->id);
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// !Implementations - redirected to current session
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -825,13 +824,13 @@ class zajlib_db_session implements Countable, Iterator {
 		 * @return integer Returns the row pointer of the current row.
 		 **/
 		public function key(){ return $this->zajlib->db->__call_session('key', array(), $this->id); }
-		
+
 		/**
 		 * Returns the next object in the iteration.
 		 * @return object Returns the selected row as an object.
 		 **/
 		public function next(){ return $this->zajlib->db->__call_session('next', array(), $this->id); }
-		
+
 		/**
 		 * Rewinds the iterator.
 		 * @return boolean Always returns true
