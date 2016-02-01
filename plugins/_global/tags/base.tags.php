@@ -335,8 +335,8 @@ EOF;
 	}
 	else{
 		// unset stuff
-			unset(\$parent_forloop);
-			unset(\$this->zajlib->variable->forloop);
+			\$parent_forloop = null;
+			\$this->zajlib->variable->forloop = null;
 	}
 ?>
 EOF;
