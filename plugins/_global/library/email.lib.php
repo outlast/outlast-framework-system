@@ -364,6 +364,7 @@ class zajlib_email extends zajLibExtension {
 	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
 	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
 	 * @param bool|string $text_body If set, text-version will be set to this. If not set, text version will be a strip-tagged version.
+	 * @deprecated Use send() instead with the TextBody additional header.
 	 * @return boolean True if successful, false otherwise.
 	 */
 	public function send_html($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false, $text_body = false){
