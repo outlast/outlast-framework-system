@@ -57,17 +57,17 @@ class zajlib_email extends zajLibExtension {
 	public function send_single($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
 		// Load up my info
 		$this->zajlib->config->load('email_smtp.conf.ini');
-      
+
 		// Get my email data for from and to
 		$from_data = $this->get_named_email($from);
 		$to_data = $this->get_named_email($to);
-      
+
 		// Check if $to is valid
 			// @todo We should still log the message in EmailLog, so create a separate warning method for email lib that logs, then sends warning...
 		if(!$this->valid($to_data->email, true)) return $this->zajlib->warning("Invalid email provided in To: ".$to);
 		if(!$this->valid($from_data->email, true)) return $this->zajlib->warning("Invalid email provided in From: ".$from);
 
-      	// Check if $send_at is valid, send warning if not
+		// Check if $send_at is valid, send warning if not
 		if($send_at && !is_numeric($send_at)){
 			$this->zajlib->warning('Invalid unix timestamp '.$send_at.' for "send_at" parameter!');
 		}
@@ -79,14 +79,14 @@ class zajlib_email extends zajLibExtension {
 
 			// Note: Plain text (if set) is stored in $additional_headers['TextBody']
 
-          	// Check if provider is supported
+			// Check if provider is supported
 			if(method_exists($this, $email_provider)){
 				$responses = $this->$email_provider($from, $to, $subject, $body, $bcc, $additional_headers, $send_at);
 			}
-          	else{
-              	$responses = new stdClass(); // just here to avoid PhpStorm warnings!
-              	$this->zajlib->warning("Email delivery provider $email_provider is not supported.");
-          	}
+			else{
+				$responses = new stdClass(); // just here to avoid PhpStorm warnings!
+				$this->zajlib->warning("Email delivery provider $email_provider is not supported.");
+			}
 
 			// Set API specific responses
 			switch($email_provider){
@@ -104,23 +104,23 @@ class zajlib_email extends zajLibExtension {
 					$status_ok = ($send_at > time())?'scheduled':'sent';
 					break;
 				default:
-              		// Failed send, since unsupported provider was requested
+					// Failed send, since unsupported provider was requested
 					$status_prop = false;
 					$status_ok = true;
 					break;
 			}
 
-          	// Was it a success? Let's compare the status property to the ok status...
+			// Was it a success? Let's compare the status property to the ok status...
 			$success = (isset($status_prop) && $status_prop == $status_ok);
 
-          	// If database is enabled, create a log entry
+			// If database is enabled, create a log entry
 			if($this->zajlib->zajconf['mysql_enabled']) {
 				$status = ($success) ? 'sent' : 'failed';
 				EmailLog::create_from_email($subject, $from, $to, $body, $bcc, $additional_headers, $send_at, $status, json_encode($responses));
 			}
 
 			if($success) return true;
-          	else return $this->zajlib->warning("Failed to send email to $to ".print_r($responses, true));
+			else return $this->zajlib->warning("Failed to send email to $to ".print_r($responses, true));
 		}
 		else{
 			// @todo Add mail() support in this case
@@ -221,12 +221,12 @@ class zajlib_email extends zajLibExtension {
 	 */
 	public function postmark($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
 		// Warn if send at used with Postmark
-        if(!$this->postmark_warning_sent && $send_at !== false) {
+		if(!$this->postmark_warning_sent && $send_at !== false) {
 			$this->zajlib->warning("Postmark does not support delayed mail delivery!");
 			$this->postmark_warning_sent = true;
-        }
-      
-      	// Tag with domain
+		}
+
+		// Tag with domain
 		$tag = $this->zajlib->domain;
 		// Build my headers
 		$pheader = array(
@@ -236,7 +236,10 @@ class zajlib_email extends zajLibExtension {
 		);
 
 		// Calculate text body based on actual body or stripped body
-		if($additional_headers !== false) $txtbody = $additional_headers['TextBody'];
+		if($additional_headers !== false){
+			$txtbody = $additional_headers['TextBody'];
+			unset($additional_headers['TextBody']);
+		}
 		else $txtbody = strip_tags($body);
 
 		// Now build my body
