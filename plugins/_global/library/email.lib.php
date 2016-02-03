@@ -20,15 +20,13 @@ class zajlib_email extends zajLibExtension {
 	 * @param string $from The email which is displayed as the from field. Supports "My Name <me@example.com>" format.
 	 * @param string|array $to The email to which this message should be sent. You can specify multiple emails as comma-separated list or as array. Supports "My Name <me@example.com>" format.
 	 * @param string $subject A string with the email's subject.
-	 * @param string $body The email's body.
-	 * @param bool|string $sendcopyto If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
-	 * @param bool|string $bounceto If set, the email will bounce to this address. By default, bounces are recorded by SendGrid.
-	 * @param bool|string $additional_headers Not yet supported in this version of the plugin.
-	 * @param bool|string $html_body The body in HTML.
+	 * @param string $body The email's body in HTML or text format.
+	 * @param bool|string $bcc If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
+	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
 	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
 	 * @return boolean True if successful, false otherwise. Only returns the result of the last one sent. To get results for multiple recipients, use send_single().
 	 */
-	public function send($from, $to, $subject, $body, $sendcopyto = false, $bounceto = false, $additional_headers = false, $html_body = false, $send_at = false){
+	public function send($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
 		// Figure out my recipients
 		if(is_array($to)) $recipients = $to;
 		else $recipients = explode(',', $to);
@@ -38,29 +36,25 @@ class zajlib_email extends zajLibExtension {
 		// Now send to each recipient, but bcc only to first
 		foreach($recipients as $recipient){
 			// Send a single message
-			$result = $this->send_single($from, $recipient, $subject, $body, $sendcopyto, $bounceto, $additional_headers, $html_body, $send_at);
+			$result = $this->send_single($from, $recipient, $subject, $body, $bcc, $additional_headers, $send_at);
 			// Don't send BCC after first one
-			$sendcopyto = false;
+			$bcc = false;
 		}
 		return $result;
 	}
 
 	/**
 	 * Send a single text-based email in ISO or UTF encoding. Only use this if you require success reports for each recipient.
-	 * @todo Reenable standard mail() method but with notice.
-	 * @todo Add additional headers and bounceto support.
 	 * @param string $from The email which is displayed as the from field. Supports "My Name <me@example.com>" format.
 	 * @param string|array $to The email to which this message should be sent. You can specify multiple emails as comma-separated list or as array. Supports "My Name <me@example.com>" format.
 	 * @param string $subject A string with the email's subject.
 	 * @param string $body The email's body.
-	 * @param bool|string $sendcopyto If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
-	 * @param bool|string $bounceto If set, the email will bounce to this address. By default, bounces are recorded by the API you use.
-	 * @param bool|string $additional_headers Not yet supported in this version of the plugin.
-	 * @param bool|string $html_body The body in HTML.
-	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
+	 * @param bool|string $bcc If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
+	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair. You can send a plain text version with the key 'TextBody'.
+	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed. Not all providers support this feature.
 	 * @return boolean True if successful, false otherwise.
 	 */
-	public function send_single($from, $to, $subject, $body, $sendcopyto = false, $bounceto = false, $additional_headers = false, $html_body = false, $send_at = false){
+	public function send_single($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
 		// Load up my info
 		$this->zajlib->config->load('email_smtp.conf.ini');
       
@@ -69,6 +63,7 @@ class zajlib_email extends zajLibExtension {
 		$to_data = $this->get_named_email($to);
       
 		// Check if $to is valid
+			// @todo We should still log the message in EmailLog, so create a separate warning method for email lib that logs, then sends warning...
 		if(!$this->valid($to_data->email, true)) return $this->zajlib->warning("Invalid email provided in To: ".$to);
 		if(!$this->valid($from_data->email, true)) return $this->zajlib->warning("Invalid email provided in From: ".$from);
 
@@ -79,15 +74,17 @@ class zajlib_email extends zajLibExtension {
 
 		// Email API required
 		if($this->zajlib->config->variable->email_use_api) {
-			// Use html or text body
-			$body = ($html_body)?$html_body:$body;
+			// Which email provider should we use?
 			$email_provider = $this->zajlib->config->variable->email_provider;
+
+			// Note: Plain text (if set) is stored in $additional_headers['TextBody']
 
           	// Check if provider is supported
 			if(method_exists($this, $email_provider)){
-				$responses = $this->$email_provider($from, $to, $subject, $body, $sendcopyto, $false, $send_at);
+				$responses = $this->$email_provider($from, $to, $subject, $body, $bcc, $additional_headers, $send_at);
 			}
           	else{
+              	$responses = new stdClass(); // just here to avoid PhpStorm warnings!
               	$this->zajlib->warning("Email delivery provider $email_provider is not supported.");
           	}
 
@@ -102,11 +99,8 @@ class zajlib_email extends zajLibExtension {
 					$status_ok = 'success';
 					break;
 				case 'mandrill':
-					if (is_array($responses)) {
-						$status_prop = $responses[0]->status;
-					} else {
-						$status_prop = $responses->status;
-					}
+					if(is_array($responses)) $status_prop = $responses[0]->status;
+					else $status_prop = $responses->status;
 					$status_ok = ($send_at > time())?'scheduled':'sent';
 					break;
 				default:
@@ -122,17 +116,14 @@ class zajlib_email extends zajLibExtension {
           	// If database is enabled, create a log entry
 			if($this->zajlib->zajconf['mysql_enabled']) {
 				$status = ($success) ? 'sent' : 'failed';
-				EmailLog::create_from_email($subject, $from, $to, $html_body, strip_tags($html_body), $bounceto, $sendcopyto, $additional_headers, $status, json_encode($responses));
+				EmailLog::create_from_email($subject, $from, $to, $body, $bcc, $additional_headers, $send_at, $status, json_encode($responses));
 			}
 
-			if($success){
-				return true;
-			}
-          	else{
-				return $this->zajlib->warning("Failed to send email to $to ".print_r($responses, true));
-			}
+			if($success) return true;
+          	else return $this->zajlib->warning("Failed to send email to $to ".print_r($responses, true));
 		}
 		else{
+			// @todo Add mail() support in this case
 			return $this->zajlib->warning("Failed to send email to $to, no email API activated.");
 		}
 
@@ -141,16 +132,16 @@ class zajlib_email extends zajLibExtension {
 	/**
 	 * Send an email via Mandrill API.
 	 * @link https://mandrillapp.com/api/docs/messages.html
-	 * @param string $from The sender's email address in "John Doe <john@doe.com>" format.
-	 * @param string $to The recipient of the email.
+	 * @param string $from The sender's email address in "John Doe <john@doe.com>" or "john@doe.com" format.
+	 * @param string $to The recipient of the email in "John Doe <john@doe.com>" or "john@doe.com" format.
 	 * @param string $subject The subject of the email.
-	 * @param string $body The body of the email in HTML format.
+	 * @param string $body The body of the email in HTML or text format.
 	 * @param bool|string $bcc Add a BCC recipient or leave as false to skip this.
-	 * @param bool|string $tag Tagging if you want the email to show up with a flag in Postmark API reports.
-	 * @param bool|datetime $send_at UTC datetime (YYYY-MM-DD HH:MM:SS) of the delayed sending or false for sending immediately
-	 * @return object The answer from the API.
+	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair. You can send a plain text version with the key 'TextBody'.
+	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed. Not all providers support this feature.
+	 * @return stdClass The decoded JSON response from the API.
 	 */
-	public function mandrill($from, $to, $subject, $body, $bcc = false, $tag = false, $send_at = false){
+	public function mandrill($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
 		// Create defaults
 		if(empty($tag)) $tag = $this->zajlib->domain;
 		// Build my headers
@@ -159,8 +150,10 @@ class zajlib_email extends zajLibExtension {
 			'Content-type'=>'application/json',
 			'User-Agent'=>'Outlast Framework',
 		);
-		// HTML body
-		$txtbody = strip_tags($body);
+
+		// Add text body based on actual body or stripped body
+		if($additional_headers !== false) $txtbody = $additional_headers['TextBody'];
+		else $txtbody = strip_tags($body);
 
 		// Separate emails
 		$from = $this->get_named_email($from);
@@ -217,23 +210,24 @@ class zajlib_email extends zajLibExtension {
 	/**
 	 * Send an email via Postmark API.
 	 * @link http://developer.postmarkapp.com/developer-build.html
-	 * @param string $from The sender's email address in "John Doe <john@doe.com>" format.
-	 * @param string $to The recipient of the email.
+	 * @param string $from The sender's email address in "John Doe <john@doe.com>" or "john@doe.com" format.
+	 * @param string $to The recipient of the email in "John Doe <john@doe.com>" or "john@doe.com" format.
 	 * @param string $subject The subject of the email.
-	 * @param string $body The body of the email in HTML format.
+	 * @param string $body The body of the email in HTML or text format.
 	 * @param bool|string $bcc Add a BCC recipient or leave as false to skip this.
-	 * @param bool|string $tag Tagging if you want the email to show up with a flag in Postmark API reports.
-	 * @return object The answer from the API.
+	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
+	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed. Not all providers support this feature.
+	 * @return stdClass The decoded JSON response from the API.
 	 */
-	public function postmark($from, $to, $subject, $body, $bcc = false, $tag = false, $send_at = false){
-      // Warn if send at used with Postmark
+	public function postmark($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
+		// Warn if send at used with Postmark
         if(!$this->postmark_warning_sent && $send_at !== false) {
-          $this->zajlib->warning("Postmark does not support delayed mail delivery!");
-          $this->postmark_warning_sent = true;
+			$this->zajlib->warning("Postmark does not support delayed mail delivery!");
+			$this->postmark_warning_sent = true;
         }
       
-      // Create defaults
-		if(empty($tag)) $tag = $this->zajlib->domain;
+      	// Tag with domain
+		$tag = $this->zajlib->domain;
 		// Build my headers
 		$pheader = array(
 			'Accept'=>'application/json',
@@ -241,8 +235,9 @@ class zajlib_email extends zajLibExtension {
 			'X-Postmark-Server-Token'=>$this->zajlib->config->variable->email_api_key,
 		);
 
-		// HTML body
-		$txtbody = strip_tags($body);
+		// Calculate text body based on actual body or stripped body
+		if($additional_headers !== false) $txtbody = $additional_headers['TextBody'];
+		else $txtbody = strip_tags($body);
 
 		// Now build my body
 		// {From: 'sender@example.com', To: 'receiver@example.com', Subject: 'Postmark test', HtmlBody: '<html><body><strong>Hello</strong> dear Postmark user.</body></html>'}
@@ -264,22 +259,23 @@ class zajlib_email extends zajLibExtension {
 	/**
 	 * Send an email via SendGrid SMTP API.
 	 * @link https://sendgrid.com/docs/API_Reference/SMTP_API/using_the_smtp_api.html
-	 * @param string $from The sender's email address in "John Doe <john@doe.com>" format.
-	 * @param string $to The recipient of the email.
+	 * @param string $from The sender's email address in "John Doe <john@doe.com>" or "john@doe.com" format.
+	 * @param string $to The recipient of the email in "John Doe <john@doe.com>" or "john@doe.com" format.
 	 * @param string $subject The subject of the email.
-	 * @param string $body The body of the email in HTML format.
+	 * @param string $body The body of the email in HTML or text format.
 	 * @param bool|string $bcc Add a BCC recipient or leave as false to skip this.
-	 * @param bool|string $tag Tagging if you want the email to show up with a flag in Postmark API reports.
-	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false for sending immediately
-	 * @return object The answer from the API.
+	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
+	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed. Not all providers support this feature.
+	 * @return stdClass The decoded JSON response from the API.
 	 */
-	public function sendgrid($from, $to, $subject, $body, $bcc = false, $tag = false, $send_at = false) {
-		// HTML body
-		$txtbody = strip_tags($body);
-
+	public function sendgrid($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false) {
 		// Separate emails
 		$from = $this->get_named_email($from);
 		$to = $this->get_named_email($to);
+
+		// Calculate text body based on actual body or stripped body
+		if($additional_headers !== false) $txtbody = $additional_headers['TextBody'];
+		else $txtbody = strip_tags($body);
 
 		$pbody = array(
 			'api_user'=>$this->zajlib->config->variable->email_api_user,
@@ -290,12 +286,13 @@ class zajlib_email extends zajLibExtension {
 			'toname'=>$to->name,
 			'subject'=>$subject,
 			'html'=>$body,
-			'text'=>$body
+			'text'=>$txtbody
 		);
 
 		// Add bcc if needed
 		if(!empty($bcc)) $pbody['Bcc'] = $bcc;
 
+		// Delayed send requested?
 		if($send_at) {
 			$pbody['x-smtpapi'] = json_encode(array("send_at" => $send_at));
 		}
@@ -326,16 +323,20 @@ class zajlib_email extends zajLibExtension {
 	 * @param string $to The email to which this message should be sent.
 	 * @param string $subject A string with the email's subject.
 	 * @param string $body The email's body which should be in HTML.
-	 * @param bool|string $sendcopyto If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
-	 * @param bool|string $bounceto If set, the email will bounce to this address. By default, bounces are ignored and not sent anywhere.
-	 * @param bool|string $body_text If set, text-version will be set to this.
+	 * @param bool|string $bcc If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
+	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
+	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
+	 * @param bool|string $text_body If set, text-version will be set to this. If not set, text version will be a strip-tagged version.
 	 * @return boolean True if successful, false otherwise.
 	 */
-	public function send_html($from, $to, $subject, $body, $sendcopyto = false, $bounceto = false, $body_text = false){
+	public function send_html($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false, $text_body = false){
 		// Create a plain text version (if not set by default)
-		if(empty($body_text)) $body_text = strip_tags($this->zajlib->text->brtonl($body));
+			if(empty($text_body)) $text_body = strip_tags($this->zajlib->text->brtonl($body));
+		// Create additional headers if not exists
+			if($additional_headers == false) $additional_headers = [];
+			$additional_headers['TextBody'] = $text_body;
 		// Now send
-		return $this->send($from, $to, $subject, $body_text, $sendcopyto, $bounceto, false, $body);
+			return $this->send($from, $to, $subject, $body, $bcc, $additional_headers, $send_at);
 	}
 
 	/**

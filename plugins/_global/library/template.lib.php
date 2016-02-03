@@ -197,17 +197,18 @@ class zajlib_template extends zajLibExtension {
 	 * @param string $to The email to which this message should be sent.
 	 * @param string $subject A string with the email's subject.
 	 * @param string $sendcopyto If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
-	 * @param string $bounceto If set, the email will bounce to this address. By default, bounces are ignored and not sent anywhere.
-	 * @param string $plain_text_version The path to the template to be compiled for the plain text version.
+	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
+	 * @param bool|string $plain_text_version The path to the template to be compiled for the plain text version.
+	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
 	 * @return bool Will return true. Depending on the email gateway implementation it may return false if the email failed.
 	 */
-	public function email($source_path, $from, $to, $subject, $sendcopyto = "", $bounceto = "", $plain_text_version = ""){
+	public function email($source_path, $from, $to, $subject, $sendcopyto = "", $additional_headers = false, $send_at = false, $plain_text_version = false){
 		// capture output of this template
 			$body = $this->show($source_path, false, true);
 		// capture output of plain text template
-			if($plain_text_version) $plain_text_version = $this->show($plain_text_version, false, true);
+			if($plain_text_version !== false) $plain_text_version = $this->show($plain_text_version, false, true);
 		// load email library
-			return $this->zajlib->email->send_html($from, $to, $subject, $body, $sendcopyto, $bounceto, $plain_text_version);
+			return $this->zajlib->email->send_html($from, $to, $subject, $body, $sendcopyto, $additional_headers, $send_at, $plain_text_version);
 	}
 
 	/**

@@ -130,7 +130,7 @@ class zajTranslationData extends zajData {}
  * @property string $to To email address.
  * @property string $html_body Body html.
  * @property string $text_body Body text.
- * @property string $bounceto Bounce email to.
+ * @property integer $sentat The time it was sent.
  * @property string $bcc Bcc email address.
  * @property array|stdClass $headers Additional headers.
  * @property string $status Status of email. Can be sent or failed (or new/deleted).
