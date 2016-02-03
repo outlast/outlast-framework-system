@@ -51,12 +51,16 @@ class zajlib_email extends zajLibExtension {
 	 * @param string $body The email's body.
 	 * @param bool|string $bcc If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
 	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair. You can send a plain text version with the key 'TextBody'.
-	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed. Not all providers support this feature.
+	 * @param bool|integer $send_at Unix timestamp of the time at which to send the email (in case of delayed send) or false if no delay is needed. Not all providers support this feature.
 	 * @return boolean True if successful, false otherwise.
 	 */
-	public function send_single($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
-		// Load up my info
-		$this->zajlib->config->load('email_smtp.conf.ini');
+	private function send_single($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
+		// Load up my old legacy file name, if it exists @todo remove this eventually, as it is deprecated
+		$this->zajlib->config->load('email_smtp.conf.ini', false, false, false);
+		if(empty($this->zajlib->config->variable->email_use_api)){
+			// Load up new one!
+			$this->zajlib->config->load('email.conf.ini');
+		}
 
 		// Get my email data for from and to
 		$from_data = $this->get_named_email($from);
@@ -141,7 +145,7 @@ class zajlib_email extends zajLibExtension {
 	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed. Not all providers support this feature.
 	 * @return stdClass The decoded JSON response from the API.
 	 */
-	public function mandrill($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
+	private function mandrill($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
 		// Create defaults
 		if(empty($tag)) $tag = $this->zajlib->domain;
 		// Build my headers
@@ -219,7 +223,7 @@ class zajlib_email extends zajLibExtension {
 	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed. Not all providers support this feature.
 	 * @return stdClass The decoded JSON response from the API.
 	 */
-	public function postmark($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
+	private function postmark($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
 		// Warn if send at used with Postmark
 		if(!$this->postmark_warning_sent && $send_at !== false) {
 			$this->zajlib->warning("Postmark does not support delayed mail delivery!");
@@ -301,7 +305,7 @@ class zajlib_email extends zajLibExtension {
 	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed. Not all providers support this feature.
 	 * @return stdClass The decoded JSON response from the API.
 	 */
-	public function sendgrid($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false) {
+	private function sendgrid($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false) {
 		// Separate emails
 		$from = $this->get_named_email($from);
 		$to = $this->get_named_email($to);
