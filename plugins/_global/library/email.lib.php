@@ -252,8 +252,38 @@ class zajlib_email extends zajLibExtension {
 			'TextBody'=>$txtbody,
 			'Tag'=>$tag,
 		);
+
 		// Add bcc if needed
 		if(!empty($bcc)) $pbody['Bcc'] = $bcc;
+
+		// Add other headers if needed
+		if($additional_headers !== false){
+			// Standard headers
+			if(!empty($additional_headers['Cc'])){
+				$pbody['Cc'] = $additional_headers['Cc'];
+				unset($additional_headers['Cc']);
+			}
+			if(!empty($additional_headers['Tag'])){
+				$pbody['Tag'] = $additional_headers['Tag'];
+				unset($additional_headers['Tag']);
+			}
+			if(!empty($additional_headers['ReplyTo'])){
+				$pbody['ReplyTo'] = $additional_headers['ReplyTo'];
+				unset($additional_headers['ReplyTo']);
+			}
+			if(!empty($additional_headers['Bcc'])){
+				$pbody['Bcc'] = $additional_headers['Bcc'];
+				unset($additional_headers['Bcc']);
+			}
+
+			// Other headers
+			if(count($additional_headers) > 0){
+				$pbody['Headers'] = [];
+				foreach($additional_headers as $key=>$value){
+					$pbody['Headers'][] = ['Name'=>$key, 'Value'=>$value];
+				}
+			}
+		}
 
 		// Post it and return it!
 		return json_decode($this->zajlib->request->post(POSTMARK_API_SEND_URL, json_encode($pbody), false, $pheader));
