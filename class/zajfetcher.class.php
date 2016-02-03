@@ -280,9 +280,19 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	public function add_field_source($source_field, $as_name=false, $replace = false){
 		// if replace
 			if($replace) $this->reset_field_sources();
+		// Set source field
+
+			if (false === strpos($source_field, ".")) {
+				// It's not in table.column format
+				$sfield = '`'.$source_field.'`';
+			} else {
+				// It's in table.column format
+				list($table, $field) = explode(".", $source_field);
+				$sfield = $table.'.`'.$field.'`';
+			}
 		// if an as name was chosen
-			if($as_name) $this->select_what[$as_name] = $source_field.' as '.$as_name;
-			else $this->select_what[$source_field] = $source_field;
+			if($as_name) $this->select_what[$as_name] = $sfield.' as "'.$as_name.'"';
+			else $this->select_what[$source_field] = $sfield;
 		// changes query, so reset me
 			$this->reset();
 		return $this;
@@ -581,8 +591,8 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		// get query and execute it
 			$this->db->query($this->get_query());
 		// count rows
-			$this->total = $this->db->get_total_rows();
-			$this->count = $this->db->get_num_rows();
+			$this->total = (int) $this->db->get_total_rows();
+			$this->count = (int) $this->db->get_num_rows();
 		// set pagination stuff
 			if(is_object($this->pagination)){
 				$this->pagination->pagecount = ceil($this->total/$this->pagination->perpage);
@@ -996,9 +1006,9 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			if(!is_a($object, 'zajModel')) return zajLib::me()->warning("You tried to check is_connected() status with a parameter that is not a zajModel object.");
 			if(!is_a($this->connection_parent, 'zajModel')) return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
 		// primary connection
-			if($this->connection_other) return $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}')");
+			if($this->connection_other) return (boolean) $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}')");
 		// secondary connection
-			else return $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
+			else return (boolean) $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
 	}
 
 }
