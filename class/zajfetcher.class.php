@@ -893,7 +893,13 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			$other_model = $field_model->options['model'];
 		// return the one object
 			$fetcher = $other_model::fetch($id);
-			if(is_object($fetcher)) $fetcher->connection_type = 'manytoone';
+			// if it exists, perform additional stuff!
+			if(is_object($fetcher)){
+				// set connection type
+					$fetcher->connection_type = 'manytoone';
+				// if it is deleted then do not return
+					if($fetcher->data->status == 'deleted') $fetcher = false;
+			}
 			return $fetcher;
 	}
 

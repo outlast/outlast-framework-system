@@ -81,6 +81,10 @@
 		$zajlib = new zajLib($zajconf['root_folder'], $zajconf);
 	// set internal error handler
 		set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext){ if(!is_object(zajLib::me())){ print "FATAL ERROR: Check error log."; } else zajLib::me()->error_handler($errno, $errstr, $errfile, $errline, $errcontext);});
+	// don't use xdebug error handling
+		if(function_exists('xdebug_disable')){
+			xdebug_disable();
+		}
 	// set shutdown error handler (fatal)
 		register_shutdown_function(function(){
 			// Get error info (if there is one)
