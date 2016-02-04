@@ -503,6 +503,7 @@
 						},
 						data: datarequest,
 						dataType: 'html',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'},
 						type: mode,
 						cache: false
 					});
