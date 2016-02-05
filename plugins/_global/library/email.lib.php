@@ -275,6 +275,10 @@ class zajlib_email extends zajLibExtension {
 				$pbody['ReplyTo'] = $additional_headers['ReplyTo'];
 				unset($additional_headers['ReplyTo']);
 			}
+			if(!empty($additional_headers['Reply-To'])){
+				$pbody['ReplyTo'] = $additional_headers['Reply-To'];
+				unset($additional_headers['Reply-To']);
+			}
 			if(!empty($additional_headers['Bcc'])){
 				$pbody['Bcc'] = $additional_headers['Bcc'];
 				unset($additional_headers['Bcc']);
