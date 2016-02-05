@@ -925,18 +925,31 @@
 
 	/**
 	 * Localizations
-	 * @param {string|object} keyOrObject This can be an object with key/value pairs or just the key.
+	 * @param {string|object} keyOrArray This can be an array of objects where each item has a key, section, and value. Or it can be just a key.
 	 * @param {string} value If you are using a key in the first param, this is the value.
+	 * @param {string} [section=null] The section in which the lang variable is found. This is optional.
 	 */
-		zaj.setLang = function(keyOrObject, value){
-			// @todo implement object.
-			// Set key/value
-				zaj.lang[keyOrObject] = value;
+		zaj.setLang = function(keyOrArray, value, section){
+			if(typeof keyOrArray == 'object'){
+				$.each(keyOrArray, function(index, value){
+					zaj.setLang(value.key, value.value, value.section);
+				});
+			}
+			else{
+				// Set key/value globally
+				zaj.lang[keyOrArray] = value;
+				// ...and for section if needed
+				if(section){
+					if(typeof zaj.lang.section == 'undefined') zaj.lang.section = {};
+					if(typeof zaj.lang.section[section] == 'undefined') zaj.lang.section[section] = {};
+					zaj.lang.section[section][keyOrArray] = value;
+				}
+			}
 			// Also set config
-				zaj.config = zaj.lang;
+			zaj.config = zaj.lang;
 			// Backwards compatibility
-				ofw.lang = zaj.lang;
-				ofw.config = zaj.config;
+			ofw.lang = zaj.lang;
+			ofw.config = zaj.config;
 		};
 
 	/**
