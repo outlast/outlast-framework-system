@@ -21,10 +21,12 @@ class EmailLog extends zajModel {
 		$f->text_body = zajDb::textarea();
 		$f->html_body = zajDb::textarea();
 		$f->bcc = zajDb::text();
-		$f->bounceto = zajDb::text();
+		$f->sentat = zajDb::text();
 		$f->headers = zajDb::json();
 		$f->status = zajDb::select(array('new', 'sent', 'failed', 'deleted'));
 		$f->log = zajDb::textarea();
+
+		$f->bounceto = zajDb::text();
 
 		// do not modify the line below!
 		$f = parent::__model(__CLASS__, $f); return $f;
@@ -40,24 +42,25 @@ class EmailLog extends zajModel {
 	 * @param string $subject Subject of email.
 	 * @param string $from From email address.
 	 * @param string $to To email address.
-	 * @param string $body_html Body html.
-	 * @param string $body_txt Body text.
-	 * @param string $bounce Bounce email to.
+	 * @param string $body The email body.
 	 * @param string $bcc Bcc email address.
-	 * @param string|array|stdClass $header Additional headers.
+	 * @param string|array|stdClass $additional_headers Additional headers.
+	 * @param integer $sentat
 	 * @param string $status Status of email. Can be sent or failed (or new/deleted).
 	 * @param string $log The log message.
 	 */
-	public static function create_from_email($subject, $from, $to, $body_html, $body_txt, $bounce, $bcc, $header, $status, $log){
+	public static function create_from_email($subject, $from, $to, $body, $bcc, $additional_headers, $sentat, $status, $log){
 		$emaillog = EmailLog::create();
 		$emaillog->set('subject', $subject);
 		$emaillog->set('from', $from);
 		$emaillog->set('to', $to);
-		$emaillog->set('html_body', $body_html);
-		$emaillog->set('text_body', $body_txt);
-		$emaillog->set('bounceto', $bounce);
+		$emaillog->set('html_body', $body);
+		//$emaillog->set('text_body', $body_txt);
+		// @todo Uncomment this after a few months...
+		//if(!$sentat) $sentat = time();
+		//$emaillog->set('sentat', $sentat);
 		$emaillog->set('bcc', $bcc);
-		$emaillog->set('headers', $header);
+		$emaillog->set('headers', $additional_headers);
 		$emaillog->set('status', $status);
 		$emaillog->set('log', $log);
 		$emaillog->save();
