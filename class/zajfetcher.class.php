@@ -283,8 +283,10 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		// Set source field
 
 			if (false === strpos($source_field, ".")) {
+				// It's a *
+				if($source_field === '*') $sfield = $source_field;
 				// It's not in table.column format
-				$sfield = '`'.$source_field.'`';
+				else $sfield = '`'.$source_field.'`';
 			} else {
 				// It's in table.column format
 				list($table, $field) = explode(".", $source_field);
