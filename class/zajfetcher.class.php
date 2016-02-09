@@ -280,6 +280,12 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	public function add_field_source($source_field, $as_name=false, $replace = false){
 		// if replace
 			if($replace) $this->reset_field_sources();
+
+		// Check if there is a function
+		// @todo remove this eventually
+		if(preg_match('/[a-zA-Z]+\([^\)]*\)(\.[^\)]*\))?/', $source_field)){
+			zajLib::me()->warning("Mysql function detected as source field: $source_field. Use custom queries with named fields instead to get rid of this warning.");
+		}
 		// Set source field
 
 			if (false === strpos($source_field, ".")) {
@@ -290,7 +296,8 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			} else {
 				// It's in table.column format
 				list($table, $field) = explode(".", $source_field);
-				$sfield = $table.'.`'.$field.'`';
+				if($field === '*') $sfield = $table.'.'.$field;
+				else $sfield = $table.'.`'.$field.'`';
 			}
 		// if an as name was chosen
 			if($as_name) $this->select_what[$as_name] = $sfield.' as "'.$as_name.'"';
