@@ -284,7 +284,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		// Check if there is a function
 		// @todo remove this eventually
 		if(preg_match('/[a-zA-Z]+\([^\)]*\)(\.[^\)]*\))?/', $source_field)){
-			zajLib::me()->warning('Mysql function detected as source field: $source_field. Use custom queries with named fields instead to get rid of this warning.');
+			zajLib::me()->warning("Mysql function detected as source field: $source_field. Use custom queries with named fields instead to get rid of this warning.");
 		}
 		// Set source field
 
