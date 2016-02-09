@@ -30,6 +30,7 @@ die("This file is for documentation.");
  * @method static zajDb password
  * @method static zajDbPhoto photo
  * @method static zajDbPhoto photos
+ * @method static zajDb polymorphic
  * @method static zajDb rating
  * @method static zajDb richtext
  * @method static zajDb select($array, $default='')
