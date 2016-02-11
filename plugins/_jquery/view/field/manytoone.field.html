@@ -3,7 +3,7 @@
 <script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
 <link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
 <!-- Display markup -->
-<select class='ofw-field-manytoone' id='{{field.uid}}' name='{{field.name}}'>
+<select class='ofw-field-manytoone' id='{{field.uid}}' name='{{field.name}}' style="width: 220px;">
 	<option value=''>--</option>
 	{% if field.choices.total <= 50 %}
 		{% foreach field.choices as choice %}
@@ -17,7 +17,7 @@
 </select>
 <script>
     zaj.ready(function(){
-        $('#{{field.uid}}').chosen({width: '100%', inherit_select_classes: true});
+        $('#{{field.uid}}').chosen({width: '232px', inherit_select_classes: true});
 		{% if field.choices.total > 50 %}
 			// Add search relation to field
 			$('#{{field.uid}}').data('chosen').search_field.attr('placeholder', '{{#system_field_relationships_search#|escapejs}}');
