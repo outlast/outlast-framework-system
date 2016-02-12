@@ -257,22 +257,29 @@
 		font-size: 14px;
 		clear: both;
 	}
-	label input{
+	label input,
+	label select{
 		float: right;
 		position: relative;
 		width: 220px;
 		margin-left: 10px;
 		top: -7px;
 	}
-
+	
 	label select{
+		width: 232px !important;
+	}
+	
+	div.chosen-container.chosen-container-single{
 		float: right;
 		position: relative;
+		width: 234px !important;
 		margin-left: 10px;
-		top: -7px;
-		width: 232px;
+		top: -3px;
 	}
-
+		div.chosen-container ul.chosen-results{
+		    width: 224px;
+		}
 
 	label select{ top: -2px; }
 	input[type="text"], input[type="password"], input[type="email"], textarea, select{
