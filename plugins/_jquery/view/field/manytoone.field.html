@@ -3,7 +3,7 @@
 <script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
 <link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
 <!-- Display markup -->
-<select class='ofw-field-manytoone' id='{{field.uid}}' name='{{field.name}}' style="width: 100%;" >
+<select class='ofw-field-manytoone' id='{{field.uid}}' name='{{field.name}}' >
 	<option value=''>--</option>
 	{% if field.choices.total <= 50 %}
 		{% foreach field.choices as choice %}
