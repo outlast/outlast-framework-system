@@ -45,6 +45,8 @@ class zajlib_request extends zajLibExtension {
 				}
 				if($params && (is_array($params) || is_object($params))) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
 				if($params && is_string($params)) curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
+			} elseif ($method == 'DELETE') {
+				curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
 			}
 		// Set any other options?
 			if(is_array($additional_options)){
