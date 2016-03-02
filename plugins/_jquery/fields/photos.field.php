@@ -101,7 +101,7 @@ class zajfield_photos extends zajField {
 						}
 					}
 				// reorder
-					if(!empty($data->order)) Photo::reorder($data->order, true);
+					if(!empty($data->order)) Photo::reorder($data->order);
 			}
 
 		return array(false, false);
