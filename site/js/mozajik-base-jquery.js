@@ -1096,6 +1096,7 @@
 				        width: options.min_width,
 				        height: options.min_height,
 				        showControls: 'always',
+                        controls: options.controls,
 				        zoom: 5
 				    }).on('cropbox', function(e, data) {
 				        selection_changed = true;
