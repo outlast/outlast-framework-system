@@ -1092,13 +1092,12 @@
 
 				uploader.JCropbox = function(res){
 
-                    console.log('init cropbox with height: '+options.cropbox_height+' width: '+options.cropbox_width);
-
 					sel_instance = $(options.file_list+" img").cropbox({
 				        width: options.cropbox_width,
 				        height: options.cropbox_height,
 				        showControls: 'always',
                         controls: options.controls,
+                        label: options.label,
 				        zoom: 5
 				    }).on('cropbox', function(e, data) {
 				        selection_changed = true;
