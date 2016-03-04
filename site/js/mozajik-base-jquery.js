@@ -1366,12 +1366,12 @@
 		 * Toggle handler
 		 * @attr data-toggle-value The string value which will be toggle switched (required)
 		 * @attr data-toggle-event jQuery event fires up toggle action (default: 'click')
-		 * @attr data-toggle-selector A selector which determines the destination DOM element (default: this)
+		 * @attr data-toggle-destination-selector A selector which determines the destination DOM element (default: this)
 		 * @attr data-toggle-attribute The attribute where the toggle value will be switched (default: 'class')
 		 **/
 		$parent.find('[data-toggle-value]').each(function(){
 			var $el =  $(this);
-			var selector = ($el.data('toggle-selector'))?($el.data('toggle-selector')):$el;
+			var selector = ($el.data('toggle-destination-selector'))?($el.data('toggle-destination-selector')):$el;
 			var event = ($el.data('toggle-event'))?($el.data('toggle-event')):'click';
 			var attribute = ($el.data('toggle-attribute'))?($el.data('toggle-attribute')):'class';
 			var value = $el.data('toggle-value');
