@@ -1092,6 +1092,14 @@
 
 				uploader.JCropbox = function(res){
 
+                    if(typeof(options.cropbox_height) == 'undefined'){
+                        options.cropbox_height = options.min_height;
+                    }
+
+                    if(typeof(options.cropbox_width) == 'undefined'){
+                        options.cropbox_width = options.min_width;
+                    }
+
 					sel_instance = $(options.file_list+" img").cropbox({
 				        width: options.cropbox_width,
 				        height: options.cropbox_height,
