@@ -41,6 +41,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @property zajLib $zajlib A pointer to the global object.
  * @property string $name The name of the object.
  * @property boolean $exists
+ * @property stdClass $translation
  */
 abstract class zajModel implements JsonSerializable {
 	// Instance variables
