@@ -12,7 +12,7 @@ class zajlib_request extends zajLibExtension {
 	 * Sends a request to a specified url via curl. This can be more reliable the file_get_contents but is not supported on all systems.
 	 * @param string $url The url of the desired destination. You can specify parameters as a query string.
 	 * @param string|array|bool $params This is optional if parameters are specified via query string in the $url. It can be an array or a query string.
-	 * @param string $method The method in which to send the request (GET/POST/PUT).
+	 * @param string $method The method in which to send the request (GET/POST/PUT/DELETE/etc.).
 	 * @param array|bool $additional_options An associative array of additional curl options. {@link http://www.php.net/manual/en/function.curl-setopt.php} Example: array(CURLOPT_URL => 'http://www.example.com/')
 	 * @return string Returns a string with the content received.
 	 **/
@@ -36,11 +36,20 @@ class zajlib_request extends zajLibExtension {
 			}
 
 			if($method == 'POST' || $method == 'PUT'){
-				if($method == 'POST') curl_setopt($curl, CURLOPT_POST, true);
-				if($method == 'PUT') curl_setopt($curl, CURLOPT_PUT, true);
+				if($method == 'POST') {
+					curl_setopt($curl, CURLOPT_POST, true);
+				}
+
+				if($method == 'PUT') {
+					curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+				}
 				if($params && (is_array($params) || is_object($params))) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
 				if($params && is_string($params)) curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
 			}
+			else{
+				curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+			}
+
 		// Set any other options?
 			if(is_array($additional_options)){
 				foreach($additional_options as $key=>$value){

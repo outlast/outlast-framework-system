@@ -1092,10 +1092,20 @@
 
 				uploader.JCropbox = function(res){
 
+                    if(typeof(options.cropbox_height) == 'undefined'){
+                        options.cropbox_height = options.min_height;
+                    }
+
+                    if(typeof(options.cropbox_width) == 'undefined'){
+                        options.cropbox_width = options.min_width;
+                    }
+
 					sel_instance = $(options.file_list+" img").cropbox({
-				        width: options.min_width,
-				        height: options.min_height,
+				        width: options.cropbox_width,
+				        height: options.cropbox_height,
 				        showControls: 'always',
+                        controls: options.controls,
+                        label: options.label,
 				        zoom: 5
 				    }).on('cropbox', function(e, data) {
 				        selection_changed = true;
@@ -1361,6 +1371,34 @@
 						useMoreButton: _useMoreButton
 					}));
 			});
+
+		/**
+		 * Toggle handler
+		 * @attr data-toggle-value The string value which will be toggle switched (required)
+		 * @attr data-toggle-event jQuery event fires up toggle action (default: 'click')
+		 * @attr data-toggle-destination-selector A selector which determines the destination DOM element (default: this)
+		 * @attr data-toggle-attribute The attribute where the toggle value will be switched (default: 'class')
+		 **/
+		$parent.find('[data-toggle-value]').each(function(){
+			var $el =  $(this);
+			var selector = ($el.data('toggle-destination-selector'))?($el.data('toggle-destination-selector')):$el;
+			var event = ($el.data('toggle-event'))?($el.data('toggle-event')):'click';
+			var attribute = ($el.data('toggle-attribute'))?($el.data('toggle-attribute')):'class';
+			var value = $el.data('toggle-value');
+			var new_value;
+
+			$el.on(event, function() {
+				var attr = $(selector).attr(attribute);
+
+				if (undefined === attr || attr.indexOf(value) < 0) {
+					new_value = attr + ((attr !== undefined && attr.length > 0)?' ':'') + value;
+					$(selector).attr(attribute, new_value);
+				} else {
+					new_value = attr.replace(value, '');
+					$(selector).attr(attribute, new_value);
+				}
+			});
+		});
 
 	};
 	zaj.ready(function(){ zaj.activateHandlers() });

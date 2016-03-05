@@ -229,13 +229,15 @@ class zajlib_export extends zajLibExtension {
 									else $field_value = $s->$field;
 								}
 
-							// If field value is an array or object then split into key/value columns
+							// If field value is an array or object then split into key/value columns but remove my column
 								if(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
 									foreach($field_value as $key=>$value) $data[$field.'_'.$key] = $value;
 								}
+								else{
+									// Set to array
+									$data[$field] = $field_value;
+								}
 
-							// Set to array
-								$data[$field] = $field_value;
 							// Convert encoding if excel mode selected
 								if($encoding) $data[$field] = mb_convert_encoding($data[$field], $encoding, 'UTF-8');
 						}
