@@ -318,6 +318,10 @@ class zajlib_email extends zajLibExtension {
 		if($additional_headers !== false) $txtbody = $additional_headers['TextBody'];
 		else $txtbody = strip_tags($body);
 
+		// Categorize with domain
+		$category = $this->zajlib->domain;
+
+
 		$pbody = array(
 			'api_user'=>$this->zajlib->config->variable->email_api_user,
 			'api_key'=>$this->zajlib->config->variable->email_api_key,
@@ -327,7 +331,8 @@ class zajlib_email extends zajLibExtension {
 			'toname'=>$to->name,
 			'subject'=>$subject,
 			'html'=>$body,
-			'text'=>$txtbody
+			'text'=>$txtbody,
+			'category'=>$category
 		);
 
 		// Add bcc if needed
