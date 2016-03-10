@@ -1391,10 +1391,10 @@
 				var attr = $(selector).attr(attribute);
 
 				if (undefined === attr || attr.indexOf(value) < 0) {
-					new_value = attr + ((attr !== undefined && attr.length > 0)?' ':'') + value;
+					new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + value;
 					$(selector).attr(attribute, new_value);
 				} else {
-					new_value = attr.replace(value, '');
+					new_value = attr.replace(value, '').trim();
 					$(selector).attr(attribute, new_value);
 				}
 			});
