@@ -1388,15 +1388,17 @@
 			var new_value;
 
 			$el.on(event, function() {
-				var attr = $(selector).attr(attribute);
+				$(selector).each(function() {
+					var attr = $(this).attr(attribute);
 
-				if (undefined === attr || attr.indexOf(value) < 0) {
-					new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + value;
-					$(selector).attr(attribute, new_value);
-				} else {
-					new_value = attr.replace(value, '').trim();
-					$(selector).attr(attribute, new_value);
-				}
+					if (undefined === attr || attr.indexOf(value) < 0) {
+						new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + value;
+						$(this).attr(attribute, new_value);
+					} else {
+						new_value = attr.replace(value, '').trim();
+						$(this).attr(attribute, new_value);
+					}
+				})
 			});
 		});
 
