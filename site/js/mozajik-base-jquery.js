@@ -1379,7 +1379,21 @@
 		 * @attr data-toggle-destination-selector A selector which determines the destination DOM element (default: this)
 		 * @attr data-toggle-attribute The attribute where the toggle value will be switched (default: 'class')
 		 **/
-		$parent.find('[data-toggle-value]').each(function(){
+		var toggles = $parent.find('[data-toggle-value]');
+
+		if (toggles.length) {
+			// Cross-browser transition hend event trigger
+			$(document).on('transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', '[data-toggle-event="trans-end"]', function() {
+				$(this).trigger('trans-end');
+			});
+
+			// Cross-browser animation end event trigger
+			$(document).on('animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd', '[data-toggle-event="anim-end"]', function() {
+				$(this).trigger('anim-end');
+			});
+		}
+
+		toggles.each(function(){
 			var $el =  $(this);
 			var selector = ($el.data('toggle-destination-selector'))?($el.data('toggle-destination-selector')):$el;
 			var event = ($el.data('toggle-event'))?($el.data('toggle-event')):'click';
