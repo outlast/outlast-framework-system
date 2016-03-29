@@ -1373,47 +1373,165 @@
 			});
 
 		/**
-		 * Toggle handler
-		 * @attr data-toggle-value The string value which will be toggle switched (required)
-		 * @attr data-toggle-event jQuery event fires up toggle action (default: 'click')
-		 * @attr data-toggle-destination-selector A selector which determines the destination DOM element (default: this)
-		 * @attr data-toggle-attribute The attribute where the toggle value will be switched (default: 'class')
+		 * Action handler
+		 *
+		 * @attr data-action-type Action type (can be: toggle|add|remove, default: toggle)
+		 * @attr data-action-value String value which will affect the attribute value of the destination DOM element(s) (required)
+		 * @attr data-action-event jQuery/custom event fires up action (default: 'click')
+		 * @attr data-action-source-selector A selector which determines the source DOM element(s) (default: this)
+		 * @attr data-action-destination-selector A selector which determines the destination DOM element(s) (default: this)
+		 * @attr data-action-attribute The attribute of the destination DOM element (default: 'class')
+		 * @attr data-action-extra-condition Function call (optionally with arguments) which determines extra condition for the execution of the action (default: true)
 		 **/
-		var toggles = $parent.find('[data-toggle-value]');
+		var actions = $parent.find('[data-action-value]');
 
-		if (toggles.length) {
-			// Cross-browser transition hend event trigger
-			$(document).on('transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', '[data-toggle-event="trans-end"]', function() {
-				$(this).trigger('trans-end');
-			});
+		if (actions.length) {
+			// Cross-browser transition end event trigger
+			if (actions.find('[data-action-event="trans-end"]').length) {
+				$(document).on('transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', '[data-action-event="trans-end"]', function () {
+					$(this).trigger('trans-end');
+				});
+			}
 
-			// Cross-browser animation end event trigger
-			$(document).on('animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd', '[data-toggle-event="anim-end"]', function() {
-				$(this).trigger('anim-end');
+			if (actions.find('[data-action-event="anim-end"]').length) {
+				// Cross-browser animation end event trigger
+				$(document).on('animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd', '[data-action-event="anim-end"]', function () {
+					$(this).trigger('anim-end');
+				});
+			}
+
+			zaj.scroll_interval = null;
+			zaj.scroll_elements = [];
+		}
+
+		/**
+		 * Custom scroll event checking
+		 *
+		 * @param {integer} index The index of the current scroll_element (from zaj.scroll_elements)
+		 * @return {boolean} True if scroll event condition is fulfilled, false if not
+		 */
+		function check_scroll_event(index) {
+
+			var condition, direction;
+			var element = zaj.scroll_elements[index];
+
+			switch (element.event) {
+				case 'scroll-start':
+					condition = (null === element.lastY && element.source_elm.scrollTop() > 0);
+					break;
+				case 'scroll-end':
+					condition = (element.lastY == element.source_elm.scrollTop());
+					break;
+				case 'scroll':
+					condition = (null !== element.lastY && element.lastY != element.source_elm.scrollTop());
+					break;
+				case 'scroll-up':
+					condition = (null !== element.lastY && element.lastY < element.source_elm.scrollTop());
+					break;
+				case 'scroll-down':
+					condition = (null !== element.lastY && element.lastY > element.source_elm.scrollTop());
+					break;
+				case 'scroll-dir-change':
+					condition = (null !== element.lastY && (element.direction != 1 && element.lastY < element.source_elm.scrollTop() || element.direction != -1 && element.lastY > element.source_elm.scrollTop()));
+					break;
+				case 'scroll-dir-change-up':
+					condition = (null !== element.lastY && element.direction != 1 && element.lastY < element.source_elm.scrollTop());
+					break;
+				case 'scroll-dir-change-down':
+					condition = (null !== element.lastY && element.direction != -1 && element.lastY > element.source_elm.scrollTop());
+					break;
+			}
+
+			if (element.lastY < element.source_elm.scrollTop()) {
+				direction = 1;
+			} else if (element.lastY > element.source_elm.scrollTop()) {
+				direction = -1;
+			} else {
+				direction = null;
+			}
+
+			zaj.scroll_elements[index].direction = direction;
+			zaj.scroll_elements[index].lastY = (element.event == 'scroll-end')?null:element.source_elm.scrollTop();
+
+			return (element.extra_condition() && condition);
+		}
+
+		/**
+		 * Trigger action
+		 *
+		 * @param {object}|{integer} element The element object/index of the current scroll_element (from zaj.scroll_elements)
+		 */
+		function trigger_action(element) {
+			if (typeof element != 'object') {
+				element = zaj.scroll_elements[element];
+			}
+
+			element.dest_elm.each(function() {
+
+				var attr = $(this).attr(element.attribute), new_value;
+
+				if (element.type != 'remove' && (undefined === attr || attr.indexOf(element.value) < 0)) {
+					new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + element.value;
+					$(this).attr(element.attribute, new_value);
+				}
+				else if (element.type != 'add') {
+					new_value = attr.replace(element.value, '').trim();
+					$(this).attr(element.attribute, new_value);
+				}
 			});
 		}
 
-		toggles.each(function(){
+		actions.each(function(){
 			var $el =  $(this);
-			var selector = ($el.data('toggle-destination-selector'))?($el.data('toggle-destination-selector')):$el;
-			var event = ($el.data('toggle-event'))?($el.data('toggle-event')):'click';
-			var attribute = ($el.data('toggle-attribute'))?($el.data('toggle-attribute')):'class';
-			var value = $el.data('toggle-value');
-			var new_value;
 
-			$el.on(event, function() {
-				$(selector).each(function() {
-					var attr = $(this).attr(attribute);
+			// Element data object
+			var element = {
+				type: ($el.data('action-type'))?($el.data('action-type')):'toggle',
+				source_selector: ($el.data('action-source-selector'))?($el.data('action-source-selector')):this,
+				dest_elm: ($el.data('action-destination-selector'))?$($el.data('action-destination-selector')):$el,
+				event: ($el.data('action-event'))?($el.data('action-event')):'click',
+				attribute: ($el.data('action-attribute'))?($el.data('action-attribute')):'class',
+				value: $el.data('action-value'),
+				extra_condition: ($el.data('action-extra-condition'))?(window[$el.data('action-extra-condition')]):(function() {return true})
+			};
 
-					if (undefined === attr || attr.indexOf(value) < 0) {
-						new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + value;
-						$(this).attr(attribute, new_value);
-					} else {
-						new_value = attr.replace(value, '').trim();
-						$(this).attr(attribute, new_value);
-					}
-				})
-			});
+			// Handle special selectors (window/document)
+			switch (element.source_selector) {
+				case 'window':
+					element.source_elm = $(window);
+					break;
+				case 'document':
+					element.source_elm = $(document);
+					break;
+				default:
+					element.source_elm = $(element.source_selector);
+			}
+
+			// Has scroll event
+			if (element.event.indexOf('scroll') > -1) {
+				element.lastY = null;
+				element.direction = null;
+
+				zaj.scroll_elements.push(element);
+
+				if (null === zaj.scroll_interval) {
+					var scroll_interval_time = ($el.data('action-interval-time'))?($el.data('action-interval-time')):'100';
+
+					zaj.scroll_interval = setInterval(function() {
+
+						for (var index in zaj.scroll_elements) {
+							if (check_scroll_event(index)) {
+								trigger_action(index);
+							}
+						}
+					}, scroll_interval_time);
+				}
+			}
+			else {
+				element.source_elm.on(element.event, function() {
+					trigger_action(element);
+				});
+			}
 		});
 
 	};
