@@ -1381,7 +1381,8 @@
 		 * @attr data-action-source-selector A selector which determines the source DOM element(s) (default: this)
 		 * @attr data-action-destination-selector A selector which determines the destination DOM element(s) (default: this)
 		 * @attr data-action-attribute The attribute of the destination DOM element (default: 'class')
-		 * @attr data-action-extra-condition Function call (optionally with arguments) which determines extra condition for the execution of the action (default: true)
+		 * @attr data-action-interval-time Time of the function calling interval (in milliseconds). Used at custom scroll event checking (default: 100).
+		 * @attr data-action-extra-condition Function call which determines extra condition for the execution of the action (default: true)
 		 **/
 		var actions = $parent.find('[data-action-value]');
 
@@ -1414,6 +1415,11 @@
 
 			var condition, direction;
 			var element = zaj.scroll_elements[index];
+
+			// Browser's top position bouncing is not a scroll event
+			if (element.source_elm.scrollTop() < 0) {
+				return false;
+			}
 
 			switch (element.event) {
 				case 'scroll-start':
@@ -1474,7 +1480,7 @@
 					new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + element.value;
 					$(this).attr(element.attribute, new_value);
 				}
-				else if (element.type != 'add') {
+				else if (element.type != 'add' && undefined !== attr) {
 					new_value = attr.replace(element.value, '').trim();
 					$(this).attr(element.attribute, new_value);
 				}
