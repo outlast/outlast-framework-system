@@ -228,7 +228,7 @@ class zajlib_request extends zajLibExtension {
 	 */
 	public function get_http_status_name($status_code){
 		return $this->http_status_name($status_code);
-	}
+	}	
 
 	/**
 	 * Is the current request an ajax request? Requires a Javascript library to work properly cross-browser (jquery, moo, etc.)

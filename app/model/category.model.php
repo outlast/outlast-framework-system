@@ -105,7 +105,9 @@ class Category extends zajModel {
 	}
 
 	/**
-	 * Create a product object by friendly url.
+	 * Fetch a category object by friendly url.
+	 * @param string $friendlyurl The friendly url.
+	 * @return Category|boolean Returns false if failed, a Category object if not.
 	 **/
 	public static function fetch_by_friendlyurl($friendlyurl){
 		if(zajLib::me()->lang->is_default_locale()){
