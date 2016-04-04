@@ -204,7 +204,7 @@ class zajlib_error extends zajLibExtension {
 			if(zajLib::me()->debug_mode) $debug_mode = " [DEBUG_MODE]";
 			else $debug_mode = "";
 		// write to error_log			
-			$this->file_log("[".zajLib::me()->request->client_ip()."] [".$protocol.zajLib::me()->fullrequest."] $post_data [Outlast Framework $errorlevel - ".$errortext."]".$referer.$debug_mode);
+		//	$this->file_log("[".zajLib::me()->request->client_ip()."] [".$protocol.zajLib::me()->fullrequest."] $post_data [Outlast Framework $errorlevel - ".$errortext."]".$referer.$debug_mode);
 			
 		// log the backtrace?
 			if(zajLib::me()->zajconf['error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
