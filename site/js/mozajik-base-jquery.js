@@ -1474,15 +1474,23 @@
 
 			element.dest_elm.each(function() {
 
-				var attr = $(this).attr(element.attribute), new_value;
+				var attr = $(this).attr(element.attribute), new_value, current_values, current_idx;
 
-				if (element.type != 'remove' && (undefined === attr || attr.indexOf(element.value) < 0)) {
+				if (undefined !== attr) {
+					current_values = attr.split(" ");
+					current_idx = current_values.indexOf(element.value);
+				} else {
+					current_values = null;
+					current_idx = -1;
+				}
+
+				if (element.type != 'remove' && current_idx < 0) {
 					new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + element.value;
 					$(this).attr(element.attribute, new_value);
 				}
-				else if (element.type != 'add' && undefined !== attr) {
-					new_value = attr.replace(element.value, '').trim();
-					$(this).attr(element.attribute, new_value);
+				else if (element.type != 'add' && current_idx > -1) {
+					current_values.splice(current_idx, 1);
+					$(this).attr(element.attribute, current_values.join(" "));
 				}
 			});
 		}
