@@ -1412,6 +1412,10 @@
 			};
 		}
 
+		var getPointerEvent = function(event) {
+			return event.originalEvent.targetTouches ? event.originalEvent.targetTouches[0] : event;
+		};
+
 		/**
 		 * Trigger custom swipe events
 		 *
@@ -1419,17 +1423,31 @@
 		 */
 		function handle_swipe_event(dom_elm) {
 
+			var touchStarted = false;
+
 			$(document).on('touchstart', dom_elm, function(e) {
-				zaj.touch_positions.startX = e.originalEvent.touches[0].pageX;
-				zaj.touch_positions.startY = e.originalEvent.touches[0].pageY;
+				var pointer = getPointerEvent(e);
+
+				// caching the current x
+				zaj.touch_positions.startX = zaj.touch_positions.currentX = pointer.pageX;
+				zaj.touch_positions.startY = zaj.touch_positions.currentY = pointer.pageY;
+
+				// a touch event is detected
+				touchStarted = true;
+
+				// detecting if after 200ms the finger is still in the same position
+				setTimeout(function (){
+					if ((zaj.touch_positions.startX === zaj.touch_positions.currentX) && !touchStarted && (zaj.touch_positions.startY === zaj.touch_positions.currentY)) {
+						touchStarted = false;
+					}
+				},200);
 			});
 
 			$(document).on('touchmove', dom_elm, function(e) {
-				zaj.touch_positions.currentX = e.originalEvent.touches[0].pageX;
-				zaj.touch_positions.currentY = e.originalEvent.touches[0].pageY;
-			});
+				var pointer = getPointerEvent(e);
 
-			$(document).on('touchend', dom_elm, function(e) {
+				zaj.touch_positions.currentX = pointer.pageX;
+				zaj.touch_positions.currentY = pointer.pageY;
 
 				if (zaj.touch_positions.currentX < zaj.touch_positions.startX) {
 					dom_elm.trigger('swipeleft');
@@ -1442,6 +1460,12 @@
 				} else if (zaj.touch_positions.currentY > zaj.touch_positions.startY) {
 					dom_elm.trigger('swipedown');
 				}
+
+			});
+
+			$(document).on('touchend touchcancel', dom_elm, function(e) {
+				// here we can consider finished the touch event
+				touchStarted = false;
 			});
 		}
 
