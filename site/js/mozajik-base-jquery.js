@@ -1403,6 +1403,46 @@
 
 			zaj.scroll_interval = null;
 			zaj.scroll_elements = [];
+
+			zaj.touch_positions = {
+				startX: null,
+				startY: null,
+				currentX: null,
+				currentY: null
+			};
+		}
+
+		/**
+		 * Trigger custom swipe events
+		 *
+		 * @param {object} dom_elm The DOM element of the swipe event
+		 */
+		function handle_swipe_event(dom_elm) {
+
+			$(document).on('touchstart', dom_elm, function(e) {
+				zaj.touch_positions.startX = e.originalEvent.touches[0].pageX;
+				zaj.touch_positions.startY = e.originalEvent.touches[0].pageY;
+			});
+
+			$(document).on('touchmove', dom_elm, function(e) {
+				zaj.touch_positions.currentX = e.originalEvent.touches[0].pageX;
+				zaj.touch_positions.currentY = e.originalEvent.touches[0].pageY;
+			});
+
+			$(document).on('touchend', dom_elm, function(e) {
+
+				if (zaj.touch_positions.currentX < zaj.touch_positions.startX) {
+					dom_elm.trigger('swipeleft');
+				} else if (zaj.touch_positions.currentX > zaj.touch_positions.startX) {
+					dom_elm.trigger('swiperight');
+				}
+
+				if (zaj.touch_positions.currentY < zaj.touch_positions.startY) {
+					dom_elm.trigger('swipeup');
+				} else if (zaj.touch_positions.currentY > zaj.touch_positions.startY) {
+					dom_elm.trigger('swipedown');
+				}
+			});
 		}
 
 		/**
@@ -1547,6 +1587,10 @@
 				}
 			}
 			else {
+				if (element.event.indexOf('swipe')) {
+					handle_swipe_event(element.dest_elm);
+				}
+
 				element.source_elm.on(element.event, function() {
 					trigger_action(element, $(this));
 				});
