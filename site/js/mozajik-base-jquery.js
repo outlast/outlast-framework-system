@@ -1388,13 +1388,13 @@
 
 		if (actions.length) {
 			// Cross-browser transition end event trigger
-			if (actions.find('[data-action-event="trans-end"]').length) {
+			if ($parent.find('[data-action-event="trans-end"]').length) {
 				$(document).on('transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', '[data-action-event="trans-end"]', function () {
 					$(this).trigger('trans-end');
 				});
 			}
 
-			if (actions.find('[data-action-event="anim-end"]').length) {
+			if ($parent.find('[data-action-event="anim-end"]').length) {
 				// Cross-browser animation end event trigger
 				$(document).on('animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd', '[data-action-event="anim-end"]', function () {
 					$(this).trigger('anim-end');
@@ -1548,6 +1548,7 @@
 			}
 			else {
 				element.source_elm.on(element.event, function() {
+					console.log(element.event);
 					trigger_action(element, $(this));
 				});
 			}
