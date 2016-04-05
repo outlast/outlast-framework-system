@@ -1548,7 +1548,6 @@
 			}
 			else {
 				element.source_elm.on(element.event, function() {
-					console.log(element.event);
 					trigger_action(element, $(this));
 				});
 			}
