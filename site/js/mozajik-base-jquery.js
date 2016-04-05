@@ -1466,15 +1466,18 @@
 		 * Trigger action
 		 *
 		 * @param {object}|{integer} element The element object/index of the current scroll_element (from zaj.scroll_elements)
+		 * @param {object} _this The DOM element of the current source element
 		 */
-		function trigger_action(element) {
+		function trigger_action(element, _this) {
 			if (typeof element != 'object') {
 				element = zaj.scroll_elements[element];
 			}
 
 			element.dest_elm.each(function() {
 
-				var attr = $(this).attr(element.attribute), new_value, current_values, current_idx;
+				var $this = (element.dest_selector == 'source.this')?_this:$(this);
+
+				var attr = $this.attr(element.attribute), new_value, current_values, current_idx;
 
 				if (undefined !== attr) {
 					current_values = attr.split(" ");
@@ -1486,11 +1489,11 @@
 
 				if (element.type != 'remove' && current_idx < 0) {
 					new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + element.value;
-					$(this).attr(element.attribute, new_value);
+					$this.attr(element.attribute, new_value);
 				}
 				else if (element.type != 'add' && current_idx > -1) {
 					current_values.splice(current_idx, 1);
-					$(this).attr(element.attribute, current_values.join(" "));
+					$this.attr(element.attribute, current_values.join(" "));
 				}
 			});
 		}
@@ -1502,7 +1505,7 @@
 			var element = {
 				type: ($el.data('action-type'))?($el.data('action-type')):'toggle',
 				source_selector: ($el.data('action-source-selector'))?($el.data('action-source-selector')):this,
-				dest_elm: ($el.data('action-destination-selector'))?$($el.data('action-destination-selector')):$el,
+				dest_selector: ($el.data('action-destination-selector'))?($el.data('action-destination-selector')):this,
 				event: ($el.data('action-event'))?($el.data('action-event')):'click',
 				attribute: ($el.data('action-attribute'))?($el.data('action-attribute')):'class',
 				value: $el.data('action-value'),
@@ -1520,6 +1523,8 @@
 				default:
 					element.source_elm = $(element.source_selector);
 			}
+
+			element.dest_elm = (element.dest_selector == 'source.this')?$(element.source_selector):$(element.dest_selector);
 
 			// Has scroll event
 			if (element.event.indexOf('scroll') > -1) {
@@ -1543,7 +1548,7 @@
 			}
 			else {
 				element.source_elm.on(element.event, function() {
-					trigger_action(element);
+					trigger_action(element, $(this));
 				});
 			}
 		});
