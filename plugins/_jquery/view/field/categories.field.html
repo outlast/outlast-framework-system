@@ -7,7 +7,7 @@
 				<div class="dd-handle">
 					{{category.name}}
 					<div class="pull-right" style="position: relative; top: -2px;">
-						<input class='field boolean iCheck' type='checkbox' id='{{category.id}}' name='{{field.name}}[]' value='{{category.id}}'>
+						<input class='field boolean categories iCheck' type='checkbox' id='{{category.id}}' name='{{field.name}}[]' value='{{category.id}}'>
 					</div>
 				</div>
 				{% if category.data.subcategories.total > 0 %}
@@ -28,7 +28,7 @@
 	ofw.ready(function(){
 		$('#nestable-{{field.uid}}').nestable({enableDragAndDrop: false});
 		$('#nestable-{{field.uid}}').nestable('collapseAll');
-		$('input').on('ifClicked', function(ev){
+		$('input.categories').on('ifClicked', function(ev){
 			ev.stopPropagation();
 			toggleCategoryCheckbox(ev, this);
 		});
@@ -51,7 +51,7 @@
 			$myinput.iCheck('toggle');
 			ev.stopPropagation();
 		// If I was just turned on, turn on my parents
-			if((!isInput && $myinput[0].checked) || (isInput && $myinput.parent().hasClass('checked'))) $me.parents('.dd-item').each(function() {
+			if((!isInput && typeof($myinput[0]) != 'undefined' && $myinput[0].checked) || (isInput && $myinput.parent().hasClass('checked'))) $me.parents('.dd-item').each(function() {
 				$(this).find('input').first().iCheck('check');
 			});
 		// If I was just turned off, turn off my children
