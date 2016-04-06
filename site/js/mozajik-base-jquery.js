@@ -1420,10 +1420,12 @@
 		 * Trigger custom swipe events
 		 *
 		 * @param {object} dom_elm The DOM element of the swipe event
+		 * @param {function} extra_condition Extra condition provider function (returns boolean)
 		 */
-		function handle_swipe_event(dom_elm) {
+		function handle_swipe_event(dom_elm, extra_condition) {
 
 			var touchStarted = false;
+			var _events = [];
 
 			$(document).on('touchstart', dom_elm, function(e) {
 				var pointer = getPointerEvent(e);
@@ -1446,26 +1448,36 @@
 			$(document).on('touchmove', dom_elm, function(e) {
 				var pointer = getPointerEvent(e);
 
+				_events = [];
+
 				zaj.touch_positions.currentX = pointer.pageX;
 				zaj.touch_positions.currentY = pointer.pageY;
 
 				if (zaj.touch_positions.currentX < zaj.touch_positions.startX) {
-					dom_elm.trigger('swipeleft');
+					_events.push('swipeleft');
 				} else if (zaj.touch_positions.currentX > zaj.touch_positions.startX) {
-					dom_elm.trigger('swiperight');
+					_events.push('swiperight');
 				}
 
 				if (zaj.touch_positions.currentY < zaj.touch_positions.startY) {
-					dom_elm.trigger('swipeup');
+					_events.push('swipeup');
 				} else if (zaj.touch_positions.currentY > zaj.touch_positions.startY) {
-					dom_elm.trigger('swipedown');
+					_events.push('swipedown');
 				}
 
 			});
 
 			$(document).on('touchend touchcancel', dom_elm, function(e) {
+
+				if (touchStarted && _events.length && extra_condition()) {
+					for (idx in _events) {
+						dom_elm.trigger(_events[idx]);
+					}
+				}
+
 				// here we can consider finished the touch event
 				touchStarted = false;
+				_events = [];
 			});
 		}
 
@@ -1585,7 +1597,7 @@
 					element.source_elm = $(document);
 					break;
 				case null:
-					element.source_elm = $(this);
+					element.source_elm = $el;
 					break;
 				default:
 					element.source_elm = $(element.source_selector);
@@ -1613,13 +1625,18 @@
 					}, scroll_interval_time);
 				}
 			}
-			else {
-				if (element.event.indexOf('swipe')) {
-					handle_swipe_event(element.dest_elm);
-				}
+			else if (element.event.indexOf('swipe') > -1) {
+					handle_swipe_event(element.source_elm, element.extra_condition);
 
+					element.source_elm.on(element.event, function() {
+						trigger_action(element, $(this));
+					});
+			}
+			else {
 				element.source_elm.on(element.event, function() {
-					trigger_action(element, $(this));
+					if (element.extra_condition()) {
+						trigger_action(element, $(this));
+					}
 				});
 			}
 		});
