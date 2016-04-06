@@ -1539,7 +1539,7 @@
 
 			element.dest_elm.each(function() {
 
-				var $this = (element.dest_selector == 'source.this')?_this:$(this);
+				var $this = (element.dest_selector === null)?_this:$(this);
 
 				var attr = $this.attr(element.attribute), new_value, current_values, current_idx;
 
@@ -1568,8 +1568,8 @@
 			// Element data object
 			var element = {
 				type: ($el.data('action-type'))?($el.data('action-type')):'toggle',
-				source_selector: ($el.data('action-source-selector'))?($el.data('action-source-selector')):this,
-				dest_selector: ($el.data('action-destination-selector'))?($el.data('action-destination-selector')):this,
+				source_selector: ($el.data('action-source-selector'))?($el.data('action-source-selector')):null,
+				dest_selector: ($el.data('action-destination-selector'))?($el.data('action-destination-selector')):null,
 				event: ($el.data('action-event'))?($el.data('action-event')):'click',
 				attribute: ($el.data('action-attribute'))?($el.data('action-attribute')):'class',
 				value: $el.data('action-value'),
@@ -1584,11 +1584,14 @@
 				case 'document':
 					element.source_elm = $(document);
 					break;
+				case null:
+					element.source_elm = $(this);
+					break;
 				default:
 					element.source_elm = $(element.source_selector);
 			}
 
-			element.dest_elm = (element.dest_selector == 'source.this')?$(element.source_selector):$(element.dest_selector);
+			element.dest_elm = (element.dest_selector !== null)?$(element.dest_selector):element.source_elm;
 
 			// Has scroll event
 			if (element.event.indexOf('scroll') > -1) {
