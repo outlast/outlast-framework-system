@@ -190,7 +190,7 @@ class zajlib_error extends zajLibExtension {
 		// now add to file or db
 			$error_details['time_create'] = time();
 			$error_details['id'] = uniqid("");
-		
+
 		// which protocol?
 			if(zajLib::me()->https) $protocol = 'https:';
 			else $protocol = 'http:';
@@ -203,9 +203,9 @@ class zajlib_error extends zajLibExtension {
 		// are we in debug mode?
 			if(zajLib::me()->debug_mode) $debug_mode = " [DEBUG_MODE]";
 			else $debug_mode = "";
-		// write to error_log			
-			$this->file_log("[".zajLib::me()->request->client_ip()."] [".$protocol.zajLib::me()->fullrequest."] $post_data [Outlast Framework $errorlevel - ".$errortext."]".$referer.$debug_mode);
-			
+		// write to error_log
+			$this->file_log("[".$this->client_ip()."] [".$protocol.zajLib::me()->fullrequest."] $post_data [Outlast Framework $errorlevel - ".$errortext."]".$referer.$debug_mode);
+
 		// log the backtrace?
 			if(zajLib::me()->zajconf['error_log_backtrace']) $this->file_log("Backtrace:\n".print_r($backtrace, true));
 
@@ -235,6 +235,26 @@ class zajlib_error extends zajLibExtension {
 		return true;
 	}
 	
+	/**
+	 * Get the client's IP address. Because of forwarding or clusters, this may actually be different from REMOTE_ADDR.
+	 * You should use the endpoint in request library. This is here because when an error occurs it can no longer load up request lib.
+	 * @ignore
+	 */
+	public function client_ip(){
+		if(array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER)){
+			return $_SERVER["HTTP_X_FORWARDED_FOR"];
+		}
+		else if(array_key_exists('HTTP_X_CLUSTER_CLIENT_IP', $_SERVER)){
+			return $_SERVER["HTTP_X_CLUSTER_CLIENT_IP"];
+		}
+		else if(array_key_exists('REMOTE_ADDR', $_SERVER)){
+			return $_SERVER["REMOTE_ADDR"];
+		}
+		else if(array_key_exists('HTTP_CLIENT_IP', $_SERVER)){
+			return $_SERVER["HTTP_CLIENT_IP"];
+		}
+		return '';
+    }
 
 	/**
 	 * Logs the message to a file.
