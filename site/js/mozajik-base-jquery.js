@@ -1378,6 +1378,7 @@
 		 * @attr data-action-type Action type (can be: toggle|add|remove, default: toggle)
 		 * @attr data-action-value String value which will affect the attribute value of the destination DOM element(s) (required)
 		 * @attr data-action-event jQuery/custom event fires up action (default: 'click')
+		 * @attr data-action-event-threshold Custom event (swipe) threshold value (default: 10)
 		 * @attr data-action-source-selector A selector which determines the source DOM element(s) (default: this)
 		 * @attr data-action-destination-selector A selector which determines the destination DOM element(s) (default: this)
 		 * @attr data-action-attribute The attribute of the destination DOM element (default: 'class')
@@ -1419,15 +1420,14 @@
 		/**
 		 * Trigger custom swipe events
 		 *
-		 * @param {object} dom_elm The DOM element of the swipe event
-		 * @param {function} extra_condition Extra condition provider function (returns boolean)
+		 * @param {object} element Element data object
 		 */
-		function handle_swipe_event(dom_elm, extra_condition) {
+		function handle_swipe_event(element) {
 
 			var touchStarted = false;
 			var _events = [];
 
-			$(document).on('touchstart', dom_elm, function(e) {
+			$(document).on('touchstart', element.source_elm, function(e) {
 				var pointer = getPointerEvent(e);
 
 				// caching the current x
@@ -1445,7 +1445,7 @@
 				},200);
 			});
 
-			$(document).on('touchmove', dom_elm, function(e) {
+			$(document).on('touchmove', element.source_elm, function(e) {
 				var pointer = getPointerEvent(e);
 
 				_events = [];
@@ -1453,25 +1453,28 @@
 				zaj.touch_positions.currentX = pointer.pageX;
 				zaj.touch_positions.currentY = pointer.pageY;
 
-				if (zaj.touch_positions.currentX < zaj.touch_positions.startX) {
+				if (zaj.touch_positions.currentX + element.event_threshold < zaj.touch_positions.startX) {
 					_events.push('swipeleft');
-				} else if (zaj.touch_positions.currentX > zaj.touch_positions.startX) {
+				} else if (zaj.touch_positions.currentX + element.event_threshold > zaj.touch_positions.startX) {
 					_events.push('swiperight');
 				}
 
-				if (zaj.touch_positions.currentY < zaj.touch_positions.startY) {
+				if (zaj.touch_positions.currentY + element.event_threshold < zaj.touch_positions.startY) {
 					_events.push('swipeup');
-				} else if (zaj.touch_positions.currentY > zaj.touch_positions.startY) {
+				} else if (zaj.touch_positions.currentY + element.event_threshold > zaj.touch_positions.startY) {
 					_events.push('swipedown');
 				}
 
 			});
 
-			$(document).on('touchend touchcancel', dom_elm, function(e) {
+			$(document).on('touchend touchcancel', element.source_elm, function(e) {
 
-				if (touchStarted && _events.length && extra_condition()) {
-					for (idx in _events) {
-						dom_elm.trigger(_events[idx]);
+				if (touchStarted && _events.length && element.extra_condition()) {
+
+					var event_idx = _events.indexOf(element.event);
+
+					if (event_idx > -1) {
+						element.source_elm.trigger(_events[event_idx]);
 					}
 				}
 
@@ -1583,6 +1586,7 @@
 				source_selector: ($el.data('action-source-selector'))?($el.data('action-source-selector')):null,
 				dest_selector: ($el.data('action-destination-selector'))?($el.data('action-destination-selector')):null,
 				event: ($el.data('action-event'))?($el.data('action-event')):'click',
+				event_threshold: ($el.data('action-event-threshold'))?parseInt($el.data('action-event-threshold')):10,
 				attribute: ($el.data('action-attribute'))?($el.data('action-attribute')):'class',
 				value: $el.data('action-value'),
 				extra_condition: ($el.data('action-extra-condition'))?(window[$el.data('action-extra-condition')]):(function() {return true})
@@ -1626,7 +1630,7 @@
 				}
 			}
 			else if (element.event.indexOf('swipe') > -1) {
-					handle_swipe_event(element.source_elm, element.extra_condition);
+					handle_swipe_event(element);
 
 					element.source_elm.on(element.event, function() {
 						trigger_action(element, $(this));
