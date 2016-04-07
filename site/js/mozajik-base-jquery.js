@@ -719,6 +719,16 @@
  		};
 
 	/**
+	 * Is URL valid?
+	 * @param {string} url The URL to test.
+	 * @return {boolean} True if valid, false if not.
+	 */
+		zaj.isURLValid = function(url) {
+			var patt = /^((https?|ftp):)?\/\/[^\s\/$.?#].[\S ]*$/i;
+			return patt.test(url);
+		}
+
+	/**
 	 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
 	 * @param {string} url The url to inspect and prepare for a query string.
 	 * @return {string} Returns a url with ? added if no query string or & added if it already has a query string.
