@@ -15,8 +15,8 @@ class zajlib_url extends zajLibExtension {
 	 * @return bool True if a valid url. False otherwise.
 	 **/
 	function valid($url, $allow_spaces = true){
-	 	if($allow_spaces) return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[\S ]*$/i', $url);
-		else return (boolean) preg_match('/^(https?|ftp):\/\/[^\s\/$.?#].[^\s]*$/i', $url);
+	 	if($allow_spaces) return (boolean) preg_match('/^((https?|ftp):)?\/\/[^\s\/$.?#].[\S ]*$/i', $url);
+		else return (boolean) preg_match('/^((https?|ftp):)?\/\/[^\s\/$.?#].[^\s]*$/i', $url);
 	}
 
 	/**
