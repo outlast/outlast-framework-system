@@ -1506,7 +1506,7 @@
 			var element = zaj.scroll_elements[index];
 
 			// Browser's top position bouncing is not a scroll event
-			if (element.source_elm.scrollTop() < 0) {
+			if (element.source_elm.scrollTop() < 0 || element.source_elm.scrollTop() + element.source_elm.outerHeight() > $(document).height()) {
 				return false;
 			}
 
@@ -1527,7 +1527,7 @@
 					condition = (null !== element.lastY && element.lastY > element.source_elm.scrollTop());
 					break;
 				case 'scroll-dir-change':
-					condition = (null !== element.lastY && (element.direction != 1 && element.lastY < element.source_elm.scrollTop() || element.direction != -1 && element.lastY > element.source_elm.scrollTop()));
+					condition = (null !== element.lastY && ((element.direction != 1 && element.lastY < element.source_elm.scrollTop()) || (element.direction != -1 && element.lastY > element.source_elm.scrollTop())));
 					break;
 				case 'scroll-dir-change-up':
 					condition = (null !== element.lastY && element.direction != 1 && element.lastY < element.source_elm.scrollTop());
