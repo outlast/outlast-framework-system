@@ -1,0 +1,122 @@
+{% lang 'system/fields' 'custom' %}
+<!-- A key/value object editor for custom fields -->
+<div id='{{field.uid}}-fields'></div>
+<input type="hidden" name="{{field.name}}" id="{{field.uid}}">
+<a class="btn btn-mini btn-success" onclick="create_field_{{field.uid}}('','','');">{{#system_field_custom_new#}}</a>
+
+<script language="javascript">
+    var global_counter = 0;
+    var custom_upload_changes_{{field.uid}} = {add: [], remove: [], update: [], order:[] };
+
+    function create_field_{{field.uid}}(cf, val, id){
+        var options = '';
+        var fieldid = '{{field.uid}}';
+        if(cf == ''){
+            fieldid += global_counter++;
+        }
+        {% foreach field.customfields as cf %}
+        if('{{cf.id}}' == cf){
+            options += "<option value='{{cf.id}}' selected>{{cf.name}}</option>";
+        }
+        else{
+            options += "<option value='{{cf.id}}'>{{cf.name}}</option>";
+        }
+        {% endforeach %}
+        // create field with JS
+        var el = $(
+                "<div class='alert alert-info keyvalues clearfix' data-id='"+id+"' data-fieldid='"+fieldid+"'>" +
+                "<div class='col-md-5'>" +
+                "<select class='field form-control {{field.uid}}-select' id='{{field.uid}}-select' name='{{field.name}}[key][]' placeholder='key'>" +
+                options+
+                "</select></div><div class='col-md-5'>" +
+                "<input class='field form-control text input-small {{field.uid}}-text' id='{{field.uid}}-text' type='text' name='{{field.name}}[value][]' placeholder='{{#system_field_custom_value_placeholder#|escape}}' value='"+val+"'></div><div class='col-md-2'> <a class='close' href='#delete' onclick=\"remove_field_{{field.uid}}($(this))\">&times;</a></div>"+
+                "</div>"
+        );
+
+        $('#{{field.uid}}-fields').append(el);
+        if(cf == ''){
+
+            update_field_{{field.uid}}(el);
+        }
+        return el;
+    }
+
+
+    // create fields
+    {% if field.value %}
+        zaj.ready(function(){
+            {% foreach field.value as cf %}
+            create_field_{{field.uid}}('{{cf.data.customfield.id}}', '{{cf.data.value}}', '{{cf.id}}');
+            {% endforeach %}
+        });
+    {% endif %}
+
+    $(document).on('change', '.{{field.uid}}-select, .{{field.uid}}-text', function(){
+        update_field_{{field.uid}}($(this).parent().parent());
+    });
+
+    remove_field_{{field.uid}} = function(el){
+        var element = el.parents('div.alert').first();
+        el.parents('div.alert').first().remove();
+        if(element.data('id') != ''){
+            var cf = element.find('.{{field.uid}}-select').val();
+            var value = element.find('.{{field.uid}}-text').val();
+            custom_upload_changes_{{field.uid}}.remove.push({id: element.data('id'), customfield: cf, value: value});
+            for(var i = 0; i < custom_upload_changes_{{field.uid}}.update.length; i++){
+                if(custom_upload_changes_{{field.uid}}.update[i].id == element.data('id')){
+                    custom_upload_changes_{{field.uid}}.update.splice(i, 1);
+                }
+            }
+
+
+        }
+        else{
+            for(var i = 0; i < custom_upload_changes_{{field.uid}}.add.length; i++){
+                if(custom_upload_changes_{{field.uid}}.add[i].field == element.data('fieldid')){
+                    custom_upload_changes_{{field.uid}}.add.splice(i, 1);
+                }
+            }
+        }
+
+        // Set input
+        $('#{{field.uid}}').val(JSON.stringify(custom_upload_changes_{{field.uid}}));
+    };
+
+
+    update_field_{{field.uid}} = function(element){
+        var fieldvalues = [];
+        var keyvalue = {};
+        var cf = element.find('.{{field.uid}}-select').val();
+        var value = element.find('.{{field.uid}}-text').val();
+        // if element has a customfieldentry id, update field
+        if(element.data('id') != ''){
+            var field_found = false;
+            for(var i = 0; i < custom_upload_changes_{{field.uid}}.update.length; i++){
+                if(custom_upload_changes_{{field.uid}}.update[i].id == element.data('id')){
+                    field_found = true;
+                    custom_upload_changes_{{field.uid}}.update[i]['customfield'] = cf;
+                    custom_upload_changes_{{field.uid}}.update[i]['value'] = value;
+                }
+            }
+            if(field_found == false){
+                custom_upload_changes_{{field.uid}}.update.push({id: element.data('id'), customfield: cf, value: value});
+            }
+        }
+        else{
+            var field_found = false;
+            for(var i = 0; i < custom_upload_changes_{{field.uid}}.add.length; i++){
+                if(custom_upload_changes_{{field.uid}}.add[i].field == element.data('fieldid')){
+                    field_found = true;
+                    custom_upload_changes_{{field.uid}}.add[i]['customfield'] = cf;
+                    custom_upload_changes_{{field.uid}}.add[i]['value'] = value;
+                }
+            }
+            if(field_found == false){
+                custom_upload_changes_{{field.uid}}.add.push({field: element.data('fieldid'), customfield: cf, value: value});
+            }
+        }
+
+        // Set input
+        $('#{{field.uid}}').val(JSON.stringify(custom_upload_changes_{{field.uid}}));
+    }
+</script>

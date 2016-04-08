@@ -5,15 +5,37 @@
 class OfwLangTest extends zajTest {
 
 	private $configvars;
+	private $locales_available;
+	private $locale_default;
+	private $locale_set;
 
 	/**
 	 * Set up stuff.
 	 **/
 	public function setUp(){
-		// Save all language variables (for restore afterwards)
+		// Save all variables (for restore afterwards)
 			$this->configvars = $this->zajlib->lang->variable;
+			$this->locale_set = $this->zajlib->lang->get();
+			$this->locales_available = $this->zajlib->zajconf['locale_available'];
+			$this->locale_default = $this->zajlib->zajconf['locale_default'];
+		// Now set locale
+			$this->zajlib->zajconf['locale_default'] = 'hu_HU';
+			$this->zajlib->zajconf['locale_available'] = 'fr_FR,hu_HU,en_US';
+			$this->zajlib->lang->reload_locale_settings();
+			$this->zajlib->lang->set('hu_HU');
 	}
 
+	/**
+	 * Check lang file section loading.
+	 */
+	public function system_language_sections(){
+		$this->zajlib->lang->load('system/fields', 'files');
+		// Let's see if we loaded everything properly
+		zajTestAssert::areIdentical($this->zajlib->config->variable->system_field_files_upload, $this->zajlib->lang->variable->system_field_files_upload);
+		zajTestAssert::areIdentical($this->zajlib->config->variable->section->files->system_field_files_upload, $this->zajlib->lang->variable->system_field_files_upload);
+		zajTestAssert::areIdentical("Fájl feltöltése", $this->zajlib->lang->variable->system_field_files_upload);
+		zajTestAssert::areIdentical($this->zajlib->config->variable->section->files->system_field_files_upload, $this->zajlib->lang->section->files->system_field_files_upload);
+	}
 
 	/**
 	 * Check if auto loading works.
@@ -22,14 +44,8 @@ class OfwLangTest extends zajTest {
 		// Get my current
 			$tld = $this->zajlib->tld;
 			$subdomain = $this->zajlib->subdomain;
-			$locale_default = $this->zajlib->zajconf['locale_default'];
-			$locale_available = $this->zajlib->zajconf['locale_available'];
 			unset($_GET['lang']);
 			unset($_COOKIE['lang']);
-		// Now set my conf
-			$this->zajlib->zajconf['locale_default'] = 'hu_HU';
-			$this->zajlib->zajconf['locale_available'] = 'fr_FR,hu_HU,en_US';
-			$this->zajlib->lang->reload_locale_settings();
 		// No setting means that default is set
 			$this->zajlib->tld = 'com';
 			$this->zajlib->subdomain = 'www';
@@ -50,9 +66,6 @@ class OfwLangTest extends zajTest {
 		// Reset tld and subdomain and other cleanup
 			$this->zajlib->subdomain = $subdomain;
 			$this->zajlib->tld = $tld;
-			$this->zajlib->zajconf['locale_default'] = $locale_default;
-			$this->zajlib->zajconf['locale_available'] = $locale_available;
-			$this->zajlib->lang->reload_locale_settings();
 	}
 
 
@@ -131,6 +144,12 @@ class OfwLangTest extends zajTest {
 	 * Reset stuff, cleanup.
 	 **/
 	public function tearDown(){
+		// Reset locale stuff
+			$this->zajlib->zajconf['locale_default'] = $this->locale_default;
+			$this->zajlib->zajconf['locale_available'] = $this->locales_available;
+			$this->zajlib->lang->reload_locale_settings();
+			$this->zajlib->lang->set($this->locale_set);
+
 		// Clear lang variable
 			$this->zajlib->lang->reset_variables();
 		// Restore language variables

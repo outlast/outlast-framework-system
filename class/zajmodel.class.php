@@ -41,6 +41,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @property zajLib $zajlib A pointer to the global object.
  * @property string $name The name of the object.
  * @property boolean $exists
+ * @property stdClass $translation
  */
 abstract class zajModel implements JsonSerializable {
 	// Instance variables
@@ -237,7 +238,7 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Fetch a single or multiple existing object(s) of this class.
 	 * @param bool|string|zajModel $id OPTIONAL. The id of the object. Leave empty if you want to fetch multiple objects. You can also pass an existing zajModel object in which case it will simply pass through the function without change - this is useful so you can easily support both id's and existing objects in a function.
-	 * @return zajFetcher|self Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
+	 * @return zajFetcher|zajModel Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
 	 */
 	public static function fetch($id=false){
 		// Get my class_name
@@ -729,7 +730,7 @@ abstract class zajModel implements JsonSerializable {
 				return $this->data;
 			case "translation":
 			case "translations":if(!$this::$has_translations) return false; 	// disable where no translations available
-				if(!$this->translations) return $this->translations = new zajModelLocalizer($this);
+				if(!$this->translations || $this->translations->locale != zajLib::me()->lang->get()) return $this->translations = new zajModelLocalizer($this);
 				return $this->translations;
 			case "autosave":	if(!$this::$in_database) return false; 	// disable for non-database objects
 				if(!$this->data) $this->data = new zajData($this);

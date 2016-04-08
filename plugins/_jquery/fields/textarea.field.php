@@ -33,7 +33,7 @@ class zajfield_textarea extends zajField {
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name,
-					'type' => 'text',
+					'type' => 'mediumtext',
 					'option' => array(),
  					'key' => '',
 					'default' => false,

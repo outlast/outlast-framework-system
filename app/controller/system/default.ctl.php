@@ -45,6 +45,7 @@
 			// limit
 				$relations->limit($limit);
 			// now send this to the magic method
+				if(empty($this->zajlib->variable->user)) $this->zajlib->variable->user = User::fetch_by_session();
 				$relations = $other_model::fire_static('onSearch', array($relations, $type));
 			// error?
 				if(!is_object($relations)) return zajLib::me()->error("You are trying to access the client-side search API for $other_model and access was denied by this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");

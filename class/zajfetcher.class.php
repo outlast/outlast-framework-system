@@ -33,7 +33,7 @@ define('CUSTOM_SORT', 'CUSTOM_SORT');
  * @property string $groupby The generated GROUP BY clause
  * @property string $limit The generated LIMIT clause.
  **/
-class zajFetcher implements Iterator, Countable{
+class zajFetcher implements Iterator, Countable, JsonSerializable{
 	// create a fetch class
 		public $class_name;									// the class name
 		public $table_name;									// the table name
@@ -89,6 +89,25 @@ class zajFetcher implements Iterator, Countable{
 			$this->ordermode = $classname::$fetch_order;
 			$this->orderby = "ORDER BY model.".$classname::$fetch_order_field;
 		return $this;
+	}
+
+	/**
+	 * Implement json serialize method.
+	 */
+	public function jsonSerialize(){
+		return $this->to_array();
+	}
+
+  	/**
+     * Return the model data as an array.
+     * @return array The list as an array.
+     **/
+	public function to_array(){
+		$array_data = array();
+		foreach($this as $row){
+			$array_data[] = $row->to_array(true);
+		}
+		return $array_data;
 	}
 
 	
@@ -261,9 +280,28 @@ class zajFetcher implements Iterator, Countable{
 	public function add_field_source($source_field, $as_name=false, $replace = false){
 		// if replace
 			if($replace) $this->reset_field_sources();
+
+		// Check if there is a function
+		// @todo remove this eventually
+		if(preg_match('/[a-zA-Z]+\([^\)]*\)(\.[^\)]*\))?/', $source_field)){
+			zajLib::me()->warning("Mysql function detected as source field: $source_field. Use custom queries with named fields instead to get rid of this warning.");
+		}
+		// Set source field
+
+			if (false === strpos($source_field, ".")) {
+				// It's a *
+				if($source_field === '*') $sfield = $source_field;
+				// It's not in table.column format
+				else $sfield = '`'.$source_field.'`';
+			} else {
+				// It's in table.column format
+				list($table, $field) = explode(".", $source_field);
+				if($field === '*') $sfield = $table.'.'.$field;
+				else $sfield = $table.'.`'.$field.'`';
+			}
 		// if an as name was chosen
-			if($as_name) $this->select_what[$as_name] = $source_field.' as '.$as_name;
-			else $this->select_what[$source_field] = $source_field;
+			if($as_name) $this->select_what[$as_name] = $sfield.' as "'.$as_name.'"';
+			else $this->select_what[$source_field] = $sfield;
 		// changes query, so reset me
 			$this->reset();
 		return $this;
@@ -325,6 +363,22 @@ class zajFetcher implements Iterator, Countable{
 			$this->reset();
 		return $this;
 	}
+
+	/**
+	 * Remove all filters or a specific filter.
+	 * @param string|boolean $field The name of the field who's filter should be reset. If omitted (or if false), all are removed.
+	 * @return zajFetcher This method can be chained.
+	 */
+	public function remove_filters($field = false){
+		if($field === false) $this->filters = [];
+		else{
+			foreach($this->filters as $key => $filter){
+				if($filter[0] == $field) unset($this->filters[$key]);
+			}
+		}
+		return $this;
+	}
+
 	/**
 	 * Exclude/remove filter is just an alias of filter but with different defaults
 	 * @param string $field The name of the field to be filtered
@@ -546,8 +600,8 @@ class zajFetcher implements Iterator, Countable{
 		// get query and execute it
 			$this->db->query($this->get_query());
 		// count rows
-			$this->total = $this->db->get_total_rows();
-			$this->count = $this->db->get_num_rows();
+			$this->total = (int) $this->db->get_total_rows();
+			$this->count = (int) $this->db->get_num_rows();
 		// set pagination stuff
 			if(is_object($this->pagination)){
 				$this->pagination->pagecount = ceil($this->total/$this->pagination->perpage);
@@ -848,7 +902,13 @@ class zajFetcher implements Iterator, Countable{
 			$other_model = $field_model->options['model'];
 		// return the one object
 			$fetcher = $other_model::fetch($id);
-			if(is_object($fetcher)) $fetcher->connection_type = 'manytoone';
+			// if it exists, perform additional stuff!
+			if(is_object($fetcher)){
+				// set connection type
+					$fetcher->connection_type = 'manytoone';
+				// if it is deleted then do not return
+					if($fetcher->data->status == 'deleted') $fetcher = false;
+			}
 			return $fetcher;
 	}
 
@@ -961,9 +1021,9 @@ class zajFetcher implements Iterator, Countable{
 			if(!is_a($object, 'zajModel')) return zajLib::me()->warning("You tried to check is_connected() status with a parameter that is not a zajModel object.");
 			if(!is_a($this->connection_parent, 'zajModel')) return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
 		// primary connection
-			if($this->connection_other) return $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}')");
+			if($this->connection_other) return (boolean) $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}')");
 		// secondary connection
-			else return $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
+			else return (boolean) $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
 	}
 
 }

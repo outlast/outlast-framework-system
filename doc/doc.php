@@ -5,10 +5,11 @@
 die("This file is for documentation.");
 
 /**
- * @method static zajDb boolean
+ * @method static zajDb boolean(boolean $default=false)
  * @method static zajDb category
  * @method static zajDb categories
  * @method static zajDb color
+ * @method static zajDB custom
  * @method static zajDb date
  * @method static zajDb email
  * @method static zajDb file
@@ -30,9 +31,10 @@ die("This file is for documentation.");
  * @method static zajDb password
  * @method static zajDbPhoto photo
  * @method static zajDbPhoto photos
+ * @method static zajDb polymorphic
  * @method static zajDb rating
  * @method static zajDb richtext
- * @method static zajDb select($array)
+ * @method static zajDb select($array, $default='')
  * @method static zajDb serialized
  * @method static zajDb text(integer $length=255)
  * @method static zajDb textarea
@@ -135,10 +137,16 @@ class zajTranslationData extends zajData {}
  * @property string $to To email address.
  * @property string $html_body Body html.
  * @property string $text_body Body text.
- * @property string $bounceto Bounce email to.
+ * @property integer $sentat The time it was sent.
  * @property string $bcc Bcc email address.
  * @property array|stdClass $headers Additional headers.
  * @property string $status Status of email. Can be sent or failed (or new/deleted).
  * @property string $log The log message.
  */
 class EmailLogData extends zajData {}
+
+/**
+ * Class zajlibConfigVariable
+ * @property stdClass $section The variables broken into sections.
+ */
+class zajlibConfigVariable extends stdClass{}

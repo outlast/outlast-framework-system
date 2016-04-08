@@ -436,8 +436,6 @@
 					var psused = zaj.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object' || (typeof pushstate == 'boolean' && pushstate === true));
 					var psdata = false;
 					if(typeof pushstate == 'object' && pushstate != null && pushstate.data) psdata = pushstate.data;
-				// Send to Analytics
-					zaj.track('Ajax', mode, request);
 				// Figure out query string
 					var datarequest;
 					if(mode == 'post'){
@@ -455,8 +453,6 @@
 				// Now send request and call callback function, set callback element, or alert
 					$.ajax(request, {
 						success: function(data, textStatus, jqXHR){
-							// Send to Analytics
-								zaj.track('AjaxSuccess', mode, request);
 							// Set my submitting to false
 								if(set_submitting){
 									zaj.ajax.submitting = false;
@@ -500,14 +496,13 @@
 											var el = $('[data-submit-toggle-class]');
 											if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
 										}
-									// Send a log
-										zaj.error("Ajax request ("+request+") failed with status "+textStatus, true);
 									// If we are in debug mode popup
 										if(textStatus == 'error' && zaj.debug_mode) zaj.alert("Ajax request failed with error:<hr/>"+jqXHR.responseText);
 								}
 						},
 						data: datarequest,
 						dataType: 'html',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'},
 						type: mode,
 						cache: false
 					});
@@ -723,6 +718,16 @@
  		};
 
 	/**
+	 * Is URL valid?
+	 * @param {string} url The URL to test.
+	 * @return {boolean} True if valid, false if not.
+	 */
+		zaj.isURLValid = function(url) {
+			var patt = /^((https?|ftp):)?\/\/[^\s\/$.?#].[\S ]*$/i;
+			return patt.test(url);
+		}
+
+	/**
 	 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
 	 * @param {string} url The url to inspect and prepare for a query string.
 	 * @return {string} Returns a url with ? added if no query string or & added if it already has a query string.
@@ -929,18 +934,31 @@
 
 	/**
 	 * Localizations
-	 * @param {string|object} keyOrObject This can be an object with key/value pairs or just the key.
+	 * @param {string|object} keyOrArray This can be an array of objects where each item has a key, section, and value. Or it can be just a key.
 	 * @param {string} value If you are using a key in the first param, this is the value.
+	 * @param {string} [section=null] The section in which the lang variable is found. This is optional.
 	 */
-		zaj.setLang = function(keyOrObject, value){
-			// @todo implement object.
-			// Set key/value
-				zaj.lang[keyOrObject] = value;
+		zaj.setLang = function(keyOrArray, value, section){
+			if(typeof keyOrArray == 'object'){
+				$.each(keyOrArray, function(index, value){
+					zaj.setLang(value.key, value.value, value.section);
+				});
+			}
+			else{
+				// Set key/value globally
+				zaj.lang[keyOrArray] = value;
+				// ...and for section if needed
+				if(section){
+					if(typeof zaj.lang.section == 'undefined') zaj.lang.section = {};
+					if(typeof zaj.lang.section[section] == 'undefined') zaj.lang.section[section] = {};
+					zaj.lang.section[section][keyOrArray] = value;
+				}
+			}
 			// Also set config
-				zaj.config = zaj.lang;
+			zaj.config = zaj.lang;
 			// Backwards compatibility
-				ofw.lang = zaj.lang;
-				ofw.config = zaj.config;
+			ofw.lang = zaj.lang;
+			ofw.config = zaj.config;
 		};
 
 	/**
@@ -1083,10 +1101,20 @@
 
 				uploader.JCropbox = function(res){
 
+                    if(typeof(options.cropbox_height) == 'undefined'){
+                        options.cropbox_height = options.min_height;
+                    }
+
+                    if(typeof(options.cropbox_width) == 'undefined'){
+                        options.cropbox_width = options.min_width;
+                    }
+
 					sel_instance = $(options.file_list+" img").cropbox({
-				        width: options.min_width,
-				        height: options.min_height,
+				        width: options.cropbox_width,
+				        height: options.cropbox_height,
 				        showControls: 'always',
+                        controls: options.controls,
+                        label: options.label,
 				        zoom: 5
 				    }).on('cropbox', function(e, data) {
 				        selection_changed = true;
@@ -1205,6 +1233,50 @@
 				this.cropper(options)
 			}
 		};
+		
+		/**
+         * Encode html characters.
+         * @param {string} str The incoming string.
+         * @return {string} Returns a string in which html entities are escaped.
+         **/
+        zaj.htmlEscape = function(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+		/**
+         * Decode html characters.
+         * @param {string} str The incoming string.
+         * @return {string} Returns a string in which escaped html entities are converted back to their normal state.
+         **/
+        zaj.htmlUnescape = function(str) {
+            return String(str)
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&');
+        }
+
+    /**
+     * Trigger inprogress class on inprogress elements
+     * @param {boolean} show Set to true or false to add or  remove inprogress class to/from the element.
+     */
+    zaj.inProgress = function(show) {
+        if (show) {
+            $('[data-inprogress-class]').each(function() {
+                $(this).addClass($(this).data('inprogress-class'))
+            });
+        } else {
+            $('[data-inprogress-class]').each(function() {
+                $(this).removeClass($(this).data('inprogress-class'))
+            });
+        }
+    }
 
 
 	/**
@@ -1308,6 +1380,279 @@
 						useMoreButton: _useMoreButton
 					}));
 			});
+
+		/**
+		 * Action handler
+		 *
+		 * @attr data-action-type Action type (can be: toggle|add|remove, default: toggle)
+		 * @attr data-action-value String value which will affect the attribute value of the destination DOM element(s) (required)
+		 * @attr data-action-event jQuery/custom event fires up action (default: 'click')
+		 * @attr data-action-event-threshold Custom event (swipe) threshold value (default: 10)
+		 * @attr data-action-source-selector A selector which determines the source DOM element(s) (default: this)
+		 * @attr data-action-destination-selector A selector which determines the destination DOM element(s) (default: this)
+		 * @attr data-action-attribute The attribute of the destination DOM element (default: 'class')
+		 * @attr data-action-interval-time Time of the function calling interval (in milliseconds). Used at custom scroll event checking (default: 100).
+		 * @attr data-action-extra-condition Function call which determines extra condition for the execution of the action (default: true)
+		 **/
+		var actions = $parent.find('[data-action-value]');
+
+		if (actions.length) {
+			// Cross-browser transition end event trigger
+			if ($parent.find('[data-action-event="trans-end"]').length) {
+				$(document).on('transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', '[data-action-event="trans-end"]', function () {
+					$(this).trigger('trans-end');
+				});
+			}
+
+			if ($parent.find('[data-action-event="anim-end"]').length) {
+				// Cross-browser animation end event trigger
+				$(document).on('animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd', '[data-action-event="anim-end"]', function () {
+					$(this).trigger('anim-end');
+				});
+			}
+
+			zaj.scroll_interval = null;
+			zaj.scroll_elements = [];
+
+			zaj.touch_positions = {
+				startX: null,
+				startY: null,
+				currentX: null,
+				currentY: null
+			};
+		}
+
+		var getPointerEvent = function(event) {
+			return event.originalEvent.targetTouches ? event.originalEvent.targetTouches[0] : event;
+		};
+
+		/**
+		 * Trigger custom swipe events
+		 *
+		 * @param {object} element Element data object
+		 */
+		function handle_swipe_event(element) {
+
+			var touchStarted = false;
+			var _events = [];
+
+			$(document).on('touchstart', element.source_elm, function(e) {
+				var pointer = getPointerEvent(e);
+
+				// caching the current x
+				zaj.touch_positions.startX = zaj.touch_positions.currentX = pointer.pageX;
+				zaj.touch_positions.startY = zaj.touch_positions.currentY = pointer.pageY;
+
+				// a touch event is detected
+				touchStarted = true;
+
+				// detecting if after 200ms the finger is still in the same position
+				setTimeout(function (){
+					if ((zaj.touch_positions.startX === zaj.touch_positions.currentX) && !touchStarted && (zaj.touch_positions.startY === zaj.touch_positions.currentY)) {
+						touchStarted = false;
+					}
+				},200);
+			});
+
+			$(document).on('touchmove', element.source_elm, function(e) {
+				var pointer = getPointerEvent(e);
+
+				_events = [];
+
+				zaj.touch_positions.currentX = pointer.pageX;
+				zaj.touch_positions.currentY = pointer.pageY;
+
+				if (zaj.touch_positions.currentX + element.event_threshold < zaj.touch_positions.startX) {
+					_events.push('swipeleft');
+				} else if (zaj.touch_positions.currentX + element.event_threshold > zaj.touch_positions.startX) {
+					_events.push('swiperight');
+				}
+
+				if (zaj.touch_positions.currentY + element.event_threshold < zaj.touch_positions.startY) {
+					_events.push('swipeup');
+				} else if (zaj.touch_positions.currentY + element.event_threshold > zaj.touch_positions.startY) {
+					_events.push('swipedown');
+				}
+
+			});
+
+			$(document).on('touchend touchcancel', element.source_elm, function(e) {
+
+				if (touchStarted && _events.length && element.extra_condition()) {
+
+					var event_idx = _events.indexOf(element.event);
+
+					if (event_idx > -1) {
+						element.source_elm.trigger(_events[event_idx]);
+					}
+				}
+
+				// here we can consider finished the touch event
+				touchStarted = false;
+				_events = [];
+			});
+		}
+
+		/**
+		 * Custom scroll event checking
+		 *
+		 * @param {integer} index The index of the current scroll_element (from zaj.scroll_elements)
+		 * @return {boolean} True if scroll event condition is fulfilled, false if not
+		 */
+		function check_scroll_event(index) {
+
+			var condition, direction;
+			var element = zaj.scroll_elements[index];
+
+			// Browser's top position bouncing is not a scroll event
+			if (element.source_elm.scrollTop() < 0 || element.source_elm.scrollTop() + element.source_elm.outerHeight() > $(document).height()) {
+				return false;
+			}
+
+			switch (element.event) {
+				case 'scroll-start':
+					condition = (null === element.lastY && element.source_elm.scrollTop() > 0);
+					break;
+				case 'scroll-end':
+					condition = (element.lastY == element.source_elm.scrollTop());
+					break;
+				case 'scroll':
+					condition = (null !== element.lastY && element.lastY != element.source_elm.scrollTop());
+					break;
+				case 'scroll-up':
+					condition = (null !== element.lastY && element.lastY < element.source_elm.scrollTop());
+					break;
+				case 'scroll-down':
+					condition = (null !== element.lastY && element.lastY > element.source_elm.scrollTop());
+					break;
+				case 'scroll-dir-change':
+					condition = (null !== element.lastY && ((element.direction != 1 && element.lastY < element.source_elm.scrollTop()) || (element.direction != -1 && element.lastY > element.source_elm.scrollTop())));
+					break;
+				case 'scroll-dir-change-up':
+					condition = (null !== element.lastY && element.direction != 1 && element.lastY < element.source_elm.scrollTop());
+					break;
+				case 'scroll-dir-change-down':
+					condition = (null !== element.lastY && element.direction != -1 && element.lastY > element.source_elm.scrollTop());
+					break;
+			}
+
+			if (element.lastY < element.source_elm.scrollTop()) {
+				direction = 1;
+			} else if (element.lastY > element.source_elm.scrollTop()) {
+				direction = -1;
+			} else {
+				direction = null;
+			}
+
+			zaj.scroll_elements[index].direction = direction;
+			zaj.scroll_elements[index].lastY = (element.event == 'scroll-end')?null:element.source_elm.scrollTop();
+
+			return (element.extra_condition() && condition);
+		}
+
+		/**
+		 * Trigger action
+		 *
+		 * @param {object}|{integer} element The element object/index of the current scroll_element (from zaj.scroll_elements)
+		 * @param {object} _this The DOM element of the current source element
+		 */
+		function trigger_action(element, _this) {
+			if (typeof element != 'object') {
+				element = zaj.scroll_elements[element];
+			}
+
+			element.dest_elm.each(function() {
+
+				var $this = (element.dest_selector === null)?_this:$(this);
+
+				var attr = $this.attr(element.attribute), new_value, current_values, current_idx;
+
+				if (undefined !== attr) {
+					current_values = attr.split(" ");
+					current_idx = current_values.indexOf(element.value);
+				} else {
+					current_values = null;
+					current_idx = -1;
+				}
+
+				if (element.type != 'remove' && current_idx < 0) {
+					new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + element.value;
+					$this.attr(element.attribute, new_value);
+				}
+				else if (element.type != 'add' && current_idx > -1) {
+					current_values.splice(current_idx, 1);
+					$this.attr(element.attribute, current_values.join(" "));
+				}
+			});
+		}
+
+		actions.each(function(){
+			var $el =  $(this);
+
+			// Element data object
+			var element = {
+				type: ($el.data('action-type'))?($el.data('action-type')):'toggle',
+				source_selector: ($el.data('action-source-selector'))?($el.data('action-source-selector')):null,
+				dest_selector: ($el.data('action-destination-selector'))?($el.data('action-destination-selector')):null,
+				event: ($el.data('action-event'))?($el.data('action-event')):'click',
+				event_threshold: ($el.data('action-event-threshold'))?parseInt($el.data('action-event-threshold')):10,
+				attribute: ($el.data('action-attribute'))?($el.data('action-attribute')):'class',
+				value: $el.data('action-value'),
+				extra_condition: ($el.data('action-extra-condition'))?(window[$el.data('action-extra-condition')]):(function() {return true})
+			};
+
+			// Handle special selectors (window/document)
+			switch (element.source_selector) {
+				case 'window':
+					element.source_elm = $(window);
+					break;
+				case 'document':
+					element.source_elm = $(document);
+					break;
+				case null:
+					element.source_elm = $el;
+					break;
+				default:
+					element.source_elm = $(element.source_selector);
+			}
+
+			element.dest_elm = (element.dest_selector !== null)?$(element.dest_selector):element.source_elm;
+
+			// Has scroll event
+			if (element.event.indexOf('scroll') > -1) {
+				element.lastY = null;
+				element.direction = null;
+
+				zaj.scroll_elements.push(element);
+
+				if (null === zaj.scroll_interval) {
+					var scroll_interval_time = ($el.data('action-interval-time'))?($el.data('action-interval-time')):'100';
+
+					zaj.scroll_interval = setInterval(function() {
+
+						for (var index in zaj.scroll_elements) {
+							if (check_scroll_event(index)) {
+								trigger_action(index);
+							}
+						}
+					}, scroll_interval_time);
+				}
+			}
+			else if (element.event.indexOf('swipe') > -1) {
+					handle_swipe_event(element);
+
+					element.source_elm.on(element.event, function() {
+						trigger_action(element, $(this));
+					});
+			}
+			else {
+				element.source_elm.on(element.event, function() {
+					if (element.extra_condition()) {
+						trigger_action(element, $(this));
+					}
+				});
+			}
+		});
 
 	};
 	zaj.ready(function(){ zaj.activateHandlers() });

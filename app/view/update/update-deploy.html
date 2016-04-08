@@ -15,18 +15,24 @@
 	</div>
 
 	<h5>Checking database structure...</h5>
-	{% if dbresults.num_of_changes > 0 %}
-		<div class="alert alert-danger">
-			<h5>The database needs to be updated with {{dbresults.num_of_changes}} automatic changes.</h5>
-			<a href="{{baseurl}}update/database/{% if ofw.get.update_user %}?update_user={{ofw.get.update_user|escape}}&update_password={{ofw.get.update_password|escape}}{% endif %}">Click here</a> to go to the database update panel.
-		</div>
-	{% elseif %}
-		<div class="alert alert-success">
-			<h5>The database seems to be up to date. There are {{dbresults.num_of_todo}} manual changes waiting.</h5>
-			<a href="{{baseurl}}update/database/{% if ofw.get.update_user %}?update_user={{ofw.get.update_user|escape}}&update_password={{ofw.get.update_password|escape}}{% endif %}">Click here</a> to go to the database update panel.
-		</div>
-	{% endif %}
+	{% if db_enabled %}
+        {% if dbresults.num_of_changes > 0 %}
+    		<div class="alert alert-danger">
+	    		<h5>The database needs to be updated with {{dbresults.num_of_changes}} automatic changes.</h5>
+		    	<a href="{{baseurl}}update/database/{% if ofw.get.update_user %}?update_user={{ofw.get.update_user|escape}}&update_password={{ofw.get.update_password|escape}}{% endif %}">Click here</a> to go to the database update panel.
+		    </div>
+	    {% elseif %}
+		    <div class="alert alert-success">
+			    <h5>The database seems to be up to date. There are {{dbresults.num_of_todo}} manual changes waiting.</h5>
+			    <a href="{{baseurl}}update/database/{% if ofw.get.update_user %}?update_user={{ofw.get.update_user|escape}}&update_password={{ofw.get.update_password|escape}}{% endif %}">Click here</a> to go to the database update panel.
+		    </div>
+	    {% endif %}
+    {% else %}
+        <div class="alert alert-warning">
+            <h5>The database is disabled in this project.</h5>
+        </div>
+    {% endif %}
 
 	<h5>Running unit tests...</h5>
-	{{testresults}}
+	{{testresults|safe}}
 {% endblock %}
