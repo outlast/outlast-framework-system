@@ -345,7 +345,7 @@ abstract class zajModel implements JsonSerializable {
 			}
 		// Set settings
 			foreach($data as $field_name => $field_value){
-				// everything except the system stuff
+				// everything except the system stuff @todo this check should be a field property
 				if($field_name != 'unit_test' && $field_name != 'id' && $field_name != 'time_create' && $field_name != 'time_edit' && $field_name != 'ordernum'){
 					$this->set($field_name, $field_value);
 				}
