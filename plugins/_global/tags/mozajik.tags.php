@@ -292,16 +292,20 @@ EOF;
 	/**
 	 * Tag: config - Loads a configuration file in full or just a specified section
 	 *
-	 *  <b>{% config 'file_name.conf.ini' 'section_name' %}</b>
+	 *  <b>{% config 'file_name.conf.ini' 'section_name' true %}</b>
 	 *  1. <b>file_name</b> - A filename of the configuration file relative to the plugins conf directory.
 	 *  2. <b>section_name</b> - The name of the section to load. If omitted, the entire file will be loaded.
+	 *  3. <b>force_set</b> - If set to true, the variables will be set even if the file was already loaded previously.
 	 **/
 	public function tag_config($param_array, &$source){
 		// Is section name specified?
-			if(!empty($param_array[1])) $param2 = ", {$param_array[1]->variable}";
-			else $param2 = "";
+			if(!empty($param_array[1])) $param2 = "{$param_array[1]->variable}";
+			else $param2 = "false";
+		// Is force_set specified?
+			if(!empty($param_array[2])) $param3 = "{$param_array[2]->variable}";
+			else $param3 = "false";
 		// figure out content
-			$contents = "<?php \$this->zajlib->config->load({$param_array[0]->variable} $param2); ?>";
+			$contents = "<?php \$this->zajlib->config->load({$param_array[0]->variable}, $param2, $param3); ?>";
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats
@@ -336,10 +340,13 @@ EOF;
 	 **/
 	public function tag_lang($param_array, &$source){
 		// Is section name specified?
-			if(!empty($param_array[1])) $param2 = ", {$param_array[1]->variable}";
-			else $param2 = "";
+			if(!empty($param_array[1])) $param2 = "{$param_array[1]->variable}";
+			else $param2 = "false";
+		// Is force_set specified?
+			if(!empty($param_array[2])) $param3 = "{$param_array[2]->variable}";
+			else $param3 = "false";
 		// figure out content
-			$contents = "<?php \$this->zajlib->lang->load({$param_array[0]->variable} $param2); ?>";
+			$contents = "<?php \$this->zajlib->lang->load({$param_array[0]->variable}, $param2, $param3); ?>";
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats

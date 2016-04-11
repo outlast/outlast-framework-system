@@ -285,19 +285,19 @@ class zajlib_lang extends zajlib_config {
 		 * For example: if you specify 'admin_shop' as the first parameter with en_US as the locale, the file lang/admin/shop.en_US.lang.ini will be loaded. If it is not found, the default locale will also be searched.
 		 * @param string $name_OR_source_path The name of the file (without locale or ini extension) or the specific ini file to load.
 		 * @param bool|string $section The section to compile.
-		 * @param boolean $force_compile This will force recompile even if a cached version already exists.
+		 * @param boolean $force_set This will force setting of variables even if the same file / section was previously loaded.
 		 * @param boolean $fail_on_error If set to true (the default), it will fail with error.
 		 * @param boolean $load_default_locale_on_error If set to true (the default), it will load up the default locale if it failed to load the current lang.
 		 * @return bool
 		 */
-		public function load($name_OR_source_path, $section=false, $force_compile=false, $fail_on_error=true, $load_default_locale_on_error=true){
+		public function load($name_OR_source_path, $section=false, $force_set=false, $fail_on_error=true, $load_default_locale_on_error=true){
 			// First let's see if . is not found in path. If so, this is a name, so figure out what source path is based on current locale
 				if(strstr($name_OR_source_path, '.') === false){
 					// Assemble my file
 						$original_source_path = $name_OR_source_path;
 						$name_OR_source_path = $name_OR_source_path.'.'.$this->get().'.lang.ini';
 					// First, try to load the default
-						$result = parent::load($name_OR_source_path, $section, $force_compile, false);
+						$result = parent::load($name_OR_source_path, $section, $force_set, false);
 					// Now if load failed, set load to the default locale
 						if(!$result && $load_default_locale_on_error){
 							// throw a warning (if not testing)
@@ -310,7 +310,7 @@ class zajlib_lang extends zajlib_config {
 						else return true;
 				}
 			// Now just load the file as if it were a usual config and return
-				return parent::load($name_OR_source_path, $section, $force_compile, $fail_on_error);
+				return parent::load($name_OR_source_path, $section, $force_set, $fail_on_error);
 		}
 
 		/**
