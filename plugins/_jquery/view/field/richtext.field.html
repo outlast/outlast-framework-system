@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="{{baseurl}}system/css/medium-editor/medium-editor.css">
 <link rel="stylesheet" href="{{baseurl}}system/css/medium-editor/themes/bootstrap.css">
 
-<div id="medium-editor-{{field.uid}}">{{field.value|strip_attribute:'style'|safe}}</div>
+<div style="height: auto;" class="ofw-field-textarea form-control" id="medium-editor-{{field.uid}}">{{field.value|strip_attribute:'style'|safe}}</div>
 <script>
 	var mediumEditors;
 	if(typeof mediumEditors == 'undefined') mediumEditors = {};
@@ -16,4 +16,4 @@
 		$('#textarea-{{field.uid}}').html($('#medium-editor-{{field.uid}}').html());
 	});
 </script>
-<textarea class='field textarea hide' id='textarea-{{field.uid}}' name='{{field.name}}'>{{field.value|safe|escape:'htmlall'}}</textarea>
+<textarea class='ofw-field-text form-control hide' id='textarea-{{field.uid}}' name='{{field.name}}'>{{field.value|safe|escape:'htmlall'}}</textarea>
