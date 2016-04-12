@@ -110,7 +110,7 @@ class zajlib_template extends zajLibExtension {
 	 **/
 	public function show($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
 		// do i need to show by block (if pushState request detected)
-			if(!empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
+			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
 		// prepare
 			$include_file = $this->prepare($source_path, $force_recompile, $custom_compile_destination);
 		// set that we have started the output
@@ -131,7 +131,7 @@ class zajlib_template extends zajLibExtension {
 	 */
 	public function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
 		// do i need to show by block (if pushState request detected)
-			if(!empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
+			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
 		// first do a show to compile (if needed)
 			$this->prepare($source_path, $force_recompile);
 		// set that we have started the output

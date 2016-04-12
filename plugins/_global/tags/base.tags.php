@@ -811,41 +811,95 @@ EOF;
 	 *  2. <b>simplename</b> - The local variable name to use within the nested tag area.
 	 **/
 	public function tag_with($param_array, &$source){
-		// add level
-			$my_variable_name = '$before_with_'.uniqid();
-			$source->add_level('with', array($param_array[2]->variable, $my_variable_name));
-		// generate with
-		// TODO: add save the previous value of param_array[2] and restore on end
-			$contents = <<<EOF
+		// Support old {% with business.employees.count as total %} syntax.
+		if($param_array[2]->variable == 'as'){
+			// add level
+				$temporary_variable = '$before_with_'.uniqid();
+				$source->add_level('with', array([$param_array[2]->variable], [$temporary_variable]));
+			// generate with
+				$contents = <<<EOF
 <?php
 // save previous value for restore
-	{$my_variable_name} = {$param_array[2]->variable};
+	{$temporary_variable} = {$param_array[2]->variable};
 // start with
 	{$param_array[2]->variable} = {$param_array[0]->variable};
 ?>
 EOF;
+		}
+		// Support new {% with business.employees.count = total %} syntax.
+		else{
+			// Check if we have the proper amount of entries (must be divisble by 3)
+			if(count($param_array) % 3 != 0) return $source->error("Something is not right in your {% with %} tag! Make sure to use the old 'as' or the new x=y syntax. Check documentation!");
+
+			// Now let's start counting up by 3's
+			$temporary_variables = [];
+			$set_variables = [];
+			$contents = '';
+			for($i = 0; $i < count($param_array); $i = $i+3){
+				// The first element is the left side of the equals. It must be a variable.
+				$set_me_param = $param_array[$i];
+				if(is_numeric($set_me_param->vartext) || $set_me_param->vartext[0] == '"' || $set_me_param->vartext[0] == "'") return $source->error("You cannot set a string or number to a value in your {% with %} tag! Make sure to have a variable on the left of your x=y syntax.");
+				$set_me = $set_me_param->variable;
+
+				// The second item should be an = sign
+				$equal_param = $param_array[$i+1];
+				if(trim($equal_param->vartext, ' ') != '=') return $source->error("Something is not right in your {% with %} tag! Make sure to use the old 'as' or the new x=y syntax. Check documentation!");
+
+				// The third item can be pretty much anything
+				$to_me_param = $param_array[$i+2];
+				$to_this_value = $to_me_param->variable;
+
+				// Store old value in temporary variable and store var name for endwith reference
+				$temporary_variable = '$before_with_'.uniqid();
+				$temporary_variables[] = $temporary_variable;
+				$set_variables[] = $set_me;
+
+				// Generate php
+				$contents .= <<<EOF
+<?php
+// save previous value for restore
+	{$temporary_variable} = {$set_me};
+// start with
+	{$set_me} = {$to_this_value};
+?>
+EOF;
+			}
+
+			// We are done looping, let's now increase level with temporary variables
+			$source->add_level('with', array($set_variables, $temporary_variables));
+		}
+
 		// write to file
-			$this->zajlib->compile->write($contents);
-		// return debug_stats
-			return true;	
+		$this->zajlib->compile->write($contents);
+
+		// return true
+		return true;
 	}
 	/**
 	 * @ignore
 	 **/
 	public function tag_endwith($param_array, &$source){
+
 		// get the data
-			list($localvar, $restorevar) = $source->remove_level('with');
-		// generate code
-			$contents = <<<EOF
+		list($localvars, $restorevars) = $source->remove_level('with');
+
+		// restore values for each item
+		$contents = '';
+		foreach($restorevars as $key=>$restorevar){
+			$localvar = $localvars[$key];
+			$contents .= <<<EOF
 <?php
 // restore it
 	$localvar = $restorevar;
 ?>
 EOF;
+		}
+
 		// write to file
-			$this->zajlib->compile->write($contents);
+		$this->zajlib->compile->write($contents);
+
 		// return true
-			return true;
+		return true;
 	}
 		
 	/**

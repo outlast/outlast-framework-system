@@ -93,9 +93,10 @@ class zajData {
 
 		/**
 		 * Return true if this exists in the database, false otherwise.
+		 * @return boolean Returns true or false.
 		 **/
 		public function exists(){
-			return $this->exists;
+			return (boolean) $this->exists;
 		}
 
 		/**

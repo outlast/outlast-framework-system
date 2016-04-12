@@ -44,11 +44,11 @@ class zajlib_config extends zajLibExtension{
 	 * Loads a configuration or language file at runtime.
 	 * @param string $source_path The source of the configuration file relative to the conf folder.
 	 * @param string|bool $section The section to compile.
-	 * @param boolean $force_compile This will force recompile even if a cached version already exists.
+	 * @param boolean $force_set This will force setting of variables even if the same file / section was previously loaded.
 	 * @param boolean $fail_on_error If set to true (the default), it will fail with error.
 	 * @return bool Returns true if successful, false otherwise.
 	 */
-	public function load($source_path, $section=false, $force_compile=false, $fail_on_error = true){
+	public function load($source_path, $section=false, $force_set=false, $fail_on_error = true){
 		// check chroot
 			if(strpos($source_path, '..') !== false) return $this->zajlib->error($this->type_of_file.' source file must be relative to conf path.');
 		// generate section
@@ -61,9 +61,10 @@ class zajlib_config extends zajLibExtension{
 			$file_name = $this->zajlib->basepath.$this->dest_path.$source_path.$fsection.'.php';
 
 		// was it already loaded?
-			if(!empty($this->loaded_files[$file_name])) return true;
+			if(!$force_set && !empty($this->loaded_files[$file_name])) return true;
 		// does it exist? if not, compile now!
 			$result = true;
+			$force_compile = false;
 			if($force_compile || $this->zajlib->debug_mode || !file_exists($file_name)) $result = $this->compile($source_path, $fail_on_error);
 		// If compile failed or if include fails
 			if(!$result || !(@include($file_name))){
