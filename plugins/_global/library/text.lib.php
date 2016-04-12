@@ -112,6 +112,17 @@ class zajlib_text extends zajLibExtension {
 		}
 		return $string;
 	}
+
+	/**
+	 * Adds a text to another text. Different from concatenation in the sense that if both texts are numeric, they are added mathematically.
+	 * @param string $first The left string.
+	 * @param string $second The right string.
+	 * @return string The string version of the concatenated or added string. 
+	 */
+	public function add($first, $second){
+		if(is_numeric($first) && is_numeric($second)) return (string) ($first + $second);
+		else return $first.$second;
+	}
 	
 	/**
 	 * Truncates a string to length. Depricated.

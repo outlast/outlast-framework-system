@@ -293,6 +293,24 @@ class OfwLibraryTest extends zajTest {
 	 * Check text file.
 	 */
 	public function system_library_text(){
+		// Should add it
+		$s1 = '2';
+		$s2 = '3';
+		$res = $this->zajlib->text->add($s1, $s2);
+		zajTestAssert::areIdentical('5', $res);
+
+		// Should add it
+		$s1 = 2.5;
+		$s2 = '3';
+		$res = $this->zajlib->text->add($s1, $s2);
+		zajTestAssert::areIdentical('5.5', $res);
+
+		// Should concat it
+		$s1 = 'This is a ';
+		$s2 = '3';
+		$res = $this->zajlib->text->add($s1, $s2);
+		zajTestAssert::areIdentical('This is a 3', $res);
+
 		// Just load it up and do nothing
 		$this->zajlib->text;
 	}
@@ -347,13 +365,14 @@ class OfwLibraryTest extends zajTest {
 				zajTestAssert::isTrue($r);
 				$r = $this->zajlib->url->valid('http://example.com/?test=Spaces here are ok');
 				zajTestAssert::isTrue($r);
+			// Protocol-independent is valid
+				$r = $this->zajlib->url->valid('//localhost/asdf/example.php');
+				zajTestAssert::isTrue($r);
 		// Let's test some invalid urls
 				$r = $this->zajlib->url->valid('/asdf/example.php');
 				zajTestAssert::isFalse($r);
 				$r = $this->zajlib->url->valid('chat://asdf/asdf/example.php');
 				zajTestAssert::isFalse($r);
-				$r = $this->zajlib->url->valid('//localhost/asdf/example.php');
-				zajTestAssert::isTrue($r);
 	}
 
 

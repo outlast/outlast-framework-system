@@ -23,7 +23,7 @@ class zajlib_filter_base extends zajElementCollection{
 	 **/
 	public function filter_add($parameter, &$source){
 		// write to file
-			$this->zajlib->compile->write('if(is_numeric($filter_var) && is_numeric('.$parameter.')) $filter_var=$filter_var+'.$parameter.'; else $filter_var=$filter_var.'.$parameter.';');
+			$this->zajlib->compile->write('$filter_var=$this->zajlib->text->add($filter_var, '.$parameter.');');
 		return true;
 	}
 	/**

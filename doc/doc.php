@@ -150,3 +150,9 @@ class EmailLogData extends zajData {}
  * @property stdClass $section The variables broken into sections.
  */
 class zajlibConfigVariable extends stdClass{}
+
+/**
+ * Class zajTestInstance
+ * @property zajLib $zajlib
+ */
+class zajTestInstance{}

@@ -367,7 +367,7 @@ class zajLib {
 	 * Returns an error message and exists. Useful for fatal errors.
 	 * @param string $message The error message to display and/or log.
 	 * @param boolean $display_to_users If set to true, the message will also be displayed to users even if not in debug mode. Defaults to false with a generic error message displayed.
-	 * @return bool Does not return anything.
+	 * @return bool Returns false if error messages are surpressed (during test). Otherwise terminates.
 	 **/
 	public function error($message, $display_to_users = false){
 		// Manually load error reporting lib
@@ -376,6 +376,7 @@ class zajLib {
 		// Now report the error and send 500 error
 			if(!$this->output_started) header('HTTP/1.1 500 Internal Server Error');
 			$error->error($message, $display_to_users);	// this terminates the run
+		return false;
 	}
 
 	/**
@@ -648,7 +649,7 @@ class zajLibLoader{
 	 * @param array|bool $optional_parameters An array or a single parameter which is passed as the first parameter to __load()
 	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
 	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
-	 * @return mixed|zajController Returns whatever the __load() method returns. If the __load() method is not invoked, the controller object is returned. A return by __load of explicit false is meant to signify a problem.
+	 * @return mixed|zajController Returns whatever the __load() method returns. If the __load() method is not invoked, the controller object is returned. A return by __load of explicit false is meant to signify a problem. Or it may also mean that the controller was not loaded (if $fail_with_error_message is false).
 	 * @todo Rewrite $controller_name generation to regexp
 	 **/
 	public function controller($file_name, $optional_parameters=false, $call_load_method=true, $fail_with_error_message = true){
@@ -728,7 +729,7 @@ class zajLibLoader{
 	 * @param array|bool $optional_parameters An array of parameters passed to the request method.
 	 * @param boolean $reroute_to_error When set to true (the default), the function will reroute requests to the proper __error method.
 	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
-	 * @return bool|mixed
+	 * @return bool|mixed Returns whatever the app endpoint returns.
 	 */
 	public function app($request, $optional_parameters=false, $reroute_to_error=true, $call_load_method=true){
 		// check for security
