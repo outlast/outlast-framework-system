@@ -674,15 +674,19 @@ class zajLibLoader{
 	 * Load a library file.
 	 * @param string $name The name of the library to load.
 	 * @param array|bool $optional_parameters An array of optional parameters which are stored in {@link zajLibExtension->options}
+	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
 	 * @return zajLibExtension|bool Returns a zajlib object or false if fails.
 	 */
-	public function library($name, $optional_parameters=false){
+	public function library($name, $optional_parameters=false, $fail_with_error_message = true){
 		// is it loaded already?
 			if(isset($this->loaded['library'][$name])) return $this->loaded['library'][$name];
 		// try to load the file
 			$result = $this->file("library/$name.lib.php", false);			
 		// if library does not exist
-			if(!$result) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+			if(!$result){
+				if($fail_with_error_message) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+				else return false;
+			}
 			else{
 				// return the new lib object
 					$library_class = 'zajlib_'.$name;
@@ -698,15 +702,19 @@ class zajLibLoader{
 	 * @param string $name The name of the model to load.
 	 * @param array|boolean $optional_parameters This will be passed to the __load method (not yet implemented)
 	 * @todo Implement optional parameters.
+	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
 	 * @return boolean Will return true if successfully loaded, false if not.
 	 **/
-	public function model($name, $optional_parameters = false){
+	public function model($name, $optional_parameters = false, $fail_with_error_message = true){
 		// is it loaded already?
 			if(isset($this->loaded['model'][$name])) return true;
 		// now just load the file
 			$result = $this->file("model/".strtolower($name).".model.php", false);
 		// return result
-			if(!$result) return $this->zajlib->error("model or app controller object <strong>$name</strong> has not been properly defined or does not exist! is the class name correctly defined in the model/ctl file?");
+			if(!$result){
+				if($fail_with_error_message) return $this->zajlib->error("model or app controller object <strong>$name</strong> has not been properly defined or does not exist! is the class name correctly defined in the model/ctl file?");
+				else return false;
+			}
 			else{
 				// set it as loaded
 					$this->loaded['model'][$name] = true;			
