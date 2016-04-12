@@ -45,15 +45,20 @@ class zajLib {
 	// instance variables	
 		// my path and url
 			/**
-			 * The project root directory. This is automatically determined.
+			 * The project root directory, with trailing slash. This is automatically determined.
 			 * @var string
 			 **/
 			public $basepath;
 			/**
-			 * The project root url. This is automatically determined.
+			 * The project root url, with trailing slash. This is automatically determined.
 			 * @var string
 			 **/
 			public $baseurl;
+			/**
+			 * The project root's subfolder if there is any. Will be empty if none, will have trailing slash if it is set. This is automatically determined.
+			 * @var string
+			 **/
+			public $basefolder;
 			/**
 			 * The full request URL without the query string.
 			 * @var string
@@ -64,6 +69,11 @@ class zajLib {
 			 * @var string
 			 **/
 			public $fullrequest;
+			/**
+			 * The request path with trailing slash but without base url and without query string.
+			 * @var string
+			 **/
+			public $requestpath;
 			/**
 			 * The host of the current request. This is automatically determined, though keep in mind the end user can modify this!
 			 * @var string
@@ -246,8 +256,9 @@ class zajLib {
 			else $this->host = $_SERVER['HTTP_HOST'];
 		// base url detection
 			$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($this->host).addslashes($_SERVER['REQUEST_URI'])).'/');
-			$this->subfolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
-			$this->baseurl = "//".$this->host.$this->subfolder.'/';		// if my OFW_BASEURL is explicitly set
+			$this->basefolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
+			if($this->basefolder) $this->basefolder .= '/';
+			$this->baseurl = "//".$this->host.$this->basefolder;		// if my OFW_BASEURL is explicitly set
 		// Now override base url if needed
 			if(!empty($_SERVER['OFW_BASEURL'])){
 				// Parse my baseurl
@@ -266,10 +277,10 @@ class zajLib {
 				// Originals
 					$original_fullurl = $this->fullurl;
 					$original_baseurl = $this->baseurl;
-				// Set host, base url, subfolder
+				// Set host, base url, basefolder
 					$this->host = $parsed_baseurl['host'];
-					$this->subfolder = $parsed_baseurl['path'];
-					$this->baseurl = '//'.trim($this->host.$this->subfolder, '/').'/';
+					$this->basefolder = $parsed_baseurl['path'];
+					$this->baseurl = '//'.trim($this->host.$this->basefolder, '/').'/';
 					$this->fullurl = $this->baseurl.str_ireplace($original_baseurl, '', $original_fullurl);
 			}
 		// full request detection (includes query string)
@@ -288,6 +299,7 @@ class zajLib {
 		// fix my app and mode to always have a single trailing slash
 			$this->app = trim($this->app, '/').'/';
 			$this->mode = trim($this->mode, '/').'/';
+			$this->requestpath =  rtrim($this->app.$this->mode, '/').'/';
 		// autodetect my domain (todo: optimize this part with regexp!)
 			// if not an ip address
 			if(!preg_match('/^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/', $this->host)){
@@ -662,15 +674,19 @@ class zajLibLoader{
 	 * Load a library file.
 	 * @param string $name The name of the library to load.
 	 * @param array|bool $optional_parameters An array of optional parameters which are stored in {@link zajLibExtension->options}
+	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
 	 * @return zajLibExtension|bool Returns a zajlib object or false if fails.
 	 */
-	public function library($name, $optional_parameters=false){
+	public function library($name, $optional_parameters=false, $fail_with_error_message = true){
 		// is it loaded already?
 			if(isset($this->loaded['library'][$name])) return $this->loaded['library'][$name];
 		// try to load the file
 			$result = $this->file("library/$name.lib.php", false);			
 		// if library does not exist
-			if(!$result) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+			if(!$result){
+				if($fail_with_error_message) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+				else return false;
+			}
 			else{
 				// return the new lib object
 					$library_class = 'zajlib_'.$name;
@@ -686,15 +702,19 @@ class zajLibLoader{
 	 * @param string $name The name of the model to load.
 	 * @param array|boolean $optional_parameters This will be passed to the __load method (not yet implemented)
 	 * @todo Implement optional parameters.
+	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
 	 * @return boolean Will return true if successfully loaded, false if not.
 	 **/
-	public function model($name, $optional_parameters = false){
+	public function model($name, $optional_parameters = false, $fail_with_error_message = true){
 		// is it loaded already?
 			if(isset($this->loaded['model'][$name])) return true;
 		// now just load the file
 			$result = $this->file("model/".strtolower($name).".model.php", false);
 		// return result
-			if(!$result) return $this->zajlib->error("model or app controller object <strong>$name</strong> has not been properly defined or does not exist! is the class name correctly defined in the model/ctl file?");
+			if(!$result){
+				if($fail_with_error_message) return $this->zajlib->error("model or app controller object <strong>$name</strong> has not been properly defined or does not exist! is the class name correctly defined in the model/ctl file?");
+				else return false;
+			}
 			else{
 				// set it as loaded
 					$this->loaded['model'][$name] = true;			

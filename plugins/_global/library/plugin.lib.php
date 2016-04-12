@@ -80,6 +80,49 @@ class zajlib_plugin extends zajLibExtension {
 		// Check to see if plugin loaded
 			if(!$this->is_loaded($plugin)) return false;
 		// Unload plugin and return true
-			unset($this->zajlib->loaded_plugins[$plugin]);		
+			unset($this->zajlib->loaded_plugins[$plugin]);
+		return true;
 	}
+
+	/**
+	 * Send an error if plugin requirements not met.
+	 * @param string $plugin The name of the current plugin.
+	 * @param array $requires An array of other plugins that it requires.
+	 * @param boolean $fatal_error If set to true (default) it will stop execution with a fatal error.
+	 * @return boolean Returns true if all is ok, false if not.
+	 */
+	public function required($plugin, $requires, $fatal_error = true){
+		$result = true;
+		foreach($requires as $requirement){
+		    if(!$this->zajlib->plugin->is_enabled($requirement) || !$this->zajlib->plugin->is_loaded($requirement)){
+				$result = false;
+				$msg = "The <strong>$plugin</strong> plugin requires the <strong>$requirement</strong> plugin. You also must load $requirement first, and then $plugin in site/index.php. Since this happens in reverse order, use: ['$plugin', '$requirement']";
+				if($fatal_error) return $this->zajlib->error($msg, true);
+				else $this->zajlib->warning($msg);
+		    }
+		}
+		return $result;
+	}
+
+	/**
+	 * Send an error if the plugin is enabled, but is not loaded before me.
+	 * @param string $plugin The name of the current plugin.
+	 * @param array $optionals An array of other plugins that are optional, but if enabled must be loaded before me.
+	 * @param boolean $fatal_error If set to true (default) it will stop execution with a fatal error.
+	 * @return boolean Returns true if all is ok.
+	 */
+	public function optional($plugin, $optionals, $fatal_error = true){
+		$result = true;
+		foreach($optionals as $optional){
+		    if($this->zajlib->plugin->is_enabled($optional) && !$this->zajlib->plugin->is_loaded($optional)){
+				$result = false;
+				$msg = "When you include both the <strong>$plugin</strong> and <strong>$optional</strong> plugins, you must load $optional first, and then $plugin in site/index.php. Since this happens in reverse order, use: ['$plugin', '$optional']";
+				if($fatal_error) return $this->zajlib->error($msg, true);
+				else $this->zajlib->warning($msg);
+		    }
+		}
+		return $result;
+	}
+
+
 }

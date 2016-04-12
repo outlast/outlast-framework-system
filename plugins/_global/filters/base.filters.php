@@ -22,11 +22,8 @@ class zajlib_filter_base extends zajElementCollection{
 	 *  1. The amount to add to the variable.
 	 **/
 	public function filter_add($parameter, &$source){
-		// validate parameter
-			$parameter = (trim($parameter,"'\""));
-			if(substr($parameter, 0, 1) != '$' && !is_numeric($parameter)) return $source->warning('add filter parameter not a variable or an integer!');
 		// write to file
-			$this->zajlib->compile->write('$filter_var=$filter_var+'.$parameter.';');
+			$this->zajlib->compile->write('if(is_numeric($filter_var) && is_numeric('.$parameter.')) $filter_var=$filter_var+'.$parameter.'; else $filter_var=$filter_var.'.$parameter.';');
 		return true;
 	}
 	/**
@@ -157,49 +154,9 @@ class zajlib_filter_base extends zajElementCollection{
 	 *  htmlspecialchars, html (default): convert &, ', ", <, and > to their HTML equivalents
 	 **/
 	public function filter_escape($parameter, &$source){
-		// TODO: fix javascript to be based on django docs
 		if(empty($parameter)) $parameter = 'html';
-		
-			$contents = <<<EOF
-switch($parameter){
-	case 'htmlentities':
-	case 'htmlall': \$filter_var = htmlentities(\$filter_var, ENT_QUOTES, 'UTF-8', false);
-					break;
-	case 'decode':	\$filter_var = html_entity_decode(\$filter_var);
-					break;
-	case 'url':		\$filter_var = urlencode(\$filter_var);
-					break;
-	case 'quotes': 
-	case 'javascript':
-	case 'js':
-					\$filter_var = str_replace('"','\"',\$filter_var);
-					\$filter_var = str_replace("'","\\'",\$filter_var);
-					\$filter_var = str_replace("\\n"," ",\$filter_var);
-					\$filter_var = str_replace("\\r","",\$filter_var);
-					break;
-					
-	case 'mail': 	\$filter_var = str_replace('@',' [at] ',\$filter_var);
-				 	\$filter_var = str_replace('.',' [dot] ',\$filter_var);
-					break;
-
-	case 'htmlquotes': 	\$filter_var = str_replace('"','&quot;',\$filter_var);
-				 		\$filter_var = str_replace("'",'&#039;',\$filter_var);
-					break;
-
-
-	case 'urlpathinfo': 
-	case 'hex': 
-	case 'hexentity':
-					\$filter_var = 'This filter not yet supported.';
-					break;
-	case 'htmlspecialchars':
-	case 'html':
-	default: 		\$filter_var = htmlspecialchars(\$filter_var, ENT_QUOTES, 'UTF-8');
-					break;
-}
-EOF;
-		// write to file
-			$this->zajlib->compile->write($contents);	
+		$contents = "zajLib::me()->text->escape(\$filter_var, $parameter);";
+		$this->zajlib->compile->write($contents);
 		return true;
 	}
 

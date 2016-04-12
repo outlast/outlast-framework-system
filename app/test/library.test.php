@@ -353,7 +353,7 @@ class OfwLibraryTest extends zajTest {
 				$r = $this->zajlib->url->valid('chat://asdf/asdf/example.php');
 				zajTestAssert::isFalse($r);
 				$r = $this->zajlib->url->valid('//localhost/asdf/example.php');
-				zajTestAssert::isFalse($r);
+				zajTestAssert::isTrue($r);
 	}
 
 

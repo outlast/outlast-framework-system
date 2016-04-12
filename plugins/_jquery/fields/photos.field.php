@@ -61,7 +61,7 @@ class zajfield_photos extends zajField {
 		// if data is a photo object
 			if(is_object($data) && is_a($data, 'Photo')){
 				// check to see if already has parent (disable hijacking of photos)
-					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
+					if($data->data->parent && $object->id != $data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
 				// now set parent
 					$data->set('parent', $object->id);
 					$data->set('field', $this->name);
@@ -101,7 +101,7 @@ class zajfield_photos extends zajField {
 						}
 					}
 				// reorder
-					if(!empty($data->order)) Photo::reorder($data->order, true);
+					if(!empty($data->order)) Photo::reorder($data->order);
 			}
 
 		return array(false, false);

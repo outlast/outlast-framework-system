@@ -62,6 +62,7 @@ class zajlib_compile extends zajLibExtension{
 	
 	/**
 	 * This will start the compiling session and recursively continue the process until it is finished with all related files.
+	 * @return boolean Will return false, but that does not mean it was a failure! Failures are either fatal or displayed inline.
 	 **/
 	private function go(){
 		// get the latest session
@@ -74,6 +75,7 @@ class zajlib_compile extends zajLibExtension{
 			array_pop($this->sessions);
 		// do i still have any compiling to do?
 			if(count($this->sessions) > 0) return $this->go();
+		return false;
 	}
 
 

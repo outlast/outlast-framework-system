@@ -274,6 +274,7 @@ class zajCompileSession {
  * @subpackage CompilingBackend
  */
 class zajCompileSource {
+	/** @var zajLib */
 	public $zajlib;				// object - pointer to global zajlib object
 
 	// instance variables
@@ -304,9 +305,9 @@ class zajCompileSource {
 		// set zajlib & debug stats
 			$this->zajlib =& $zajlib;
 		// jail the user
-			if(strpos($source_file, '..') !== false) $this->zajlib->error("invalid source path ($source_file) found during compilation!");
+			if(strpos($source_file, '..') !== false) zajLib::me()->error("invalid source path ($source_file) found during compilation!");
 		// does it exist?
-			if(!$path = $this->file_exists($source_file)) return $this->zajlib->error("template file $source_file could not be found.");
+			if(!$path = $this->file_exists($source_file)) return zajLib::me()->error("template file $source_file could not be found.");
 		// open file
 			$this->requested_path = $source_file;
 			$this->file_path = $path;
@@ -806,8 +807,8 @@ class zajCompileElement{
 							}
 							else{
 								// This is an operator! So now let's make sure this is an if tag
-								if($this->parent->get_current_tag() != 'if' && $this->parent->get_current_tag() != 'elseif'){
-									$this->parent->warning("operator $variable is only supported for 'if' tags!");
+								if($this->parent->get_current_tag() != 'if' && $this->parent->get_current_tag() != 'elseif' && $this->parent->get_current_tag() != 'with'){
+									$this->parent->warning("operator $variable is only supported for 'if' and 'with' tags!");
 									return '$empty';
 								}
 								else $new_var = $element;

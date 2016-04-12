@@ -1,0 +1,23 @@
+<input class='ofw-field-friendly form-control' type='text' id='{{field.id}}' name='{{field.name}}' value='{{field.value|escape}}'>
+{% if not field.value %}
+<script>
+	ofw.ready(function(){
+		$('[name="{{field.options.from|escape}}"]').on('change keyup', function(){
+			// Get value
+				var val = $(this).val();
+			// For selects, it's a bit more complicated - use selected item!
+				if(this.tagName.toLowerCase() == 'select') val = $(this).find('option:selected').text();
+
+			// Now convert the value
+				// @todo add logic for international character conversion here!
+				var friendlyVal = val
+					.toLowerCase()
+					.replace(/ /g, '-')
+					.replace(/[^\w-]+/g, '');
+
+			// Finally, set my value
+				$('[name="{{field.name|escape}}"]').val(friendlyVal);
+		});
+	});
+</script>
+{% endif %}
