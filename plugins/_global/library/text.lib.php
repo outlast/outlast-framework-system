@@ -189,4 +189,17 @@ class zajlib_text extends zajLibExtension {
 		return $ret;
 	}
 
+	/**
+	 *
+	 * Convert string into space case formatted string
+	 *
+	 * @param string $input Input string
+	 * @return string space case formatted string
+	 */
+	function convert_to_space_case($input) {
+		preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
+		$ret = str_replace("_", "", implode(" ", $matches[0]));
+		return $ret;
+	}
+
 }
