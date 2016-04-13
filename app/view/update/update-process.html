@@ -50,7 +50,7 @@
 	<br>
 	<div class='well updatelog'>
 		<big>update log (<div class='inline' id='updatenumofchanges'>--</div> automatic changes, <div class='inline' id='updatenumofmanualchanges'>--</div> manual changes waiting) | <a onclick='showLog();'>show changes</a> |</big><br>
-		<iframe class='hidden' src="{{baseurl}}update/{% if updateframeurl %}{{updateframeurl}}&{% elseif %}?{% endif %}{% if ofw.get.update_user %}update_user={{ofw.get.update_user|escape}}&update_password={{ofw.get.update_password|escape}}{% endif %}" scrolling="auto" frameborder="0" width="100%" height="250" id="updateframe"></iframe>
+		<iframe class='hidden' src="{{baseurl}}update/{% if updateframeurl %}{{updateframeurl}}&{% elseif %}?{% endif %}now={{ofw.now}}&{% if ofw.get.update_user %}update_user={{ofw.get.update_user|escape}}&update_password={{ofw.get.update_password|escape}}{% endif %}" scrolling="auto" frameborder="0" width="100%" height="250" id="updateframe"></iframe>
 	</div>
 
 	{% if not zaj.get.liverun %}
