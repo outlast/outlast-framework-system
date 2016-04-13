@@ -812,7 +812,7 @@ EOF;
 	 **/
 	public function tag_with($param_array, &$source){
 		// Support old {% with business.employees.count as total %} syntax.
-		if($param_array[2]->variable == 'as'){
+		if($param_array[1]->vartext == 'as'){
 			// add level
 				$temporary_variable = '$before_with_'.uniqid();
 				$source->add_level('with', array([$param_array[2]->variable], [$temporary_variable]));
