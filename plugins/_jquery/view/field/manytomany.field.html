@@ -2,6 +2,10 @@
 {% lang 'system/fields' 'relationships' %}
 <script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
 <link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
+
+<!-- Additional hidden input so that empty value is sent when nothing is selected -->
+<input type="hidden" name="{{field.name}}[]">
+
 <!-- Display markup -->
 <select width="100%" data-placeholder="{{#system_field_relationships_search#|escape}}" id="{{field.uid}}" name="{{field.name}}[]" multiple>
 	{% if field.choices.total <= 50 %}
