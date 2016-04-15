@@ -12,7 +12,8 @@
 <input type="hidden" name="{{field.name}}[]">
 
 <!-- Display markup -->
-<select class="ofw-field-manytomany form-control" data-placeholder="{{#system_field_relationships_search#|escape}}" id="{{field.uid}}" name="{{field.name}}[]" multiple>
+<img id="{{field.uid}}-loader" src='{{baseurl}}system/img/assets/ajax-loader.gif'>
+<select class="ofw-field-manytomany form-control hide" data-placeholder="{{#system_field_relationships_search#|escape}}" id="{{field.uid}}" name="{{field.name}}[]" multiple>
 	{% if field.choices.total <= 50 %}
 		<option value="" disabled>{{#system_field_relationships_search#|escape}}</option>
 		{% foreach field.choices as choice %}
@@ -28,6 +29,10 @@
 </select>
 <script>
 	ofw.ready(function(){
+		// Show it
+		$('#{{field.uid}}').removeClass('hide');
+		$('#{{field.uid}}-loader').addClass('hide');
+
 		// Set selected items
 		{% if field.value %}
 			{% foreach field.value as sitem %}
