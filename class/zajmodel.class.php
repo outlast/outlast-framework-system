@@ -626,6 +626,18 @@ abstract class zajModel implements JsonSerializable {
 	}
 
 	/**
+	 * Checks if the passed object is a type of me.
+	 * @param mixed $object Checks if the passed variable is instance of me.
+	 * @return boolean True if yes, false if not.
+	 */
+	public static function is_instance_of_me($object){
+		// Get my class name
+		$class_name = get_called_class();
+		return is_a($object, $class_name);
+	}
+
+
+	/**
 	 * This method looks for methods in extends children and creates "virtual" menthods to events and actions.
 	 *
 	 * @ignore
