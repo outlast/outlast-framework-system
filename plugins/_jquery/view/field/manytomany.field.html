@@ -1,13 +1,18 @@
 <!-- Load up my requirements -->
 {% lang 'system/fields' 'relationships' %}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>
+<!--
 <script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
 <link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
+-->
 
 <!-- Additional hidden input so that empty value is sent when nothing is selected -->
 <input type="hidden" name="{{field.name}}[]">
 
 <!-- Display markup -->
-<select width="100%" data-placeholder="{{#system_field_relationships_search#|escape}}" id="{{field.uid}}" name="{{field.name}}[]" multiple>
+<select class="ofw-field-manytomany form-control" data-placeholder="{{#system_field_relationships_search#|escape}}" id="{{field.uid}}" name="{{field.name}}[]" multiple>
 	{% if field.choices.total <= 50 %}
 		<option value="" disabled>{{#system_field_relationships_search#|escape}}</option>
 		{% foreach field.choices as choice %}
@@ -22,12 +27,62 @@
 	{% endif %}
 </select>
 <script>
-	zaj.ready(function(){
-        {% if field.value %}
-            {% foreach field.value as sitem %}
+	ofw.ready(function(){
+		// Set selected items
+		{% if field.value %}
+			{% foreach field.value as sitem %}
                 $('#{{field.uid}} option[value="{{sitem.id}}"]').attr('selected', 'selected');
             {% endfor %}
         {% endif %}
+
+		// Init with select 2
+		{% if field.choices.total <= 50 %}
+			$('#{{field.uid}}').select2();
+		{% elseif %}
+			$('#{{field.uid}}').select2({
+				 ajax: {
+					url: ofw.baseurl+"system/search/relation/",
+					dataType: 'json',
+					delay: 250,
+					data: function (params) {
+					  return {
+						'query': params.term, // search term
+						//'page': params.page,
+						'class': '{{field.class_name}}',
+						'field': '{{field.name}}'
+					  };
+					},
+					processResults: function (data, params) {
+					  // parse the results into the format expected by Select2
+					  // since we are using custom formatting functions we do not need to
+					  // alter the remote JSON data, except to indicate that infinite
+					  // scrolling can be used
+					  //params.page = params.page || 1;
+					  return {
+						results: data.data
+						/**pagination: {
+						// @todo fix pagination!
+						  more: (params.page * 30) < data.data.length
+						}**/
+					  };
+					},
+					cache: true
+				  },
+				  minimumInputLength: 1,
+				  templateResult: function(node){
+				  	if(node.name) return node.name;
+				  	if(node.text) return node.text;
+
+				  },
+				  templateSelection: function(node){
+				  	if(node.name) return node.name;
+				  	if(node.text) return node.text;
+				  }
+			});
+
+		{% endif %}
+
+		/**
 		$('#{{field.uid}}').chosen({width: '100%', inherit_select_classes: true, no_results_text: '{{#system_field_relationships_search#|escapejs}}'});
 
 		{% if field.choices.total > 50 %}
@@ -43,10 +98,13 @@
 						$select.append('<option value="'+rdata.data[i].id+'">'+rdata.data[i].name+'</option>');
 					}
 				// Update chosen
+					$select.trigger('chosen:close');
 					$select.trigger('chosen:updated');
+					$select.trigger('chosen:open');
 					$('#{{field.uid}}').data('chosen').search_field.val(rdata.query);
 					$select.data('chosen').search_field.trigger('keyup.chosen');
 			}, {pushstate_url: false, allow_empty_query: false});
 		{% endif %}
+		**/
 	});
 </script>
