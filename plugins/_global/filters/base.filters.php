@@ -154,8 +154,8 @@ class zajlib_filter_base extends zajElementCollection{
 	 *  htmlspecialchars, html (default): convert &, ', ", <, and > to their HTML equivalents
 	 **/
 	public function filter_escape($parameter, &$source){
-		if(empty($parameter)) $parameter = 'html';
-		$contents = "zajLib::me()->text->escape(\$filter_var, $parameter);";
+		if(empty($parameter)) $parameter = "'html'";
+		$contents = "\$filter_var = zajLib::me()->text->escape(\$filter_var, $parameter);";
 		$this->zajlib->compile->write($contents);
 		return true;
 	}
@@ -167,7 +167,7 @@ class zajlib_filter_base extends zajElementCollection{
 	 **/
 	public function filter_escapejs($parameter, &$source){
 		// write to file
-			$this->filter_escape('javascript', $source);
+			$this->filter_escape("'javascript'", $source);
 		return true;
 	}
 
@@ -245,7 +245,7 @@ class zajlib_filter_base extends zajElementCollection{
 	 **/
 	public function filter_iriencode($parameter, &$source){
 		// write to file
-			$this->filter_escape('url', $source);
+			$this->filter_escape("'url'", $source);
 		return true;
 	}
 
