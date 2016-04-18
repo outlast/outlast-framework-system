@@ -258,7 +258,7 @@ class zajLib {
 			$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($this->host).addslashes($_SERVER['REQUEST_URI'])).'/');
 			$this->basefolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
 			if($this->basefolder) $this->basefolder .= '/';
-			$this->baseurl = "//".$this->host.$this->basefolder;		// if my OFW_BASEURL is explicitly set
+			$this->baseurl = '//'.trim($this->host.$this->basefolder, '/').'/';
 		// Now override base url if needed
 			if(!empty($_SERVER['OFW_BASEURL'])){
 				// Parse my baseurl
