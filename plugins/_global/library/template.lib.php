@@ -109,6 +109,8 @@ class zajlib_template extends zajLibExtension {
 	 * @return string|boolean If requested by the $return_contents parameter, it returns the entire generated contents.
 	 **/
 	public function show($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
+		// override source path if device mode @todo make this more efficient so it does not search files each time!
+			$source_path = $this->get_device_source_path($source_path);
 		// do i need to show by block (if pushState request detected)
 			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
 		// prepare
@@ -130,6 +132,8 @@ class zajlib_template extends zajLibExtension {
 	 * @return bool|string Returns the contents if requested or false if failure.
 	 */
 	public function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
+		// override source path if device mode @todo make this more efficient so it does not search files each time!
+			$source_path = $this->get_device_source_path($source_path);
 		// do i need to show by block (if pushState request detected)
 			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
 		// first do a show to compile (if needed)
@@ -151,6 +155,33 @@ class zajlib_template extends zajLibExtension {
 				}
 		// now display or return
 			return $this->display($include_file, $return_contents);
+	}
+
+	/**
+	 * Modify the template source path of any .html files if we are in a device mode (if set_device_mode() was called previously).
+	 * @param string $source_path The source path to check for.
+	 * @return string Return a new source path for the current device if available or the same if not.
+	 */
+	private function get_device_source_path($source_path){
+		// Get the device
+		$device_mode = $this->zajlib->browser->get_device_mode();
+
+		// If the device mode is false or it is the default, just return the unmodified source path
+		if($device_mode === false || $this->zajlib->browser->is_device_mode_default()) return $source_path;
+
+		// It's not the default, so let's check to see if
+		$device_source_path = str_ireplace('.html', '.'.$device_mode.'.html', $source_path);
+		if($this->exists($device_source_path)) return $device_source_path;
+		else return $source_path;
+	}
+
+	/**
+	 * Returns true if a template file exists anywhere in the available paths based on the source path. Same as $this->zajlib->compile->source_exists().
+	 * @param string $source_path The source path to check for.
+	 * @return boolean Returns true if found, false if not.
+	 */
+	public function exists($source_path){
+		return $this->zajlib->compile->source_exists($source_path);
 	}
 
 	/**
