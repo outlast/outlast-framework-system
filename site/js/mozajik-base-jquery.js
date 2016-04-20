@@ -1534,6 +1534,13 @@
 				case 'scroll-dir-change-down':
 					condition = (null !== element.lastY && element.direction != -1 && element.lastY > element.source_elm.scrollTop());
 					break;
+				case 'scroll-reached-top':
+					condition = (null !== element.lastY && element.direction != 1 && element.source_elm.scrollTop() == 0);
+					break;
+				case 'scroll-reached-bottom':
+					condition = (null !== element.lastY && element.direction != -1 && element.source_elm.scrollTop() + element.scroll_container.height() == element.scroll_content.height());
+					break;
+
 			}
 
 			if (element.lastY < element.source_elm.scrollTop()) {
@@ -1622,6 +1629,8 @@
 			if (element.event.indexOf('scroll') > -1) {
 				element.lastY = null;
 				element.direction = null;
+				element.scroll_content = (element.source_selector == 'window' || element.source_selector == 'document')?$(document):element.source_elm;
+				element.scroll_container = (element.source_selector == 'window' || element.source_selector == 'document')?$(window):element.source_elm.parent();
 
 				zaj.scroll_elements.push(element);
 
