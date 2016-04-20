@@ -118,7 +118,7 @@ class zajlib_browser extends zajLibExtension {
 			$this->device_mode = $_GET['ofw_set_device_mode'];
 		}
 		// 2. Do we have a cookie?
-		elseif(!empty($this->zajlib->cookie->get('ofw_device_mode'))){
+		elseif($this->zajlib->cookie->get('ofw_device_mode')){
 			$this->device_mode = $this->zajlib->cookie->get('ofw_device_mode');
 		}
 		// 3. No setting yet, check browser capabilities...
