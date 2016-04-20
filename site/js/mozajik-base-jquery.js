@@ -1568,29 +1568,47 @@
 				element = zaj.scroll_elements[element];
 			}
 
-			element.dest_elm.each(function() {
+			var $this,
+				attr,
+				new_value,
+				values,
+				value,
+				current_values,
+				current_idx;
 
-				var $this = (element.dest_selector === null)?_this:$(this);
+			values = element.value.split(",");
 
-				var attr = $this.attr(element.attribute), new_value, current_values, current_idx;
+			for (var idx in values) {
 
-				if (undefined !== attr) {
-					current_values = attr.split(" ");
-					current_idx = current_values.indexOf(element.value);
-				} else {
-					current_values = null;
-					current_idx = -1;
-				}
+				value = values[idx].trim();
 
-				if (element.type != 'remove' && current_idx < 0) {
-					new_value = ((attr !== undefined && attr.length > 0)?attr+' ':'') + element.value;
-					$this.attr(element.attribute, new_value);
-				}
-				else if (element.type != 'add' && current_idx > -1) {
-					current_values.splice(current_idx, 1);
-					$this.attr(element.attribute, current_values.join(" "));
-				}
-			});
+				element.dest_elm.each(function() {
+
+					$this = (element.dest_selector === null)?_this:$(this);
+
+					attr = $this.attr(element.attribute);
+
+					if (undefined !== attr) {
+						current_values = attr.split(" ");
+						current_idx = current_values.indexOf(value);
+					} else {
+						current_values = null;
+						current_idx = -1;
+					}
+
+					if (element.type != 'remove' && current_idx < 0) {
+						// console.log('Nincs neki ' + value + ', csak ' + current_values.join(" "));
+						new_value = ((attr !== undefined && attr.length > 0) ? attr + ' ' : '') + value;
+						$this.attr(element.attribute, new_value);
+					}
+					else if (element.type != 'add' && current_idx > -1) {
+						// console.log('Van neki ' + value + ', elvesszük');
+						current_values.splice(current_idx, 1);
+						$this.attr(element.attribute, current_values.join(" "));
+					}
+
+				});
+			}
 		}
 
 		actions.each(function(){
