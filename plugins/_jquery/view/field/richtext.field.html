@@ -1,3 +1,5 @@
+{% lang 'system/fields' 'richtext' %}
+
 <!-- load up medium editor -->
 <script src="{{baseurl}}system/js/medium-editor/medium-editor.js"></script>
 <link rel="stylesheet" href="{{baseurl}}system/css/medium-editor/medium-editor.css">
@@ -9,9 +11,13 @@
 	if(typeof mediumEditors == 'undefined') mediumEditors = {};
 	mediumEditors['{{field.uid}}'] = new MediumEditor('#medium-editor-{{field.uid}}', {
 		toolbar: {
-			buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'removeFormat']
-		}
-	});
+			buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'quote', 'removeFormat']
+		},
+		placeholder: {
+	        text: '{{#system_field_richtext_placeholder#}}',
+    	    hideOnClick: true
+    	}
+   	});
 	mediumEditors['{{field.uid}}'].subscribe('editableInput', function(){
 		$('#textarea-{{field.uid}}').html($('#medium-editor-{{field.uid}}').html());
 	});
