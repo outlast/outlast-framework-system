@@ -166,6 +166,19 @@ class zajlib_template extends zajLibExtension {
 		// Get the device
 		$device_mode = $this->zajlib->browser->get_device_mode();
 
+		// Do we have the device explicitly set?
+		if(strstr($source_path, '?') !== false){
+			// Parse out ?device=something
+			$elements = explode('?', $source_path);
+			parse_str($elements[1], $query_string);
+
+			// Set device mode
+			if(!empty($query_string['device_mode'])){
+				$device_mode = $query_string['device_mode'];
+				$source_path = $elements[0];
+			}
+		}
+
 		// If the device mode is false or it is the default, just return the unmodified source path
 		if($device_mode === false || $this->zajlib->browser->is_device_mode_default()) return $source_path;
 
