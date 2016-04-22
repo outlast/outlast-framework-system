@@ -311,6 +311,11 @@ class OfwLibraryTest extends zajTest {
 		$res = $this->zajlib->text->add($s1, $s2);
 		zajTestAssert::areIdentical('This is a 3', $res);
 
+		// Test escaping
+		$s1 = 'This is a string with \'quotes"';
+		$res = $this->zajlib->text->escape($s1, 'javascript');
+		zajTestAssert::areIdentical('This is a string with \\\'quotes\"', $res);
+
 		// Just load it up and do nothing
 		$this->zajlib->text;
 	}
