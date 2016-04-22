@@ -353,6 +353,7 @@ class zajlib_template_zajvariables {
 			// Mobile and tablet detection (uses server-side detection)
 				case 'mobile': return $this->zajlib->mobile->is_mobile();
 				case 'tablet': return $this->zajlib->mobile->is_tablet();
+				case 'device_mode': return $this->zajlib->browser->get_device_mode();
 			// Access to list of variables and config variables
 				case 'variable': return $this->zajlib->variable;
 				case 'config': return $this->zajlib->config->variable;
