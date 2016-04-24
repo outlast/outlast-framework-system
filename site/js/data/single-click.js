@@ -1,5 +1,7 @@
 /**
- * Define my text manipulation library.
+ * Define this data attribute.
+ * @attr data-single-click Defines any javascript that is to be executed once even if the user double clicks.
+ * @attr data-single-click-delay Defines the number of ms before the user can click again. Defaults to 1500. (optional)
  **/
 define(["../ofw-jquery"], function() {
 
