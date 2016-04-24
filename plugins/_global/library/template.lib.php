@@ -398,13 +398,13 @@ class zajlib_template_zajvariables {
 		// Define ready and jquery is ready
 		var ofw = {
 			ready: function(func){
-				ofw.ready_functions.push(func);
+				ofw.readyFunctions.push(func);
 			},
 			log: function(m){ console.log(m) },
-			ready_functions: [],
-			jquery_is_ready: false	
+			readyFunctions: [],
+			jqueryIsReady: false	
 		};
-		$(document).ready(function(){ ofw.jquery_is_ready = true; });
+		$(document).ready(function(){ ofw.jqueryIsReady = true; });
 		var zaj = ofw;
 		
 		// Now require and create
@@ -417,11 +417,11 @@ class zajlib_template_zajvariables {
 				mode: '{$mode}',
 				debug_mode: $debug_mode,
 				protocol: '{$protocol}',
-				trackevents_local: $trackevents_local,
-				trackevents_analytics: $trackevents_analytics,
+				trackeventsLocal: $trackevents_local,
+				trackeventsAnalytics: $trackevents_analytics,
 				locale: '$locale',
-				ready_functions: ofw.ready_functions,
-				jquery_is_ready: ofw.jquery_is_ready	
+				readyFunctions: ofw.readyFunctions,
+				jqueryIsReady: ofw.jqueryIsReady	
 			});
 			zaj = ofw;
         });

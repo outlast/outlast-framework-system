@@ -55,9 +55,11 @@ var OutlastFrameworkSystem = function(options){
         // Merge default options
         myOptions = $.extend(true, {}, defaultOptions, options);
 
+		// Make sure that jquery is ready is true if it is ready
+		$(document).ready(function(){ myOptions.jqueryIsReady = true; });
+
 		// Call other init functions
 		initJqueryFunctions();
-		initReadyFunctions();
 		publishPublicProperties();
 
 		// Backwards compatiblity
@@ -68,16 +70,20 @@ var OutlastFrameworkSystem = function(options){
 		setCalculatedProperties();
 		if(!myOptions.jqueryIsReady) $(document).ready(setCalculatedProperties);
 
-		// Set up my data attributes
+		// Set up my data attributes and run activate (it has to be delayed so that init() is finished and I exist)
 		dataAttributes = myOptions.dataAttributes;
-		if(!myOptions.jqueryIsReady) $(document).ready(function(){ activateDataAttributeHandlers(); });
-		else activateDataAttributeHandlers();
+		if(!myOptions.jqueryIsReady) $(document).ready(function(){ setTimeout(activateDataAttributeHandlers, 10); });
+		else setTimeout(activateDataAttributeHandlers, 10);
+		// @todo If we do a proper define() method for OutlastFrameworkSystem then we can probably get rid of the delay
+
+		// Now run ready functions
+		setTimeout(runReadyFunctions, 10);
     };
 
 	/**
 	 * Call ready functions in case jquery is alredy ready. If
 	 */
-	var initReadyFunctions = function(){
+	var runReadyFunctions = function(){
 		var i;
 		// If jquery is already ready, then fire away!
 		if(myOptions.jqueryIsReady){
@@ -90,8 +96,6 @@ var OutlastFrameworkSystem = function(options){
 			for(i = 0; i < myOptions.readyFunctions.length; i++){
 				$(document).ready(myOptions.readyFunctions[i]);
 			}
-			// Also make sure to set ready to true
-			$(document).ready(function(){ myOptions.jqueryIsReady = true; });
 		}
 	};
 
