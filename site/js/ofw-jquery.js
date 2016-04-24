@@ -14,13 +14,14 @@ var OutlastFrameworkSystem = function(options){
 		protocol: 'http',
 		jslib: 'jquery',
 		jslibver: 1.10,
-		trackevents_analytics: true,
-		trackevents_local: false,
+		trackeventsAnalytics: true,
+		trackeventsLocal: false,
 		fields: {},
 		lang: {},
 		config: {},
-        ready_functions: [],
-        jquery_is_ready: false
+        readyFunctions: [],
+        dataAttributes: ['single-click', 'autopagination', 'action-value'],
+        jqueryIsReady: false
     };
     var myOptions = {};
 
@@ -35,13 +36,15 @@ var OutlastFrameworkSystem = function(options){
     	'protocol',
     	'jslib',
     	'jslibver',
-    	'trackevents_analytics',
-    	'trackevents_local',
+    	'trackeventsAnalytics',
+    	'trackeventsLocal',
     	'fields',
     	'lang',
     	'config'
     ];
-	var ajaxIsSubmitting = false;
+	var ajaxIsSubmitting = false;			// True if ajax is currently submitting
+	var dataAttributes = [];				// The registered data attributes to look for
+	var dataAttributesObjects = {};			// A key/value pair where key is attr name and value is the loaded data attribute object
 
     /** Private API **/
 
@@ -57,9 +60,18 @@ var OutlastFrameworkSystem = function(options){
 		initReadyFunctions();
 		publishPublicProperties();
 
+		// Backwards compatiblity
+		if(typeof options.trackevents_local != 'undefined') myOptions.trackeventsLocal = options.trackevents_local;
+		if(typeof options.trackevents_analytics != 'undefined') myOptions.trackeventsAnalytics = options.trackevents_analytics;
+
 		// Set calculated properties (and again when jquery is ready)
 		setCalculatedProperties();
-		if(!myOptions.jquery_is_ready) $(document).ready(setCalculatedProperties);
+		if(!myOptions.jqueryIsReady) $(document).ready(setCalculatedProperties);
+
+		// Set up my data attributes
+		dataAttributes = myOptions.dataAttributes;
+		if(!myOptions.jqueryIsReady) $(document).ready(function(){ activateDataAttributeHandlers(); });
+		else activateDataAttributeHandlers();
     };
 
 	/**
@@ -68,18 +80,18 @@ var OutlastFrameworkSystem = function(options){
 	var initReadyFunctions = function(){
 		var i;
 		// If jquery is already ready, then fire away!
-		if(myOptions.jquery_is_ready){
-			for(i = 0; i < myOptions.ready_functions.length; i++){
-				myOptions.ready_functions[i]();
+		if(myOptions.jqueryIsReady){
+			for(i = 0; i < myOptions.readyFunctions.length; i++){
+				myOptions.readyFunctions[i]();
 			}
 		}
 		// Otherwise, add to jquery
 		else{
-			for(i = 0; i < myOptions.ready_functions.length; i++){
-				$(document).ready(myOptions.ready_functions[i]);
+			for(i = 0; i < myOptions.readyFunctions.length; i++){
+				$(document).ready(myOptions.readyFunctions[i]);
 			}
 			// Also make sure to set ready to true
-			$(document).ready(function(){ myOptions.jquery_is_ready = true; });
+			$(document).ready(function(){ myOptions.jqueryIsReady = true; });
 		}
 	};
 
@@ -98,7 +110,10 @@ var OutlastFrameworkSystem = function(options){
 				inviewport: function(partially){ return api.inviewport(target, partially); },
 				alert: function(msg){ api.alert(msg, target); },
 				sortable: function(receiver, callback, handle){
-					return api.sortable(target, receiver, callback, handle);
+					// Load up dependency
+					requirejs(["system/js/ui/sortable"], function(sortable) {
+						sortable.init(target, receiver, callback, handle);
+					});
 				},
 				search: function(url, receiver, options){
 					if(typeof receiver == 'function'){
@@ -254,7 +269,7 @@ var OutlastFrameworkSystem = function(options){
 						if(typeof result == "function") result(data, jsondata);
 						else if(typeof result == "object"){
 							$(result).html(data);
-							api.activateHandlers($(result));
+							activateDataAttributeHandlers($(result));
 						}
 						else{
 							var validationResult = api.ajax.validate(data);
@@ -297,9 +312,45 @@ var OutlastFrameworkSystem = function(options){
 		return request;
 	};
 
+	/**
+	 * Run through the context (defaults to body) and activate all registered data attribute handlers.
+	 * @param {jQuery} [$context=$(document)] The jQuery object in which the handlers are searched for.
+	 **/
+	var activateDataAttributeHandlers = function($context){
+		// Run through my data attributes
+		for(var i = 0; i < dataAttributes.length; i++){
+			activateSingleDataAttributeHandler(dataAttributes[i], $context);
+		}
+	};
+
+	/**
+	 * Run through the parent (defaults to body) and activate any registered data attribute handlers.
+	 * @param {string} handlerName The name of the handler which should be the data attribute to look for without data-. So for data-autopagination it is 'autopagination'.
+	 * @param {jQuery} [$context=$(document)] The jQuery object in which the handlers are searched for.
+	 **/
+	var activateSingleDataAttributeHandler = function(handlerName, $context){
+		// Default value of context
+		if(typeof $context == 'undefined') $context = $(document);
+
+		// Let's see if we find any in context
+		var $elements = $context.find('[data-'+handlerName+']');
+		if($elements.length > 0){
+			// Load and init
+			requirejs(["system/js/data/"+handlerName], function(handlerObject) {
+				// Set the handler object
+				dataAttributesObjects[handlerName] = handlerObject;
+
+				// Activate
+				handlerObject.activate($elements, $context);
+			});
+		}
+	};
+
+
     /** Public API **/
 
     var api = {
+
 		/**
 		 * Public properties @todo move these to libraries!
 		 */
@@ -319,7 +370,7 @@ var OutlastFrameworkSystem = function(options){
 		 * @param {function} func The callback function.
 		 **/
         ready: function(func){
-			if(myOptions.jquery_is_ready) func();
+			if(myOptions.jqueryIsReady) func();
 			else $(document).ready(func);
         },
 
@@ -617,6 +668,16 @@ var OutlastFrameworkSystem = function(options){
 	 		return encodeURIComponent(url);
 	 	},
 
+	 	/**
+		 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
+		 * @param {string} url The url to inspect and prepare for a query string.
+		 * @return {string} Returns a url with ? added if no query string or & added if it already has a query string.
+		 */
+		queryMode : function(url){
+			if(url.indexOf('?') > -1) return url+'&';
+			else return url+'?';
+		},
+
 		/**
 		 * Is email valid?
 		 * @param {string} email The email address to test.
@@ -635,16 +696,6 @@ var OutlastFrameworkSystem = function(options){
 		isUrlValid: function(url) {
 			var patt = /^((https?|ftp):)?\/\/[^\s\/$.?#].[\S ]*$/i;
 			return patt.test(url);
-		},
-
-		/**
-		 * Adds a ? or & to the end of the URL - whichever is needed before you add a query string.
-		 * @param {string} url The url to inspect and prepare for a query string.
-		 * @return {string} Returns a url with ? added if no query string or & added if it already has a query string.
-		 */
-		queryMode : function(url){
-			if(url.indexOf('?') > -1) return url+'&';
-			else return url+'?';
 		},
 
 		/**
@@ -688,12 +739,12 @@ var OutlastFrameworkSystem = function(options){
             // Log in api mode.
             if(myOptions.debug_mode) api.log("Event sent: "+category+", "+action+", "+label+", "+value);
 			// Track via Google Analytics (ga.js or analytics.js)
-				if(myOptions.trackevents_analytics){
+				if(myOptions.trackeventsAnalytics){
 					if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
 					if(typeof ga != 'undefined') ga('send', 'event', category, action, label, value);
 				}
 			// Track to local database
-				if(myOptions.trackevents_local){
+				if(myOptions.trackeventsLocal){
 					// Don't use api.ajax.get because that tracks events, so we'd get into loop
 					$.ajax(myOptions.baseurl+'system/track/?category='+api.urlEncode(category)+'&action='+api.urlEncode(action)+'&label='+api.urlEncode(label)+'&value='+api.urlEncode(value), {
 						dataType: 'html',
@@ -869,8 +920,31 @@ var OutlastFrameworkSystem = function(options){
 		},
 
 		/***** DATA ATTRIBUTE METHODS *****/
-		activateHandlers: function(){
 
+		/**
+		 * Trigger inprogress class on inprogress elements
+		 * @param {boolean} show Set to true or false to add or  remove inprogress class to/from the element.
+		 */
+		inProgress: function(show){
+			if (show){
+				$('[data-inprogress-class]').each(function() {
+					$(this).addClass($(this).data('inprogress-class'))
+				});
+			}
+			else{
+				$('[data-inprogress-class]').each(function() {
+					$(this).removeClass($(this).data('inprogress-class'))
+				});
+			}
+		},
+
+		/**
+		 * Add a data attribute handler. If the data attribute is found on the page, the associated helper js is loaded.
+		 * @param {string} handlerName The name of the handler which should be the data attribute to look for without data-. So for data-autopagination it is 'autopagination'.
+		 */
+		addDataAttributeHandler: function(handlerName){
+			dataAttributes.push(handlerName);
+			activateSingleDataAttributeHandler(handlerName);
 		},
 
 		/***** DEPRECATED METHODS ******/
@@ -879,9 +953,20 @@ var OutlastFrameworkSystem = function(options){
 		 * Go back in history.
 		 * @deprecated Just use history.back(), it is now reliable in all browsers!
 		 **/
-		back: function(){ history.back(); }
+		back: function(){ history.back(); },
 
-    };
+		/**
+		 * Sortable.
+		 * @deprecated Use data attributes or $().$ofw().sortable() instead.
+		 */
+		sortable: function(target, receiver, callback, handle){
+			// Load up dependency
+			requirejs(["system/js/ui/sortable"], function(sortable) {
+				sortable.init(target, receiver, callback, handle);
+			});
+		}
+
+	};
 
 	/** Define api aliases @todo add deprecation notices where necessary **/
 	api.request = ajaxRequest;

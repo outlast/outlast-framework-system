@@ -1,5 +1,6 @@
 /**
- * Define my search library.
+ * Define my search ui.
+ * @todo This is a quick, compatible repositioning of the script. Needs a review and partial rewrite!
  **/
 define(["../ofw-jquery"], function() {
 
