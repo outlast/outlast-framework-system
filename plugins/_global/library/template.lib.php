@@ -389,7 +389,45 @@ class zajlib_template_zajvariables {
 					$fullurl = htmlspecialchars($this->zajlib->fullurl);
 					$app = htmlspecialchars($this->zajlib->app);
 					$mode = htmlspecialchars($this->zajlib->mode);
-					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$baseurl}'; zaj.fullrequest = '{$protocol}:{$fullrequest}'; zaj.fullurl = '{$protocol}:{$fullurl}'; zaj.app = '{$app}'; zaj.mode = '{$mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; zaj.trackevents_local = $trackevents_local; zaj.trackevents_analytics = $trackevents_analytics; zaj.locale = '$locale'; var ofw = zaj; }</script>";
+					return <<<EOF
+<script type='text/javascript'>
+	require.config({
+    	baseUrl: "{$baseurl}"
+    });
+	if(typeof ofw == 'undefined' || ofw == null){
+		// Define ready and jquery is ready
+		var ofw = {
+			ready: function(func){
+				ofw.ready_functions.push(func);
+			},
+			log: function(m){ console.log(m) },
+			ready_functions: [],
+			jquery_is_ready: false	
+		};
+		$(document).ready(function(){ ofw.jquery_is_ready = true; });
+		var zaj = ofw;
+		
+		// Now require and create
+        requirejs(["system/js/ofw-jquery"], function(){
+			ofw = new OutlastFrameworkSystem({
+				baseurl: '{$protocol}:{$baseurl}',
+				fullrequest: '{$protocol}:{$fullrequest}',
+				fullurl: '{$protocol}:{$fullurl}',
+				app: '{$app}',
+				mode: '{$mode}',
+				debug_mode: $debug_mode,
+				protocol: '{$protocol}',
+				trackevents_local: $trackevents_local,
+				trackevents_analytics: $trackevents_analytics,
+				locale: '$locale',
+				ready_functions: ofw.ready_functions,
+				jquery_is_ready: ofw.jquery_is_ready	
+			});
+			zaj = ofw;
+        });
+    }		
+</script>";
+EOF;
 
 			// By default return nothing.
 				default: return '';
