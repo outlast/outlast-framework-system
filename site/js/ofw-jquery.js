@@ -96,8 +96,10 @@ var OutlastFrameworkSystem = function(options){
 				post: function(url, response){ return api.ajax.post(api.querymode(url)+target.serialize(), response); },
 				submit: function(url, response){ return api.ajax.submit(api.querymode(url)+target.serialize(), response); },
 				inviewport: function(partially){ return api.inviewport(target, partially); },
-				sortable: function(receiver, callback, handle){ return api.sortable(target, receiver, callback, handle); },
 				alert: function(msg){ api.alert(msg, target); },
+				sortable: function(receiver, callback, handle){
+					return api.sortable(target, receiver, callback, handle);
+				},
 				search: function(url, receiver, options){
 					if(typeof receiver == 'function'){
 						options = $.extend({ url: url, callback: receiver }, options);
@@ -107,9 +109,11 @@ var OutlastFrameworkSystem = function(options){
 							$(receiver).html(r);
 						} }, options);
 					}
-					// @todo this is just ugly, fix!
-					var s = jQuery.extend(true, {}, api.search);
-					//return s.initialize(target, options);
+
+					// Load up dependency
+					requirejs(["system/js/ui/search"], function(search) {
+						search.init(target, options);
+					});
 				}
 			};
 		};
