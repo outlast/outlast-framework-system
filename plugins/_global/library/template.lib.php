@@ -438,7 +438,7 @@ class zajlib_template_zajvariables {
 			return jQuery;
 		});        
     }
-</script>";
+</script>
 EOF;
 
 			// By default return nothing.
