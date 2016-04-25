@@ -8,7 +8,7 @@
 <script>
 	var mediumEditors;
 	if(typeof mediumEditors == 'undefined') mediumEditors = {};
-	requirejs(["system/js/medium-editor/ext/medium-editor.min"], function(MediumEditor){
+	requirejs(["system/js/ext/medium-editor/medium-editor.min"], function(MediumEditor){
 		mediumEditors['{{field.uid}}'] = new MediumEditor('#medium-editor-{{field.uid}}', {
 			toolbar: {
 				buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'quote', 'removeFormat']
