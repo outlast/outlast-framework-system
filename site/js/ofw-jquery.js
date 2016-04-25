@@ -1,7 +1,7 @@
 /**
  * The basic Outlast Framework javascript object.
  **/
-var OutlastFrameworkSystem = function(options){
+define('system/js/ofw-jquery', [], function() {
 
     /** Init options **/
     var defaultOptions = {
@@ -51,7 +51,7 @@ var OutlastFrameworkSystem = function(options){
     /**
      * Object init
      */
-    var init = function(){
+    var init = function(options){
         // Merge default options
         myOptions = $.extend(true, {}, defaultOptions, options);
 
@@ -368,6 +368,14 @@ var OutlastFrameworkSystem = function(options){
 		fbcanvas: null,
 
 		/***** INIT METHODS ******/
+
+		/**
+		 * Init with options.
+		 * @param {object} options
+		 */
+		init: function(options){
+			init(options);
+		},
 
 		/**
 		 * Layer for onready functions. If jquery is already ready, it is fired immediately.
@@ -983,13 +991,11 @@ var OutlastFrameworkSystem = function(options){
 	api.validate = api.ajax.validate;
 	api.inviewport = api.inViewport;
 
-    /** Perform initialization **/
-    init();
 
     // Return my external API
     return api;
 
-};
+});
 
 /**
  * Enable JS error logging to Analytics.

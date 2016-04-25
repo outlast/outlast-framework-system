@@ -395,11 +395,14 @@ class zajlib_template_zajvariables {
     	baseUrl: "{$baseurl}"
     });
 	if(typeof ofw == 'undefined' || ofw == null){
+		// Backwards compatibility for unready set langs
+		var ofwSetLang = [];
 		// Define ready and jquery is ready
 		var ofw = {
 			ready: function(func){
 				ofw.readyFunctions.push(func);
 			},
+			setLang: function(keyOrArray, value, section){ ofwSetLang.push([keyOrArray, value, section]); },
 			log: function(m){ console.log(m) },
 			readyFunctions: [],
 			jqueryIsReady: false	
@@ -408,8 +411,9 @@ class zajlib_template_zajvariables {
 		var zaj = ofw;
 		
 		// Now require and create
-        requirejs(["system/js/ofw-jquery"], function(){
-			ofw = new OutlastFrameworkSystem({
+        requirejs(["system/js/ofw-jquery"], function(ofw){
+        	console.log(ofw);
+        	ofw.init({
 				baseurl: '{$protocol}:{$baseurl}',
 				fullrequest: '{$protocol}:{$fullrequest}',
 				fullurl: '{$protocol}:{$fullurl}',
@@ -424,8 +428,11 @@ class zajlib_template_zajvariables {
 				jqueryIsReady: ofw.jqueryIsReady	
 			});
 			zaj = ofw;
+			
+			// Now call each ofw set lang
+			for(var i = 0; i < ofwSetLang.length; i++) ofw.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);
         });
-    }		
+    }
 </script>";
 EOF;
 

@@ -1,7 +1,7 @@
 /**
  * Define my text manipulation library.
  **/
-define(["../ofw-jquery"], function() {
+define('system/js/library/text', ["../ofw-jquery"], function() {
 
     /** Properties **/
     var x = 1;

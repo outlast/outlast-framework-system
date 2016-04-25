@@ -10,7 +10,7 @@
  * @attr data-action-interval-time Time of the function calling interval (in milliseconds). Used at custom scroll event checking (default: 100).
  * @attr data-action-extra-condition Function call which determines extra condition for the execution of the action (default: true)
  **/
-define(["../ofw-jquery"], function() {
+define('system/js/data/action-value', ["../ofw-jquery"], function() {
 
     /** Properties **/
 	var scrollInterval = null;

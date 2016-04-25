@@ -4,7 +4,7 @@
  * @attr data-autopagination-block You can override the default 'autopagination' block name by specifying this attribute.
  * @attr data-autopagination-button A selector for a button that will be used for loading more results. In this case additional results are not loaded on scroll.
  **/
-define(["../ofw-jquery"], function() {
+define('system/js/data/autopagination', ["../ofw-jquery"], function() {
 
     /** Private properties **/
 	var _objects = [];			// An array of autopagination objects on this page
