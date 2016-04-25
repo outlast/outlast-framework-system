@@ -6,13 +6,15 @@
 <script language="JavaScript" src="{{baseurl}}system/js/plupload/plupload.full.js" type="text/javascript"></script>
 
 <script>
-    zaj.addMyPhotoPopover_{{field.uid}} = function(el, url){
-        console.log(el);
-        el.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='zaj.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-remove'></span></a>" });
-    };
-    zaj.closeMyPhotoPopover = function(ev){
-        $('#'+$(ev.target).attr('data-photo')).popover('hide');
-    };
+	ofw.ready(function(){
+		ofw.addMyPhotoPopover_{{field.uid}} = function(el, url){
+			console.log(el);
+			el.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='ofw.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-remove'></span></a>" });
+		};
+		ofw.closeMyPhotoPopover = function(ev){
+			$('#'+$(ev.target).attr('data-photo')).popover('hide');
+		};
+	});
 </script>
 
 
@@ -33,7 +35,7 @@
     <div class="col-sm-2" id="{{field.value.id}}" style="position: relative; cursor: pointer;">
 		<img class="pull-left img-thumbnail img-responsive" src="{{field.value.normal}}" />
     </div>
-    <script>zaj.ready(function(){ zaj.addMyPhotoPopover_{{field.uid}}($('#{{field.value.id}}'), '{{field.value.large}}', '{{field.uid}}'); })</script>
+    <script>ofw.ready(function(){ ofw.addMyPhotoPopover_{{field.uid}}($('#{{field.value.id}}'), '{{field.value.large}}', '{{field.uid}}'); })</script>
 	{% endif %}
 
 </div>
@@ -85,7 +87,7 @@
 				//console.log(res);
 				// check for error
 					if(res.status == 'error'){
-						zaj.alert(res.message);
+						ofw.alert(res.message);
 					}
 					else{
 						uploader_update_{{field.uid}}(res);
@@ -114,7 +116,7 @@
 					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
                     var el = $("<div class='col-sm-2' id='"+res.id+"' style='position: relative; cursor: pointer;'><img class='pull-left img-thumbnail img-responsive' src='"+imgurl+"'></div>");
 					$('#{{field.uid}}-filelist').html(el);
-                    zaj.addMyPhotoPopover_{{field.uid}}(el, imgurl);
+                    ofw.addMyPhotoPopover_{{field.uid}}(el, imgurl);
                     // Remove from add value
                     file_upload_changes_{{field.uid}}.add = jQuery.grep(file_upload_changes_{{field.uid}}.add, function(value) { return value != id; });
                     // Set as my input value
