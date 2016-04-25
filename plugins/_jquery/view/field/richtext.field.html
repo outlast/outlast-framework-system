@@ -1,14 +1,14 @@
 {% lang 'system/fields' 'richtext' %}
 
 <!-- load up medium editor -->
-<link rel="stylesheet" href="{{baseurl}}system/css/medium-editor/medium-editor.css">
-<link rel="stylesheet" href="{{baseurl}}system/css/medium-editor/themes/bootstrap.css">
+<link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/medium-editor.css">
+<link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/themes/bootstrap.css">
 
 <div style="height: auto;" class="ofw-field-textarea form-control" id="medium-editor-{{field.uid}}">{{field.value|strip_attribute:'style'|safe}}</div>
 <script>
 	var mediumEditors;
 	if(typeof mediumEditors == 'undefined') mediumEditors = {};
-	requirejs(["system/js/medium-editor/medium-editor"], function(MediumEditor){
+	requirejs(["system/js/medium-editor/ext/medium-editor.min"], function(MediumEditor){
 		mediumEditors['{{field.uid}}'] = new MediumEditor('#medium-editor-{{field.uid}}', {
 			toolbar: {
 				buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'quote', 'removeFormat']

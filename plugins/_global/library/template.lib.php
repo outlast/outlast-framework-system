@@ -411,9 +411,8 @@ class zajlib_template_zajvariables {
 		var zaj = ofw;
 		
 		// Now require and create
-        requirejs(["system/js/ofw-jquery"], function(ofw){
-        	console.log(ofw);
-        	ofw.init({
+        requirejs(["system/js/ofw-jquery"], function(ofwsys){
+        	ofwsys.init({
 				baseurl: '{$protocol}:{$baseurl}',
 				fullrequest: '{$protocol}:{$fullrequest}',
 				fullurl: '{$protocol}:{$fullurl}',
@@ -427,11 +426,17 @@ class zajlib_template_zajvariables {
 				readyFunctions: ofw.readyFunctions,
 				jqueryIsReady: ofw.jqueryIsReady	
 			});
-			zaj = ofw;
-			
 			// Now call each ofw set lang
-			for(var i = 0; i < ofwSetLang.length; i++) ofw.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);
+			for(var i = 0; i < ofwSetLang.length; i++) ofwsys.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);
+
+			// Finally, set variables
+			ofw = zaj = ofwsys;
         });
+        
+        // Define jquery so that require knows about it
+		define('jquery', [], function() {
+			return jQuery;
+		});        
     }
 </script>";
 EOF;
