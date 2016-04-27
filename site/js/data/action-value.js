@@ -166,6 +166,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 	 * @param {object} _this The DOM element of the current source element
 	 */
 	function triggerAction(element, _this) {
+
 		if (typeof element != 'object') {
 			element = scrollElements[element];
 		}
@@ -199,12 +200,10 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 				}
 
 				if (element.type != 'remove' && current_idx < 0) {
-					// console.log('Nincs neki ' + value + ', csak ' + current_values.join(" "));
 					new_value = ((attr !== undefined && attr.length > 0) ? attr + ' ' : '') + value;
 					$this.attr(element.attribute, new_value);
 				}
 				else if (element.type != 'add' && current_idx > -1) {
-					// console.log('Van neki ' + value + ', elvesszük');
 					current_values.splice(current_idx, 1);
 					$this.attr(element.attribute, current_values.join(" "));
 				}
@@ -214,13 +213,27 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 	}
 
 	/**
-	 * ???
+	 * Cross-browser pointer event getter
 	 * @param {Event} event
 	 * @returns {Event}
 	 */
 	var getPointerEvent = function(event) {
 		return event.originalEvent.targetTouches ? event.originalEvent.targetTouches[0] : event;
 	};
+
+    /**
+     * Get DOM element object for dynamic $(element).on(..) usage
+     * @param {string} sourceSelector Source selector string
+     * @returns {object} DOM object
+     */
+    var getOnDOMElement = function(sourceSelector) {
+        if (sourceSelector == 'window') {
+            return window;
+        } else {
+            return document;
+        }
+    }
+
 
 
     /** Public API **/
@@ -277,6 +290,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 				}
 
 				element.destElm = (element.destSelector !== null)?$(element.destSelector):element.sourceElm;
+                var onElm;
 
 				// Has scroll event
 				if (element.event.indexOf('scroll') > -1) {
@@ -300,16 +314,37 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 				}
 				else if (element.event.indexOf('swipe') > -1) {
 						handleSwipeEvent(element);
-						element.sourceElm.on(element.event, function() {
-							triggerAction(element, $(this));
-						});
+                        onElm = getOnDOMElement(element.sourceSelector);
+
+                        if (element.sourceSelector !== null) {
+                            $(onElm).on(element.event, element.sourceElm, function(event) {
+                                triggerAction(element, $(event.target));
+                            });
+                        } else {
+                            element.sourceElm.on(element.event, function() {
+                                triggerAction(element, $(this));
+                            })
+                        }
 				}
 				else {
-					element.sourceElm.on(element.event, function() {
-						if (element.extra_condition()) {
-							triggerAction(element, $(this));
-						}
-					});
+
+                    onElm = getOnDOMElement(element.sourceSelector);
+
+                    if (element.sourceSelector !== null) {
+
+                        $(onElm).on(element.event, element.sourceSelector, function(event) {
+
+                            if (element.extra_condition()) {
+                                triggerAction(element, $(event.target));
+                            }
+                        });
+                    } else {
+                        element.sourceElm.on(element.event, function() {
+                            if (element.extra_condition()) {
+                                triggerAction(element, $(this));
+                            }
+                        });
+                    }
 				}
 			});
 
