@@ -420,7 +420,7 @@ define('system/js/ofw-jquery', [], function() {
 		/**
 		 * Custom alerts, confirms, prompts. If bootstrap is enabled, it wil use that. Otherwise the standard blocking alert() will be used.
 		 * @param {string} message The message to alert. This can be full HTML.
-		 * @param {string|function|jQuery} [urlORfunctionORdom=null] A callback url or function on button push. If you set this to a jQuery dom object then it will be used as the modal markup.
+		 * @param {string|function|jQuery} [urlORfunctionORdom=null] A callback url or function on button push. If you set this to a jQuery dom object then it will be used as the modal markup. If you set it to a function, the dialog will not close if explicit false is returned.
 		 * @param {string} [buttonText="Ok"] The text of the button.
 		 * @param {boolean} [top=false] Set to true if you want the url to load in window.top.location. Defaults to false.
 		 * @return {boolean} Will always return false.
@@ -450,7 +450,10 @@ define('system/js/ofw-jquery', [], function() {
 					// Set action
 					var $modal_button = $modal.find('a.modal-button');
 					$modal_button.unbind('click');
-					if(typeof urlORfunctionORdom == 'function') $modal_button.click(function(){ $modal.modal('hide'); $('.modal-backdrop').remove(); urlORfunctionORdom(); });
+					if(typeof urlORfunctionORdom == 'function'){
+						$modal_button.attr('data-dismiss', '');
+						$modal_button.click(function(){ var r = urlORfunctionORdom($modal); if(r !== false){ $modal.modal('hide'); $('.modal-backdrop').remove(); } });
+					}
 					else if(typeof urlORfunctionORdom == 'string') $modal_button.click(function(){ api.redirect(urlORfunctionORdom, top); });
 					else $modal_button.click(function(){ $modal.modal('hide'); $('.modal-backdrop').remove(); });
 					// Set text (if needed)
@@ -526,10 +529,13 @@ define('system/js/ofw-jquery', [], function() {
 			/**
 			 * Send AJAX request via GET and alert it.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
+			 * @param {string|function|jQuery} [urlORfunctionORdom=null] A callback url or function on button push. If you set this to a jQuery dom object then it will be used as the modal markup. If you set it to a function, the dialog will not close if explicit false is returned.
+			 * @param {string} [buttonText="Ok"] The text of the button.
+			 * @param {boolean} [top=false] Set to true if you want the url to load in window.top.location. Defaults to false.
 			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 			 */
-			alert: function(request, pushstate){
-				ajaxRequest('get', request, function(r){ api.alert(r); }, pushstate);
+			alert: function(request, urlORfunctionORdom, buttonText, top, pushstate){
+				ajaxRequest('get', request, function(r){ api.alert(r, urlORfunctionORdom, buttonText, top); }, pushstate);
 			},
 
 			/**
