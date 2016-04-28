@@ -437,7 +437,9 @@ define('system/js/ofw-jquery', [], function() {
 				// Create modal if not yet available
 					if($modal.length <= 0){
 						// Check to see which Bootstrap version and create markup
-							if(api.bootstrap3) $modal = $('<div id="zaj_bootstrap_modal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
+							if(api.bootstrap3){
+								$modal = $('<div id="zaj_bootstrap_modal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
+							}
 							else $modal = $('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
 						// Append it!
 							$('body').append($modal);
@@ -619,10 +621,10 @@ define('system/js/ofw-jquery', [], function() {
 									inputCleanup = function(){
 										$(this).removeClass('has-error');
 										$(this).parent('.form-group').removeClass('has-error');
-										if(myOptions.bootstrap3) $(this).tooltip('hide');
+										if(api.bootstrap3) $(this).tooltip('hide');
 									};
 									// @todo enable invisible fields to somehow work their magic! have a date-attribute with the selector of the visible field
-									if(myOptions.bootstrap3 && input.filter(':visible').length > 0){
+									if(api.bootstrap3 && input.filter(':visible').length > 0){
 										input.attr('title', msg).attr('data-original-title', msg).tooltip({trigger:'manual', animation: false}).tooltip('show');
 										// Add the error class and remove on change
 										input.addClass('has-error').change(inputCleanup).keyup(inputCleanup);

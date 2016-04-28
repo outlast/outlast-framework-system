@@ -1,41 +1,9 @@
-<!-- Load up my requirements -->
-{% lang 'system/fields' 'relationships' %}
-<script src="{{baseurl}}system/js/chosen/chosen.jquery.min.js"></script>
-<link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
-<!-- Display markup -->
-<select class='ofw-field-manytoone' id='{{field.uid}}' name='{{field.name}}' >
-	<option value=''>--</option>
-	{% if field.choices.total <= 50 %}
-		{% foreach field.choices as choice %}
-			<option {% if choice.id eq field.value.id %}selected="selected"{% endif %} value='{{choice.id}}'>{{choice.name|escape}}</option>
-		{% endforeach %}
-	{% elseif %}
-		{% if field.value %}
-			<option selected="selected" value='{{field.value.id}}'>{{field.value.name|escape}}</option>
-		{% endif %}
-	{% endif %}
-</select>
-<script>
-    zaj.ready(function(){
-        $('#{{field.uid}}').chosen({width: '100%', inherit_select_classes: true});
-		{% if field.choices.total > 50 %}
-			// Add search relation to field
-			$('#{{field.uid}}').data('chosen').search_field.attr('placeholder', '{{#system_field_relationships_search#|escapejs}}');
-			$('#{{field.uid}}').data('chosen').search_field.$zaj().search('system/search/relation/?class={{field.class_name}}&field={{field.name}}', function(res){
-				// Decode json
-					var rdata = JSON.parse(res);
-				// Remove all unselected
-					var $select = $('#{{field.uid}}');
-					$select.find('option:not(:selected)').remove();
-				// Add new ones
-					for(var i = 0; i < rdata.data.length; i++){
-						$select.append('<option value="'+rdata.data[i].id+'">'+rdata.data[i].name+'</option>');
-					}
-				// Update chosen
-					$select.trigger('chosen:updated');
-					$('#{{field.uid}}').data('chosen').search_field.val(rdata.query);
-					$select.data('chosen').search_field.trigger('keyup.chosen');
-			}, {pushstate_url: false, allow_empty_query: false});
-		{% endif %}
-    });
-</script>
+{% extends 'field/manytomany.field.html' %}
+
+{% block relationship_input %}{% endblock relationship_input %}
+
+{% block relationship_name %}{{field.name}}{% endblock %}
+
+{% block relationship_multiple %}{% endblock %}
+
+{% block relationship_class %}ofw-field-manytoone{% endblock relationship_class %}
