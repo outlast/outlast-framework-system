@@ -17,11 +17,13 @@
 			<option value='{{choice.id}}'>{{choice.name|escape}}</option>
 		{% endforeach %}
 	{% elseif %}
+		{% block relationship_selected_values %}
 		{% if field.value %}
 			{% foreach field.value as sitem %}
 				<option value="{{sitem.id}}">{{sitem.name|escape}}</option>
 			{% endforeach %}
 		{% endif %}
+		{% endblock relationship_selected_values %}
 	{% endif %}
 </select>
 <script>
@@ -31,11 +33,13 @@
 		$('#{{field.uid}}-loader').addClass('hide');
 
 		// Set selected items
+		{% block relationship_selected_values_js %}
 		{% if field.value %}
 			{% foreach field.value as sitem %}
                 $('#{{field.uid}} option[value="{{sitem.id}}"]').attr('selected', 'selected');
             {% endfor %}
         {% endif %}
+		{% endblock relationship_selected_values_js %}
 
 		// Init with select 2
 		{% if field.choices.total <= 50 %}

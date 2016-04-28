@@ -7,3 +7,15 @@
 {% block relationship_multiple %}{% endblock %}
 
 {% block relationship_class %}ofw-field-manytoone{% endblock relationship_class %}
+
+{% block relationship_selected_values %}
+{% if field.value %}
+	<option value="{{field.value.id}}">{{field.value.name|escape}}</option>
+{% endif %}
+{% endblock relationship_selected_values %}
+
+{% block relationship_selected_values_js %}
+{% if field.value %}
+	$('#{{field.uid}} option[value="{{field.value.id}}"]').attr('selected', 'selected');
+{% endif %}
+{% endblock relationship_selected_values_js %}
