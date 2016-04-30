@@ -292,8 +292,9 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 				element.destElm = (element.destSelector !== null)?$(element.destSelector):element.sourceElm;
                 var onElm;
 
-				// Has scroll event
+				// Add event handlers
 				if (element.event.indexOf('scroll') > -1) {
+					// Scroll event
 					element.lastY = null;
 					element.direction = null;
 					element.scrollContent = (element.sourceSelector == 'window' || element.sourceSelector == 'document')?$(document):element.sourceElm;
@@ -313,25 +314,25 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 					}
 				}
 				else if (element.event.indexOf('swipe') > -1) {
-						handleSwipeEvent(element);
-                        onElm = getOnDOMElement(element.sourceSelector);
+					// Swipe event
+					handleSwipeEvent(element);
+					onElm = getOnDOMElement(element.sourceSelector);
 
-                        if (element.sourceSelector !== null) {
-                            $(onElm).on(element.event, element.sourceElm, function(event) {
-                                triggerAction(element, $(event.target));
-                            });
-                        } else {
-                            element.sourceElm.on(element.event, function() {
-                                triggerAction(element, $(this));
-                            })
-                        }
+					if (element.sourceSelector !== null) {
+						$(onElm).on(element.event, element.sourceElm, function(event) {
+							triggerAction(element, $(event.target));
+						});
+					} else {
+						element.sourceElm.on(element.event, function() {
+							triggerAction(element, $(this));
+						})
+					}
 				}
 				else {
-
+					// Other standard event
                     onElm = getOnDOMElement(element.sourceSelector);
 
                     if (element.sourceSelector !== null) {
-
                         $(onElm).on(element.event, element.sourceSelector, function(event) {
 
                             if (element.extra_condition()) {
@@ -339,7 +340,8 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
                             }
                         });
                     } else {
-                        element.sourceElm.on(element.event, function() {
+                        $(element.sourceElm).on(element.event, function() {
+
                             if (element.extra_condition()) {
                                 triggerAction(element, $(this));
                             }

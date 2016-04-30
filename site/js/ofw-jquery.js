@@ -112,7 +112,7 @@ define('system/js/ofw-jquery', [], function() {
 				post: function(url, response){ return api.ajax.post(api.querymode(url)+target.serialize(), response); },
 				submit: function(url, response){ return api.ajax.submit(api.querymode(url)+target.serialize(), response); },
 				inviewport: function(partially){ return api.inviewport(target, partially); },
-				alert: function(msg){ api.alert(msg, target); },
+				alert: function(msg){ return api.alert(msg, target); },
 				sortable: function(receiver, callback, handle){
 					// Load up dependency
 					requirejs(["system/js/ui/sortable"], function(sortable) {
@@ -421,14 +421,14 @@ define('system/js/ofw-jquery', [], function() {
 		 * Custom alerts, confirms, prompts. If bootstrap is enabled, it wil use that. Otherwise the standard blocking alert() will be used.
 		 * @param {string} message The message to alert. This can be full HTML.
 		 * @param {string|function|jQuery} [urlORfunctionORdom=null] A callback url or function on button push. If you set this to a jQuery dom object then it will be used as the modal markup. If you set it to a function, the dialog will not close if explicit false is returned.
-		 * @param {string} [buttonText="Ok"] The text of the button.
+		 * @param {string|boolean} [buttonText="Ok"] The text of the button. Set to false to hide the button.
 		 * @param {boolean} [top=false] Set to true if you want the url to load in window.top.location. Defaults to false.
-		 * @return {boolean} Will always return false.
+		 * @return {jQuery} Will return the modal object.
 		 */
 		alert: function(message, urlORfunctionORdom, buttonText, top){
 			if(api.bootstrap){
 				// Alert sent via bootstrap
-					api.track('Alert', 'Bootstrap', message);
+					api.track('Alert', 'Bootstrap', message.substr(0, 50));
 				// Cache my jquery selectors
 					var $modal;
 				// If a modal markup was set with urlORfunctionORdom, then use that. If none, use #zaj_bootstrap_modal.
@@ -448,6 +448,9 @@ define('system/js/ofw-jquery', [], function() {
 								$('#zaj_bootstrap_modal').css('overflow','hidden').css('overflow','auto');
 							});
 					}
+				// Hide footer if button is set to false
+					if(buttonText === false) $modal.find('.modal-footer').addClass('hide');
+					else $modal.find('.modal-footer').removeClass('hide');
 				// Reset and init button
 					// Set action
 					var $modal_button = $modal.find('a.modal-button');
@@ -470,13 +473,13 @@ define('system/js/ofw-jquery', [], function() {
 			}
 			else{
 				// Alert sent via bootstrap
-					api.track('Alert', 'Standard', message);
+					api.track('Alert', 'Standard', message.substr(0, 50));
 				// Send alert
 					alert(message);
 					if(typeof urlORfunctionORdom == 'function') urlORfunctionORdom();
 					else if(typeof urlORfunctionORdom == 'string') api.redirect(urlORfunctionORdom, top);
 			}
-			return false;
+			return $modal;
 		},
 
 		/**
@@ -532,12 +535,15 @@ define('system/js/ofw-jquery', [], function() {
 			 * Send AJAX request via GET and alert it.
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {string|function|jQuery} [urlORfunctionORdom=null] A callback url or function on button push. If you set this to a jQuery dom object then it will be used as the modal markup. If you set it to a function, the dialog will not close if explicit false is returned.
-			 * @param {string} [buttonText="Ok"] The text of the button.
+			 * @param {string|boolean} [buttonText="Ok"] The text of the button. Set to false to hide the button.
 			 * @param {boolean} [top=false] Set to true if you want the url to load in window.top.location. Defaults to false.
 			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 			 */
 			alert: function(request, urlORfunctionORdom, buttonText, top, pushstate){
-				ajaxRequest('get', request, function(r){ api.alert(r, urlORfunctionORdom, buttonText, top); }, pushstate);
+				ajaxRequest('get', request, function(r){
+						var $modal = api.alert(r, urlORfunctionORdom, buttonText, top);
+						activateDataAttributeHandlers($modal.find('div.modal-body'));
+					}, pushstate);
 			},
 
 			/**
