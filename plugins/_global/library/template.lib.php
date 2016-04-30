@@ -392,7 +392,8 @@ class zajlib_template_zajvariables {
 					return <<<EOF
 <script type='text/javascript'>
 	require.config({
-    	baseUrl: "{$baseurl}"
+    	baseUrl: "{$baseurl}",
+		urlArgs: "cachebuster=" + (new Date()).getTime()    	
     });
 	if(typeof ofw == 'undefined' || ofw == null){
 		// Backwards compatibility for unready set langs
