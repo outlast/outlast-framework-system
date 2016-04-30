@@ -194,6 +194,30 @@ EOF;
 	}
 
 	/**
+	 * Filter: floor - Round an float down.
+	 *
+	 * <b>{{variable|floor}}</b> Assuming variable is 3.8, returned value will be 3.
+	 *
+	 **/
+	public function filter_floor($parameter, &$source){
+		// write to file
+		$this->zajlib->compile->write('if(is_numeric($filter_var)) $filter_var=floor($filter_var);');
+		return true;
+	}
+
+	/**
+	 * Filter: ceil - Round an float up.
+	 *
+	 * <b>{{variable|ceil}}</b> Assuming variable is 3.2, returned value will be 4.
+	 *
+	 **/
+	public function filter_ceil($parameter, &$source){
+		// write to file
+		$this->zajlib->compile->write('if(is_numeric($filter_var)) $filter_var=ceil($filter_var);');
+		return true;
+	}
+
+	/**
 	 * Filter: remainder - The variable is divided by the filter paramter and the remainder is returned.
 	 *
 	 *  <b>{{variable|remainder:'3'}}</b> Assuming variable is 8, the returned value will be 2.
