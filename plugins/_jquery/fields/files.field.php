@@ -72,9 +72,9 @@ class zajfield_files extends zajField {
 					if(!empty($data->add)){
 						foreach($data->add as $count=>$id){
 							$pobj = File::fetch($id);
-								// cannot reclaim here!
-								if($pobj->status == 'saved') return $this->zajlib->error("Cannot save a final of a File that already exists!");
-							$pobj->set('parent',$object->id);
+							// cannot reclaim here!
+							if($pobj->status == 'saved' && $pobj->data->parent != $object->id) return $this->zajlib->error("Cannot attach an existing and saved File object to another object!");
+							$pobj->set('parent', $object->id);
 							$pobj->upload();
 						}
 					}
