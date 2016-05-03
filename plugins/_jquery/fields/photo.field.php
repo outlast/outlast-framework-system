@@ -83,8 +83,15 @@ class zajfield_photo extends zajField {
 				// If data is empty alltogether, it means that it wasnt JSON data, so it's a single photo id to be added!
 				if(empty($data) && !empty($sdata)){
 					$pobj = Photo::fetch($sdata);
+					// Remove previous ones
+					$photos = Photo::fetch()->filter('parent', $pobj->parent)->filter('field', $this->name);
+					if($photos->total){
+						foreach($photos as $pold){ $pold->delete(); }
+					}
+
 					// cannot reclaim here!
 					if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->warning("Cannot save a final of a photo that already exists! You are not the owner!");
+
 					$pobj->set('parent',$object->id);
 					$pobj->set('field',$this->name);
 					$pobj->upload();
@@ -94,8 +101,14 @@ class zajfield_photo extends zajField {
 				if(!empty($data->add)){
 					foreach($data->add as $count=>$id){
 						$pobj = Photo::fetch($id);
+						// Remove previous ones
+						$photos = Photo::fetch()->filter('parent', $pobj->parent)->filter('field', $this->name);
+						if($photos->total){
+							foreach($photos as $pold){ $pold->delete(); }
+						}
 						// cannot reclaim here!
 						if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->warning("Cannot save a final of a photo that already exists! You are not the owner!");
+
 						$pobj->set('parent',$object->id);
 						$pobj->set('field',$this->name);
 						$pobj->upload();
