@@ -1,5 +1,7 @@
 {% extends 'field/manytomany.field.html' %}
 
+{% block relationship_empty %}<option value=''>--</option>{% endblock relationship_empty %}
+
 {% block relationship_input %}{% endblock relationship_input %}
 
 {% block relationship_name %}{{field.name}}{% endblock %}
