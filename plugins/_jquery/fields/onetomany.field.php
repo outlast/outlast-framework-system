@@ -12,6 +12,8 @@ class zajfield_onetomany extends zajField {
 	const use_save = true;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = false;	// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = true;			// boolean - true if fetcher needs to be modified
+	const use_export = true;		// boolean - true if preprocessing required before exporting data
+	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
 	const edit_template = 'field/onetomany.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
@@ -83,7 +85,7 @@ class zajfield_onetomany extends zajField {
 					$data->set($this->options['field'], $object);
 					$data->save();
 			}
-		// is data an array?
+		// is data a string?
 		 	elseif(is_string($data)){
 			 	$othermodel = $this->options['model'];
 		 		$data = json_decode($data);
@@ -122,6 +124,28 @@ class zajfield_onetomany extends zajField {
 				$object->data->unload($this->name);				
 			// return whatever...first param will be removed, second reloaded
 				return array(false, false);		 	
+	}
+
+	/**
+	 * Preprocess the data and convert it to a string before exporting.
+	 * @param mixed $data The data to process. This will typically be whatever is returned by {@link get()}
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
+	 */
+	public function export($data, &$object){
+		// Decide how to format it
+			if($data->total == 0 || $data->total > 3) $data = $data->total.' items';
+			else{
+				$fetcher = $data;
+				$data = $data->total.' items (';
+				$i = 1;
+				foreach($fetcher as $item){
+					$data .= $item->id;
+					if($i++ < $fetcher->total) $data .= ', ';
+				}
+				$data .= ')';
+			}
+		return $data;
 	}
 
 	/**

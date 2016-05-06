@@ -11,6 +11,7 @@ class zajfield_unittest extends zajfield_boolean {
 
 	// only editor is not used
 	const edit_template = false;    // string - the edit template, false if not used
+	const disable_export = true;	// boolean - true if you want this field to be excluded from exports
 	// ...and it should not be duplicated
 	const use_duplicate = false;    // boolean - true if data should be duplicated when duplicate() is called
 

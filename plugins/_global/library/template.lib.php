@@ -101,8 +101,10 @@ class zajlib_template extends zajLibExtension {
 	 * @return string|boolean If requested by the $return_contents parameter, it returns the entire generated contents.
 	 **/
 	public function show($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
+		// override source path if device mode @todo make this more efficient so it does not search files each time!
+			$source_path = $this->get_device_source_path($source_path);
 		// do i need to show by block (if pushState request detected)
-			if(!empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
+			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
 		// prepare
 			$include_file = $this->prepare($source_path, $force_recompile, $custom_compile_destination);
 		// set that we have started the output
@@ -122,8 +124,10 @@ class zajlib_template extends zajLibExtension {
 	 * @return bool|string Returns the contents if requested or false if failure.
 	 */
 	public function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
+		// override source path if device mode @todo make this more efficient so it does not search files each time!
+			$source_path = $this->get_device_source_path($source_path);
 		// do i need to show by block (if pushState request detected)
-			if(!empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
+			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
 		// first do a show to compile (if needed)
 			$this->prepare($source_path, $force_recompile);
 		// set that we have started the output
@@ -143,6 +147,46 @@ class zajlib_template extends zajLibExtension {
 				}
 		// now display or return
 			return $this->display($include_file, $return_contents);
+	}
+
+	/**
+	 * Modify the template source path of any .html files if we are in a device mode (if set_device_mode() was called previously).
+	 * @param string $source_path The source path to check for.
+	 * @return string Return a new source path for the current device if available or the same if not.
+	 */
+	private function get_device_source_path($source_path){
+		// Get the device
+		$device_mode = $this->zajlib->browser->get_device_mode();
+
+		// Do we have the device explicitly set?
+		if(strstr($source_path, '?') !== false){
+			// Parse out ?device=something
+			$elements = explode('?', $source_path);
+			parse_str($elements[1], $query_string);
+
+			// Set device mode
+			if(!empty($query_string['device_mode'])){
+				$device_mode = $query_string['device_mode'];
+				$source_path = $elements[0];
+			}
+		}
+
+		// If the device mode is false or it is the default, just return the unmodified source path
+		if($device_mode === false || $this->zajlib->browser->is_device_mode_default()) return $source_path;
+
+		// It's not the default, so let's check to see if
+		$device_source_path = str_ireplace('.html', '.'.$device_mode.'.html', $source_path);
+		if($this->exists($device_source_path)) return $device_source_path;
+		else return $source_path;
+	}
+
+	/**
+	 * Returns true if a template file exists anywhere in the available paths based on the source path. Same as $this->zajlib->compile->source_exists().
+	 * @param string $source_path The source path to check for.
+	 * @return boolean Returns true if found, false if not.
+	 */
+	public function exists($source_path){
+		return $this->zajlib->compile->source_exists($source_path);
 	}
 
 	/**
@@ -189,17 +233,18 @@ class zajlib_template extends zajLibExtension {
 	 * @param string $to The email to which this message should be sent.
 	 * @param string $subject A string with the email's subject.
 	 * @param string $sendcopyto If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
-	 * @param string $bounceto If set, the email will bounce to this address. By default, bounces are ignored and not sent anywhere.
-	 * @param string $plain_text_version The path to the template to be compiled for the plain text version.
+	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
+	 * @param bool|string $plain_text_version The path to the template to be compiled for the plain text version.
+	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
 	 * @return bool Will return true. Depending on the email gateway implementation it may return false if the email failed.
 	 */
-	public function email($source_path, $from, $to, $subject, $sendcopyto = "", $bounceto = "", $plain_text_version = ""){
+	public function email($source_path, $from, $to, $subject, $sendcopyto = "", $additional_headers = false, $send_at = false, $plain_text_version = false){
 		// capture output of this template
 			$body = $this->show($source_path, false, true);
 		// capture output of plain text template
-			if($plain_text_version) $plain_text_version = $this->show($plain_text_version, false, true);
+			if($plain_text_version !== false) $plain_text_version = $this->show($plain_text_version, false, true);
 		// load email library
-			return $this->zajlib->email->send_html($from, $to, $subject, $body, $sendcopyto, $bounceto, $plain_text_version);
+			return $this->zajlib->email->send_html($from, $to, $subject, $body, $sendcopyto, $additional_headers, $send_at, $plain_text_version);
 	}
 
 	/**
@@ -300,6 +345,7 @@ class zajlib_template_zajvariables {
 			// Mobile and tablet detection (uses server-side detection)
 				case 'mobile': return $this->zajlib->mobile->is_mobile();
 				case 'tablet': return $this->zajlib->mobile->is_tablet();
+				case 'device_mode': return $this->zajlib->browser->get_device_mode();
 			// Access to list of variables and config variables
 				case 'variable': return $this->zajlib->variable;
 				case 'config': return $this->zajlib->config->variable;
@@ -335,7 +381,58 @@ class zajlib_template_zajvariables {
 					$fullurl = htmlspecialchars($this->zajlib->fullurl);
 					$app = htmlspecialchars($this->zajlib->app);
 					$mode = htmlspecialchars($this->zajlib->mode);
-					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$baseurl}'; zaj.fullrequest = '{$protocol}:{$fullrequest}'; zaj.fullurl = '{$protocol}:{$fullurl}'; zaj.app = '{$app}'; zaj.mode = '{$mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; zaj.trackevents_local = $trackevents_local; zaj.trackevents_analytics = $trackevents_analytics; zaj.locale = '$locale'; var ofw = zaj; }</script>";
+					return <<<EOF
+<script type='text/javascript'>
+	require.config({
+    	baseUrl: "{$baseurl}",
+		urlArgs: "cachebuster=" + (new Date()).getTime()    	
+    });
+	if(typeof ofw == 'undefined' || ofw == null){
+		// Backwards compatibility for unready set langs
+		var ofwSetLang = [];
+		// Define ready and jquery is ready
+		var ofw = {
+			ready: function(func){
+				ofw.readyFunctions.push(func);
+			},
+			setLang: function(keyOrArray, value, section){ ofwSetLang.push([keyOrArray, value, section]); },
+			log: function(m){ console.log(m) },
+			readyFunctions: [],
+			jqueryIsReady: false	
+		};
+		$(document).ready(function(){ ofw.jqueryIsReady = true; });
+		var zaj = ofw;
+		
+		// Now require and create
+        requirejs(["system/js/ofw-jquery"], function(ofwsys){
+        	ofwsys.init({
+				baseurl: '{$protocol}:{$baseurl}',
+				fullrequest: '{$protocol}:{$fullrequest}',
+				fullurl: '{$protocol}:{$fullurl}',
+				app: '{$app}',
+				mode: '{$mode}',
+				debug_mode: $debug_mode,
+				protocol: '{$protocol}',
+				trackeventsLocal: $trackevents_local,
+				trackeventsAnalytics: $trackevents_analytics,
+				locale: '$locale',
+				readyFunctions: ofw.readyFunctions,
+				jqueryIsReady: ofw.jqueryIsReady	
+			});
+			// Now call each ofw set lang
+			for(var i = 0; i < ofwSetLang.length; i++) ofwsys.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);
+
+			// Finally, set variables
+			ofw = zaj = ofwsys;
+        });
+        
+        // Define jquery so that require knows about it
+		define('jquery', [], function() {
+			return jQuery;
+		});        
+    }
+</script>
+EOF;
 
 			// By default return nothing.
 				default: return '';

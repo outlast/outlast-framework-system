@@ -31,7 +31,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 * @var resource
 		 **/
 		private $default_connection;
-		
+
 		/**
 		 * An array of {@link zajlib_db_session} objects used to manage different session without using different connections.
 		 * @var array
@@ -58,7 +58,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 **/
 		private $last_query='';
 
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// !Init methods
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->current_session = (object) array();
 			// create my default session
 				$this->create_session('default');
-		}	
+		}
 
 		/**
 		 * Connects to the database using the specified parameters.
@@ -93,14 +93,14 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 **/
 		public function connect($server="", $user="", $pass="", $db="", $fatal_error = true){
 			// connect to server
-				$this->default_connection = @mysql_connect($server, $user, $pass, true);
+				$this->default_connection = @mysqli_connect($server, $user, $pass);
 				if($this->default_connection === false){
-					if($fatal_error) return $this->zajlib->error("Unable to connect to sql server. Disable sql or correct the server/user/pass!");
+					if($fatal_error) return $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
 					else return false;
 				}
 				$this->current_session->conn = $this->default_connection;
 			// select db
-				$result = mysql_select_db($db, $this->current_session->conn);
+				$result = mysqli_select_db($this->current_session->conn, $db);
 				if($result === false){
 					if($fatal_error) return $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
 					else return false;
@@ -109,7 +109,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->set_encoding();
 			return true;
 		}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// !Session management - sessions allow the user to not have to worry about query resources
 	//							during simultaneously running queries.
@@ -141,9 +141,9 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 */
 		public function create_connection($server="", $user="", $pass="", $db="", $id = false){
 			// connect to server
-				$conn = mysql_connect($server, $user, $pass, true) or $this->zajlib->error("Unable to connect to sql server. Disable sql or correct the server/user/pass!");
+				$conn = mysqli_connect($server, $user, $pass) or $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
 			// select db
-				mysql_select_db($db, $conn) or $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
+				mysqli_select_db($conn, $db) or $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
 			// set to connection encoding setting
 				$this->set_encoding(false, $conn);
 			// Now create a session and return
@@ -172,7 +172,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 */
 		public function delete_session($id){
 			// remove the result set
-				mysql_free_result($this->session[$id]->query);
+				mysqli_free_result($this->session[$id]->query);
 			// remove from array
 				unset($this->session[$id]);
 			return true;
@@ -193,9 +193,9 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 					else $encoding = $this->zajlib->zajconf['mysql_encoding'];
 				}
 			// Set encoding!
-				mysql_query("SET NAMES ".$encoding, $connection);
-				mysql_query("SET CHARACTER SET ".$encoding, $connection);
-				mysql_set_charset($encoding, $connection);
+				mysqli_query($connection, "SET NAMES ".$encoding);
+				mysqli_query($connection, "SET CHARACTER SET ".$encoding);
+				mysqli_set_charset($connection, $encoding);
 			return $encoding;
 		}
 
@@ -265,7 +265,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 					$keys = array_keys($array);
 					$fieldnames = "`".join("`,`", $keys)."`";
 				// join the values
-					$values = join(",", $field);	
+					$values = join(",", $field);
 			// execute sql (use SELECT to enable functions)
 				$sql = "INSERT INTO `$table` ($fieldnames) SELECT $values $fromtable";
 				return $this->query($sql);
@@ -292,7 +292,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 												break;
 							case MYSQL_MAX:		//print $value.'*'.MYSQL_MAX.'<br/>';
 												$value = "MAX($key)";
-												
+
 												break;
 							case MYSQL_MAX_PLUS:$value = "MAX($key) +1";
 												break;
@@ -306,7 +306,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				}
 				if(is_array($field)) $newfielddata = join(", ", $field);
 				else return $this->send_error(false, "mysql edit did not execute because parameter array is empty. nothing to change!");
-			
+
 			// Multiple conditions
 				if(is_array($column)){
 					foreach($column as $key => $value){
@@ -320,12 +320,12 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 					$condition = addslashes($condition);
 					$whereStr = "`$column` LIKE '$condition'";
 				}
-			
+
 			// Now execute
 				$sql = "UPDATE LOW_PRIORITY `$table` SET $newfielddata WHERE $whereStr";
 				return $this->query($sql);
 		}
-		
+
 		/**
 		 * Delete a row from a table.
 		 * @param string $table The table to edit in.
@@ -358,13 +358,13 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->current_session->selected_row = false;
 			// count the num of rows
 				if(!$this->current_session->query || !$this->current_session->conn) return $this->send_error(true);
-				$num_rows = $this->current_session->affected;			
+				$num_rows = $this->current_session->affected;
 			// get all remaining by setting num to the number remaining
 				if($num == -1) $num = $num_rows - $this->current_session->row_pointer - $startat;
 			// get a fixed number or the num remaining, whichever is less
 				for($i = 0; ($i < $num && $i < $num_rows); $i++){
 					 // fetch the row
-						 $my_row = mysql_fetch_assoc($this->current_session->query);
+						 $my_row = mysqli_fetch_assoc($this->current_session->query);
 					 // if column as key
 						 if($column_as_key) $key = $my_row[$column_as_key];
 						 else $key = $i;
@@ -376,7 +376,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 						$this->current_session->selected_row = (object) $my_row;
 					// increment the row pointer variable
 						$this->current_session->row_pointer++;
-				}				
+				}
 			return $result_set;
 		}
 
@@ -413,7 +413,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			}
 			return $my_objects;
 		}
-		
+
 		/**
 		 * This is an alias of rewind. This is depricated.
 		 **/
@@ -454,7 +454,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// now return the current row pointer
 				return $this->current_session->row_pointer;
 		}
-		
+
 		/**
 		 * Returns the next object in the iteration.
 		 * @return object Returns the selected row as an object.
@@ -465,7 +465,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// return the current row
 				return $this->current_session->selected_row;
 		}
-		
+
 		/**
 		 * Rewinds the iterator.
 		 * @return boolean Always returns true
@@ -475,12 +475,12 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				if($this->current_session->row_pointer > 0){
 					// reset row pointer
 						$this->current_session->row_pointer = 0;
-						mysql_data_seek($this->current_session->query, 0);
+						mysqli_data_seek($this->current_session->query, 0);
 				}
 			// return the next one
 				return $this->next();
 		}
-		
+
 		/**
 		 * Returns true if the current object of the iterator is a valid object.
 		 * @return boolean Returns true or false depending on whether the currently select row is valid.
@@ -516,7 +516,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		}
 		/**
 		 * Return the count of a given column. This is depricated and will be removed.
-		 **/		
+		 **/
 		private function count_only($table, $wherestr = ""){
 			// static, so cannot reference $this
 			if($wherestr) $wherestr = "WHERE $wherestr";
@@ -526,15 +526,15 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$row = $this->get_one();
 			return $row['c'];
 		}
-		
+
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// !Search
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		private function search($table, $query, $columns, $max_results = 5, $return_columns="", $similarity_search = true){
  			// TODO: implement $similarity_search = false
-			
-						
+
+
  			// generate where string
 				// query should be escaped
 					$condition = addslashes($query);
@@ -572,16 +572,16 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// send query to server
 				// TODO: change this to debug timer, which doesn't do it unless debug_mode is enabled!
 				$before_query = microtime(true);
-				$this->current_session->query = mysql_query($sql, $this->current_session->conn);
-				if($this->current_session->query == false) $this->current_session->last_error = mysql_error($this->current_session->conn);
+				$this->current_session->query = mysqli_query($this->current_session->conn, $sql);
+				if($this->current_session->query == false) $this->current_session->last_error = mysqli_error($this->current_session->conn);
 			// count affected
-				if(is_resource($this->current_session->query)) $this->current_session->affected = mysql_num_rows($this->current_session->query);
-				else $this->current_session->affected = mysql_affected_rows($this->current_session->conn);
+				if(is_resource($this->current_session->query)) $this->current_session->affected = mysqli_num_rows($this->current_session->query);
+				else $this->current_session->affected = mysqli_affected_rows($this->current_session->conn);
 			// now count total
-				$res = mysql_query('SELECT FOUND_ROWS() as total;', $this->current_session->conn);
-				$data = mysql_fetch_assoc($res);
+				$res = mysqli_query($this->current_session->conn, 'SELECT FOUND_ROWS() as total;');
+				$data = mysqli_fetch_assoc($res);
 				$this->current_session->total = $data['total'];
-			// end the timer	
+			// end the timer
 				$time_it_took = microtime(true) - $before_query;
 				$this->num_of_queries++;
 				$this->total_time += round($time_it_took,5);
@@ -597,7 +597,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->current_session->row_pointer = 0;
 			return $this->current_session;
 		}
-		
+
 		/**
 		 * Gets the total number of rows affected by the last query, taking into account the LIMIT clause.
 		 * @return integer The total number of rows LIMITed.
@@ -607,7 +607,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->send_error();
 				return 0;
 			}
-			return $this->current_session->affected;
+			return (integer) $this->current_session->affected;
 		}
 
 		/**
@@ -619,9 +619,9 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				$this->send_error();
 				return 0;
 			}
-			return $this->current_session->total;
+			return (integer) $this->current_session->total;
 		}
-		
+
 		/**
 		 * Send an error to the user or to the log.
 		 * @param boolean $display_warning Will display the warning even if debug mode is off. When debug mode is on, the warning is displayed regardless of this setting.
@@ -663,7 +663,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// create the connection if it doesnt already exist
 				if(!$this->current_session->conn) $this->connect($this->zajlib->zajconf['mysql_server'], $this->zajlib->zajconf['mysql_user'], $this->zajlib->zajconf['mysql_password'], $this->zajlib->zajconf['mysql_db']);
 			// now escape
-				return mysql_real_escape_string($string_to_escape, $this->current_session->conn);
+				return mysqli_real_escape_string($this->current_session->conn, $string_to_escape);
 		}
 
 		/**
@@ -675,7 +675,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// use regexp to allow letters, numbers, and _
 				return preg_match("/[A-z0-9_]+/", $field_name);
 		}
-		
+
 		/**
 		 * Magic method to handle session calls to the default session.
 		 * @param string $name The name of the method to call.
@@ -721,7 +721,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
  * @method zajlib_db_session query()
  **/
 class zajlib_db_session implements Countable, Iterator {
-	// private instance variables 
+	// private instance variables
 		/**
 		 * A reference to the global zajlib object.
 		 * @var zajLib
@@ -740,12 +740,12 @@ class zajlib_db_session implements Countable, Iterator {
 		public $last_error = '';
 		/**
 		 * The resource of the current connection. Usually this is the same as the global db object's connection.
-		 * @var resource
+		 * @var mysqli
 		 **/
 		public $conn = false;
 		/**
 		 * The resource of the current query.
-		 * @var resource
+		 * @var mysqli_result
 		 **/
 		public $query;
 		/**
@@ -779,7 +779,7 @@ class zajlib_db_session implements Countable, Iterator {
 		 * @var float
 		 **/
 		public $total_time = 0;
-	
+
 
 	/**
 	 * Creates a new session.
@@ -795,15 +795,14 @@ class zajlib_db_session implements Countable, Iterator {
 		// connection
 		$this->conn = $connection;
 	}
-	
+
 	/**
 	 * Magic method to reroute methods to the {@link zajlib_db} class
 	 **/
 	public function __call($name, $arguments){
-		if(!is_object($this->zajlib)){ print "Could not access db object!"; debug_print_backtrace(); exit; return false; } 
 		return $this->zajlib->db->__call_session($name, $arguments, $this->id);
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// !Implementations - redirected to current session
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -825,13 +824,13 @@ class zajlib_db_session implements Countable, Iterator {
 		 * @return integer Returns the row pointer of the current row.
 		 **/
 		public function key(){ return $this->zajlib->db->__call_session('key', array(), $this->id); }
-		
+
 		/**
 		 * Returns the next object in the iteration.
 		 * @return object Returns the selected row as an object.
 		 **/
 		public function next(){ return $this->zajlib->db->__call_session('next', array(), $this->id); }
-		
+
 		/**
 		 * Rewinds the iterator.
 		 * @return boolean Always returns true

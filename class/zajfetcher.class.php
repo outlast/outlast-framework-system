@@ -33,7 +33,7 @@ define('CUSTOM_SORT', 'CUSTOM_SORT');
  * @property string $groupby The generated GROUP BY clause
  * @property string $limit The generated LIMIT clause.
  **/
-class zajFetcher implements Iterator, Countable{
+class zajFetcher implements Iterator, Countable, JsonSerializable{
 	// create a fetch class
 		public $class_name;									// the class name
 		public $table_name;									// the table name
@@ -46,7 +46,7 @@ class zajFetcher implements Iterator, Countable{
 		private $count = false;								// the instance count (limit included)
 		private $affected = false;							// the number returned (limit is taken into account)
 	// instance variables needed for generating the sql
-		private $select_what = array();					// what to select from db
+		private $select_what = array();						// what to select from db. the index is the 'as' value.
 		private $select_from = array();						// the tables to select from
 		private $limit = "";								// the limit parameter
 		private $orderby = "ORDER BY model.ordernum";		// ordered by ordernum by default
@@ -89,6 +89,25 @@ class zajFetcher implements Iterator, Countable{
 			$this->ordermode = $classname::$fetch_order;
 			$this->orderby = "ORDER BY model.".$classname::$fetch_order_field;
 		return $this;
+	}
+
+	/**
+	 * Implement json serialize method.
+	 */
+	public function jsonSerialize(){
+		return $this->to_array();
+	}
+
+  	/**
+     * Return the model data as an array.
+     * @return array The list as an array.
+     **/
+	public function to_array(){
+		$array_data = array();
+		foreach($this as $row){
+			$array_data[] = $row->to_array(true);
+		}
+		return $array_data;
 	}
 
 	
@@ -135,6 +154,7 @@ class zajFetcher implements Iterator, Countable{
 			// done by limit
 		return $this;
 	}
+
 	/**
 	 * Sort by a specific field and by an order.
 	 * @param string $by The field name to sort by. Or RANDOM if you want it randomly. Or CUSTOM_SORT if you want the second parameter to just be used directly.
@@ -159,6 +179,17 @@ class zajFetcher implements Iterator, Countable{
 		// changes query, so reset me
 			$this->reset();
 		return $this;
+	}
+
+	/**
+	 * Custom order by.
+	 * @param string $orderby The ORDER BY clause in full. Nothing is checked or escaped here, so be careful!
+	 * @return zajFetcher This method can be chained.
+	 */
+	public function orderby($orderby = "model.ordernum DESC"){
+		$this->orderby = "ORDER BY ".$orderby;
+		$this->ordermode = '';
+		$this->reset();
 	}
 
 	/**
@@ -249,9 +280,28 @@ class zajFetcher implements Iterator, Countable{
 	public function add_field_source($source_field, $as_name=false, $replace = false){
 		// if replace
 			if($replace) $this->reset_field_sources();
+
+		// Check if there is a function
+		// @todo remove this eventually
+		if(preg_match('/[a-zA-Z]+\([^\)]*\)(\.[^\)]*\))?/', $source_field)){
+			zajLib::me()->warning("Mysql function detected as source field: $source_field. Use custom queries with named fields instead to get rid of this warning.");
+		}
+		// Set source field
+
+			if (false === strpos($source_field, ".")) {
+				// It's a *
+				if($source_field === '*') $sfield = $source_field;
+				// It's not in table.column format
+				else $sfield = '`'.$source_field.'`';
+			} else {
+				// It's in table.column format
+				list($table, $field) = explode(".", $source_field);
+				if($field === '*') $sfield = $table.'.'.$field;
+				else $sfield = $table.'.`'.$field.'`';
+			}
 		// if an as name was chosen
-			if($as_name) $this->select_what[] = $source_field.' as '.$as_name;
-			else $this->select_what[] = $source_field;
+			if($as_name) $this->select_what[$as_name] = $sfield.' as "'.$as_name.'"';
+			else $this->select_what[$source_field] = $sfield;
 		// changes query, so reset me
 			$this->reset();
 		return $this;
@@ -313,6 +363,22 @@ class zajFetcher implements Iterator, Countable{
 			$this->reset();
 		return $this;
 	}
+
+	/**
+	 * Remove all filters or a specific filter.
+	 * @param string|boolean $field The name of the field who's filter should be reset. If omitted (or if false), all are removed.
+	 * @return zajFetcher This method can be chained.
+	 */
+	public function remove_filters($field = false){
+		if($field === false) $this->filters = [];
+		else{
+			foreach($this->filters as $key => $filter){
+				if($filter[0] == $field) unset($this->filters[$key]);
+			}
+		}
+		return $this;
+	}
+
 	/**
 	 * Exclude/remove filter is just an alias of filter but with different defaults
 	 * @param string $field The name of the field to be filtered
@@ -531,11 +597,11 @@ class zajFetcher implements Iterator, Countable{
 	public function query($force = false){		
 		// if query already done
 			if($this->query_done === true && !$force) return $this;
-		// get query and execute it			
+		// get query and execute it
 			$this->db->query($this->get_query());
 		// count rows
-			$this->total = $this->db->get_total_rows();
-			$this->count = $this->db->get_num_rows();
+			$this->total = (int) $this->db->get_total_rows();
+			$this->count = (int) $this->db->get_num_rows();
 		// set pagination stuff
 			if(is_object($this->pagination)){
 				$this->pagination->pagecount = ceil($this->total/$this->pagination->perpage);
@@ -572,38 +638,6 @@ class zajFetcher implements Iterator, Countable{
 			return $this->total;
 	}
 
-	/****************************************************************************************
-	 * Control methods used to retrieve objects from the database.
-	 * External use is now depricated and you should use foreach, next() and other standard
-	 *		php functions, structures.
-	 ***************************************************************************************/
-
-	/**
-	 * Retrieves the next row data
-	 * @todo Set this to private in 1.0
-	 **/
-	public function next_row($num = 1){
-		// if query not yet run, run now
-			if($this->query_done == false) $this->query();
-		// now return the next row
-			return $this->db->get($num, 0);
-	}
-
-	/**
-	 * Retrieves the next object
-	 * @param string $id If id is set, next_row is not called.
-	 * @todo Set this to private in 1.0
-	 **/
-	public function next_object($id = false){
-		$class_name = $this->class_name; // i havent found a syntax to do the following in one line!
-		if(!$id){
-			$data = $this->next_row();
-			if(empty($data[0])) return false;
-			else $id = $data[0]['id'];
-		}
-		return $class_name::fetch($id);
-	}
-
 	/**
 	 * Reset will force the fetcher to reload the next time it is accessed
 	 * @todo This should return the actual object not the fetcher. If you fix this, you must fix filter_first().
@@ -624,8 +658,8 @@ class zajFetcher implements Iterator, Countable{
 	/****************************************************************************************
 	 *	!Iterator methods
 	 *		- These are used by foreach
-	 *		- TODO: clean up this mess and remove the old next_row() stuff!
 	 ***************************************************************************************/
+
 	/**
 	 * Returns the current object in the iteration.
 	 **/
@@ -678,10 +712,9 @@ class zajFetcher implements Iterator, Countable{
 		return is_object($this->current_object);
 	}
 
-
 	/**
 	 * Converts the current database row to the current fetched object. Also sets current_key and current_object vars.
-	 * @param resource $result The database result row object.
+	 * @param stdClass $result The database result row object.
 	 * @return zajModel Returns the currently selected zajModel object.
 	 **/
 	public function row_to_current_object($result){
@@ -689,8 +722,16 @@ class zajFetcher implements Iterator, Countable{
 			if(!is_object($result) || empty($result->id)) $this->current_object = false;
 			else{
 				// Now fetch based on my id result
+					/** @var zajModel $class_name */
 					$class_name = $this->class_name;
 					$this->current_object = $class_name::fetch($result->id);
+				// Add fetcher data if it exists
+					$this->current_object->fetchdata = new stdClass();
+					foreach($this->select_what as $as_name => $val){
+						if(property_exists($result, $as_name) && !is_null($result->$as_name)){
+							$this->current_object->fetchdata->$as_name = $result->$as_name;
+						}
+					}
 			}
 		// Set current key, but only if current object is successful
 			if(is_object($this->current_object)) $this->current_key = $this->current_object->id;
@@ -861,7 +902,13 @@ class zajFetcher implements Iterator, Countable{
 			$other_model = $field_model->options['model'];
 		// return the one object
 			$fetcher = $other_model::fetch($id);
-			if(is_object($fetcher)) $fetcher->connection_type = 'manytoone';
+			// if it exists, perform additional stuff!
+			if(is_object($fetcher)){
+				// set connection type
+					$fetcher->connection_type = 'manytoone';
+				// if it is deleted then do not return
+					if($fetcher->data->status == 'deleted') $fetcher = false;
+			}
 			return $fetcher;
 	}
 
@@ -896,6 +943,9 @@ class zajFetcher implements Iterator, Countable{
 		// if not an object
 			if(!is_object($object)) zajLib::me()->error('tried to edit a relationship with something that is not a model or fetcher object.');
 			//if(!$object->exists) zajLib::me()->error('tried to add a relationship that was not an object');
+		// if parent does not exist
+			if(!$this->connection_parent->exists) zajLib::me()->error('You tried to add a '.$object->class_name.' connection where the '.$this->connection_parent->class_name.' does not yet exist!');
+
 		// if manytomany, write in separate table
 			if($this->connection_type == 'manytomany'){
 				$row = array('time_create'=>time());
@@ -971,9 +1021,9 @@ class zajFetcher implements Iterator, Countable{
 			if(!is_a($object, 'zajModel')) return zajLib::me()->warning("You tried to check is_connected() status with a parameter that is not a zajModel object.");
 			if(!is_a($this->connection_parent, 'zajModel')) return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
 		// primary connection
-			if($this->connection_other) return $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}')");
+			if($this->connection_other) return (boolean) $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}')");
 		// secondary connection
-			else return $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
+			else return (boolean) $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
 	}
 
 }

@@ -292,40 +292,86 @@ EOF;
 	/**
 	 * Tag: config - Loads a configuration file in full or just a specified section
 	 *
-	 *  <b>{% config 'file_name.conf.ini' 'section_name' %}</b>
+	 *  <b>{% config 'file_name.conf.ini' 'section_name' true %}</b>
 	 *  1. <b>file_name</b> - A filename of the configuration file relative to the plugins conf directory.
 	 *  2. <b>section_name</b> - The name of the section to load. If omitted, the entire file will be loaded.
+	 *  3. <b>force_set</b> - If set to true, the variables will be set even if the file was already loaded previously.
 	 **/
 	public function tag_config($param_array, &$source){
 		// Is section name specified?
-			if(!empty($param_array[1])) $param2 = ", {$param_array[1]->variable}";
-			else $param2 = "";
+			if(!empty($param_array[1])) $param2 = "{$param_array[1]->variable}";
+			else $param2 = "false";
+		// Is force_set specified?
+			if(!empty($param_array[2])) $param3 = "{$param_array[2]->variable}";
+			else $param3 = "false";
 		// figure out content
-			$contents = "<?php \$this->zajlib->config->load({$param_array[0]->variable} $param2); ?>";
+			$contents = "<?php \$this->zajlib->config->load({$param_array[0]->variable}, $param2, $param3); ?>";
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats
 			return true;
 	}
-	
+
+	/**
+	 * Tag: configjs - Loads a specific section of a config file in to ofw.config (and ofw.lang) object
+	 *
+	 *  <b>{% configjs 'file_name' 'section_name' %}</b>
+	 *  1. <b>file_name</b> - A filename of the config file relative to the conf directory.
+	 *  2. <b>section_name</b> - The name of the section to load. Required for the js version of the tag.
+	 **/
+	public function tag_configjs($param_array, &$source){
+		// Is section name specified?
+			if(!empty($param_array[1])) $param2 = ", {$param_array[1]->variable}";
+			else $source->error("Tag {% configjs %} requires two parameters: the config file name and the section!");
+		// figure out content
+			$contents = "<?php \$this->zajlib->config->load({$param_array[0]->variable} $param2); \$this->zajlib->variable->field = (object) ['section'=>{$param_array[1]->variable}]; \$this->zajlib->template->show('system/tags/_configjs.html'); ?>";
+		// write to file
+			$this->zajlib->compile->write($contents);
+		// return debug_stats
+			return true;
+	}
+
 	/**
 	 * Tag: lang - Loads a language file in full or just a specified section
 	 *
-	 *  <b>{% lang 'file_name.lang.ini' 'section_name' %}</b>
-	 *  1. <b>file_name</b> - A filename of the language file relative to the plugins lang directory.
+	 *  <b>{% lang 'file_name' 'section_name' %}</b>
+	 *  1. <b>file_name</b> - A filename of the language file relative to the plugins lang directory. The preferred way is to exclude .lang.ini.
 	 *  2. <b>section_name</b> - The name of the section to load. If omitted, the entire file will be loaded.
 	 **/
 	public function tag_lang($param_array, &$source){
 		// Is section name specified?
-			if(!empty($param_array[1])) $param2 = ", {$param_array[1]->variable}";
-			else $param2 = "";
+			if(!empty($param_array[1])) $param2 = "{$param_array[1]->variable}";
+			else $param2 = "false";
+		// Is force_set specified?
+			if(!empty($param_array[2])) $param3 = "{$param_array[2]->variable}";
+			else $param3 = "false";
 		// figure out content
-			$contents = "<?php \$this->zajlib->lang->load({$param_array[0]->variable} $param2); ?>";
+			$contents = "<?php \$this->zajlib->lang->load({$param_array[0]->variable}, $param2, $param3); ?>";
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats
 			return true;
 	}
+
+	/**
+	 * Tag: langjs - Loads a specific section of a language file in to ofw.lang object
+	 *
+	 *  <b>{% langjs 'file_name' 'section_name' %}</b>
+	 *  1. <b>file_name</b> - A filename of the language file relative to the plugins lang directory. The preferred way is to exclude .lang.ini.
+	 *  2. <b>section_name</b> - The name of the section to load. Required for the js version of the tag.
+	 **/
+	public function tag_langjs($param_array, &$source){
+		// Is section name specified?
+			if(!empty($param_array[1])) $param2 = ", {$param_array[1]->variable}";
+			else $source->error("Tag {% langjs %} requires two parameters: the lang file name and the section!");
+		// figure out content
+			$contents = "<?php \$this->zajlib->lang->load({$param_array[0]->variable} $param2); \$this->zajlib->variable->field = (object) ['section'=>{$param_array[1]->variable}]; \$this->zajlib->template->show('system/tags/_langjs.html'); ?>";
+		// write to file
+			$this->zajlib->compile->write($contents);
+		// return debug_stats
+			return true;
+	}
+
 
 	/**
 	 * Tag: unique - Generates a random unique id using php's uniqid("") and prints it or saves it to a variable.

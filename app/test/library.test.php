@@ -168,11 +168,11 @@ class OfwLibraryTest extends zajTest {
 		// File listing check
 			$files = $this->zajlib->file->get_files('system/doc');
 			zajTestAssert::isArray($files);
-			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system/doc//doc.php', $files));
+			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system/doc/doc.php', $files));
 		// Folder listing check
 			$folders = $this->zajlib->file->get_folders('system/');
 			zajTestAssert::isArray($folders);
-			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system//doc/', $folders));
+			zajTestAssert::isTrue(in_array($this->zajlib->basepath.'system/doc/', $folders));
 		// Test download security
 			$this->zajlib->error->surpress_errors_during_test(true);
 			$this->zajlib->file->download('/etc/shadow');
@@ -293,6 +293,29 @@ class OfwLibraryTest extends zajTest {
 	 * Check text file.
 	 */
 	public function system_library_text(){
+		// Should add it
+		$s1 = '2';
+		$s2 = '3';
+		$res = $this->zajlib->text->add($s1, $s2);
+		zajTestAssert::areIdentical('5', $res);
+
+		// Should add it
+		$s1 = 2.5;
+		$s2 = '3';
+		$res = $this->zajlib->text->add($s1, $s2);
+		zajTestAssert::areIdentical('5.5', $res);
+
+		// Should concat it
+		$s1 = 'This is a ';
+		$s2 = '3';
+		$res = $this->zajlib->text->add($s1, $s2);
+		zajTestAssert::areIdentical('This is a 3', $res);
+
+		// Test escaping
+		$s1 = 'This is a string with \'quotes"';
+		$res = $this->zajlib->text->escape($s1, 'javascript');
+		zajTestAssert::areIdentical('This is a string with \\\'quotes\"', $res);
+
 		// Just load it up and do nothing
 		$this->zajlib->text;
 	}
@@ -347,12 +370,13 @@ class OfwLibraryTest extends zajTest {
 				zajTestAssert::isTrue($r);
 				$r = $this->zajlib->url->valid('http://example.com/?test=Spaces here are ok');
 				zajTestAssert::isTrue($r);
+			// Protocol-independent is valid
+				$r = $this->zajlib->url->valid('//localhost/asdf/example.php');
+				zajTestAssert::isTrue($r);
 		// Let's test some invalid urls
 				$r = $this->zajlib->url->valid('/asdf/example.php');
 				zajTestAssert::isFalse($r);
 				$r = $this->zajlib->url->valid('chat://asdf/asdf/example.php');
-				zajTestAssert::isFalse($r);
-				$r = $this->zajlib->url->valid('//localhost/asdf/example.php');
 				zajTestAssert::isFalse($r);
 	}
 

@@ -12,6 +12,7 @@ class zajfield_photo extends zajField {
 	const use_save = true;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = false;	// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = false;		// boolean - true if fetcher needs to be modified
+	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
 	const edit_template = 'field/photo.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
@@ -57,26 +58,15 @@ class zajfield_photo extends zajField {
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
 	public function save($data, &$object){
-		// if it is a string (form field input where it's the id), convert to an object first
-			if(!empty($data) && is_string($data) || is_integer($data)){
-				// Remove previous ones
-				$photos = Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
-				foreach($photos as $pold){ $pold->delete(); }
-				// Set new one
-				$pobj = Photo::fetch($data);
-				if(is_object($pobj)) $data = $pobj;
-			}
 		// if data is a photo object
 			if(is_object($data) && is_a($data, 'Photo')){
 				// Check to see if already has parent (disable hijacking of photos)
-					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
+					if($data->data->parent && $data->data->parent != $object->id) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
 				// Remove previous ones
-					$photos = Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
+					$photos = Photo::fetch()->filter('parent', $object->id)->filter('field', $this->name);
 					foreach($photos as $pold){ $pold->delete(); }
 				// Set new one
 
-				// check to see if already has parent (disable hijacking of photos)
-					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
 				// now set parent
 					$data->set('class', $object->class_name);
 
@@ -85,6 +75,52 @@ class zajfield_photo extends zajField {
 					$data->set('status', 'saved');
 					$data->upload();
 				return array(false, false);
+			}
+			// else if it is an array (form field input)
+			else{
+				$sdata = $data;
+				$data = json_decode($data);
+				// If data is empty alltogether, it means that it wasnt JSON data, so it's a single photo id to be added!
+				if(empty($data) && !empty($sdata)){
+					$pobj = Photo::fetch($sdata);
+					// Remove previous ones
+					$photos = Photo::fetch()->filter('parent', $pobj->parent)->filter('field', $this->name);
+					if($photos->total){
+						foreach($photos as $pold){ $pold->delete(); }
+					}
+
+					// cannot reclaim here!
+					if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->warning("Cannot save a final of a photo that already exists! You are not the owner!");
+
+					$pobj->set('parent',$object->id);
+					$pobj->set('field',$this->name);
+					$pobj->upload();
+					return array(false, false);
+				}
+				// get new ones
+				if(!empty($data->add)){
+					foreach($data->add as $count=>$id){
+						$pobj = Photo::fetch($id);
+						// Remove previous ones
+						$photos = Photo::fetch()->filter('parent', $pobj->parent)->filter('field', $this->name);
+						if($photos->total){
+							foreach($photos as $pold){ $pold->delete(); }
+						}
+						// cannot reclaim here!
+						if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->warning("Cannot save a final of a photo that already exists! You are not the owner!");
+
+						$pobj->set('parent',$object->id);
+						$pobj->set('field',$this->name);
+						$pobj->upload();
+					}
+				}
+				// delete old ones
+				if(!empty($data->remove)){
+					foreach($data->remove as $count=>$id){
+						$pobj = Photo::fetch($id);
+						$pobj->delete();
+					}
+				}
 			}
 		return array(false, false);
 	}

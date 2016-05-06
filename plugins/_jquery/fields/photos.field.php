@@ -12,6 +12,7 @@ class zajfield_photos extends zajField {
 	const use_save = true;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = false;	// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = false;		// boolean - true if fetcher needs to be modified
+	const disable_export = true;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
 	const edit_template = 'field/photos.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
@@ -46,13 +47,7 @@ class zajfield_photos extends zajField {
 	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
-		// Compatibility mode? Remove this eventually, it's because of a bug earlier.
-		if(!defined('OFW_PHOTO_COMPATIBILTY_MODE') || OFW_PHOTO_COMPATIBILTY_MODE === true){
-			return Photo::fetch()->filter('parent',$object->id)->sort('ordernum', 'ASC');
-		}
-		else{
-			return Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
-		}
+		return Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name);
 	}
 	
 	/**
@@ -66,7 +61,7 @@ class zajfield_photos extends zajField {
 		// if data is a photo object
 			if(is_object($data) && is_a($data, 'Photo')){
 				// check to see if already has parent (disable hijacking of photos)
-					if($data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
+					if($data->data->parent && $object->id != $data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
 				// now set parent
 					$data->set('parent', $object->id);
 					$data->set('field', $this->name);
@@ -106,7 +101,7 @@ class zajfield_photos extends zajField {
 						}
 					}
 				// reorder
-					if(!empty($data->order)) Photo::reorder($data->order, true);
+					if(!empty($data->order)) Photo::reorder($data->order);
 			}
 
 		return array(false, false);

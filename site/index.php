@@ -81,6 +81,10 @@
 		$zajlib = new zajLib($zajconf['root_folder'], $zajconf);
 	// set internal error handler
 		set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext){ if(!is_object(zajLib::me())){ print "FATAL ERROR: Check error log."; } else zajLib::me()->error_handler($errno, $errstr, $errfile, $errline, $errcontext);});
+	// don't use xdebug error handling
+		if(function_exists('xdebug_disable')){
+			xdebug_disable();
+		}
 	// set shutdown error handler (fatal)
 		register_shutdown_function(function(){
 			// Get error info (if there is one)
@@ -114,7 +118,7 @@
 						$whitelisted_ips = explode(',', $_SERVER['MOZAJIK_LOGIN_WHITELIST']);
 					// Check against my ip
 						foreach($whitelisted_ips as $whitelisted_ip){
-							if($zajlib->security->ip_in_range($_SERVER['REMOTE_ADDR'], $whitelisted_ip)) $whitelisted = true;
+							if($zajlib->security->ip_in_range($zajlib->request->client_ip(), $whitelisted_ip)) $whitelisted = true;
 						}
 				}
 			// Redirect to authentication

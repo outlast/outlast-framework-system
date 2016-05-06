@@ -54,6 +54,28 @@ EOF;
 			$this->zajlib->compile->write($content);
 		return true;
 	}
+
+	/**
+	 * Filter: srcset - Returns the HTML5 compatible srcset attribute value of an image
+	 *
+	 *  <b>{{ user.data.photos|srcset }}</b> The srcset="[value comes here]" of the <img> will be displayed.
+	 **/
+	public function filter_srcset($parameter, &$source){
+		$content = <<<EOF
+if(is_object(\$filter_var) && is_a(\$filter_var, "Photo")){
+	\$filter_var = \$filter_var->get_srcset();
+}
+elseif(is_object(\$filter_var) && is_a(\$filter_var, "zajFetcher") && \$obj = \$filter_var->rewind()){
+	\$filter_var=\$obj->get_srcset();
+}
+else{
+	\$filter_var=false;
+}
+EOF;
+		$this->zajlib->compile->write($content);
+		return true;
+	}
+
 	/**
 	 * Filter: count - Return the LIMITed count of a fetcher object. (This will be the number of rows returned taking into account LIMITs). This also works on arrays (where the number of items are returned) or any other data type (where 1 will be returned).
 	 *
@@ -168,6 +190,30 @@ EOF;
 			if(!$parameter && !is_numeric($parameter)) $parameter = 2;
 		// write to file
 			$this->zajlib->compile->write('if(is_numeric($filter_var)) $filter_var=number_format($filter_var, '.$parameter.', ".", "");');
+		return true;
+	}
+
+	/**
+	 * Filter: floor - Round an float down.
+	 *
+	 * <b>{{variable|floor}}</b> Assuming variable is 3.8, returned value will be 3.
+	 *
+	 **/
+	public function filter_floor($parameter, &$source){
+		// write to file
+		$this->zajlib->compile->write('if(is_numeric($filter_var)) $filter_var=floor($filter_var);');
+		return true;
+	}
+
+	/**
+	 * Filter: ceil - Round an float up.
+	 *
+	 * <b>{{variable|ceil}}</b> Assuming variable is 3.2, returned value will be 4.
+	 *
+	 **/
+	public function filter_ceil($parameter, &$source){
+		// write to file
+		$this->zajlib->compile->write('if(is_numeric($filter_var)) $filter_var=ceil($filter_var);');
 		return true;
 	}
 
@@ -451,8 +497,22 @@ EOF;
 	public function filter_gravatar($parameter, &$source){
 		// If parameter is not defined, then the parameter is the current locale
 		if(empty($parameter)) $parameter = 50;
-		// write to file
-		$this->zajlib->compile->write('$filter_var = "//www.gravatar.com/avatar/" . md5( strtolower( trim( $filter_var ) ) ) . "?d=" . urlencode("") . "&s=" . '.$parameter.';');
+
+		// Figure out gravatar url to use
+		$this->zajlib->config->load('filters.conf.ini', 'gravatar');
+
+		if($this->zajlib->url->valid($this->zajlib->config->variable->default_image_url)){
+			$default_image_url = 'd='.urlencode($this->zajlib->config->variable->default_image_url);
+		}
+		elseif($this->zajlib->config->variable->default_image_url){
+			$default_image_url = 'd='.urlencode($this->zajlib->baseurl . $this->zajlib->config->variable->default_image_url);
+		}
+		else{
+			$default_image_url = '';
+		}
+
+		// Write to file
+		$this->zajlib->compile->write('$filter_var = "//www.gravatar.com/avatar/" . md5( strtolower( trim( $filter_var ) ) ) . "?'.$default_image_url.'&s=" . '.$parameter.';');
 		return true;
 	}
 

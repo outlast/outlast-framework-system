@@ -5,35 +5,38 @@
 die("This file is for documentation.");
 
 /**
- * @method static zajDb boolean
+ * @method static zajDb boolean(boolean $default=false)
  * @method static zajDb category
  * @method static zajDb categories
  * @method static zajDb color
+ * @method static zajDB custom
  * @method static zajDb date
  * @method static zajDb email
  * @method static zajDb file
  * @method static zajDb files
  * @method static zajDb float
+ * @method static zajDbFriendly friendly
  * @method static zajDb id
  * @method static zajDb integer
  * @method static zajDb json
  * @method static zajDb locale
  * @method static zajDb locales
- * @method static zajDb manytomany
- * @method static zajDb manytoone
+ * @method static zajDb manytomany(string $other_object, string $other_field='')
+ * @method static zajDb manytoone($other_object)
  * @method static zajDbMap map
- * @method static zajDb name
- * @method static zajDb onetoone
- * @method static zajDb onetomany
+ * @method static zajDb name(integer $length=255)
+ * @method static zajDb onetoone($other_object, $other_field='')
+ * @method static zajDb onetomany($other_object, $other_field='')
  * @method static zajDb ordernum
  * @method static zajDb password
  * @method static zajDbPhoto photo
  * @method static zajDbPhoto photos
+ * @method static zajDb polymorphic
  * @method static zajDb rating
  * @method static zajDb richtext
- * @method static zajDb select
+ * @method static zajDb select($array, $default='')
  * @method static zajDb serialized
- * @method static zajDb text
+ * @method static zajDb text(integer $length=255)
  * @method static zajDb textarea
  * @method static zajDb textbox
  * @method static zajDb time
@@ -52,6 +55,11 @@ class zajDb{}
  * @method zajDbPhoto max_file_size
  */
 class zajDbPhoto extends zajDb{}
+
+/**
+ * @method zajDbFriendly from(string $field_name) Defines which field the friendly url is generated from.
+ **/
+class zajDbFriendly extends zajDb{}
 
 
 /**
@@ -120,3 +128,31 @@ class zajDataCategory extends zajData {}
  * @property string $locale
  */
 class zajTranslationData extends zajData {}
+
+
+/**
+ * Class EmailLogData
+ * @property string $subject Subject of email.
+ * @property string $from From email address.
+ * @property string $to To email address.
+ * @property string $html_body Body html.
+ * @property string $text_body Body text.
+ * @property integer $sentat The time it was sent.
+ * @property string $bcc Bcc email address.
+ * @property array|stdClass $headers Additional headers.
+ * @property string $status Status of email. Can be sent or failed (or new/deleted).
+ * @property string $log The log message.
+ */
+class EmailLogData extends zajData {}
+
+/**
+ * Class zajlibConfigVariable
+ * @property stdClass $section The variables broken into sections.
+ */
+class zajlibConfigVariable extends stdClass{}
+
+/**
+ * Class zajTestInstance
+ * @property zajLib $zajlib
+ */
+class zajTestInstance{}

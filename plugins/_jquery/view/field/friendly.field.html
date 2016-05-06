@@ -1,0 +1,16 @@
+<input class='ofw-field-friendly form-control' type='text' id='{{field.id}}' name='{{field.name}}' value='{{field.value|escape}}'>
+{% if not field.value %}
+<script>
+	requirejs(["system/js/library/text"], function(text) {
+		$('[name="{{field.options.from|escape}}"]').on('change keyup', function(){
+			// Get value
+			var val = $(this).val();
+			// For selects, it's a bit more complicated - use selected item!
+			if(this.tagName.toLowerCase() == 'select') val = $(this).find('option:selected').text();
+
+			// Finally, set my value
+			$('[name="{{field.name|escape}}"]').val(text.toFriendlyUrl(val));
+		});
+	});
+</script>
+{% endif %}

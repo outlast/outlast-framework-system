@@ -12,7 +12,7 @@ class zajlib_request extends zajLibExtension {
 	 * Sends a request to a specified url via curl. This can be more reliable the file_get_contents but is not supported on all systems.
 	 * @param string $url The url of the desired destination. You can specify parameters as a query string.
 	 * @param string|array|bool $params This is optional if parameters are specified via query string in the $url. It can be an array or a query string.
-	 * @param string $method The method in which to send the request (GET/POST/PUT).
+	 * @param string $method The method in which to send the request (GET/POST/PUT/DELETE/etc.).
 	 * @param array|bool $additional_options An associative array of additional curl options. {@link http://www.php.net/manual/en/function.curl-setopt.php} Example: array(CURLOPT_URL => 'http://www.example.com/')
 	 * @return string Returns a string with the content received.
 	 **/
@@ -36,15 +36,29 @@ class zajlib_request extends zajLibExtension {
 			}
 
 			if($method == 'POST' || $method == 'PUT'){
-				if($method == 'POST') curl_setopt($curl, CURLOPT_POST, true);
-				if($method == 'PUT') curl_setopt($curl, CURLOPT_PUT, true);
+				if($method == 'POST') {
+					curl_setopt($curl, CURLOPT_POST, true);
+				}
+
+				if($method == 'PUT') {
+					curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+				}
 				if($params && (is_array($params) || is_object($params))) curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($params, null, '&'));
 				if($params && is_string($params)) curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
 			}
+			else{
+				curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+			}
+
 		// Set any other options?
-			if(is_array($additional_options)) foreach($additional_options as $key=>$value) curl_setopt($curl, $key, $value);
+			if(is_array($additional_options)){
+				foreach($additional_options as $key=>$value){
+					curl_setopt($curl, $key, $value);
+				}
+			}
 		// Send and close
 			$ret = curl_exec($curl);
+
 		// Check to see if an error occurred
 			if($ret === false) $this->zajlib->warning("Curl error (".curl_errno($curl)."): ".curl_error($curl));
 		// Close and return
@@ -161,7 +175,7 @@ class zajlib_request extends zajLibExtension {
 	 * @param integer $status_code The status code.
 	 * @return string The name.
 	 */
-	public function get_http_status_name($status_code){
+	public function http_status_name($status_code){
 		// Decide which one
 		switch ($status_code){
 			case 100: $text = 'Continue'; break;
@@ -208,7 +222,13 @@ class zajlib_request extends zajLibExtension {
 		return $text;
 	}
 
-
+	/**
+	 * Use http_status_name instead.
+	 * @deprecated
+	 */
+	public function get_http_status_name($status_code){
+		return $this->http_status_name($status_code);
+	}	
 
 	/**
 	 * Is the current request an ajax request? Requires a Javascript library to work properly cross-browser (jquery, moo, etc.)
@@ -219,4 +239,12 @@ class zajlib_request extends zajLibExtension {
 		if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') return true;
 		else return false;
 	}
+
+	/**
+	 * Get the client's IP address. Because of forwarding or clusters, this may actually be different from REMOTE_ADDR.
+	 */
+	public function client_ip(){
+		return $this->zajlib->error->client_ip();
+    }
+
 }

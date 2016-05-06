@@ -1,45 +1,26 @@
-<!-- load up outlast rte -->
-<link rel="stylesheet" href="{{baseurl}}plugins/outlast/css/outlast-rte.css{% cachebuster %}"/>
-<script src="{{baseurl}}plugins/outlast/js/outlast-rte.js{% cachebuster %}"></script>
+{% lang 'system/fields' 'richtext' %}
 
-<div class="ol-rte well" id="{{field.uid}}-rte">
-    <ul class="menu">
-        <li><a class="btn" data-action="bold"><i class="fa fa-bold"></i></a></li>
-        <li><a class="btn" data-action="italic"><i class="fa fa-italic"></i></a></li>
-        <li><a class="btn" data-action="underline"><i class="fa fa-underline"></i></a></li>
-        <li><a class="btn" data-action="link"><i class="fa fa-link"></i></a></li>
-        <li><a class="btn" data-action="unlink"><i class="fa fa-unlink"></i></a></li>
-        <li><a class="btn" data-action="insertUnorderedList"><i class="fa fa-list-ul"></i></a></li>
-        <li><a class="btn" data-action="insertOrderedList"><i class="fa fa-list-ol"></i></a></li>
-        <li>
-			<div class="btn-group">
-				<a type="button" class="btn dropdown-toggle" data-toggle="dropdown">
-					<i data-action-feedback="fontSize" class="fa fa-arrows-v"></i> <span class="caret"></span>
-				</a>
-				<ul class="dropdown-menu" role="menu">
-					<li><a data-action="setFontSize" data-parameter="1">1</a></li>
-					<li><a data-action="setFontSize" data-parameter="2">2</a></li>
-					<li><a data-action="setFontSize" data-parameter="3">3</a></li>
-					<li><a data-action="setFontSize" data-parameter="4">4</a></li>
-					<li><a data-action="setFontSize" data-parameter="5">5</a></li>
-					<li><a data-action="setFontSize" data-parameter="6">6</a></li>
-					<li><a data-action="setFontSize" data-parameter="7">7</a></li>
-				</ul>
-			</div>
-        </li>
-        <li><a class="btn" data-action="removeFormat"><i class="fa fa-ban"></i></a></li>
-        <li><a class="btn" data-action="toggleHtmlView"><i class="fa fa-code"></i></a></li>
-	</ul>
-    <div class='text' contenteditable="true" spellcheck="false">
-        {{field.value|strip_attribute:'style'}}
-    </div>
-	<textarea class='field textarea hide' id='{{field.uid}}' name='{{field.name}}'>{{field.value|escape:'htmlall'}}</textarea>
-</div>
+<!-- load up medium editor -->
+<link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/medium-editor.css">
+<link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/themes/bootstrap.css">
 
+<div style="height: auto;" class="ofw-field-textarea form-control" id="medium-editor-{{field.uid}}">{{field.value|strip_attribute:'style'|safe}}</div>
 <script>
-	$(window).load(function () {
-		var $rte = $('#{{field.uid}}-rte');
-		$rte.olrte();
-		$rte.bind('ol.rte.blur', function(ev, content){ $('#{{field.uid}}').html(content); });
+	var mediumEditors;
+	if(typeof mediumEditors == 'undefined') mediumEditors = {};
+	requirejs(["system/js/ext/medium-editor/medium-editor.min"], function(MediumEditor){
+		mediumEditors['{{field.uid}}'] = new MediumEditor('#medium-editor-{{field.uid}}', {
+			toolbar: {
+				buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'quote', 'removeFormat']
+			},
+			placeholder: {
+				text: '{{#system_field_richtext_placeholder#}}',
+				hideOnClick: true
+			}
+		});
+		mediumEditors['{{field.uid}}'].subscribe('editableInput', function(){
+			$('#textarea-{{field.uid}}').html($('#medium-editor-{{field.uid}}').html());
+		});
 	});
 </script>
+<textarea class='ofw-field-text form-control hide' id='textarea-{{field.uid}}' name='{{field.name}}'>{{field.value|safe|escape:'htmlall'}}</textarea>

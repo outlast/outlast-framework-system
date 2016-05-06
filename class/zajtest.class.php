@@ -595,7 +595,7 @@ class Test
 
     public function run()
     {
-        /** @var $testClass iTestable */
+        /** @var $testClass iTestable|\zajTestInstance */
         $testClass = new $this->ClassName();
 
         /** added by Outlast Framework **/
@@ -608,6 +608,9 @@ class Test
         } catch (\Exception $e) { }
 
         try {
+            /** added by Outlast Framework */
+            $testClass->zajlib->error->surpress_errors_during_test(false);
+            // Now run test
             $testClass->{$this->TestName}();
             $result = true;
         } catch (TestException $e) {

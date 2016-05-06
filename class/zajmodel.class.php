@@ -41,6 +41,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @property zajLib $zajlib A pointer to the global object.
  * @property string $name The name of the object.
  * @property boolean $exists
+ * @property stdClass $translation
  */
 abstract class zajModel implements JsonSerializable {
 	// Instance variables
@@ -122,6 +123,12 @@ abstract class zajModel implements JsonSerializable {
 	 * @var zajData
 	 **/
 	private $data;
+
+	/**
+	 * Access to the database-stored data that is retrieved as custom query via the {@link zajFetcher} object's add_field_source method.
+	 * @var stdClass|boolean
+	 **/
+	public $fetchdata = false;
 
 	/**
 	 * Access to the database-stored translation data through the object's own {@link zajModelLocalizer} object.
@@ -231,7 +238,7 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Fetch a single or multiple existing object(s) of this class.
 	 * @param bool|string|zajModel $id OPTIONAL. The id of the object. Leave empty if you want to fetch multiple objects. You can also pass an existing zajModel object in which case it will simply pass through the function without change - this is useful so you can easily support both id's and existing objects in a function.
-	 * @return zajFetcher|self Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
+	 * @return zajFetcher|zajModel Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
 	 */
 	public static function fetch($id=false){
 		// Get my class_name
@@ -338,7 +345,7 @@ abstract class zajModel implements JsonSerializable {
 			}
 		// Set settings
 			foreach($data as $field_name => $field_value){
-				// everything except the system stuff
+				// everything except the system stuff @todo this check should be a field property
 				if($field_name != 'unit_test' && $field_name != 'id' && $field_name != 'time_create' && $field_name != 'time_edit' && $field_name != 'ordernum'){
 					$this->set($field_name, $field_value);
 				}
@@ -445,22 +452,30 @@ abstract class zajModel implements JsonSerializable {
 	 * Convert model data to a standard single-dimensional array format.
 	 * @todo Move these conversions to field definition files.
 	 * @todo Add support for model extensions.
+	 * @param boolean $localized Set to true if you want the localized version.
 	 * @return array Return a single-dimensional array.
 	 */
-	public function to_array(){
+	public function to_array($localized = true){
 		// Get my class name
 			/* @var zajModel $class_name */
 			$class_name = $this->class_name;
 		// Get my model data
 			$mymodel = $class_name::__model();
 		// Load up data if not yet loaded
-			if(!$this->data) $this->data = new zajData($this);
+			if($localized){
+				if(!$this->translations) $this->translations = new zajModelLocalizer($this);
+				$data = $this->translations;
+			}
+			else{
+				if(!$this->data) $this->data = new zajData($this);
+				$data = $this->data;
+			}
 		// Now fetch array data
 			$array_data = array();
 			foreach($mymodel as $field_name => $field_type){
 				switch($field_type->type){
 					case 'manytoone':
-						$array_data[$field_name] = $this->data->$field_name->id;
+						$array_data[$field_name] = $data->$field_name->id;
 						break;
 					case 'categories':
 					case 'files':
@@ -470,7 +485,7 @@ abstract class zajModel implements JsonSerializable {
 						// Just skip these
 						break;
 					default:
-						$array_data[$field_name] = $this->data->$field_name;
+						$array_data[$field_name] = $data->$field_name;
 						break;
 				}
 			}
@@ -611,6 +626,18 @@ abstract class zajModel implements JsonSerializable {
 	}
 
 	/**
+	 * Checks if the passed object is a type of me.
+	 * @param mixed $object Checks if the passed variable is instance of me.
+	 * @return boolean True if yes, false if not.
+	 */
+	public static function is_instance_of_me($object){
+		// Get my class name
+		$class_name = get_called_class();
+		return is_a($object, $class_name);
+	}
+
+
+	/**
 	 * This method looks for methods in extends children and creates "virtual" menthods to events and actions.
 	 *
 	 * @ignore
@@ -709,12 +736,13 @@ abstract class zajModel implements JsonSerializable {
 		// the zajlib
 		switch($name){
 			case "zajlib": 		return zajLib::me();
-			case "data":		if(!$this::$in_database) return false; 	// disable for non-database objects
+			case "data":
+				if(!$this::$in_database) return false; 	// disable for non-database objects
 				if(!$this->data) return $this->data = new zajData($this);
 				return $this->data;
 			case "translation":
 			case "translations":if(!$this::$has_translations) return false; 	// disable where no translations available
-				if(!$this->translations) return $this->translations = new zajModelLocalizer($this);
+				if(!$this->translations || $this->translations->locale != zajLib::me()->lang->get()) return $this->translations = new zajModelLocalizer($this);
 				return $this->translations;
 			case "autosave":	if(!$this::$in_database) return false; 	// disable for non-database objects
 				if(!$this->data) $this->data = new zajData($this);
@@ -752,6 +780,15 @@ abstract class zajModel implements JsonSerializable {
 				// now return it
 				return $this->name_key;
 		}
+
+		// Enable extended __get()
+		$class_name = get_called_class();
+		// Am I extended?
+		$ext = $class_name::extension();
+		if(method_exists($ext, '__get')){
+			$extobj = $ext::create($this->id, $this);
+			return $extobj->__get($name);
+		}
 	}
 	/**
 	 * @ignore
@@ -775,7 +812,7 @@ abstract class zajModel implements JsonSerializable {
 
 		// return the resumed class
 		$filename = zajLib::me()->file->get_id_path(zajLib::me()->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
-		// try opening the file
+		// try opening the file and unserializing
 		$item_cached = false;
 		if(!file_exists($filename)){
 			// create object
@@ -785,12 +822,12 @@ abstract class zajModel implements JsonSerializable {
 		}
 		else{
 			$new_object = unserialize(file_get_contents($filename));
-			$new_object->zajlib = zajLib::me();
-			$item_cached = true;
+			if(is_object($new_object)){
+				$new_object->zajlib = zajLib::me();
+				$item_cached = true;
+			}
 		}
-		if(!method_exists($new_object, 'fire') ||
-			$new_object->class_name != $class_name){
-
+		if(!method_exists($new_object, 'fire') || $new_object->class_name != $class_name){
 			// @todo Remove this logging once the problem has been solved!
 			//zajLib::me()->warning("Class mismatch for cache ($item_cached): ".$class_name." / ".$new_object->class_name." / $id / ".$new_object->id);
 			copy($filename, zajLib::me()->basepath.'cache/_mismatched/'.$class_name.'-'.$id.'.cache');

@@ -79,6 +79,7 @@ class File extends zajModel {
 			$this->time_create = $this->data->time_create;
 		// Get file path info
 			$this->extension = $this->zajlib->file->get_extension($this->name);
+			$this->mime = $this->data->mime;
 			// Magic property 'relative', 'path'
 			// Magic property 'temporary'
 	}
@@ -137,6 +138,7 @@ class File extends zajModel {
 	 * Get the file extension type.
 	 * @param string|boolean $file_path The path whoes extension we wish to check. Defaults to the master file path.
 	 * @return string Will return the file's extension.
+	 * @deprecated Use file lib instead.
 	 */
 	public function get_extension($file_path = false){
 		if($file_path !== false) return $this->zajlib->file->get_extension($file_path);
@@ -262,7 +264,7 @@ class File extends zajModel {
 	}
 
 	/**
-	 * Creates and saves a file object from a file or url. Will return false if it is not an image or not found.
+	 * Creates and saves a file object from a file or url. Will return false if it is not found.
 	 * @param string $url_or_file_name The url or file name.
 	 * @param zajModel|bool $parent My parent object or id. If not specified, none will be set.
 	 * @param string|bool $field The field name of the parent. This is required if $parent is set.

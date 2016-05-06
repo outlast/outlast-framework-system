@@ -13,7 +13,7 @@ class zajlib_text extends zajLibExtension {
 	 * @param string $str The original string.
 	 * @return string The string with tags.
 	 **/
-	static function nltobr($str){
+	public static function nltobr($str){
 		$str = str_replace ("\n", "<br />", $str);
 		$str = str_replace ("\r", "", $str);
 		return $str;
@@ -24,7 +24,7 @@ class zajlib_text extends zajLibExtension {
 	 * @param string $str The original string.
 	 * @return string The string without tags.
 	 **/
-	static function brtonl($str){
+	public static function brtonl($str){
 		$str = str_replace ("<br>", "\n", $str);
 		$str = str_replace ("<br />", "\n", $str);
 		return $str;
@@ -35,7 +35,7 @@ class zajlib_text extends zajLibExtension {
 	 * @param string $str The original string.
 	 * @return string The string without tags.
 	 **/
-	static function remove_nl($str){
+	public static function remove_nl($str){
 		$str = str_replace ("\n", " ", $str);
 		$str = str_replace ("\r", "", $str);
 		return $str;	
@@ -47,7 +47,7 @@ class zajlib_text extends zajLibExtension {
 	 * @return string The string without the pre words.
 	 * @todo Move this to a plugin.
 	 **/
-	function strip_pre_words($string){
+	public function strip_pre_words($string){
 		$string = mb_strtolower($string);
 		$conData = str_replace("a ", "", $string);
 		$conData = str_replace("az ", "", $conData);
@@ -57,15 +57,81 @@ class zajlib_text extends zajLibExtension {
 		$conData = str_replace("\"", "", $conData);
 		return $conData;
 	}
+
+	/**
+	 * Escape dangerous characters using various built-in or expanded methods.
+	 * @param string $string The original string.
+	 * @param string $method The method of escaping. Can be a number of values, see docs. Defaults to htmlspecialchars
+	 * @return string The escaped, safe string.
+	 * @todo fix javascript to be based on django docs
+	 **/
+	public function escape($string, $method){
+		switch($method){
+			case 'htmlentities':
+			case 'htmlall':
+				$string = htmlentities($string, ENT_QUOTES, 'UTF-8', false);
+				break;
+			case 'decode':
+				$string = html_entity_decode($string);
+				break;
+			case 'url':
+				$string = urlencode($string);
+				break;
+			case 'shellcmd':
+				$string = escapeshellcmd($string);
+				break;
+			case 'shellarg':
+				$string = escapeshellarg($string);
+				break;
+			case 'quotes':
+			case 'javascript':
+			case 'js':
+				$string = str_replace('"','\"',$string);
+				$string = str_replace("'","\\'",$string);
+				$string = str_replace("\\n"," ",$string);
+				$string = str_replace("\\r","",$string);
+				break;
+			case 'mail':
+				$string = str_replace('@',' [at] ',$string);
+				$string = str_replace('.',' [dot] ',$string);
+				break;
+			case 'htmlquotes':
+				$string = str_replace('"','&quot;',$string);
+				$string = str_replace("'",'&#039;',$string);
+				break;
+			case 'urlpathinfo':
+			case 'hex':
+			case 'hexentity':
+				$string = 'This filter not yet supported.';
+				break;
+			case 'htmlspecialchars':
+			case 'html':
+			default:
+				$string = htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+				break;
+		}
+		return $string;
+	}
+
+	/**
+	 * Adds a text to another text. Different from concatenation in the sense that if both texts are numeric, they are added mathematically.
+	 * @param string $first The left string.
+	 * @param string $second The right string.
+	 * @return string The string version of the concatenated or added string. 
+	 */
+	public function add($first, $second){
+		if(is_numeric($first) && is_numeric($second)) return (string) ($first + $second);
+		else return $first.$second;
+	}
 	
 	/**
 	 * Truncates a string to length. Depricated.
-	 * @param string $str The original string.
+	 * @param string $string The original string.
 	 * @param integer $length The length to truncate to.
 	 * @return string The truncated string.
 	 * @todo This is no longer needed here, since this is done in the template tag 'truncate'.
 	 **/
-	function cut_me($string, $length){
+	public function cut_me($string, $length){
 		if(strlen($string) > $length) $string = mb_substr($string, 0, $length-2)."...";
 	    return $string;
 	}
@@ -76,17 +142,17 @@ class zajlib_text extends zajLibExtension {
 	 * @param integer $truncate Truncate long links in text to shorter version (www.facebook.com/asd) to this many characters.
 	 * @return string The updated string with urls in place.
 	 **/
-	function urlize($text, $truncate = false){
+	public function urlize($text, $truncate = false){
 		return $this->get_auto_link($text, $truncate);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 	// Tag conversions
-	function convertTagToURL($text, $tag, $link){
+	public function convertTagToURL($text, $tag, $link){
 	 $text = ereg_replace("<$tag>([A-z0-9ÁÉÓÖŐÜŰÚÍéáűőúöüóí&'\?!:/\. \-]*)</$tag>", "<b><a href=\"$link\\1\">\\1</a></b>", $text);
 	 return $text;
 	}
-	function convertTagToIMG($text, $tag, $align='left'){
+	public function convertTagToIMG($text, $tag, $align='left'){
 	 	$parts = explode("<$tag>", $text);
 	 	if(count($parts) > 1){
 	 		// get all images
@@ -106,10 +172,10 @@ class zajlib_text extends zajLibExtension {
 	}
 	
 	/**
-	 * Depricated version
+	 * Deprecated version
 	 * @ignore
 	 **/
-	function get_auto_link($text, $truncate = false){
+	public function get_auto_link($text, $truncate = false){
 	  if(strip_tags($text) == $text){
 	  	$text = ereg_replace('((www\.)([a-zA-Z0-9@:%_.~#-\?&]+[a-zA-Z0-9@:%_~#\?&/]))', "http://\\1", $text);
 	  	$text = ereg_replace('((ftp://|http://|https://){2})([a-zA-Z0-9@:%_.~#-\?&]+[a-zA-Z0-9@:%_~#\?&/])', "http://\\3", $text);
@@ -121,7 +187,7 @@ class zajlib_text extends zajLibExtension {
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
 	// Unique number
-	function unique_number(){
+	public function unique_number(){
 		$uab=57;
 		$lab=48;
 		
@@ -142,15 +208,64 @@ class zajlib_text extends zajLibExtension {
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
 	// Is this in that?
-	function is_this_in_that($thisone, $thatone){
+	public function is_this_in_that($thisone, $thatone){
 		if(mb_strrpos($thatone, $thisone) === false) return false;
 		else return true;
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////
 	// Str to proper (utf support)
-	function str_to_proper($str){
+	public function str_to_proper($str){
 		return mb_convert_case(mb_strtolower($str), MB_CASE_TITLE);
+	}
+
+	/**
+	 *
+	 * Convert string into snake_case formatted string
+	 *
+	 * @param string $input Input string
+	 * @return string snake_case formatted string
+	 */
+	function convert_to_snake_case($input) {
+		preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
+		$ret = $matches[0];
+
+		foreach ($ret as &$match) {
+			$match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
+		}
+
+		return implode('_', $ret);
+	}
+
+	/**
+	 *
+	 * Convert string into camelCase formatted string
+	 *
+	 * @param string $input Input string
+	 * @param boolean $pascal_case If true, the string will be formatted to PascalCase (instead of camelCase)
+	 * @return string camelCase formatted string
+	 */
+	function convert_to_camel_case($input, $pascal_case = false) {
+		$ret = str_replace(' ', '', ucwords(str_replace('_', ' ', $input)));
+
+		if (!$pascal_case) {
+			$ret = strtolower(substr($ret,0,1)) . substr($ret,1);
+		}
+
+		return $ret;
+	}
+
+	/**
+	 *
+	 * Convert string into space case formatted string
+	 *
+	 * @param string $input Input string
+	 * @return string space case formatted string
+	 */
+	function convert_to_space_case($input) {
+		preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
+		$ret = str_replace("_", "", implode(" ", $matches[0]));
+		return $ret;
 	}
 
 }

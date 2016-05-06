@@ -58,10 +58,19 @@ class zajlib_compile extends zajLibExtension{
 		// now go!
 			return $this->go();
 	}
-	
+
+	/**
+	 * Returns true if a template file exists anywhere in the available paths based on the source path.
+	 * @param string $source_path The source path to check for.
+	 * @return boolean Returns true if found, false if not.
+	 */
+	public function source_exists($source_path){
+		return zajCompileSource::file_exists($source_path);
+	}
 	
 	/**
 	 * This will start the compiling session and recursively continue the process until it is finished with all related files.
+	 * @return boolean Will return false, but that does not mean it was a failure! Failures are either fatal or displayed inline.
 	 **/
 	private function go(){
 		// get the latest session

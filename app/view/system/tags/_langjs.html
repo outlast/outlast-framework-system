@@ -1,0 +1,7 @@
+<script>
+ofw.setLang([
+{% foreach #section#|keyvalue:field.section as lang_js_section_item %}
+{ key: '{{forloop.key|escapejs}}', value: '{{lang_js_section_item|escapejs}}', section: '{{field.section|escapejs}}' } {% if not forloop.last %}, {% endif %}
+{% endforeach %}
+]);
+</script>

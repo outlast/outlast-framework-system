@@ -316,6 +316,7 @@ class zajCompileSession {
  * @property integer $line_number
   */
 class zajCompileSource {
+	/** @var zajLib */
 	public $zajlib;				// object - pointer to global zajlib object
 
 	// instance variables
@@ -357,22 +358,27 @@ class zajCompileSource {
 	 */
 	public function __construct($source_file, &$zajlib, $ignore_app_level = false, $child_source = false){
 		// set zajlib & debug stats
-			$this->zajlib =& $zajlib;
+		$this->zajlib =& $zajlib;
+
 		// jail the source path
-			$this->zajlib->file->file_check($source_file);
+		$source_file = trim($source_file, '/');
+		$this->zajlib->file->file_check($source_file);
+		
 		// does it exist?
-			$app_level_and_path = $this->check_app_levels($source_file, $ignore_app_level);
-			if($app_level_and_path === false){
-				if($ignore_app_level === false) return $this->zajlib->error("Template file $source_file could not be found anywhere.");
-				else return $this->zajlib->error("Template file $source_file could not be found in app hierarchy levels below $ignore_app_level.");
-			}
+		$app_level_and_path = $this->check_app_levels($source_file, $ignore_app_level);
+		if($app_level_and_path === false){
+			if($ignore_app_level === false) return $this->zajlib->error("Template file $source_file could not be found anywhere.");
+			else return $this->zajlib->error("Template file $source_file could not be found in app hierarchy levels below $ignore_app_level.");
+		}
+		
 		// set my child
-			$this->child_source = $child_source;
+		$this->child_source = $child_source;
+
 		// open file
-			$this->app_level = $app_level_and_path[1];
-			$this->requested_path = $source_file;
-			$this->file_path = $app_level_and_path[0];
-			return $this->file = fopen($this->file_path, 'r');
+		$this->app_level = $app_level_and_path[1];
+		$this->requested_path = $source_file;
+		$this->file_path = $app_level_and_path[0];
+		return $this->file = fopen($this->file_path, 'r');
 	}	
 
 	/**
@@ -591,25 +597,32 @@ class zajCompileDestination {
 	
 	public function __construct($dest_file, &$zajlib, $temporary = false){
 		// set zajlib & debug stats
-			$this->zajlib =& $zajlib;
+		$this->zajlib =& $zajlib;
+
 		// jail the destination path
-			$this->zajlib->file->file_check($dest_file);
+		$dest_file = trim($dest_file, '/');
+		$this->zajlib->file->file_check($dest_file);
+
 		// tmp or not?
-			$this->temporary = $temporary;
-			if($this->temporary) $subfolder = "temp";
-			else $subfolder = "view";
+		$this->temporary = $temporary;
+		if($this->temporary) $subfolder = "temp";
+		else $subfolder = "view";
+
 		// check path
-			$this->file_path = $this->zajlib->basepath.'cache/'.$subfolder.'/'.$dest_file.'.php';
+		$this->file_path = $this->zajlib->basepath.'cache/'.$subfolder.'/'.$dest_file.'.php';
+
 		// does it exist...temporary files are not recreated
-			if(file_exists($this->file_path)){
-				$this->exists = true;
-				if($this->temporary) return false;
-			}
+		if(file_exists($this->file_path)){
+			$this->exists = true;
+			if($this->temporary) return false;
+		}
+
 		// open the cache file, create folders (if needed)
-			@mkdir(dirname($this->file_path), 0777, true);
-			$this->file = fopen($this->file_path, 'w');
+		@mkdir(dirname($this->file_path), 0777, true);
+		$this->file = fopen($this->file_path, 'w');
+
 		// did it fail?
-			if(!$this->file) return $this->zajlib->error("could not open ($dest_file) for writing. does cache folder have write permissions?");
+		if(!$this->file) return $this->zajlib->error("could not open ($dest_file) for writing. does cache folder have write permissions?");
 		return true;
 	}
 
@@ -880,8 +893,8 @@ class zajCompileElement{
 							}
 							else{
 								// This is an operator! So now let's make sure this is an if tag
-								if($this->parent->get_current_tag() != 'if' && $this->parent->get_current_tag() != 'elseif'){
-									$this->parent->warning("operator $variable is only supported for 'if' tags!");
+								if($this->parent->get_current_tag() != 'if' && $this->parent->get_current_tag() != 'elseif' && $this->parent->get_current_tag() != 'with'){
+									$this->parent->warning("operator $variable is only supported for 'if' and 'with' tags!");
 									return '$empty';
 								}
 								else $new_var = $element;

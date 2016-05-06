@@ -20,7 +20,7 @@ class zajlib_export extends zajLibExtension {
 		 * @param zajModel|array|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export. NOT YET IMPLEMENTED!
 		 * @param string $file_name The name of the file which will be used during download.
-		 * @return void Print the csv.
+		 * @return string|boolean Print the json or return it in test mode.
 		 */
 		public function json($fetcher, $fields = false, $file_name='export.json'){
 			$array_data = array();
@@ -54,7 +54,7 @@ class zajlib_export extends zajLibExtension {
 		 * @param string $file_name The name of the file which will be used during download.
 		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
-		 * @return void Print the csv.
+		 * @return string|boolean Print the csv or return it in test mode.
 		 */
 		public function csv($fetcher, $fields = false, $file_name='export.csv', $encoding = false, $delimiter = false){
 			// Show template
@@ -115,7 +115,7 @@ class zajlib_export extends zajLibExtension {
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
 		 * @param string $file_name The name of the file which will be used during download.
 		 * @require Requires the Spreadsheet_Excel_Writer PEAR module.
-		 * @return void Sends to download of excel file.
+		 * @return string|boolean Print the xlsx or return it in test mode.
 		 */
 		public function xls($fetcher, $fields = false, $file_name='export.xlsx'){
 			$this->zajlib->config->load('export.conf.ini');
@@ -163,11 +163,25 @@ class zajlib_export extends zajLibExtension {
 			// Set my time limit and memory limit
 				ini_set('memory_limit', '2048M');
 				set_time_limit(OFW_EXPORT_MAX_EXECUTION_TIME);
+			// Initialize zajdbs
+				$field_objects = [];
 			// Get fields of fetcher class if fields not passed
 				if(is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
+					/** @var zajModel $class_name */
 					$class_name = $fetcher->class_name;
 					$my_fields = $class_name::__model();
-					foreach($my_fields as $field=>$val) $fields[] = $field;
+					$fields = [];
+					/** @var zajDb $val */
+					foreach($my_fields as $field=>$val){
+						if(!$val->disable_export){
+							// Add fields to export
+								$fields[$field] = $field;
+							// Set the zajDb object if export formatting requiesd
+								if($val->use_export) $field_objects[$field] = $class_name::__field($field);
+								else $field_objects[$field] = false;
+						}
+
+					}
 				}
 			// Get fields of db object if fields not passed (the property names of the object)
 				if(!is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
@@ -196,43 +210,38 @@ class zajlib_export extends zajLibExtension {
 							// Convert encoding if it is set
 								if($encoding) $data['name'] = mb_convert_encoding($data['name'], $encoding, 'UTF-8');
 						}
-						
+
 					// Add my values for each field
-						foreach($fields as $type => $field){
-							// Set to value
-								if($model_mode) $field_value = $s->data->$field;
+						foreach($fields as $field_key => $field){
+							// Figure out my string value
+								if($model_mode){
+									$field_value = $s->data->$field;
+									// Do we need export formatting?
+									if($field_objects[$field] !== false){
+										/** @var zajDb|zajField $zajdb_obj */
+										$zajdb_obj = $field_objects[$field];
+										$field_value = $zajdb_obj->export($field_value, $s);
+									}
+								}
 								else{
 									// Either an array or an object
 									if(is_array($s)) $field_value = $s[$field];
 									else $field_value = $s->$field;
 								}
-							
-							// Relationship field support (for manytoone only)
-								if(is_object($field_value) && is_a($field_value, 'zajModel')){
-									$data[$field] = $field_value->name;
-								}
-							// Relationship field support (for manytomany and onetomany)
-								elseif(is_object($field_value) && is_a($field_value, 'zajFetcher')){
-									$data[$field] = $field_value->total.' items';
-								}
-							// See if field value is an array
-								elseif(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
+
+							// If field value is an array or object then split into key/value columns but remove my column
+								if(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
 									foreach($field_value as $key=>$value) $data[$field.'_'.$key] = $value;
-								}								
-							// Time or date field
-								elseif(is_string($type) && $type == 'time' && is_numeric($field_value)) $data[$field] = date("D M j G:i:s T Y", $field_value);
-								elseif(is_string($type) && $type == 'date' && is_numeric($field_value)) $data[$field] = date("D M j Y", $field_value);
-							// Standard field
-								else $data[$field] = $field_value;
+								}
+								else{
+									// Set to array
+									$data[$field] = $field_value;
+								}
+
 							// Convert encoding if excel mode selected
 								if($encoding) $data[$field] = mb_convert_encoding($data[$field], $encoding, 'UTF-8');
 						}
-					// Add default values (only if model_mode)
-						if($model_mode){						
-							$data['ordernum'] = $s->data->ordernum;
-							$data['time_create'] = date("D M j G:i:s T Y", $s->data->time_create);
-							$data['id'] = $s->data->id;
-						}
+
 					// If firstline, display fields
 						if($linecount == 1){
 							// Write XLS
@@ -253,6 +262,7 @@ class zajlib_export extends zajLibExtension {
 								}
 							$linecount++;
 						}
+						
 					// Display values
 						// Write XLS
 						if(is_a($output, 'PHPExcel')){
@@ -282,6 +292,7 @@ class zajlib_export extends zajLibExtension {
 					// Add to linecount
 						$linecount++;
 				}
+			return $linecount;
 		}
 	
 		/**

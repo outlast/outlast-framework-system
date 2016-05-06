@@ -6,15 +6,17 @@
  **/
 class zajfield_files extends zajField {
 	// name, options - these are passed to constructor and available here!
-	const in_database = false;		// boolean - true if this field is stored in database		
+	const in_database = false;		// boolean - true if this field is stored in database
 	const use_validation = false;	// boolean - true if data should be validated before saving
 	const use_get = true;			// boolean - true if preprocessing required before getting data
 	const use_save = true;			// boolean - true if preprocessing required before saving data
+	const use_duplicate = false;	// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = true;		// boolean - true if fetch is modified
+	const disable_export = true;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
 	const edit_template = 'field/files.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
-		
+
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
 
@@ -25,7 +27,7 @@ class zajfield_files extends zajField {
         // call parent constructor
         parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
 
-	}	
+	}
 
 	/**
 	 * Check to see if input data is valid.
@@ -35,7 +37,7 @@ class zajfield_files extends zajField {
 	public function validation($input){
 		return true;
 	}
-	
+
 	/**
 	 * Preprocess the data before returning the data from the database.
 	 * @param mixed $data The first parameter is the input data.
@@ -45,7 +47,7 @@ class zajfield_files extends zajField {
 	public function get($data, &$object){
 		return File::fetch()->filter('parent',$object->id);
 	}
-	
+
 	/**
 	 * Preprocess the data before saving to the database.
 	 * @param mixed $data The first parameter is the input data.
@@ -70,9 +72,9 @@ class zajfield_files extends zajField {
 					if(!empty($data->add)){
 						foreach($data->add as $count=>$id){
 							$pobj = File::fetch($id);
-								// cannot reclaim here!
-								if($pobj->status == 'saved') return $this->zajlib->error("Cannot save a final of a File that already exists!");							
-							$pobj->set('parent',$object->id);							
+							// cannot reclaim here!
+							if($pobj->status == 'saved' && $pobj->data->parent != $object->id) return $this->zajlib->error("Cannot attach an existing and saved File object to another object!");
+							$pobj->set('parent', $object->id);
 							$pobj->upload();
 						}
 					}

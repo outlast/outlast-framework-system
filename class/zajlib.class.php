@@ -45,15 +45,20 @@ class zajLib {
 	// instance variables	
 		// my path and url
 			/**
-			 * The project root directory. This is automatically determined.
+			 * The project root directory, with trailing slash. This is automatically determined.
 			 * @var string
 			 **/
 			public $basepath;
 			/**
-			 * The project root url. This is automatically determined.
+			 * The project root url, with trailing slash. This is automatically determined.
 			 * @var string
 			 **/
 			public $baseurl;
+			/**
+			 * The project root's subfolder if there is any. Will be empty if none, will have trailing slash if it is set. This is automatically determined.
+			 * @var string
+			 **/
+			public $basefolder;
 			/**
 			 * The full request URL without the query string.
 			 * @var string
@@ -64,6 +69,11 @@ class zajLib {
 			 * @var string
 			 **/
 			public $fullrequest;
+			/**
+			 * The request path with trailing slash but without base url and without query string.
+			 * @var string
+			 **/
+			public $requestpath;
 			/**
 			 * The host of the current request. This is automatically determined, though keep in mind the end user can modify this!
 			 * @var string
@@ -203,7 +213,6 @@ class zajLib {
 		// store configuration
 			$this->zajconf = $zajconf;
 		// parse query string
-			$default_mode = false;
 			if(isset($_GET['zajapp'])){
 			// autodetect my app
 				$this->app = $_GET['zajapp'];
@@ -224,14 +233,20 @@ class zajLib {
 			if(empty($this->app)){
 				$this->app = $this->zajconf['default_app'];
 				$this->mode = $this->zajconf['default_mode'];
-				$default_mode = true;
 			}
-		// autodetect my url
-			if(empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "off") $this->https = false;
-			else{
+		// autodetect https protocol, if set
+			if(
+				// Apache normal mode
+				(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "off") ||
+				// Apache in proxy mode
+				(!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == "https") ||
+				// Nginx and certain Apache configs
+				(!empty($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] != "off")
+			  ){
 				$this->https = true;
 				$this->protocol = 'https:';
 			}
+
 		// disable empty hosts
 			if(empty($_SERVER['HTTP_HOST'])){
 				print "Invalid request. Please contact site administrator.";
@@ -241,8 +256,9 @@ class zajLib {
 			else $this->host = $_SERVER['HTTP_HOST'];
 		// base url detection
 			$this->fullurl = "//".preg_replace('(/{2,})','/', preg_replace("([?&].*|/{1,}$)", "", addslashes($this->host).addslashes($_SERVER['REQUEST_URI'])).'/');
-			$this->subfolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
-			$this->baseurl = "//".$this->host.$this->subfolder.'/';		// if my OFW_BASEURL is explicitly set
+			$this->basefolder = str_ireplace('/site/index.php', '', $_SERVER['SCRIPT_NAME']);
+			if($this->basefolder) $this->basefolder .= '/';
+			$this->baseurl = '//'.trim($this->host.$this->basefolder, '/').'/';
 		// Now override base url if needed
 			if(!empty($_SERVER['OFW_BASEURL'])){
 				// Parse my baseurl
@@ -261,10 +277,10 @@ class zajLib {
 				// Originals
 					$original_fullurl = $this->fullurl;
 					$original_baseurl = $this->baseurl;
-				// Set host, base url, subfolder
+				// Set host, base url, basefolder
 					$this->host = $parsed_baseurl['host'];
-					$this->subfolder = $parsed_baseurl['path'];
-					$this->baseurl = '//'.trim($this->host.$this->subfolder, '/').'/';
+					$this->basefolder = $parsed_baseurl['path'];
+					$this->baseurl = '//'.trim($this->host.$this->basefolder, '/').'/';
 					$this->fullurl = $this->baseurl.str_ireplace($original_baseurl, '', $original_fullurl);
 			}
 		// full request detection (includes query string)
@@ -283,6 +299,7 @@ class zajLib {
 		// fix my app and mode to always have a single trailing slash
 			$this->app = trim($this->app, '/').'/';
 			$this->mode = trim($this->mode, '/').'/';
+			$this->requestpath =  rtrim($this->app.$this->mode, '/').'/';
 		// autodetect my domain (todo: optimize this part with regexp!)
 			// if not an ip address
 			if(!preg_match('/^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/', $this->host)){
@@ -350,7 +367,7 @@ class zajLib {
 	 * Returns an error message and exists. Useful for fatal errors.
 	 * @param string $message The error message to display and/or log.
 	 * @param boolean $display_to_users If set to true, the message will also be displayed to users even if not in debug mode. Defaults to false with a generic error message displayed.
-	 * @return bool Does not return anything.
+	 * @return bool Returns false if error messages are surpressed (during test). Otherwise terminates.
 	 **/
 	public function error($message, $display_to_users = false){
 		// Manually load error reporting lib
@@ -359,6 +376,7 @@ class zajLib {
 		// Now report the error and send 500 error
 			if(!$this->output_started) header('HTTP/1.1 500 Internal Server Error');
 			$error->error($message, $display_to_users);	// this terminates the run
+		return false;
 	}
 
 	/**
@@ -370,7 +388,8 @@ class zajLib {
 		// Manually load error reporting lib
 			/* @var zajlib_error $error */
 			$error = $this->load->library('error');
-		// Now report the error
+		// Now report the error and send 500 error in debug mode
+			if(!$this->output_started && $this->debug_mode) header('HTTP/1.1 500 Internal Server Error');
 			return $error->warning($message);
 	}
 
@@ -478,15 +497,15 @@ class zajLib {
 	/**
 	 * Redirect the user to relative or absolute URL
 	 * @param string $url The specific url to redirect the user to.
-     * @param integer $status_code HTTP status code of the redirection
+     * @param integer|boolean $status_code HTTP status code of the redirection. None by default.
      * @param boolean $frame_breakout If set to true, it will use javascript redirect to break out of iframe.
 	 * @return bool Does not yet return anything.
 	 **/
-	public function redirect($url, $status_code = 301, $frame_breakout = false){
+	public function redirect($url, $status_code = false, $frame_breakout = false){
         // For backward compatibility @todo Remove this
-			if (is_bool($status_code)) {
+			if(is_bool($status_code)){
 				$frame_breakout = $status_code;
-				$status_code = 301;
+				$status_code = false;
 			}
 
 		// Get HTTP protocol
@@ -502,7 +521,7 @@ class zajLib {
             }
             else{
 				// Push headers
-					header($protocol." ".$status_code." ".$this->request->get_http_status_name($status_code));
+					if($status_code) header($protocol." ".$status_code." ".$this->request->get_http_status_name($status_code));
 					header("Location: ".$url);
             }
 		exit;
@@ -630,7 +649,7 @@ class zajLibLoader{
 	 * @param array|bool $optional_parameters An array or a single parameter which is passed as the first parameter to __load()
 	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
 	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
-	 * @return mixed|zajController Returns whatever the __load() method returns. If the __load() method is not invoked, the controller object is returned. A return by __load of explicit false is meant to signify a problem.
+	 * @return mixed|zajController Returns whatever the __load() method returns. If the __load() method is not invoked, the controller object is returned. A return by __load of explicit false is meant to signify a problem. Or it may also mean that the controller was not loaded (if $fail_with_error_message is false).
 	 * @todo Rewrite $controller_name generation to regexp
 	 **/
 	public function controller($file_name, $optional_parameters=false, $call_load_method=true, $fail_with_error_message = true){
@@ -656,15 +675,19 @@ class zajLibLoader{
 	 * Load a library file.
 	 * @param string $name The name of the library to load.
 	 * @param array|bool $optional_parameters An array of optional parameters which are stored in {@link zajLibExtension->options}
+	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
 	 * @return zajLibExtension|bool Returns a zajlib object or false if fails.
 	 */
-	public function library($name, $optional_parameters=false){
+	public function library($name, $optional_parameters=false, $fail_with_error_message = true){
 		// is it loaded already?
 			if(isset($this->loaded['library'][$name])) return $this->loaded['library'][$name];
 		// try to load the file
 			$result = $this->file("library/$name.lib.php", false);			
 		// if library does not exist
-			if(!$result) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+			if(!$result){
+				if($fail_with_error_message) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library file not found!");
+				else return false;
+			}
 			else{
 				// return the new lib object
 					$library_class = 'zajlib_'.$name;
@@ -680,15 +703,19 @@ class zajLibLoader{
 	 * @param string $name The name of the model to load.
 	 * @param array|boolean $optional_parameters This will be passed to the __load method (not yet implemented)
 	 * @todo Implement optional parameters.
+	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
 	 * @return boolean Will return true if successfully loaded, false if not.
 	 **/
-	public function model($name, $optional_parameters = false){
+	public function model($name, $optional_parameters = false, $fail_with_error_message = true){
 		// is it loaded already?
 			if(isset($this->loaded['model'][$name])) return true;
 		// now just load the file
 			$result = $this->file("model/".strtolower($name).".model.php", false);
 		// return result
-			if(!$result) return $this->zajlib->error("model or app controller object <strong>$name</strong> has not been properly defined or does not exist! is the class name correctly defined in the model/ctl file?");
+			if(!$result){
+				if($fail_with_error_message) return $this->zajlib->error("model or app controller object <strong>$name</strong> has not been properly defined or does not exist! is the class name correctly defined in the model/ctl file?");
+				else return false;
+			}
 			else{
 				// set it as loaded
 					$this->loaded['model'][$name] = true;			
@@ -702,7 +729,7 @@ class zajLibLoader{
 	 * @param array|bool $optional_parameters An array of parameters passed to the request method.
 	 * @param boolean $reroute_to_error When set to true (the default), the function will reroute requests to the proper __error method.
 	 * @param boolean $call_load_method If set to true (the default), the __load() magic method will be called.
-	 * @return bool|mixed
+	 * @return bool|mixed Returns whatever the app endpoint returns.
 	 */
 	public function app($request, $optional_parameters=false, $reroute_to_error=true, $call_load_method=true){
 		// check for security
@@ -956,6 +983,8 @@ class zajLibLoader{
  * @property boolean $use_save True if it has a custom save() method.
  * @property boolean $use_duplicate True if it has a custom duplicate() method.
  * @property boolean $use_filter True if it has a custom filter() method.
+ * @property boolean $use_export True if it has a custom export() method.
+ * @property boolean $disable_export True if export is disabled on this field. This is used in export helper.
  * @property boolean $search_field True if this field should be included in a search().
  * @property boolean|string $edit_template The path of the template which should be displayed for {% input %} editors. If none, set to false.
  * @property boolean|string $show_template The path of the template which should be used when simply showing data from this field. If none, set to false.
@@ -992,6 +1021,8 @@ class zajDb {
 				$zdb->use_save = $cname::use_save;
 				$zdb->use_duplicate = $cname::use_duplicate;
 				$zdb->use_filter = $cname::use_filter;
+				$zdb->use_export = $cname::use_export;
+				$zdb->disable_export = $cname::disable_export;
 				$zdb->search_field = $cname::search_field;
 				$zdb->edit_template = $cname::edit_template;
 				$zdb->show_template = $cname::show_template;
@@ -1056,6 +1087,8 @@ class zajField {
 	const use_save = false;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = true;		// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = false;		// boolean - true if fetch is modified
+	const use_export = false;		// boolean - true if export is formatted
+	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = true;		// boolean - true if this field is used during search()
 	const edit_template = 'field/base.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
@@ -1098,6 +1131,16 @@ class zajField {
 	 **/
 	public function save($data, &$object){
 		return $data;	
+	}
+
+	/**
+	 * Preprocess the data and convert it to a string before exporting.
+	 * @param mixed $data The data to process. This will typically be whatever is returned by {@link get()}
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
+	 */
+	public function export($data, &$object){
+		return $data;
 	}
 
 	/**
@@ -1227,11 +1270,13 @@ class zajVariable {
 /** 
  * Autoloads object files
  **/
-function __autoload($class_name){	
+function ofwAutoload($class_name){
 	// If autoloading enabled or not
-		if(!zajLib::me()->model_autoloading) return false;
+		if(!zajLib::me()->model_autoloading) return;
 	// check if models enabled
 		if(!zajLib::me()->zajconf['mysql_enabled']) zajLib::me()->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
 	// load the model
 		return zajLib::me()->load->model($class_name);
 }
+
+spl_autoload_register('ofwAutoload');
