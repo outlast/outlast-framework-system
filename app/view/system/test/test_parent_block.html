@@ -1,0 +1,5 @@
+{% extends 'system/test/test_extended.html' %}
+
+{% block base_test %}And again: {% parentblock %} {% endblock %}
+
+{% block only_in_base %}{% parentblock %} Or is it?{% endblock %}
