@@ -923,6 +923,7 @@ EOF;
 			$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
 
 		// start writing my own block file
+			zajCompileSession::verbose("Starting new block <code>{$param_array[0]->vartext}</code>.");
 			$this->zajlib->compile->add_destination($permanent_name);
 			zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
 
@@ -987,6 +988,7 @@ EOF;
 			$source->add_level('block', array($block_name, $child_blocks_processed, $permanent_name, $this->block_name));
 		// set as current global block (overwriting parent)
 			$this->block_name = $block_name;
+			zajCompileSession::verbose("Finished starting a new block <code>{$param_array[0]->vartext}</code>.");
 
 		// return true
 			return true;

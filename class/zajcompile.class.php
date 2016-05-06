@@ -34,6 +34,12 @@ define('regexp_zaj_variable', '/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*/');
 define('regexp_zaj_operator', '/(<=|>=|!==|!=|===|==|=|>|<)/');
 
 /**
+ * Verbose mode - use only for debugging!
+ */
+define('OFW_COMPILE_VERBOSE', true);
+
+
+/**
  * One compile session, which may include several source and destination files.
  * 
  * A compile session is the compilation of an entire tree of inherited, extended, included files. Individual blocks and insert tags will compile to their
@@ -296,6 +302,15 @@ class zajCompileSession {
 		// add to array of unlinks
 			$this->unlinks[] = $object;
 	}
+
+	/**
+	 * Prints an on screen verbose message when verbosity is set to true.
+	 * @param string $message The message to print on screen.
+	 */
+	public static function verbose($message){
+		if(OFW_COMPILE_VERBOSE) echo $message."<br/>";
+	}
+
 	
 }
 
@@ -378,6 +393,9 @@ class zajCompileSource {
 		$this->app_level = $app_level_and_path[1];
 		$this->requested_path = $source_file;
 		$this->file_path = $app_level_and_path[0];
+
+		zajCompileSession::verbose("Adding <code>$this->file_path</code> to compile sources.");
+
 		return $this->file = fopen($this->file_path, 'r');
 	}	
 
@@ -455,10 +473,12 @@ class zajCompileSource {
 		return (!$this->current_line && feof($this->file));
 	}
 	public function pause(){
+		zajCompileSession::verbose("Pausing <code>$this->file_path</code> compile source.");
 		$this->paused = true;
 		return true;
 	}
 	public function resume(){
+		zajCompileSession::verbose("Resuming <code>$this->file_path</code> compile source.");
 		$this->paused = false;
 		return true;
 	}
@@ -529,7 +549,7 @@ class zajCompileSource {
 		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)", true);
 		exit;
 	}
-	
+
 	/**
 	 * Check if template file exists in any of the paths. Returns path if yes, false if no.
 	 * @param string $source_file The path to the source file.
@@ -611,6 +631,8 @@ class zajCompileDestination {
 		// check path
 		$this->file_path = $this->zajlib->basepath.'cache/'.$subfolder.'/'.$dest_file.'.php';
 
+		zajCompileSession::verbose("Adding <code>$this->file_path</code> to compile destinations.");
+
 		// does it exist...temporary files are not recreated
 		if(file_exists($this->file_path)){
 			$this->exists = true;
@@ -630,15 +652,18 @@ class zajCompileDestination {
 		// if paused, just return OR if exists&temp
 			if(($this->exists && $this->temporary) || $this->paused) return true;
 		// write this to file
+			zajCompileSession::verbose("Writing <pre>$content</pre> to compile destination $this->file_path.");
 			return fputs($this->file, $content);
 	}
 
 	public function pause(){
+		zajCompileSession::verbose("Pausing <code>$this->file_path</code> compile destination.");
 		$this->paused = true;
 		return true;
 	}
 
 	public function resume(){
+		zajCompileSession::verbose("Resuming <code>$this->file_path</code> compile destination.");
 		$this->paused = false;
 		return true;
 	}
@@ -649,6 +674,7 @@ class zajCompileDestination {
 	}
 	
 	public function __destruct(){
+		zajCompileSession::verbose("Stopping <code>$this->file_path</code> compile destination.");
 		// close the file
 			if($this->file) fclose($this->file);
 		// if this is temporary, delete
