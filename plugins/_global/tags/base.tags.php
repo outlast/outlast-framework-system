@@ -923,9 +923,13 @@ EOF;
 			$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
 
 		// start writing my own block file
+			$unpause_on_endblock = [];
 			zajCompileSession::verbose("Starting new block <code>{$param_array[0]->vartext}</code>.");
 			$this->zajlib->compile->add_destination($permanent_name);
 			zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
+
+		// Add the block to the source
+		$source->add_block($block_name);
 
 		// now write block files for all my children (unless they already exist)
 			// blocks processed
@@ -953,6 +957,7 @@ EOF;
 									// Unpause only me
 										$dest = $this->zajlib->compile->get_destination_by_path($current_child_block);
 										$dest->resume();
+										zajCompileSession::verbose("Inserting file <code>$current_child_block</code> into $parent_block of all destinations.");
 										$this->zajlib->compile->insert_file($my_permanent_name.'.php');
 										$this->zajlib->compile->resume_destinations();
 										$dest->pause();
@@ -967,17 +972,25 @@ EOF;
 						// Write contents of $permanent_name to main destination
 							/** @var zajCompileDestination $destination */
 							$destination = $this->zajlib->compile->get_destination();
+
 							if(!$source->parent_level){
 								// Validate the file path
 									$relative_path = 'cache/view/'.$permanent_name.'.php';
 									$this->zajlib->file->file_check($relative_path);
 								// @todo Why can't this work with compile->insert_file()?
 									$this->zajlib->compile->main_dest_paused(false);
+									zajCompileSession::verbose("Inserting <code>$relative_path</code> into current destination $destination->file_path.");
 									$data = file_get_contents($this->zajlib->basepath.$relative_path);
 									$destination->write($data);
 							}
-						// Pause main destination output
-							$this->zajlib->compile->main_dest_paused(true);
+						// Pause extended destinations
+							// @todo recursive?
+							if($source->extended && $source->child_source->has_block($block_name)){
+								// Pause my extended sources
+								$destination->pause();
+								// Add to array of destinations to unpause
+								$unpause_on_endblock[] = $destination;
+							}
 
 					}
 				};
@@ -985,7 +998,7 @@ EOF;
 				$add_child_destinations($source, $permanent_name);
 
 		// add the level with block parent as last param
-			$source->add_level('block', array($block_name, $child_blocks_processed, $permanent_name, $this->block_name));
+			$source->add_level('block', [$block_name, $child_blocks_processed, $permanent_name, $this->block_name, $unpause_on_endblock]);
 		// set as current global block (overwriting parent)
 			$this->block_name = $block_name;
 			zajCompileSession::verbose("Finished starting a new block <code>{$param_array[0]->vartext}</code>.");
@@ -1001,16 +1014,27 @@ EOF;
 	public function tag_endblock($param_array, &$source){
 		/** @var zajCompileSource $source */
 		// remove level
-			list($block_name, $child_blocks_processed, $permanent_name, $parent_block) = $source->remove_level('block');
+			list($block_name, $child_blocks_processed, $permanent_name, $parent_block, $unpause_on_endblock) = $source->remove_level('block');
+		// unpause
+			foreach($unpause_on_endblock as $destination){
+				/** @var zajCompileDestination $destination */
+				$destination->resume();
+			}
+
 		// remove child blocks for all
 			foreach($child_blocks_processed as $block_file){
 				$this->zajlib->compile->remove_destination($block_file);
 			}
+
 		// remove permanent block file (if exists)
 			if($permanent_name) $this->zajlib->compile->remove_destination($permanent_name);
 
-		// always unpause
-			$this->zajlib->compile->main_dest_paused(false);
+		// If our source is top level
+			if($source->get_level() == 0 && $source->is_extension){
+				zajCompileSession::verbose("We are at top level of <code>$source->file_path</code> which has extends tag, so keep main destination paused.");
+				$this->zajlib->compile->main_dest_paused(true);
+			}
+			else $this->zajlib->compile->main_dest_paused(false);
 
 		// reset current block to parent block
 			$this->block_name = $parent_block;
@@ -1074,8 +1098,8 @@ EOF;
 			}
 
 		// set source to be extended and set actual file path
-			$source->extended = true;
-		
+			$source->is_extension = true;
+
 		// now pause main destination
 			$this->zajlib->compile->main_dest_paused(true);
 

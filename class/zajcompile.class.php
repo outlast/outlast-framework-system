@@ -36,7 +36,7 @@ define('regexp_zaj_operator', '/(<=|>=|!==|!=|===|==|=|>|<)/');
 /**
  * Verbose mode - use only for debugging!
  */
-define('OFW_COMPILE_VERBOSE', true);
+define('OFW_COMPILE_VERBOSE', false);
 
 
 /**
@@ -341,13 +341,15 @@ class zajCompileSource {
 		private $line_number = 0;		// int - number of the current line in this file
 		private $file_path;				// string - full path to the source file
 		private $requested_path;		// string - the relative path to the source file
-		private $hierarchy = array();	// array - stores info about open/close tags
+		private $hierarchy = [];		// array - stores info about open/close tags
+		private $blocks = [];			// array - an array of all block in this source
 		private $level = 0;				// int - current level of hierarchy
 		private $app_level;				// string - the app level (plugin) at which this source is located
 		private $child_source = false;	// zajCompileSource|boolean - child source object
 
 	// these are set by the template tags @todo move to methods!
-		public $extended = false;		// boolean - true if this source is extended
+		public $is_extension = false;	// boolean - true if this source is an extension of something else in this session
+		public $extended = false;		// boolean - true if this source is extended in this session
 		public $parent_requested = false;// string|boolean - relative path of my parent source. false if none.
 		public $parent_path = false;	// string|boolean - full path of my parent template. false if none.
 		public $parent_level = false;	// string|boolean - plugin level of my parent template. false if none.
@@ -386,8 +388,9 @@ class zajCompileSource {
 			else return $this->zajlib->error("Template file $source_file could not be found in app hierarchy levels below $ignore_app_level.");
 		}
 		
-		// set my child
+		// set my child. also if i have one, then I am extended.
 		$this->child_source = $child_source;
+		if($child_source !== false) $this->extended = true;
 
 		// open file
 		$this->app_level = $app_level_and_path[1];
@@ -493,6 +496,37 @@ class zajCompileSource {
 	public function get_requested_path(){ return $this->requested_path; }
 
 	////////////////////////////////////////////////////////
+	// Blocks
+	////////////////////////////////////////////////////////
+
+	/**
+	 * Add a block to this source.
+	 * @param string $block_name The name of the block.
+	 * @todo Convert warning to error instead of warning. Non-fatal for now because of backwards compatibility.
+	 */
+	public function add_block($block_name){
+		if($this->has_block($block_name)) $this->warning("The block $block_name was found more than once.");
+		$this->blocks[$block_name] = $block_name;
+	}
+
+	/**
+	 * Check for an existing block
+	 * @param string $block_name The name of the block.
+	 * @return boolean Returns true if the block exists for this source.
+	 */
+	public function has_block($block_name){
+		return array_key_exists($block_name, $this->blocks);
+	}
+
+	/**
+	 * Returns an array of blocks used in this source.
+	 * @return array An array of blocks used in this source.
+	 */
+	public function get_blocks(){
+		return $this->blocks;
+	}
+
+	////////////////////////////////////////////////////////
 	// Levels of hierarchy
 	////////////////////////////////////////////////////////
 	public function add_level($tag, $data){
@@ -543,7 +577,7 @@ class zajCompileSource {
 	// Error methods
 	////////////////////////////////////////////////////////
 	public function warning($message){
-		$this->zajlib->warning("Template compile error: $message (file: $this->file_path / line: $this->line_number)", true);
+		$this->zajlib->warning("Template compile warning: $message (file: $this->file_path / line: $this->line_number)");
 	}
 	public function error($message){
 		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)", true);
