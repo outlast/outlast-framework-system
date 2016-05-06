@@ -87,7 +87,6 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 				var event_idx = _events.indexOf(element.event);
 
 				if (event_idx > -1) {
-                    console.log(_events[event_idx]);
 					element.sourceElm.trigger(_events[event_idx]);
 				}
 			}
