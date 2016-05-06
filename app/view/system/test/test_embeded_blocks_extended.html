@@ -1,5 +1,5 @@
 {% extends 'system/test/test_embeded_blocks.html' %}
 
 {% block second_level %}
-Second is overwritten.
+Second is {% block second_level_sub_sub %}{% block second_level_sub %}overwritten{% endblock %} with content.{% endblock %}
 {% endblock %}

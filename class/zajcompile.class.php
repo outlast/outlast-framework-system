@@ -512,10 +512,20 @@ class zajCompileSource {
 	/**
 	 * Check for an existing block
 	 * @param string $block_name The name of the block.
+	 * @param boolean $recursive Check all children recursively.
 	 * @return boolean Returns true if the block exists for this source.
 	 */
-	public function has_block($block_name){
-		return array_key_exists($block_name, $this->blocks);
+	public function has_block($block_name, $recursive = false){
+		// Check me
+		$i_have_block = array_key_exists($block_name, $this->blocks);
+		if($i_have_block) return true;
+
+		// Check children
+		if($recursive && $this->child_source){
+			return $this->child_source->has_block($block_name, true);
+		}
+
+		return false;
 	}
 
 	/**

@@ -1050,7 +1050,14 @@ EOF;
 
 		// If our source is top level or if our child still has even the parent block
 			/** THIS IS NOT QUITE CORRECT */
-			if(($source->get_level() == 0 && $source->is_extension) || ($source->child_source && $source->child_source->has_block($parent_block))){
+			if(
+				// If we are the top level
+				($source->get_level() == 0 && $source->is_extension) ||
+				// Or if we are not at the top level of an extended @todo combine with previous
+				($source->get_level() > 0 && $source->is_extension) ||
+				// Or our child has this block
+				($source->child_source && $source->child_source->has_block($parent_block, true))
+			  ){
 				zajCompileSession::verbose("We are at top level of <code>$source->file_path</code> which has extends tag, so keep main destination paused.");
 				$this->zajlib->compile->main_dest_paused(true);
 			}

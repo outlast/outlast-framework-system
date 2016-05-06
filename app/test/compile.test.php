@@ -76,8 +76,13 @@ class OfwCompileTest extends zajTest {
 
 		// Now let's test the extension file
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_extended.html', false, true);
-		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond is overwritten.\n\n\nEnd of embeded tags.", $contents);
+		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond is overwritten with content.\n\n\nEnd of embeded tags.", trim($contents));
 
+		// Now let's test the extension sub and sub sub file
+	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_sub.html', false, true);
+		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond is overflowing with content.\n\n\nEnd of embeded tags.", trim($contents));
+	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_sub_sub.html', false, true);
+		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond is overpowered with content.\n\n\nEnd of embeded tags.", trim($contents));
 	}
 
 }
