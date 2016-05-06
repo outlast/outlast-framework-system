@@ -1,0 +1,5 @@
+{% extends 'system/test/test_extended.html' %}
+
+{% block base_test %}Overwritten once more. {% insert 'system/test/test_base.html' 'only_in_base' %} {% endblock %}
+
+{% block only_in_base %}Not only in base.{% endblock %}

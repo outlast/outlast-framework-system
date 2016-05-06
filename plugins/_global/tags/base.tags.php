@@ -914,97 +914,110 @@ EOF;
 
 		/** @var zajCompileSource $source */
 
-		// prepare unparsed parameter string
-			$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
-		// validate block name (only a-z) (because the whole stucture is involved, this is a fatal error!)
-			if(preg_match('/[a-z]{2,25}/',$block_name) <= 0) $source->error("invalid block name given!");
+		// Prepare unparsed parameter string
+		$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
+		// Validate block name (only a-z) (because the whole stucture is involved, this is a fatal error!)
+		if(preg_match('/[a-z]{2,25}/',$block_name) <= 0) $source->error("invalid block name given!");
 
-		// generate file name for permanent block store
-			$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
+		// Generate file name for permanent block store
+		$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
 
-		// start writing my own block file
-			$unpause_on_endblock = [];
-			zajCompileSession::verbose("Starting new block <code>{$param_array[0]->vartext}</code>.");
-			$this->zajlib->compile->add_destination($permanent_name);
-			zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
+		// Start writing my own block file
+		$unpause_on_endblock = [];
+		zajCompileSession::verbose("Starting new block <code>{$param_array[0]->vartext}</code>.");
+		$this->zajlib->compile->add_destination($permanent_name);
+		zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
 
 		// Add the block to the source
 		$source->add_block($block_name);
 
-		// now write block files for all my children (unless they already exist)
-			// blocks processed
-				$child_blocks_processed = array();
-			// define a function for recursive addition
-				$add_child_destinations = function($my_source, $permanent_name) use ($block_name, &$child_blocks_processed, &$add_child_destinations, $source){
-					/** @var zajCompileSource $my_source */
-					if($my_source->child_source !== false){
-						// Generate permanent name
-							$my_permanent_name = '__block/'.$my_source->child_source->get_requested_path().'-'.$block_name.'.html';
-						// Add destination if not already added previously
-							if(!array_key_exists($my_permanent_name, zajCompileSession::$blocks_processed)){
-								$this->zajlib->compile->add_destination($my_permanent_name);
-								$child_blocks_processed[$my_permanent_name] = $my_permanent_name;
-								zajCompileSession::$blocks_processed[$my_permanent_name] = $my_permanent_name;
-							}
-							else{
-								// If I have a parent block...
-								if($this->block_name){
-									// Get parent and child
-										$parent_block = $this->block_name;
-										$current_child_block = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
-									// Let's pause all destinations
-										$this->zajlib->compile->pause_destinations();
-									// Unpause only me
-										$dest = $this->zajlib->compile->get_destination_by_path($current_child_block);
-										$dest->resume();
-										zajCompileSession::verbose("Inserting file <code>$current_child_block</code> into $parent_block of all destinations.");
-										$this->zajlib->compile->insert_file($my_permanent_name.'.php');
-										$this->zajlib->compile->resume_destinations();
-										$dest->pause();
-								}
+		// Now write block files for all my children (unless they already exist)
+			// Blocks processed
+			$child_blocks_processed = [];
+			// Define a function for recursive addition
+			$add_child_destinations = function($my_source, $permanent_name) use ($block_name, &$child_blocks_processed, &$add_child_destinations, $source){
+				/** @var zajCompileSource $my_source */
+				if($my_source->child_source !== false){
 
+					// Generate permanent name
+					$my_permanent_name = '__block/'.$my_source->child_source->get_requested_path().'-'.$block_name.'.html';
 
-							}
-						// Recursive!
-							$add_child_destinations($my_source->child_source, $my_permanent_name);
+					// Add destination if not already added previously
+					if(!array_key_exists($my_permanent_name, zajCompileSession::$blocks_processed)){
+						$this->zajlib->compile->add_destination($my_permanent_name);
+						$child_blocks_processed[$my_permanent_name] = $my_permanent_name;
+						zajCompileSession::$blocks_processed[$my_permanent_name] = $my_permanent_name;
 					}
 					else{
-						// Write contents of $permanent_name to main destination
-							/** @var zajCompileDestination $destination */
-							$destination = $this->zajlib->compile->get_destination();
+						// Add block to child if it doesnt exist in the interim files
+						if(!$my_source->child_source->has_block($block_name)){
+							$my_source->child_source->add_block($block_name);
+						}
 
-							if(!$source->parent_level){
-								// Validate the file path
-									$relative_path = 'cache/view/'.$permanent_name.'.php';
-									$this->zajlib->file->file_check($relative_path);
-								// @todo Why can't this work with compile->insert_file()?
-									$this->zajlib->compile->main_dest_paused(false);
-									zajCompileSession::verbose("Inserting <code>$relative_path</code> into current destination $destination->file_path.");
-									$data = file_get_contents($this->zajlib->basepath.$relative_path);
-									$destination->write($data);
-							}
-						// Pause extended destinations
-							// @todo recursive?
-							if($source->extended && $source->child_source->has_block($block_name)){
-								// Pause my extended sources
-								$destination->pause();
-								// Add to array of destinations to unpause
-								$unpause_on_endblock[] = $destination;
-							}
+						// If I have a parent block...
+						if($this->block_name){
+
+							// Get parent and child
+							$parent_block = $this->block_name;
+							$current_child_block = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
+
+							// Let's pause all destinations
+							$this->zajlib->compile->pause_destinations();
+
+							// Unpause only me
+							$dest = $this->zajlib->compile->get_destination_by_path($current_child_block);
+							$dest->resume();
+							zajCompileSession::verbose("Inserting file <code>$current_child_block</code> into $parent_block of all destinations.");
+							$this->zajlib->compile->insert_file($my_permanent_name.'.php');
+							$this->zajlib->compile->resume_destinations();
+							$dest->pause();
+						}
+
 
 					}
-				};
-			// start recursive function with current source
-				$add_child_destinations($source, $permanent_name);
 
-		// add the level with block parent as last param
-			$source->add_level('block', [$block_name, $child_blocks_processed, $permanent_name, $this->block_name, $unpause_on_endblock]);
-		// set as current global block (overwriting parent)
-			$this->block_name = $block_name;
-			zajCompileSession::verbose("Finished starting a new block <code>{$param_array[0]->vartext}</code>.");
+					// Recursive!
+					$add_child_destinations($my_source->child_source, $my_permanent_name);
+				}
+				else{
+					// Write contents of $permanent_name to main destination
+					/** @var zajCompileDestination $destination */
+					$destination = $this->zajlib->compile->get_destination();
 
-		// return true
-			return true;
+					if(!$source->parent_level){
+						// Validate the file path
+							$relative_path = 'cache/view/'.$permanent_name.'.php';
+							$this->zajlib->file->file_check($relative_path);
+						// @todo Why can't this work with compile->insert_file()?
+							$this->zajlib->compile->main_dest_paused(false);
+							zajCompileSession::verbose("Inserting <code>$relative_path</code> into current destination $destination->file_path.");
+							$data = file_get_contents($this->zajlib->basepath.$relative_path);
+							$destination->write($data);
+					}
+
+					// Pause extended destinations @todo recursive?
+					if($source->extended && $source->child_source->has_block($block_name)){
+						// Pause my extended sources
+						$destination->pause();
+						// Add to array of destinations to unpause
+						$unpause_on_endblock[] = $destination;
+					}
+
+				}
+			};
+
+			// Start recursive function with current source
+			$add_child_destinations($source, $permanent_name);
+
+		// Add the level with block parent as last param
+		$source->add_level('block', [$block_name, $child_blocks_processed, $permanent_name, $this->block_name, $unpause_on_endblock]);
+
+		// Set as current global block (overwriting parent)
+		$this->block_name = $block_name;
+		zajCompileSession::verbose("Finished starting a new block <code>{$param_array[0]->vartext}</code>.");
+
+		// Return true
+		return true;
 	}
 	/**
 	 * See block.

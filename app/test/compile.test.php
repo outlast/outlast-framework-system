@@ -32,4 +32,21 @@ class OfwCompileTest extends zajTest {
 	    zajTestAssert::areIdentical("Block only in base.", $contents);
 	}
 
+	/**
+	 * Test more extended
+	 */
+	public function system_compile_more_extended(){
+	    $contents = $this->zajlib->template->show('system/test/test_more_extended.html', false, true);
+		zajTestAssert::areIdentical("This is my base.\nOverwritten once more. Block only in base. \nSome more base-level text.\nNot only in base.", $contents);
+
+	    $contents = $this->zajlib->template->block('system/test/test_more_extended.html', 'only_in_base', false, false, true);
+	    zajTestAssert::areIdentical("Not only in base.", $contents);
+
+	    $contents = $this->zajlib->template->block('system/test/test_extended.html', 'only_in_base', false, false, true);
+	    zajTestAssert::areIdentical("Block only in base.", $contents);
+
+	    $contents = $this->zajlib->template->block('system/test/test_more_extended.html', 'base_test', false, false, true);
+	    zajTestAssert::areIdentical("Overwritten once more. Block only in base. ", $contents);
+	}
+
 }
