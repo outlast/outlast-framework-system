@@ -61,4 +61,23 @@ class OfwCompileTest extends zajTest {
 
 	}
 
+	/**
+	 * Test embeded blocks feature
+	 */
+	public function system_compile_embeded_blocks(){
+		// Try the top level file
+	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks.html', false, true);
+		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond level.\n\nThird level.\n\nStill second level.\n\n\nEnd of embeded tags.", $contents);
+
+	    $contents = $this->zajlib->template->block('system/test/test_embeded_blocks.html', 'third_level', false, false, true);
+		zajTestAssert::areIdentical("Third level.", trim($contents));
+	    $contents = $this->zajlib->template->block('system/test/test_embeded_blocks.html', 'second_level', false, false, true);
+		zajTestAssert::areIdentical("Second level.\n\nThird level.\n\nStill second level.", trim($contents));
+
+		// Now let's test the extension file
+	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_extended.html', false, true);
+		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond is overwritten.\n\n\nEnd of embeded tags.", $contents);
+
+	}
+
 }

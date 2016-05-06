@@ -917,7 +917,7 @@ EOF;
 		// Prepare unparsed parameter string
 		$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
 		// Validate block name (only a-z) (because the whole stucture is involved, this is a fatal error!)
-		if(preg_match('/[a-z]{2,25}/',$block_name) <= 0) $source->error("invalid block name given!");
+		if(preg_match('/[a-z]{2,25}/', $block_name) <= 0) $source->error("Invalid block name given!");
 
 		// Generate file name for permanent block store
 		$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
@@ -984,18 +984,23 @@ EOF;
 					/** @var zajCompileDestination $destination */
 					$destination = $this->zajlib->compile->get_destination();
 
+					/** THIS INSERTION IS THE PROBLEM WHEN EMBEDED TAGS */
+					// If the plugin level is not set
 					if(!$source->parent_level){
-						// Validate the file path
+						// If the block exists in my child
+						if($source->child_source && $source->child_source->has_block($block_name)){
+							// Validate the file path
 							$relative_path = 'cache/view/'.$permanent_name.'.php';
 							$this->zajlib->file->file_check($relative_path);
-						// @todo Why can't this work with compile->insert_file()?
+							// @todo Why can't this work with compile->insert_file()?
 							$this->zajlib->compile->main_dest_paused(false);
 							zajCompileSession::verbose("Inserting <code>$relative_path</code> into current destination $destination->file_path.");
 							$data = file_get_contents($this->zajlib->basepath.$relative_path);
 							$destination->write($data);
+						}
 					}
 
-					// Pause extended destinations @todo recursive?
+					// Pause extended destinations
 					if($source->extended && $source->child_source->has_block($block_name)){
 						// Pause my extended sources
 						$destination->pause();
@@ -1043,11 +1048,14 @@ EOF;
 			if($permanent_name) $this->zajlib->compile->remove_destination($permanent_name);
 
 		// If our source is top level
-			if($source->get_level() == 0 && $source->is_extension){
+			if(($source->get_level() == 0) && $source->is_extension){
 				zajCompileSession::verbose("We are at top level of <code>$source->file_path</code> which has extends tag, so keep main destination paused.");
 				$this->zajlib->compile->main_dest_paused(true);
 			}
-			else $this->zajlib->compile->main_dest_paused(false);
+			else{
+				zajCompileSession::verbose("We are going from $block_name to $parent_block in <code>$source->file_path</code>, so unpausing main destination.");
+				$this->zajlib->compile->main_dest_paused(false);
+			}
 
 		// reset current block to parent block
 			$this->block_name = $parent_block;
@@ -1122,7 +1130,7 @@ EOF;
 			return true;
 	}
 
-/**
+	/**
 	 * Tag: insert - Inserts another template at this location. The template is treated as if it were inline.
 	 *
 	 *  <b>{% insert '/admin/news_edit.html' 'block_name' %}</b>
