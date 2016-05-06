@@ -65,7 +65,9 @@ class zajlib_compile extends zajLibExtension{
 	 * @return boolean Returns true if found, false if not.
 	 */
 	public function source_exists($source_path){
-		return zajCompileSource::file_exists($source_path);
+		$result = zajCompileSource::check_app_levels($source_path);
+		if($result === false) return false;
+		else return true;
 	}
 	
 	/**
