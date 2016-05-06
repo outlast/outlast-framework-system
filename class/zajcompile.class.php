@@ -117,6 +117,7 @@ class zajCompileSession {
 			if($current_source->line_number == 0) $this->main_dest_paused(false);		
 			else return false;
 		// compile while i dont reach its eof
+			zajCompileSession::verbose("Now compiling source $current_source->file_path");
 			while(!$current_source->eof()) $current_source->compile();
 		// remove the source
 			array_shift($this->sources);
@@ -696,7 +697,7 @@ class zajCompileDestination {
 		// if paused, just return OR if exists&temp
 			if(($this->exists && $this->temporary) || $this->paused) return true;
 		// write this to file
-			zajCompileSession::verbose("Writing <pre>$content</pre> to compile destination $this->file_path.");
+			if(OFW_COMPILE_VERBOSE && trim($content)) zajCompileSession::verbose("Writing <pre>$content</pre> to compile destination $this->file_path.");
 			return fputs($this->file, $content);
 	}
 

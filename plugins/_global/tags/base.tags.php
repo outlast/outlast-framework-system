@@ -924,7 +924,7 @@ EOF;
 
 		// Start writing my own block file
 		$unpause_on_endblock = [];
-		zajCompileSession::verbose("Starting new block <code>{$param_array[0]->vartext}</code>.");
+		zajCompileSession::verbose("<ul><li>Starting new block <code>{$param_array[0]->vartext}</code>.");
 		$this->zajlib->compile->add_destination($permanent_name);
 		zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
 
@@ -935,7 +935,7 @@ EOF;
 			// Blocks processed
 			$child_blocks_processed = [];
 			// Define a function for recursive addition
-			$add_child_destinations = function($my_source, $permanent_name) use ($block_name, &$child_blocks_processed, &$add_child_destinations, $source){
+			$add_child_destinations = function($my_source, $permanent_name) use ($block_name, &$child_blocks_processed, &$add_child_destinations, &$unpause_on_endblock, $source){
 				/** @var zajCompileSource $my_source */
 				if($my_source->child_source !== false){
 
@@ -961,17 +961,18 @@ EOF;
 							$parent_block = $this->block_name;
 							$current_child_block = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
 
-							// Let's pause all destinations
+							// Let's pause all destinations that
 							$this->zajlib->compile->pause_destinations();
 
-							// Unpause only me
+							// Unpause only me, then repause and add to unpause on endblock
 							$dest = $this->zajlib->compile->get_destination_by_path($current_child_block);
+							if($dest) $dest->resume();
+							zajCompileSession::verbose("Inserting file <code>$current_child_block</code> into $parent_block of all destinations.");
+							$this->zajlib->compile->insert_file($my_permanent_name.'.php');
+							$this->zajlib->compile->resume_destinations();
 							if($dest){
-								$dest->resume();
-								zajCompileSession::verbose("Inserting file <code>$current_child_block</code> into $parent_block of all destinations.");
-								$this->zajlib->compile->insert_file($my_permanent_name.'.php');
-								$this->zajlib->compile->resume_destinations();
 								$dest->pause();
+								$unpause_on_endblock[] = $dest;
 							}
 						}
 
@@ -1020,7 +1021,7 @@ EOF;
 
 		// Set as current global block (overwriting parent)
 		$this->block_name = $block_name;
-		zajCompileSession::verbose("Finished starting a new block <code>{$param_array[0]->vartext}</code>.");
+		zajCompileSession::verbose("Finished starting a new block <code>$block_name</code> in <code>$source->file_path</code>.</li></ul>");
 
 		// Return true
 		return true;
@@ -1056,7 +1057,7 @@ EOF;
 				// Or if we are not at the top level of an extended @todo combine with previous
 				($source->get_level() > 0 && $source->is_extension) ||
 				// Or our child has this block
-				($source->child_source && $source->child_source->has_block($parent_block, true))
+				($source->child_source && $source->child_source->has_block($parent_block))
 			  ){
 				zajCompileSession::verbose("We are at top level of <code>$source->file_path</code> which has extends tag, so keep main destination paused.");
 				$this->zajlib->compile->main_dest_paused(true);
@@ -1134,6 +1135,7 @@ EOF;
 			$this->zajlib->compile->main_dest_paused(true);
 
 		// add me to the compile queue
+			zajCompileSession::verbose("Extend detected with $source_path.");
 			$this->zajlib->compile->add_source($source_path, $ignore_app_level, $source);
 		// return true
 			return true;
