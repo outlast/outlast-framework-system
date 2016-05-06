@@ -966,11 +966,13 @@ EOF;
 
 							// Unpause only me
 							$dest = $this->zajlib->compile->get_destination_by_path($current_child_block);
-							$dest->resume();
-							zajCompileSession::verbose("Inserting file <code>$current_child_block</code> into $parent_block of all destinations.");
-							$this->zajlib->compile->insert_file($my_permanent_name.'.php');
-							$this->zajlib->compile->resume_destinations();
-							$dest->pause();
+							if($dest){
+								$dest->resume();
+								zajCompileSession::verbose("Inserting file <code>$current_child_block</code> into $parent_block of all destinations.");
+								$this->zajlib->compile->insert_file($my_permanent_name.'.php');
+								$this->zajlib->compile->resume_destinations();
+								$dest->pause();
+							}
 						}
 
 
@@ -984,8 +986,7 @@ EOF;
 					/** @var zajCompileDestination $destination */
 					$destination = $this->zajlib->compile->get_destination();
 
-					/** THIS INSERTION IS THE PROBLEM WHEN EMBEDED TAGS */
-					// If the plugin level is not set
+					// If the plugin level is not set @todo why do we need this?
 					if(!$source->parent_level){
 						// If the block exists in my child
 						if($source->child_source && $source->child_source->has_block($block_name)){
@@ -1047,8 +1048,9 @@ EOF;
 		// remove permanent block file (if exists)
 			if($permanent_name) $this->zajlib->compile->remove_destination($permanent_name);
 
-		// If our source is top level
-			if(($source->get_level() == 0) && $source->is_extension){
+		// If our source is top level or if our child still has even the parent block
+			/** THIS IS NOT QUITE CORRECT */
+			if(($source->get_level() == 0 && $source->is_extension) || ($source->child_source && $source->child_source->has_block($parent_block))){
 				zajCompileSession::verbose("We are at top level of <code>$source->file_path</code> which has extends tag, so keep main destination paused.");
 				$this->zajlib->compile->main_dest_paused(true);
 			}
