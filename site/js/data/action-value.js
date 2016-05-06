@@ -68,13 +68,13 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 
 			if (touchPositions.currentX + element.event_threshold < touchPositions.startX) {
 				_events.push('swipeleft');
-			} else if (touchPositions.currentX + element.event_threshold > touchPositions.startX) {
+			} else if (touchPositions.currentX - element.event_threshold > touchPositions.startX) {
 				_events.push('swiperight');
 			}
 
 			if (touchPositions.currentY + element.event_threshold < touchPositions.startY) {
 				_events.push('swipeup');
-			} else if (touchPositions.currentY + element.event_threshold > touchPositions.startY) {
+			} else if (touchPositions.currentY - element.event_threshold > touchPositions.startY) {
 				_events.push('swipedown');
 			}
 
@@ -87,6 +87,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 				var event_idx = _events.indexOf(element.event);
 
 				if (event_idx > -1) {
+                    console.log(_events[event_idx]);
 					element.sourceElm.trigger(_events[event_idx]);
 				}
 			}
