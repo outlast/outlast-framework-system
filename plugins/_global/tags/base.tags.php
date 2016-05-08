@@ -929,7 +929,7 @@ EOF;
 		zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
 
 		// Add the block to the source
-		$source->add_block($block_name);
+		$my_block = $source->add_block($block_name);
 
 		// Now write block files for all my children (unless they already exist)
 			// Blocks processed
@@ -949,32 +949,55 @@ EOF;
 						zajCompileSession::$blocks_processed[$my_permanent_name] = $my_permanent_name;
 					}
 					else{
+						// If I have a parent block...
+						if($this->block_name){
+
+							// Let's pause all destinations that
+							$this->zajlib->compile->pause_destinations();
+
+							// Get the block files to resume
+							$parent_block = $this->block_name;
+							$current_child_block_file = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
+							// Unpause only me, then repause and add to unpause on endblock
+							$dest_parent_block = $this->zajlib->compile->get_destination_by_path($current_child_block_file);
+							if($dest_parent_block) $dest_parent_block->resume();
+							zajCompileSession::verbose("Inserting file <code>$current_child_block_file</code> into $parent_block of all destinations.");
+
+							// Now if we have the block on the child level, insert there as well @todo recursive has_block??
+							if($my_source->child_source->has_block($block_name)){
+								$current_parent_block_file = '__block/'.$my_source->child_source->get_requested_path().'-'.$block_name.'.html';
+								// Unpause only me, then repause and add to unpause on endblock
+								$dest_block = $this->zajlib->compile->get_destination_by_path($current_parent_block_file);
+								if($dest_block){
+									$dest_block->resume();
+									zajCompileSession::verbose("Inserting file <code>$current_parent_block_file</code> into $block_name of all destinations.");
+								}
+									zajCompileSession::verbose("Inserting file <code>$current_parent_block_file</code> into $block_name of all destinations.");
+							}
+							else $dest_block = false;
+
+							// Insert the file
+							$this->zajlib->compile->insert_file($my_permanent_name.'.php');
+							$this->zajlib->compile->resume_destinations();
+
+							// Pause again
+							if($dest_parent_block){
+								$dest_parent_block->pause();
+								$unpause_on_endblock[] = $dest_parent_block;
+							}
+							if($dest_block){
+								$dest_block->pause();
+								$unpause_on_endblock[] = $dest_block;
+							}
+
+
+						}
+
 						// Add block to child if it doesnt exist in the interim files
 						if(!$my_source->child_source->has_block($block_name)){
 							$my_source->child_source->add_block($block_name);
 						}
 
-						// If I have a parent block...
-						if($this->block_name){
-
-							// Get parent and child
-							$parent_block = $this->block_name;
-							$current_child_block = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
-
-							// Let's pause all destinations that
-							$this->zajlib->compile->pause_destinations();
-
-							// Unpause only me, then repause and add to unpause on endblock
-							$dest = $this->zajlib->compile->get_destination_by_path($current_child_block);
-							if($dest) $dest->resume();
-							zajCompileSession::verbose("Inserting file <code>$current_child_block</code> into $parent_block of all destinations.");
-							$this->zajlib->compile->insert_file($my_permanent_name.'.php');
-							$this->zajlib->compile->resume_destinations();
-							if($dest){
-								$dest->pause();
-								$unpause_on_endblock[] = $dest;
-							}
-						}
 
 
 					}

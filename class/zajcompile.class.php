@@ -36,7 +36,7 @@ define('regexp_zaj_operator', '/(<=|>=|!==|!=|===|==|=|>|<)/');
 /**
  * Verbose mode - use only for debugging!
  */
-define('OFW_COMPILE_VERBOSE', false);
+define('OFW_COMPILE_VERBOSE', true);
 
 
 /**
@@ -343,8 +343,10 @@ class zajCompileSource {
 		private $file_path;				// string - full path to the source file
 		private $requested_path;		// string - the relative path to the source file
 		private $hierarchy = [];		// array - stores info about open/close tags
-		private $blocks = [];			// array - an array of all block in this source
-		private $level = 0;				// int - current level of hierarchy
+		private $blocks = [];			// array - an array of all zajCompileBlock objects in this source
+		private $block_level = 0;		// int - current level of block hierarchy
+		private $current_block;			// zajCompileBlock - the current block
+		private $level = 0;				// int - current level of tag hierarchy
 		private $app_level;				// string - the app level (plugin) at which this source is located
 		private $child_source = false;	// zajCompileSource|boolean - child source object
 
@@ -503,11 +505,16 @@ class zajCompileSource {
 	/**
 	 * Add a block to this source.
 	 * @param string $block_name The name of the block.
+	 * @param zajCompileBlock $parent The parent block.
 	 * @todo Convert warning to error instead of warning. Non-fatal for now because of backwards compatibility.
+	 * @return zajCompileBlock The new block object.
 	 */
 	public function add_block($block_name){
 		if($this->has_block($block_name)) $this->warning("The block $block_name was found more than once.");
-		$this->blocks[$block_name] = $block_name;
+		// Increment block level
+		$this->block_level++;
+		$this->current_block = $this->blocks[$block_name] = new zajCompileBlock($this, $this->current_block);
+		return $this->current_block;
 	}
 
 	/**
@@ -909,7 +916,7 @@ class zajCompileVariable extends zajCompileElement {
 		switch($name){
 			case 'vartext': return $this->vartext;
 			case 'variable': return $this->variable;
-			default: $this->parent->zajlib->warning("Tried to access inaccessible parameter $name of zajCompileVariable.");
+			default: return $this->parent->zajlib->warning("Tried to access inaccessible parameter $name of zajCompileVariable.");
 		}
 	}
 
@@ -979,5 +986,50 @@ class zajCompileElement{
 			}
 	}
 
+
+}
+
+/**
+ * A block in a particular source.
+ *  *
+ * @package Template
+ * @subpackage CompilingBackend
+ */
+class zajCompileBlock{
+	/**
+	 * @var zajCompileSource The source file that contains this block. This is a pointer.
+	 */
+	private $source;
+
+	/**
+	 * @var zajCompileBlock The parent is the block that is higher up in template inheritance (and is thus overwritten by me).
+	 */
+	private $parent;
+
+	/**
+	 * @var zajCompileBlock The child is the block that is lower in the template inheritance (and therefore overwrites me).
+	 */
+	private $child;
+
+	/**
+	 * zajCompileBlock constructor.
+	 * @param zajCompileSource $source
+	 * @param zajCompileBlock $parent
+	 */
+	public function __construct(&$source, &$parent){
+		// set parent and element
+			$this->source =& $source;
+			$this->parent =& $parent;
+			$parent->set_child($this);
+		return true;
+	}
+
+	/**
+	 * Set the child.
+	 * @param zajCompileBlock $child
+	 */
+	public function set_child($child){
+		$this->child = $child;
+	}
 
 }
