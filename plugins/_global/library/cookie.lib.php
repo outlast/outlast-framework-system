@@ -38,11 +38,11 @@ class zajlib_cookie extends zajLibExtension {
 	/**
 	 * Get a cookie.
 	 * @param string $name The name of the cookie.
-	 * @return string|boolean The value of the cookie or false if it does not exist.
+	 * @return string The value of the cookie or null if it does not exist.
 	 **/
 	function get($name){
 		if(array_key_exists($name, $_COOKIE)) return $_COOKIE[$name];
-		else return false;
+		else return null;
 	}
 
 	/**
