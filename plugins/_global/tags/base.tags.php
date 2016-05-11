@@ -916,27 +916,85 @@ EOF;
 
 		// Prepare unparsed parameter string
 		$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
-		// Validate block name (only a-z) (because the whole stucture is involved, this is a fatal error!)
-		if(preg_match('/[a-z]{2,25}/', $block_name) <= 0) $source->error("Invalid block name given!");
 
-		// Generate file name for permanent block store
-		$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
-
-		// Start writing my own block file
-		$unpause_on_endblock = [];
-		zajCompileSession::verbose("<ul><li>Starting new block <code>{$param_array[0]->vartext}</code>.");
-		$this->zajlib->compile->add_destination($permanent_name);
-		zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
+		//zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
 
 		// Add the block to the source
 		$my_block = $source->add_block($block_name);
 
+		// If this is an extended session, and we are an extension (so not top-level)
+		if($source->is_extension){
+			// Pause main destination
+			$this->zajlib->compile->main_dest_paused(true);
+
+			// Add destination for my block
+			$my_block->add_destination();
+
+			// Recursively check child sources for this block
+			$child_source = $source->child_source;
+			while($child_source !== false){
+				// Add the block to all child sources that do not already have this block
+				if(!$child_source->has_block($block_name)){
+					// Add the block and destination
+					$child_block = $child_source->add_block($block_name);
+					$child_block->add_destination();
+
+					// Recursively get next child in hierarchy
+					$child_source = $child_source->child_source;
+				}
+				// In case the child has it, we are done!
+				else break;
+			}
+
+		}
+		// If this is an extended session, but I am a top-level source
+		elseif($source->extended){
+
+			// If the block is unique to me (no children have it), then simply write!
+			if(!$source->child_source->has_block($block_name, true)){
+				// Unpause main destination
+				$this->zajlib->compile->main_dest_paused(false);
+			}
+			else{
+				// Unpause main destination
+				$this->zajlib->compile->main_dest_paused(false);
+
+				// Insert the lowest-level block directly
+				$block = $source->get_block($block_name, true);
+
+				//$this->zajlib->compile->insert_file()
+				print "write the block $block->name from {$block->source->file_path}.<Br/>";
+
+				// Pause the main destination
+				$this->zajlib->compile->main_dest_paused(true);
+
+			}
+
+		}
+		// If I am a single-level source
+		else{
+			// Unpause main destination
+			$this->zajlib->compile->main_dest_paused(false);
+			
+			// Add block destination
+			$my_block->add_destination();
+		}
+
+
+		// Main destination is currently paused if extended. Unpause if the block we are processing is the lowest
+		print "processing block $block_name in $source->file_path<br/>";
+
+
 		// Now write block files for all my children (unless they already exist)
+
+		$unpause_on_endblock = [];
+		$child_blocks_processed = [];
+
+		/**
 			// Blocks processed
-			$child_blocks_processed = [];
 			// Define a function for recursive addition
 			$add_child_destinations = function($my_source, $permanent_name) use ($block_name, &$child_blocks_processed, &$add_child_destinations, &$unpause_on_endblock, $source){
-				/** @var zajCompileSource $my_source */
+				// @var zajCompileSource $my_source
 				if($my_source->child_source !== false){
 
 					// Generate permanent name
@@ -959,7 +1017,7 @@ EOF;
 
 							// Get the block files to resume
 							$parent_block = $this->block_name;
-							$current_child_block_file = '__block/'.$my_source->child_source->get_requested_path().'-'.$parent_block.'.html';
+							$current_child_block_file = '__block/'.$my_source->get_requested_path().'-'.$parent_block.'.html';
 							// Unpause only me, then repause and add to unpause on endblock
 							$dest_parent_block = $this->zajlib->compile->get_destination_by_path($current_child_block_file);
 							if($dest_parent_block) $dest_parent_block->resume();
@@ -1009,7 +1067,7 @@ EOF;
 				}
 				else{
 					// Write contents of $permanent_name to main destination
-					/** @var zajCompileDestination $destination */
+					// @var zajCompileDestination $destination
 					$destination = $this->zajlib->compile->get_destination();
 
 					// If the plugin level is not set @todo why do we need this?
@@ -1040,9 +1098,10 @@ EOF;
 
 			// Start recursive function with current source
 			$add_child_destinations($source, $permanent_name);
+		 **/
 
 		// Add the level with block parent as last param
-		$source->add_level('block', [$block_name, $child_blocks_processed, $permanent_name, $this->block_name, $unpause_on_endblock]);
+		$source->add_level('block', [$my_block, $child_blocks_processed, $this->block_name, $unpause_on_endblock]);
 
 		// Set as current global block (overwriting parent)
 		$this->block_name = $block_name;
@@ -1059,7 +1118,11 @@ EOF;
 	public function tag_endblock($param_array, &$source){
 		/** @var zajCompileSource $source */
 		// remove level
-			list($block_name, $child_blocks_processed, $permanent_name, $parent_block, $unpause_on_endblock) = $source->remove_level('block');
+		list($my_block, $child_blocks_processed, $parent_block, $unpause_on_endblock) = $source->remove_level('block');
+
+		// end the block
+		$new_current_block = $source->end_block();
+
 		// unpause
 			foreach($unpause_on_endblock as $destination){
 				/** @var zajCompileDestination $destination */
@@ -1072,7 +1135,9 @@ EOF;
 			}
 
 		// remove permanent block file (if exists)
-			if($permanent_name) $this->zajlib->compile->remove_destination($permanent_name);
+		/** @var zajCompileBlock $my_block */
+		$my_block->remove_destination();
+		$block_name = $my_block->name;
 
 		// If our source is top level or if our child still has even the parent block
 			/** THIS IS NOT QUITE CORRECT */

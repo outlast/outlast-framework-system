@@ -25,16 +25,30 @@ class zajCompileSource {
 		private $line_number = 0;		// int - number of the current line in this file
 		private $file_path;				// string - full path to the source file
 		private $requested_path;		// string - the relative path to the source file
+
+	/**
+	 * @var array An array of all zajCompileBlock objects in this source.
+	 */
+	private $blocks = [];			// array - an array of all zajCompileBlock objects in this source
+
+	/**
+	 * @var int The current block level.
+	 */
+	private $block_level = 0;		// int - current level of block hierarchy
+
+	/**
+	 * @var zajCompileBlock The current block
+	 */
+	private $current_block;			// zajCompileBlock - the current block
+
+
 		private $hierarchy = [];		// array - stores info about open/close tags
-		private $blocks = [];			// array - an array of all zajCompileBlock objects in this source
-		private $block_level = 0;		// int - current level of block hierarchy
-		private $current_block;			// zajCompileBlock - the current block
 		private $level = 0;				// int - current level of tag hierarchy
 		private $app_level;				// string - the app level (plugin) at which this source is located
 		private $child_source = false;	// zajCompileSource|boolean - child source object
 
 	// these are set by the template tags @todo move to methods!
-		public $is_extension = false;	// boolean - true if this source is an extension of something else in this session
+		public $is_extension = false;	// boolean - true if this source has an extends tag and thus is an extension of something else in this session
 		public $extended = false;		// boolean - true if this source is extended in this session
 		public $parent_requested = false;// string|boolean - relative path of my parent source. false if none.
 		public $parent_path = false;	// string|boolean - full path of my parent template. false if none.
@@ -194,9 +208,11 @@ class zajCompileSource {
 	 */
 	public function add_block($block_name){
 		if($this->has_block($block_name)) $this->warning("The block $block_name was found more than once.");
+
 		// Increment block level
+		$this->current_block = $this->blocks[$block_name] = new zajCompileBlock($block_name, $this, $this->current_block, $this->block_level);
 		$this->block_level++;
-		$this->current_block = $this->blocks[$block_name] = new zajCompileBlock($this, $this->current_block);
+
 		return $this->current_block;
 	}
 
@@ -225,6 +241,45 @@ class zajCompileSource {
 	 */
 	public function get_blocks(){
 		return $this->blocks;
+	}
+
+	/**
+	 * Returns the current block.
+	 * @param string $name Return a block object by name. If left empty the current block will be returned.
+	 * @param boolean $recursive If set to true, it will get the lowest-level block it can find. Defaults to false, in which case it returns the block object for the current source.
+	 * @return zajCompileBlock|false The current block.
+	 */
+	public function get_block($name = "", $recursive = false){
+		// If no name set, return current
+		if(empty($name)) return $this->current_block;
+
+		// If name set, get by name or return false if not exists
+		if(!$this->has_block($name, true)) return false;
+		else{
+			// Set block object
+			$block = $this->blocks[$name];
+
+			// Recursively get (if needed)
+			if($recursive && $this->child_source){
+				$child_block = $this->child_source->get_block($name, true);
+				if($child_block === false) return $block;
+				else return $child_block;
+			}
+			else return $block;
+		}
+
+	}
+
+	/**
+	 * End a block in this source.
+	 * @return zajCompileBlock The new current block (so the ended block's parent).
+	 */
+	public function end_block(){
+		// Set the current block to my parent
+		$this->current_block = $this->current_block->parent;
+		$this->block_level--;
+
+		return $this->current_block;
 	}
 
 	////////////////////////////////////////////////////////
