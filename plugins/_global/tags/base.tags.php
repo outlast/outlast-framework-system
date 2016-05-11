@@ -935,12 +935,26 @@ EOF;
 
 			// If the block is unique to me (no children have it), then simply write!
 			if(!$source->child_source->has_block($block_name, true)){
-				// Unpause main destination
-				$this->zajlib->compile->main_dest_paused(false);
+				// Only write if my parent was not overwritten already
+				if(!$my_block->parent || !$my_block->parent->overridden){
+					// Unpause main destination
+					$this->zajlib->compile->main_dest_paused(false);
+
+					// Add destination for my block, recursively
+					$my_block->add_destination(true);
+
+				}
+					// @todo recursive check!
+
+
+
 			}
 			else{
 				// Unpause main destination
 				$this->zajlib->compile->main_dest_paused(false);
+
+				// Add destination for my block, recursively
+				$my_block->add_destination(true);
 
 				// Insert the lowest-level block directly
 				$block = $source->get_block($block_name, true);
@@ -949,9 +963,6 @@ EOF;
 				// Pause the main destination
 				$this->zajlib->compile->main_dest_paused(true);
 			}
-
-			// Add destination for my block, recursively
-			$my_block->add_destination(true);
 		}
 		// If I am a single-level source
 		else{
@@ -969,7 +980,6 @@ EOF;
 
 		// Now write block files for all my children (unless they already exist)
 
-		$unpause_on_endblock = [];
 		$child_blocks_processed = [];
 
 		/**
@@ -1083,7 +1093,7 @@ EOF;
 		 **/
 
 		// Add the level with block parent as last param
-		$source->add_level('block', [$my_block, $child_blocks_processed, $this->block_name, $unpause_on_endblock]);
+		$source->add_level('block', [$my_block, $child_blocks_processed, $this->block_name]);
 
 		// Set as current global block (overwriting parent)
 		$this->block_name = $block_name;
@@ -1100,7 +1110,7 @@ EOF;
 	public function tag_endblock($param_array, &$source){
 		/** @var zajCompileSource $source */
 		// remove level
-		list($my_block, $child_blocks_processed, $parent_block, $unpause_on_endblock) = $source->remove_level('block');
+		list($my_block, $child_blocks_processed, $parent_block) = $source->remove_level('block');
 
 		// end the block
 		$new_current_block = $source->end_block();
@@ -1110,21 +1120,11 @@ EOF;
 		$my_block->remove_destinations();
 		$block_name = $my_block->name;
 
-		// If our source is top level or if our child still has even the parent block
-			/** THIS IS NOT QUITE CORRECT */
-			if(
-				// If we are an extension then just pause it
-				($source->is_extension) ||
-				// Or our child has this block
-				0 //($source->child_source && $source->child_source->has_block($parent_block))
-			  ){
-				zajCompileSession::verbose("We are at top level of <code>$source->file_path</code> which has extends tag, so keep main destination paused.");
-				$this->zajlib->compile->main_dest_paused(true);
-			}
-			else{
-				zajCompileSession::verbose("We are going from $block_name to $parent_block in <code>$source->file_path</code>, so unpausing main destination.");
-				$this->zajlib->compile->main_dest_paused(false);
-			}
+		// Unpause main destination if we are at top level
+		if(!$source->is_extension && $source->block_level == 0){
+			zajCompileSession::verbose("We are back at top level from $block_name in <code>$source->file_path</code>, so unpausing main destination.");
+			$this->zajlib->compile->main_dest_paused(false);
+		}
 
 		// reset current block to parent block
 			$this->block_name = $parent_block;

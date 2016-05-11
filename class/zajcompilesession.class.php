@@ -240,7 +240,9 @@ class zajCompileSession {
 	 * @return boolean Returns true if file successfully created, false otherwise.
 	 */
 	public function add_destination($dest_path, $temporary = false){
-		$this->destinations[$dest_path] = new zajCompileDestination($dest_path, $this->zajlib, $temporary);
+		if(!array_key_exists($dest_path, $this->destinations)){
+			$this->destinations[$dest_path] = new zajCompileDestination($dest_path, $this->zajlib, $temporary);
+		}
 		return $this->destinations[$dest_path]->exists;
 	}
 

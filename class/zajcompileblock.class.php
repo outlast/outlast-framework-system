@@ -11,6 +11,7 @@
  * @property zajCompileBlock $child
  * @property integer $level
  * @property zajCompileSource $source
+ * @property boolean $overridden
  */
 class zajCompileBlock{
 
@@ -50,6 +51,10 @@ class zajCompileBlock{
 	private $destinations = [];
 
 	/**
+	 * @var boolean This is true if this block is overridden by another.
+	 */
+	private $overridden = false;
+	/**
 	 * zajCompileBlock constructor.
 	 * @param string $name The name of the block.
 	 * @param zajCompileSource $source
@@ -71,6 +76,10 @@ class zajCompileBlock{
 			$parent->set_child($this);
 			if($level == 0) $source->error("Tried to open block $name with a parent ({$this->parent->name}) at top level. This is a system error and should never happen.");
 		}
+
+		// Do any child sources define this block?
+		if($this->source->child_source && $this->source->child_source->has_block($name, true)) $this->overridden = true;
+		else $this->overridden = false;
 
 		// Set block level
 		$this->level = $level;
@@ -94,7 +103,7 @@ class zajCompileBlock{
 		if($recursive){
 			// Add to my child source if it does not have its own block already
 			$child_source = $this->source->child_source;
-			if($child_source && !$child_source->has_block($this->name)){
+			if($child_source && !$child_source->has_block($this->name, true)){
 				// Add the block and destination
 				/** @var zajCompileBlock $child_block */
 				$child_block = $child_source->add_block($this->name);
@@ -110,6 +119,7 @@ class zajCompileBlock{
 	 */
 	public function remove_destinations(){
 		zajLib::me()->compile->remove_destination($this->file_name);
+		zajCompileSession::verbose("Removing block cache for <code>{$this->name}</code>.</li></ul>");
 
 		// Remove all (will only exist if added recursively)
 		foreach($this->destinations as $dest){
@@ -122,6 +132,7 @@ class zajCompileBlock{
 	 * Insert the block in currently active destinations.
 	 */
 	public function insert(){
+		zajCompileSession::verbose("Inserting the block <code>{$this->name}</code> from $this->file_name");
 		zajLib::me()->compile->insert_file($this->file_name.'.php');
 	}
 

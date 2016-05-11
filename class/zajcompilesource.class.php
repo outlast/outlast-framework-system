@@ -13,6 +13,7 @@
  * @property string $file_path
  * @property string $requested_path
  * @property integer $line_number
+ * @property integer $block_level
   */
 class zajCompileSource {
 	/** @var zajLib */
