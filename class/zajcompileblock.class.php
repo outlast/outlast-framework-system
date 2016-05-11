@@ -129,6 +129,24 @@ class zajCompileBlock{
 	}
 
 	/**
+	 * Is this tag overridden?
+	 * @param boolean $recursive If set to true, it will also be marked as overridden if any of my parents are overridden.
+	 * @return boolean Returns true if overridden, false if not.
+	 */
+	public function is_overridden($recursive = false){
+		// If overridden is true at any point, then it is true recursively
+		if($this->overridden) return true;
+
+		// Now return based on value
+		if(!$recursive) return $this->overridden;
+		else{
+			// If no more parents, then we are top-level, return
+			if(!$this->parent) return $this->overridden;
+			else return $this->parent->is_overridden(true);
+		}
+	}
+
+	/**
 	 * Insert the block in currently active destinations.
 	 */
 	public function insert(){

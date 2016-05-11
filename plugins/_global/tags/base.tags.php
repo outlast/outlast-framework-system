@@ -936,7 +936,7 @@ EOF;
 			// If the block is unique to me (no children have it), then simply write!
 			if(!$source->child_source->has_block($block_name, true)){
 				// Only write if my parent was not overwritten already
-				if(!$my_block->parent || !$my_block->parent->overridden){
+				if(!$my_block->parent || !$my_block->parent->is_overridden()){
 					// Unpause main destination
 					$this->zajlib->compile->main_dest_paused(false);
 
@@ -944,10 +944,6 @@ EOF;
 					$my_block->add_destination(true);
 
 				}
-					// @todo recursive check!
-
-
-
 			}
 			else{
 				// Unpause main destination
