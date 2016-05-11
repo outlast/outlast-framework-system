@@ -45,6 +45,11 @@ class zajCompileBlock{
 	private $file_name;
 
 	/**
+	 * @var array All the destinations.
+	 */
+	private $destinations = [];
+
+	/**
 	 * zajCompileBlock constructor.
 	 * @param string $name The name of the block.
 	 * @param zajCompileSource $source
@@ -75,8 +80,10 @@ class zajCompileBlock{
 
 	/**
 	 * Add a destination for this block.
+	 * @param boolean $recursive Destination was added recursively.
+	 * @return string Return the file name for my destination.
 	 */
-	public function add_destination(){
+	public function add_destination($recursive = false){
 		// Generate file name for permanent block store
 		$this->file_name = '__block/'.$this->source->get_requested_path().'-'.$this->name.'.html';
 
@@ -84,16 +91,39 @@ class zajCompileBlock{
 		zajCompileSession::verbose("<ul><li>Starting new block cache for <code>{$this->name}</code>.");
 		zajLib::me()->compile->add_destination($this->file_name);
 
+		if($recursive){
+			// Add to my child source if it does not have its own block already
+			$child_source = $this->source->child_source;
+			if($child_source && !$child_source->has_block($this->name)){
+				// Add the block and destination
+				/** @var zajCompileBlock $child_block */
+				$child_block = $child_source->add_block($this->name);
+				$this->destinations[] = $child_block->add_destination(true);
+			}
+		}
+
 		return $this->file_name;
 	}
 
 	/**
-	 * Remove destination.
+	 * Remove destination. If destinations were added recursively, it will remove them recursively.
 	 */
-	public function remove_destination(){
+	public function remove_destinations(){
 		zajLib::me()->compile->remove_destination($this->file_name);
+
+		// Remove all (will only exist if added recursively)
+		foreach($this->destinations as $dest){
+			zajLib::me()->compile->remove_destination($dest);
+		}
+		$this->destinations = [];
 	}
 
+	/**
+	 * Insert the block in currently active destinations.
+	 */
+	public function insert(){
+		zajLib::me()->compile->insert_file($this->file_name.'.php');
+	}
 
 	/**
 	 * Set the child.

@@ -927,25 +927,8 @@ EOF;
 			// Pause main destination
 			$this->zajlib->compile->main_dest_paused(true);
 
-			// Add destination for my block
-			$my_block->add_destination();
-
-			// Recursively check child sources for this block
-			$child_source = $source->child_source;
-			while($child_source !== false){
-				// Add the block to all child sources that do not already have this block
-				if(!$child_source->has_block($block_name)){
-					// Add the block and destination
-					$child_block = $child_source->add_block($block_name);
-					$child_block->add_destination();
-
-					// Recursively get next child in hierarchy
-					$child_source = $child_source->child_source;
-				}
-				// In case the child has it, we are done!
-				else break;
-			}
-
+			// Add destination for my block, recursively
+			$my_block->add_destination(true);
 		}
 		// If this is an extended session, but I am a top-level source
 		elseif($source->extended){
@@ -961,15 +944,14 @@ EOF;
 
 				// Insert the lowest-level block directly
 				$block = $source->get_block($block_name, true);
-
-				//$this->zajlib->compile->insert_file()
-				print "write the block $block->name from {$block->source->file_path}.<Br/>";
+				$block->insert();
 
 				// Pause the main destination
 				$this->zajlib->compile->main_dest_paused(true);
-
 			}
 
+			// Add destination for my block, recursively
+			$my_block->add_destination(true);
 		}
 		// If I am a single-level source
 		else{
@@ -982,7 +964,7 @@ EOF;
 
 
 		// Main destination is currently paused if extended. Unpause if the block we are processing is the lowest
-		print "processing block $block_name in $source->file_path<br/>";
+		//print "processing block $block_name in $source->file_path<br/>";
 
 
 		// Now write block files for all my children (unless they already exist)
@@ -1123,31 +1105,18 @@ EOF;
 		// end the block
 		$new_current_block = $source->end_block();
 
-		// unpause
-			foreach($unpause_on_endblock as $destination){
-				/** @var zajCompileDestination $destination */
-				$destination->resume();
-			}
-
-		// remove child blocks for all
-			foreach($child_blocks_processed as $block_file){
-				$this->zajlib->compile->remove_destination($block_file);
-			}
-
 		// remove permanent block file (if exists)
 		/** @var zajCompileBlock $my_block */
-		$my_block->remove_destination();
+		$my_block->remove_destinations();
 		$block_name = $my_block->name;
 
 		// If our source is top level or if our child still has even the parent block
 			/** THIS IS NOT QUITE CORRECT */
 			if(
-				// If we are the top level
-				($source->get_level() == 0 && $source->is_extension) ||
-				// Or if we are not at the top level of an extended @todo combine with previous
-				($source->get_level() > 0 && $source->is_extension) ||
+				// If we are an extension then just pause it
+				($source->is_extension) ||
 				// Or our child has this block
-				($source->child_source && $source->child_source->has_block($parent_block))
+				0 //($source->child_source && $source->child_source->has_block($parent_block))
 			  ){
 				zajCompileSession::verbose("We are at top level of <code>$source->file_path</code> which has extends tag, so keep main destination paused.");
 				$this->zajlib->compile->main_dest_paused(true);
