@@ -9,7 +9,7 @@
  * @todo Add a parameter to disable php tags. Test if php can even be used in templates.
  */
 
-require(zajLib::me()->basepath.'system/class/zajcompile.class.php');
+require(zajLib::me()->basepath.'system/class/zajcompilesession.class.php');
 
 
 /**

@@ -954,6 +954,8 @@ EOF;
 
 							// Let's pause all destinations that
 							$this->zajlib->compile->pause_destinations();
+							
+							// Insert parent block contents into me
 
 							// Get the block files to resume
 							$parent_block = $this->block_name;
