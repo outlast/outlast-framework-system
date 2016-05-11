@@ -9,7 +9,7 @@ class OfwCompileTest extends zajTest {
 	 **/
 	public function system_compile_base(){
 	    $contents = $this->zajlib->template->show('system/test/test_base.html', false, true);
-	    zajTestAssert::areIdentical("This is my base.\nWith a test block.\nSome more base-level text.\nBlock only in base.", $contents);
+	    zajTestAssert::areIdentical("This is my base. With a test block. Some more base-level text. Block only in base.", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_base.html', 'base_test', false, false, true);
 	    zajTestAssert::areIdentical("With a test block.", $contents);
@@ -20,7 +20,7 @@ class OfwCompileTest extends zajTest {
 	 **/
 	public function system_compile_extended(){
 	    $contents = $this->zajlib->template->show('system/test/test_extended.html', false, true);
-	    zajTestAssert::areIdentical("This is my base.\nWhich was overwritten.\nSome more base-level text.\nBlock only in base.", $contents);
+	    zajTestAssert::areIdentical("This is my base. Which was overwritten. Some more base-level text. Block only in base.", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_base.html', 'base_test', false, false, true);
 	    zajTestAssert::areIdentical("With a test block.", $contents);
@@ -37,7 +37,7 @@ class OfwCompileTest extends zajTest {
 	 */
 	public function system_compile_more_extended(){
 	    $contents = $this->zajlib->template->show('system/test/test_more_extended.html', false, true);
-		zajTestAssert::areIdentical("This is my base.\nOverwritten once more. Block only in base. \nSome more base-level text.\nNot only in base.", $contents);
+		zajTestAssert::areIdentical("This is my base. Overwritten once more. Block only in base. Some more base-level text. Not only in base.", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_more_extended.html', 'only_in_base', false, false, true);
 	    zajTestAssert::areIdentical("Not only in base.", $contents);
@@ -54,10 +54,10 @@ class OfwCompileTest extends zajTest {
 	 */
 	public function system_compile_parent_block(){
 	    $contents = $this->zajlib->template->show('system/test/test_parent_block.html', false, true);
-		zajTestAssert::areIdentical("This is my base.\nAnd again: Which was overwritten. \nSome more base-level text.\nBlock only in base. Or is it?", $contents);
+		zajTestAssert::areIdentical("This is my base. And again: Which was overwritten. Some more base-level text. Block only in base. Or is it?", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_parent_block.html', 'only_in_base', false, false, true);
-	    zajTestAssert::areIdentical("Block only in base. Or is it?", $contents);
+	    zajTestAssert::areIdentical("Block only in base. Or is it?", $this->whitespace_to_space($contents));
 
 	}
 
@@ -67,22 +67,30 @@ class OfwCompileTest extends zajTest {
 	public function system_compile_embeded_blocks(){
 		// Try the top level file
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks.html', false, true);
-		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond level.\n\nThird level.\n\nStill second level.\n\n\nEnd of embeded tags.", $contents);
+		zajTestAssert::areIdentical("Embeded tags. Top level. Second level. Third level. Still second level. End of embeded tags.", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_embeded_blocks.html', 'third_level', false, false, true);
-		zajTestAssert::areIdentical("Third level.", trim($contents));
+		zajTestAssert::areIdentical("Third level.", $this->whitespace_to_space($contents));
 	    $contents = $this->zajlib->template->block('system/test/test_embeded_blocks.html', 'second_level', false, false, true);
-		zajTestAssert::areIdentical("Second level.\n\nThird level.\n\nStill second level.", trim($contents));
+		zajTestAssert::areIdentical("Second level. Third level. Still second level.", $this->whitespace_to_space($contents));
 
 		// Now let's test the extension file
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_extended.html', false, true);
-		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond is overwritten with content.\n\n\nEnd of embeded tags.", trim($contents));
+		zajTestAssert::areIdentical("Embeded tags. Top level. Second is overwritten with content. End of embeded tags.", $this->whitespace_to_space($contents));
 
 		// Now let's test the extension sub and sub sub file
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_sub.html', false, true);
-		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond is overflowing with content.\n\n\nEnd of embeded tags.", trim($contents));
+		zajTestAssert::areIdentical("Embeded tags. Top level. Second is overflowing with content. End of embeded tags.", $this->whitespace_to_space($contents));
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_sub_sub.html', false, true);
-		zajTestAssert::areIdentical("Embeded tags.\n\nTop level.\n\nSecond is overpowered with content.\n\n\nEnd of embeded tags.", trim($contents));
+		zajTestAssert::areIdentical("Embeded tags. Top level. Second is overpowered with content. End of embeded tags.", $this->whitespace_to_space($contents));
 	}
+
+	/**
+	 * Strip any whitespace down to a space.
+	 */
+	private function whitespace_to_space($content){
+		return trim(preg_replace('/[ \n]+/', ' ', $content));
+	}
+
 
 }
