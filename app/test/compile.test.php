@@ -73,6 +73,8 @@ class OfwCompileTest extends zajTest {
 		zajTestAssert::areIdentical("Third level.", $this->whitespace_to_space($contents));
 	    $contents = $this->zajlib->template->block('system/test/test_embeded_blocks.html', 'second_level', false, false, true);
 		zajTestAssert::areIdentical("Second level. Third level. Still second level.", $this->whitespace_to_space($contents));
+		$contents = $this->zajlib->template->block('system/test/test_embeded_blocks.html', 'top_level', false, false, true);
+		zajTestAssert::areIdentical("Top level. Second level. Third level. Still second level.", $this->whitespace_to_space($contents));
 
 		// Now let's test the extension file
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_extended.html', false, true);
