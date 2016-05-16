@@ -15,6 +15,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
     /** Properties **/
 	var scrollInterval = null;
 	var scrollElements = [];
+    var isIOS;
 	var touchPositions = {
 		startX: null,
 		startY: null,
@@ -28,8 +29,12 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
      * Object init
      */
     var init = function(){
-    	// Add any init here
+        isIOS = checkIOS(); // Add any init here
     };
+
+    function checkIOS() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
 
 	/**
 	 * Trigger custom swipe events
@@ -289,7 +294,12 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 						element.sourceElm = $(element.sourceSelector);
 				}
 
-				element.destElm = (element.destSelector !== null)?$(element.destSelector):element.sourceElm;
+                // iOS click tirgger hack
+                if (isIOS && element.sourceSelector != 'window' && element.sourceSelector != 'document' && element.event == 'click') {
+                    element.sourceElm.css('cursor', 'pointer');
+                }
+
+                element.destElm = (element.destSelector !== null)?$(element.destSelector):element.sourceElm;
                 var onElm;
 
 				// Add event handlers
