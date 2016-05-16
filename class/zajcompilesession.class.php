@@ -15,7 +15,7 @@
 /**
  * Verbose mode - use only for debugging!
  */
-define('OFW_COMPILE_VERBOSE', false);
+define('OFW_COMPILE_VERBOSE', true);
 
 
 
@@ -81,6 +81,11 @@ class zajCompileSession {
 		 */
 		private $unlinks = [];
 
+		/**
+		 * @var zajCompileSource The source which was requested originally.
+		 */
+		private $main_source;
+
      // public
      	/**
 		 * A unique id generated to identify this session.
@@ -92,7 +97,7 @@ class zajCompileSession {
 		 * A list of blocks processed. Blocks are stored as paths relative to cache in the array keys.
 		 * @var array
 		 */
-		public static $blocks_processed = [];
+		private $blocks_processed = [];
 	
 	/**
 	 * Constructor for compile session. You should not create this object directly, but instead use the compile library.
@@ -111,7 +116,7 @@ class zajCompileSession {
 			if(!$destination_file) $this->add_destination($source_file);
 			else $this->add_destination($destination_file);
 		// start a new source
-			$this->add_source($source_file);
+			$this->main_source = $this->add_source($source_file);
 	}
 
 
@@ -171,7 +176,7 @@ class zajCompileSession {
 	 */
 	public function insert_file($source_path){
 		// open file as source
-			$source = new zajCompileSource($source_path, $this->zajlib);
+			$source = new zajCompileSource($source_path, $this);
 		// set not to parse
 			$source->set_parse(false);
 		// now compile
@@ -190,7 +195,7 @@ class zajCompileSession {
 	 */
 	public function add_source($source_path, $ignore_app_level = false, $child_source = false){
 		if(!$this->is_source_added($ignore_app_level.$source_path)){
-			$source = new zajCompileSource($source_path, $this->zajlib, $ignore_app_level, $child_source);
+			$source = new zajCompileSource($source_path, $this, $ignore_app_level, $child_source, $this);
 			$this->sources[$ignore_app_level.$source_path] = $source;
 			return $source;
 		}
@@ -219,7 +224,7 @@ class zajCompileSession {
 	 *
 	 * @return zajCompileSource
 	 */
-	public function get_source(){
+	public function get_current_source(){
 		return reset($this->sources);
 	}
 
@@ -330,6 +335,45 @@ class zajCompileSession {
 	public function unlink($object){
 		// add to array of unlinks
 			$this->unlinks[] = $object;
+	}
+
+	/**
+	 * Add a processed block.
+	 * @param zajCompileBlock $block The block object.
+	 * @return boolean Will return true if the block was not yet processed, false if it was already.
+	 */
+	public function add_processed_block($block){
+		if(!$this->was_block_processed($block->name)){
+			$this->blocks_processed[$block->name] = $block;
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Get a processed block.
+	 * @param string $block_name The name of the block;
+	 * @return zajCompileBlock The block object.
+	 */
+	public function get_processed_block($block_name){
+		return $this->blocks_processed[$block_name];
+	}
+
+	/**
+	 * Was block processed?
+	 * @param string $block_name The name of the block.
+	 * @return boolean True if processed, false if not.
+	 */
+	public function was_block_processed($block_name){
+		return array_key_exists($block_name, $this->blocks_processed);
+	}
+
+	/**
+	 * Get the main source, which is the source that was originally requested in the session.
+	 * @return zajCompileSource The main source.
+	 */
+	public function get_main_source(){
+		return $this->main_source;
 	}
 
 	/**

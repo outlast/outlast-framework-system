@@ -187,7 +187,7 @@ class zajElementsLoader{
 					}
 			}
 		// The filter/tag does not exist
-			$this->zajlib->compile->get_source()->warning("$this->element_type name '$name' cannot be found!", $arguments[2]);
+			$this->zajlib->compile->get_current_source()->warning("$this->element_type name '$name' cannot be found!", $arguments[2]);
 		return $arguments[2];		
 	}
 
@@ -210,7 +210,7 @@ class zajElementsLoader{
 					}
 			}
 		// The filter/tag does not exist but no error thrown
-			$this->zajlib->compile->get_source()->warning("$this->element_type getter method for '$name' cannot be found!");
+			return $this->zajlib->compile->get_current_source()->warning("$this->element_type getter method for '$name' cannot be found!");
 	}
 
 }

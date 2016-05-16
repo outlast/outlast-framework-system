@@ -42,6 +42,11 @@ class zajCompileSource {
 	 */
 	private $current_block;			// zajCompileBlock - the current block
 
+	/**
+	 * @var zajCompileSession
+	 */
+	private $compile_session;
+
 
 		private $hierarchy = [];		// array - stores info about open/close tags
 		private $level = 0;				// int - current level of tag hierarchy
@@ -70,13 +75,14 @@ class zajCompileSource {
 
 	/**
 	 * @param string $source_file A relative path to the source.
-	 * @param zajLib $zajlib The global zajlib object.
+	 * @param zajCompileSession $session The current session.
 	 * @param string|bool $ignore_app_level The name of app up to which all path levels should be ignored. Setting this to false will ignore nothing.
 	 * @param zajCompileSource|bool $child_source The zajCompileSource object of a child template, if one exists.
 	 */
-	public function __construct($source_file, &$zajlib, $ignore_app_level = false, $child_source = false){
+	public function __construct($source_file, &$session, $ignore_app_level = false, $child_source = false){
 		// set zajlib & debug stats
-		$this->zajlib =& $zajlib;
+		$this->compile_session = $session;
+		$this->zajlib =& zajLib::me();
 
 		// jail the source path
 		$source_file = trim($source_file, '/');
@@ -276,9 +282,13 @@ class zajCompileSource {
 	 * @return zajCompileBlock The new current block (so the ended block's parent).
 	 */
 	public function end_block(){
+		// Add the processed block
+		$this->compile_session->add_processed_block($this->current_block);
+
 		// Set the current block to my parent
 		$this->current_block = $this->current_block->parent;
 		$this->block_level--;
+		
 
 		return $this->current_block;
 	}
