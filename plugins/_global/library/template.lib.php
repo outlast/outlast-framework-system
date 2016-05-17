@@ -15,6 +15,11 @@ class zajlib_template extends zajLibExtension {
 	private $template_valid = false;
 
 	/**
+	 * If set to true, it means that all templates will be force-recompiled (as if in debug mode).
+	 */
+	public $force_recompile = false;
+
+	/**
 	 * Compile the file specified by file_path.
 	 * @param string $source_path This is the source file's path relative to any of the active view folders.
 	 * @param bool|string $destination_path This is the destination file's path relative to the final compiled view folder. If not specified, the destination will be the same as the source (relative), which is the preferred way of doing things. You should only specify this if you are customizing the template compilation process.
@@ -37,7 +42,7 @@ class zajlib_template extends zajLibExtension {
 			if(!$destination_path) $include_file = $this->zajlib->basepath."/cache/view/".$source_path.".php";
 			else $include_file = $this->zajlib->basepath."/cache/view/".$destination_path.".php";
 		// if force_recompile or debug_mode or not yet compiled then recompile
-			if($this->zajlib->debug_mode || $force_recompile || !file_exists($include_file)) $this->compile($source_path, $destination_path);
+			if($this->zajlib->debug_mode || $this->force_recompile || $force_recompile || !file_exists($include_file)) $this->compile($source_path, $destination_path);
 		// set up my global {{zaj}} variable object
 			$this->zajlib->variable->zaj = new zajlib_template_zajvariables($this->zajlib);
 			$this->zajlib->variable->ofw = $this->zajlib->variable->zaj;
