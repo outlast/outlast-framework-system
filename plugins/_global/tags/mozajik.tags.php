@@ -41,18 +41,25 @@ class zajlib_tag_mozajik extends zajElementCollection{
 		// are we in locale mode?
 			if(isset($param_array[3])){
 				// update field name with locale data
-					$fieldname = "translation[".$fieldname."][{".$param_array[2]->variable."}]";
-					// if it is a translation variable, then localize it!
-					if(strstr($param_array[1]->variable, '->translation->') !== false) $value = $param_array[1]->variable.'->get_by_locale('.$param_array[2]->variable.')';
+				$fieldname = "translation[".$fieldname."][{".$param_array[2]->variable."}]";
+				// if it is a translation variable, then localize it!
+				if(strstr($param_array[1]->variable, '->translation->') !== false) $value = $param_array[1]->variable.'->get_by_locale('.$param_array[2]->variable.')';
+
 				// generate template based on type unless specified
-					if(!empty($param_array[3])) $template = trim($param_array[3]->variable, "'\"");
-					else $template = $field_object::edit_template;
+				if(!empty($param_array[3])) $template = trim($param_array[3]->variable, "'\"");
+				else $template = $field_object::edit_template;
+
+				// Set locale
+				$fieldtranslation = $param_array[2]->variable;
 			}
 		// we are in compatibility mode!
 			else{
 				// generate template based on type unless specified
-					if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
-					else $template = $field_object::edit_template;
+				if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
+				else $template = $field_object::edit_template;
+
+				// not in translation mode
+				$fieldtranslation = "false";
 			}
 
 		// generate content					
@@ -63,7 +70,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
 			// callback
 				$field_object->__onInputGeneration($param_array, $source);			
 			// set stuff
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->name = "'.$fieldname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
+				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->name = "'.$fieldname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = uniqid(""); $this->zajlib->variable->field->locale = '.$fieldtranslation.';  ?>');
 			// add set value
 				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
 			// now create form field

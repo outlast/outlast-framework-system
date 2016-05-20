@@ -453,6 +453,20 @@ EOF;
 		return true;
 	}
 
+	/**
+	 * Filter: trim - Trims characters (space by default) from left and right side of string.
+	 *
+	 * <b>{{' this has whitespace '|trim}}</b> Will return 'this has whitespace'.
+	 * <b>{{'/url/with/trailing/slash/'|trim:'/'}}</b> Will return without trailing or preceding slash, 'url/with/trailing/slash'
+	 *
+	 **/
+	public function filter_trim($parameter, &$source){
+		// If parameter is not defined, then the parameter is the current locale
+		if(empty($parameter) && $parameter != 0) $parameter = "' '";
+		// Write to file.
+		$this->zajlib->compile->write('$filter_var=trim($filter_var, '.$parameter.');');
+		return true;
+	}
 
 	/**
 	 * Filter: in - You can check if an item is contained within another. This is especially useful for lists.

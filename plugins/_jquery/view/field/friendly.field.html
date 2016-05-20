@@ -2,7 +2,7 @@
 {% if not field.value %}
 <script>
 	requirejs(["system/js/library/text"], function(text) {
-		$('[name="{{field.options.from|escape}}"]').on('change keyup', function(){
+		$('{% if not field.locale %}[name="{{field.options.from|escape}}"]{% elseif %}[name="translation[{{field.options.from|escape}}][{{field.locale}}]"]{% endif %}').on('change keyup', function(){
 			// Get value
 			var val = $(this).val();
 			// For selects, it's a bit more complicated - use selected item!
