@@ -428,7 +428,7 @@ define('system/js/ofw-jquery', [], function() {
 		alert: function(message, urlORfunctionORdom, buttonText, top){
 			if(api.bootstrap){
 				// Alert sent via bootstrap
-					api.track('Alert', 'Bootstrap', message.substr(0, 50));
+					api.track('OFW', 'Bootstrap Alert', message.substr(0, 50));
 				// Cache my jquery selectors
 					var $modal;
 				// If a modal markup was set with urlORfunctionORdom, then use that. If none, use #zaj_bootstrap_modal.
@@ -473,7 +473,7 @@ define('system/js/ofw-jquery', [], function() {
 			}
 			else{
 				// Alert sent via bootstrap
-					api.track('Alert', 'Standard', message.substr(0, 50));
+					api.track('OFW', 'Standard Alert', message.substr(0, 50));
 				// Send alert
 					alert(message);
 					if(typeof urlORfunctionORdom == 'function') urlORfunctionORdom();
