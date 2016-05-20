@@ -101,7 +101,9 @@
 			 **/
 			uploader_update_{{field.uid}} = function(res){				
 				// Is it wide/tall enough?
-					if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("{{#system_field_picture_too_small#|printf:field.options.min_width|printf:field.options.min_height|escapejs}}");
+					{% if field.options.min_height and field.options.min_width %}
+						if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("{{#system_field_picture_too_small#|printf:field.options.min_width|printf:field.options.min_height|escapejs}}");
+					{% endif %}
 					{% if field.options.max_height %}
 					// check for height, if is > 0;
 						var max_height = {{field.options.max_height|escapejs}} + 0;

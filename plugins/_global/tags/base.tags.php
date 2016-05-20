@@ -890,7 +890,7 @@ EOF;
 			$contents .= <<<EOF
 <?php
 // restore it
-	$localvar = $restorevar;
+	@$localvar = $restorevar;
 ?>
 EOF;
 		}
