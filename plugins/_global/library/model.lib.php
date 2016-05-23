@@ -17,7 +17,7 @@ class zajlib_model extends zajLibExtension {
 	 * @var array
 	 * An array of data types that do not have a character set.
 	 **/
-	private $numeric_types = array('INT','FLOAT','YEAR','SMALLINT','MEDIUMINT', 'DATE', 'DATETIME', 'TIMESTAMP');
+	private $numeric_types = array('INT','FLOAT','YEAR','SMALLINT','MEDIUMINT', 'DATE', 'DATETIME', 'TIMESTAMP', 'DECIMAL');
 
 	/**
 	 * @var array
