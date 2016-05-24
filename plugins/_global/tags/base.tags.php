@@ -1050,7 +1050,7 @@ EOF;
 		// Check if extends is the same as insert
 			// @todo This will not solve the issue if it is not a direct parent.
 			if($this->tag_get_extend() == trim($param_array[0]->variable, "'\"")){
-				$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
+				//$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
 			}
 		// if it is a single variable, then we need to do it with template->show
 			else{
@@ -1089,7 +1089,7 @@ EOF;
 			$tvar = trim($var, "'\"");
 		// Check if extends is the same as insert
 			if($this->tag_get_extend() == trim($param_array[0]->variable, "'\"")){
-				$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
+				//$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
 			}
 		// if it is a single variable, then we need to do it with template->show
 				if(count($param_array) <= 1) $contents = <<<EOF
