@@ -40,19 +40,9 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
                     ofw.log('track.js: data-track-label attribute is required to send events.');
                 }
 
-                if(typeof(el.attr('data-track-action')) != 'undefined'){
-                    var action = el.attr('data-track-action');
-                }
-                else{
-                    var action = '';
-                }
+                var action = el.attr('data-track-action');
 
-                if(typeof(el.attr('data-track-value')) != 'undefined'){
-                    var value = el.attr('data-track-value');
-                }
-                else{
-                    var value = '';
-                }
+                var value = el.attr('data-track-value');
 
                 ofw.track(category, action, label, value);
             });
