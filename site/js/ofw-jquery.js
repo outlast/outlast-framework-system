@@ -16,7 +16,7 @@ define('system/js/ofw-jquery', [], function() {
 		jslibver: 1.10,
 		trackeventsAnalytics: true,
 		trackeventsLocal: false,
-		fields: {},
+        trackExternalLinks: true,
 		lang: {},
 		config: {},
         readyFunctions: [],
@@ -325,6 +325,11 @@ define('system/js/ofw-jquery', [], function() {
 		for(var i = 0; i < dataAttributes.length; i++){
 			activateSingleDataAttributeHandler(dataAttributes[i], $context);
 		}
+
+        // activate event tracking for external links
+        if(myOptions.trackExternalLinks){
+            activateExternalLinkTracking();
+        }
 	};
 
 	/**
@@ -349,6 +354,24 @@ define('system/js/ofw-jquery', [], function() {
 			});
 		}
 	};
+
+    var activateExternalLinkTracking = function($context){
+        // Default value of context
+        if(typeof $context == 'undefined') $context = $('body');
+        $context.find('a').each(function(){
+            var $el = $(this);
+
+            if(typeof($el.attr('href')) == 'undefined'){
+                return;
+            }
+
+            if($el.attr('href').indexOf(ofw.baseurl) == -1){
+                $el.click(function(){
+                    ofw.track('External link', 'click', $el.attr('href'));
+                });
+            }
+        })
+    };
 
 
     /** Public API **/

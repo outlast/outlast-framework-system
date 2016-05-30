@@ -99,7 +99,8 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      * Set dimensions based on div.
      */
     var setDimensions = function() {
-        var $post = $('[data-track-action=read]');
+        var $post = $('[data-track-action]');
+        if($post.attr('data-track-action') != 'read') return;
         dimensions.postHeight = $post.height();
         dimensions.postTop = $post.offset().top;
     };
