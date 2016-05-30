@@ -1,8 +1,8 @@
 /**
  * Define this data attribute.
  * @attr data-track-category Event category, required
- * @attr data-track-action  Event action, required
- * @attr data-track-label  Event label, optional
+ * @attr data-track-label  Event label, required
+ * @attr data-track-action  Event action, optional, defaults to "click"
  * @attr data-track-value  Event value, optional, must be a string
  **/
 define('system/js/data/track', ["../ofw-jquery"], function() {
@@ -66,12 +66,16 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
                     return;
                 }
 
-                var action = $el.attr('data-track-action');
-                if(typeof(action) == 'undefined' || action == '') {
-                    ofw.log('track.js: data-track-action attribute is required to send events.');
+                var label = $el.attr('data-track-label');
+                if(typeof(label) == 'undefined' || label == '') {
+                    ofw.log('track.js: data-track-label attribute is required to send events.');
                     return;
                 }
-                var label = $el.attr('data-track-label');
+
+                var action = $el.attr('data-track-action');
+                if(typeof(action) == 'undefined' || action == '') {
+                    action = 'click';
+                }
 
                 var value = $el.attr('data-track-value');
                 // track read events
@@ -95,7 +99,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      * Set dimensions based on div.
      */
     var setDimensions = function() {
-        var $post = $('.article-body');
+        var $post = $('[data-track-action=read]');
         dimensions.postHeight = $post.height();
         dimensions.postTop = $post.offset().top;
     };
