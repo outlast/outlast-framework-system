@@ -465,16 +465,27 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
 
             scrollElements.push(element);
 
-            if (null === scrollInterval) {
-                var scrollIntervalTime = element.interval_time;
-                scrollInterval = setInterval(function () {
-                    for (var index in scrollElements) {
-                        if (checkScrollEvent(index)) {
-                            addToActionQueue(index);
+            element.scrollContainer.on('touchstart mousedown', function () {
+
+                if (null === scrollInterval) {
+                    scrollInterval = setInterval(function () {
+                        for (var index in scrollElements) {
+                            if (checkScrollEvent(index)) {
+                                addToActionQueue(index);
+                            }
                         }
-                    }
-                }, scrollIntervalTime);
-            }
+                    }, element.interval_time);
+                }
+            });
+
+            element.scrollContainer.on('touchend touchcancel mouseup', function () {
+
+                if (null !== scrollInterval) {
+                    clearInterval(scrollInterval);
+                    scrollInterval = null;
+                }
+            });
+
         }// Swipe event
         else if (element.event.indexOf('swipe') > -1) {
 
