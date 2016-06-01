@@ -365,7 +365,9 @@ define('system/js/ofw-jquery', [], function() {
                 return;
             }
 
-            if($el.attr('href').indexOf(ofw.baseurl) == -1){
+            var protocol_regexp = new RegExp("^(http(s)?:)?(\/\/)(www\.)?");
+
+            if($el.attr('href').indexOf(ofw.baseurl) == -1 && protocol_regexp.test($el.attr('href'))){
                 $el.click(function(){
                     ofw.track('External link', 'click', $el.attr('href'));
                 });
