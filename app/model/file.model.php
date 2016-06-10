@@ -22,7 +22,7 @@
  * @property boolean $temporary If set to true, the file is not yet saved to the database.
  *
  * Methods
- * @method static File|zajFetcher fetch()
+ * @method static File|zajFetcher fetch($id = '')
  **/
 class File extends zajModel {
 
