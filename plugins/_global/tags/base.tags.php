@@ -917,10 +917,40 @@ EOF;
 		// Prepare unparsed parameter string
 		$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
 
-		//zajCompileSession::$blocks_processed[$permanent_name] = $permanent_name;
-
 		// Add the block to the source
 		$my_block = $source->add_block($block_name);
+
+		// Get the main source for this session
+		$main_source = $source->get_session()->get_main_source();
+
+		// Was this block already processed in a lower level source?
+		if($source->child_source && $source->child_source->has_block($block_name)){
+			// Yes.
+
+			// Write lower level block cache to all main source block caches
+			
+
+			// Close all main source block caches
+
+
+
+		}
+		else{
+			// No.
+
+			// Open block cache for main source
+			$my_block->add_destination($main_source);
+
+			// Is the current source not the main source?
+			if(!$source->am_i_the_main_source()){
+				// ...then open a destination for the current source as well
+				$my_block->add_destination($source);
+			}
+		}
+
+
+/**
+
 
 		// If this is an extended session, and we are an extension (so not top-level)
 		if($source->is_extension){
@@ -977,6 +1007,7 @@ EOF;
 		// Now write block files for all my children (unless they already exist)
 
 		$child_blocks_processed = [];
+		**/
 
 		/**
 			// Blocks processed

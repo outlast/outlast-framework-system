@@ -293,6 +293,24 @@ class zajCompileSource {
 		return $this->current_block;
 	}
 
+	/**
+	 * Get session of current source.
+	 * @return zajCompileSession Returns the current source's session.
+	 */
+	public function get_session(){
+		return $this->compile_session;
+	}
+
+	/**
+	 * Am I the main source?
+	 * @return boolean Returns true if I am the main source, false otherwise.
+	 */
+	public function am_i_the_main_source(){
+		if(!$this->child_source) return true;
+		else return false;
+	}
+
+
 	////////////////////////////////////////////////////////
 	// Levels of hierarchy
 	////////////////////////////////////////////////////////

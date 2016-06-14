@@ -15,7 +15,7 @@
 /**
  * Verbose mode - use only for debugging!
  */
-define('OFW_COMPILE_VERBOSE', true);
+define('OFW_COMPILE_VERBOSE', false);
 
 
 
@@ -242,13 +242,13 @@ class zajCompileSession {
 	 *
 	 * @param string $dest_path Relative path of destination file.
 	 * @param boolean $temporary OPTIONAL. If true file will be deleted at the end of this session. Defaults to false.
-	 * @return boolean Returns true if file successfully created, false otherwise.
+	 * @return zajCompileDestination Returns the destination object.
 	 */
 	public function add_destination($dest_path, $temporary = false){
 		if(!array_key_exists($dest_path, $this->destinations)){
 			$this->destinations[$dest_path] = new zajCompileDestination($dest_path, $this->zajlib, $temporary);
 		}
-		return $this->destinations[$dest_path]->exists;
+		return $this->destinations[$dest_path];
 	}
 
 	/**

@@ -41,11 +41,6 @@ class zajCompileBlock{
 	private $level = 0;
 
 	/**
-	 * @var string The file name of the block cache.
-	 */
-	private $file_name;
-
-	/**
 	 * @var array All the destinations.
 	 */
 	private $destinations = [];
@@ -89,41 +84,59 @@ class zajCompileBlock{
 
 	/**
 	 * Add a destination for this block.
-	 * @param boolean $recursive Destination was added recursively.
-	 * @return string Return the file name for my destination.
+	 * @param zajCompileSource|boolean $source The source object to use to generate the file name. Defaults to my own source.
+	 * @return zajCompileDestination Return the destination object.
 	 */
-	public function add_destination($recursive = false){
+	public function add_destination($source = false){
+
+		// Defaults to current source
+		if($source === false) $source = $this->source;
+
 		// Generate file name for permanent block store
-		$this->file_name = '__block/'.$this->source->get_requested_path().'-'.$this->name.'.html';
+		$file_name = '__block/'.$source->get_requested_path().'-'.$this->name.'.html';
 
 		// Add destination for my block cache file
-		zajCompileSession::verbose("<ul><li>Starting new block cache for <code>{$this->name}</code>.");
-		zajLib::me()->compile->add_destination($this->file_name);
+		zajCompileSession::verbose("<ul><li>Starting new block cache for <code>{$this->name}</code> as {$file_name}.");
+		$destination = $this->source->get_session()->add_destination($file_name);
 
-		if($recursive){
-			// Add to my child source if it does not have its own block already
-			$child_source = $this->source->child_source;
-			if($child_source && !$child_source->has_block($this->name, true)){
-				// Add the block and destination
-				/** @var zajCompileBlock $child_block */
-				$child_block = $child_source->add_block($this->name);
-				$this->destinations[] = $child_block->add_destination(true);
-			}
+		// Add to array and return
+		$this->destinations[$file_name] = $destination;
+		return $destination;
+	}
+
+	/**
+	 * Pause all block cache destinations.
+	 */
+	public function pause_destinations(){
+		zajCompileSession::verbose("Pausing block cache destinations for <code>{$this->name}</code>.</li></ul>");
+
+		foreach($this->destinations as $file_name=>$dest){
+			/** @var zajCompileDestination $dest */
+			$dest->pause();
 		}
+	}
 
-		return $this->file_name;
+	/**
+	 * Resume all block cache destinations.
+	 */
+	public function resume_destinations(){
+		zajCompileSession::verbose("Resuming block cache destinations for <code>{$this->name}</code>.</li></ul>");
+
+		foreach($this->destinations as $file_name=>$dest){
+			/** @var zajCompileDestination $dest */
+			$dest->resume();
+		}
 	}
 
 	/**
 	 * Remove destination. If destinations were added recursively, it will remove them recursively.
 	 */
 	public function remove_destinations(){
-		zajLib::me()->compile->remove_destination($this->file_name);
 		zajCompileSession::verbose("Removing block cache for <code>{$this->name}</code>.</li></ul>");
 
 		// Remove all (will only exist if added recursively)
-		foreach($this->destinations as $dest){
-			zajLib::me()->compile->remove_destination($dest);
+		foreach($this->destinations as $file_name=>$dest){
+			$this->source->get_session()->remove_destination($file_name);
 		}
 		$this->destinations = [];
 	}
@@ -147,9 +160,10 @@ class zajCompileBlock{
 	}
 
 	/**
-	 * Insert the block in currently active destinations.
+	 * Insert the block file in currently active destinations.
 	 */
 	public function insert(){
+		// @TODO rewrite
 		zajCompileSession::verbose("Inserting the block <code>{$this->name}</code> from $this->file_name");
 		zajLib::me()->compile->insert_file($this->file_name.'.php');
 	}
