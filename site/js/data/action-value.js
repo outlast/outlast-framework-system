@@ -42,7 +42,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
         trigger_after: false,
         interval_time: 100,
         extra_condition: (function () {return true})
-    }
+    };
 
     // data-action-name counter (if data-action-name is not present)
     var elementNameCounter = 0;
@@ -136,7 +136,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
             touchStarted = false;
             _events = [];
         });
-    }
+    };
 
     /**
      * Custom scroll event checking
@@ -200,7 +200,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
         scrollElements[index].lastY = (element.event == 'scroll-end') ? null : element.sourceElm.scrollTop();
 
         return (element.extra_condition() && condition);
-    }
+    };
 
     /**
      * Add an action to the queue
@@ -225,7 +225,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
                 sortActions();
             }
         }, 0);
-    }
+    };
 
     /**
      * Reset action queue and order
@@ -235,7 +235,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
         actionOrder = [];
 
         actionCheckInProgress = false;
-    }
+    };
 
     /**
      * Sort triggering actions
@@ -260,7 +260,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
         }
 
         triggerActions();
-    }
+    };
 
     /**
      * Trigger all actions from the queue
@@ -277,7 +277,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
         }
 
         resetActionQueue();
-    }
+    };
 
     /**
      * Trigger an action
@@ -342,7 +342,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
                 $(this).attr(element.attribute, action_value);
             });
         }
-    }
+    };
 
     /**
      * Cross-browser pointer event getter
@@ -366,7 +366,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
         } else {
             return document;
         }
-    }
+    };
 
     /**
      * Cross-platform event initialization
@@ -387,7 +387,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
                 $(this).trigger('anim-end');
             });
         }
-    }
+    };
 
     /**
      * Element data object creator
@@ -397,13 +397,13 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
      */
     var setElementData = function($el) {
 
-        var data_attribute_name, value;
+        var data_attribute_name, value, element_name;
 
         if ($el.data('action-name')) {
-            var element_name = $el.data('action-name');
+            element_name = $el.data('action-name');
         }
         else {
-            var element_name = 'action' + elementNameCounter;
+            element_name = 'action' + elementNameCounter;
             elementNameCounter++;
         }
 
@@ -459,7 +459,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
         element.destElm = (element.destination_selector !== null) ? $(element.destination_selector) : element.sourceElm;
         
         return element;
-    }
+    };
 
     /**
      * Handle action triggering according to action type
@@ -535,7 +535,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
                 });
             }
         }
-    }
+    };
 
 
     /** Public API **/
