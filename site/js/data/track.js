@@ -109,7 +109,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      * Add scroll event.
      */
     var addScrollCheck = function(category, action, label, value) {
-        $(window).scroll(function() {
+        $(window).bind('scroll', function() {
             var scroll_top = $(window).scrollTop();
             if (events.postScrollPercents.length && scroll_top > dimensions.postTop && scroll_top < dimensions.postTop + dimensions.postHeight) {
                 // Initial post scroll percent
