@@ -38,7 +38,6 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
         // Merge default options
         postOptions = $.extend(true, {}, defaultOptions, options);
         // Set post height, position, and height of a post segment
-        setDimensions();
 
         $(window).on('load resize', function() {
             setDimensions();
@@ -80,6 +79,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
                 var value = $el.attr('data-track-value');
                 // track read events
                 if(action == 'read'){
+                    setDimensions();
                     // Delayed call of addScrollCheck
                     setTimeout(function(){
                         addScrollCheck(category, action, label, value)
@@ -100,6 +100,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      */
     var setDimensions = function() {
         var $post = $('[data-track-action=read]');
+        if(typeof($post) == 'undefined') return;
         dimensions.postHeight = $post.height();
         dimensions.postTop = $post.offset().top;
     };
