@@ -100,7 +100,11 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      */
     var setDimensions = function() {
         var $post = $('[data-track-action=read]');
-        if(typeof($post) == 'undefined') return;
+        if(typeof($post) == 'undefined' || $post.length == 0) return;
+      	if($post.length > 1){
+        	ofw.error("You can only track one read action per page.");
+          	return;
+        }
         dimensions.postHeight = $post.height();
         dimensions.postTop = $post.offset().top;
     };
