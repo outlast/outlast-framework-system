@@ -99,8 +99,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      * Set dimensions based on div.
      */
     var setDimensions = function() {
-        var $post = $('[data-track-action]');
-        if($post.attr('data-track-action') != 'read') return;
+        var $post = $('[data-track-action=read]');
         dimensions.postHeight = $post.height();
         dimensions.postTop = $post.offset().top;
     };
@@ -109,7 +108,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      * Add scroll event.
      */
     var addScrollCheck = function(category, action, label, value) {
-        $(window).bind('scroll', function() {
+        $(window).on('scroll', function() {
             var scroll_top = $(window).scrollTop();
             if (events.postScrollPercents.length && scroll_top > dimensions.postTop && scroll_top < dimensions.postTop + dimensions.postHeight) {
                 // Initial post scroll percent
