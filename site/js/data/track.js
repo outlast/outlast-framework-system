@@ -38,7 +38,6 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
         // Merge default options
         postOptions = $.extend(true, {}, defaultOptions, options);
         // Set post height, position, and height of a post segment
-        setDimensions();
 
         $(window).on('load resize', function() {
             setDimensions();
@@ -80,6 +79,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
                 var value = $el.attr('data-track-value');
                 // track read events
                 if(action == 'read'){
+                    setDimensions();
                     // Delayed call of addScrollCheck
                     setTimeout(function(){
                         addScrollCheck(category, action, label, value)
@@ -99,8 +99,8 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      * Set dimensions based on div.
      */
     var setDimensions = function() {
-        var $post = $('[data-track-action]');
-        if($post.attr('data-track-action') != 'read') return;
+        var $post = $('[data-track-action=read]');
+        if(typeof($post) == 'undefined') return;
         dimensions.postHeight = $post.height();
         dimensions.postTop = $post.offset().top;
     };
@@ -109,7 +109,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
      * Add scroll event.
      */
     var addScrollCheck = function(category, action, label, value) {
-        $(window).bind('scroll', function() {
+        $(window).on('scroll', function() {
             var scroll_top = $(window).scrollTop();
             if (events.postScrollPercents.length && scroll_top > dimensions.postTop && scroll_top < dimensions.postTop + dimensions.postHeight) {
                 // Initial post scroll percent
