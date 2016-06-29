@@ -14,7 +14,7 @@ class zajfield_decimal extends zajField {
 	const use_filter = false;		// boolean - true if fetch is modified
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
-	const edit_template = 'field/integer.field.html';	// string - the edit template, false if not used
+	const edit_template = 'field/decimal.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 
 	// Construct
