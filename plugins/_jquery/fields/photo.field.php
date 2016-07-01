@@ -82,9 +82,10 @@ class zajfield_photo extends zajField {
 				$data = json_decode($data);
 				// If data is empty alltogether, it means that it wasnt JSON data, so it's a single photo id to be added!
 				if(empty($data) && !empty($sdata)){
+
 					$pobj = Photo::fetch($sdata);
 					// Remove previous ones
-					$photos = Photo::fetch()->filter('parent', $pobj->parent)->filter('field', $this->name);
+					$photos = Photo::fetch()->filter('parent', $object->id)->filter('field', $this->name);
 					if($photos->total){
 						foreach($photos as $pold){ $pold->delete(); }
 					}
@@ -102,7 +103,7 @@ class zajfield_photo extends zajField {
 					foreach($data->add as $count=>$id){
 						$pobj = Photo::fetch($id);
 						// Remove previous ones
-						$photos = Photo::fetch()->filter('parent', $pobj->parent)->filter('field', $this->name);
+						$photos = Photo::fetch()->filter('parent', $object->id)->filter('field', $this->name);
 						if($photos->total){
 							foreach($photos as $pold){ $pold->delete(); }
 						}
