@@ -16,6 +16,7 @@ die("This file is for documentation.");
  * @method static zajDb files
  * @method static zajDb float
  * @method static zajDbFriendly friendly
+ * @method static zajDb hours
  * @method static zajDb id
  * @method static zajDb integer
  * @method static zajDb json
