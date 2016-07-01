@@ -4,7 +4,7 @@
  * @package Fields
  * @subpackage BuiltinFields
  **/
-class zajfield_hours extends zajField {
+class zajfield_keyvalue extends zajField {
 	// name, options - these are passed to constructor and available here!
 	const in_database = true;		// boolean - true if this field is stored in database
 	const use_validation = false;	// boolean - true if data should be validated before saving
@@ -15,7 +15,7 @@ class zajfield_hours extends zajField {
 	const use_export = false;		// boolean - true if preprocessing required before exporting data
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = true;		// boolean - true if this field is used during search()
-	const edit_template = 'field/hours.field.html';	// string - the edit template, false if not used
+	const edit_template = 'field/keyvalue.field.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 
 	// Construct
