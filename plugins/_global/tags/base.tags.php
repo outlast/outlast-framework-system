@@ -333,7 +333,7 @@ EOF;
 		\$parent_forloop->totalcounter = \$current_forloop->totalcounter;
 		\$parent_forloop->totalcounter0 = \$current_forloop->totalcounter0;
 		// Unset me and reset me
-		\$current_forloop = \$current_forloop->parentloop;
+		\$this->zajlib->variable->forloop = \$current_forloop = \$current_forloop->parentloop;
 	}
 	else{
 		// unset stuff
