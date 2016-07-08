@@ -8,7 +8,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         var defaultOptions = {
             url: null,     // The controller that displays the popup HTML (in ofw.alert)
             selector: null,       // OR you can use this instead of url to simple removeClass('hide') on the popup campaign div
-            timeDelay: 25000,                   // 25 seconds delay before the popup is shown. You should use localStorage for the start time, so that the timer is preserved across page views.
+            timeDelay: 1000,                   // 25 seconds delay before the popup is shown. You should use localStorage for the start time, so that the timer is preserved across page views.
             cookieName: 'popupcampaign',        // Optional, defaults to 'popupcampaign' - The name of the cookie (or localstorage key?) that stores the number of times this user has seen this item. Only needed if you have several per page.
             cookieExpiryDays: 90,               // Optional, defaults to 90 - The number of days after which the cookie / localstorage expires.
             showCount: 1,                       // Optional, defaults to 1 - The number of times this visitor sees the popup campaign before it is no longer shown again (until the cookie expires).
@@ -21,7 +21,8 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         var myOptions = {};
 
         /** Private properties **/
-
+        var closeCount = 0;
+        var maxCloseCount = 0;
 
 
         /** Private API **/
@@ -33,6 +34,11 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             // Merge default options
             myOptions = $.extend(true, {}, defaultOptions, options);
 
+            // save showCount
+            maxCloseCount = myOptions.showCount;
+
+            if(checkPopup()) return;
+
             setTimeout(function(){
                 createPopup();
             }, myOptions.timeDelay);
@@ -41,12 +47,89 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         var createPopup = function(){
             // popup campaign called without a controller
             if(myOptions.url == null && myOptions.selector == null){
-                return console.error('Popup campaign called without controller and selector. Check the documentation and define the url or selector parameter.');
+                return console.error('Popup campaign called without url and selector. Check the documentation and define the url or selector parameter.');
             }
 
             // a controller was defined
             if(myOptions.url != null){
+                ofw.ajax.alert(myOptions.url, function(){
+                    onPopupClose();
+                });
+            }
 
+            // a selector was defined
+            if(myOptions.url == null && myOptions.selector != null){
+                $(myOptions.selector).removeClass('hide');
+            }
+        };
+
+        /**
+         * Check cookie and localstorage
+         */
+        var checkPopup = function(){
+            var cookieSet = checkCookie();
+            var localStorageSet = checkLocalStorage();
+            if(cookieSet || localStorageSet) return true;
+            else return false;
+        };
+
+        /**
+         * Check cookie
+         * @returns {boolean}
+         */
+        var checkCookie = function(){
+            var cookies = document.cookie.split(';');
+            for(var i = 0; i <cookies.length; i++) {
+                var c = cookies[i];
+                while (c.charAt(0)==' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(myOptions.cookieName) == 0) {
+                    var cookieData = c.split('=');
+                    if(cookieData[0] == myOptions.cookieName) {
+                        console.log('item found in cookie');
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        /**
+         * Check localstorage
+         */
+        var checkLocalStorage = function(){
+            if(window.localStorage){
+                var now = new Date();
+                var item = localStorage.getItem(myOptions.cookieName);
+
+                // item not found
+                if(typeof(item) == 'undefined' || item == null){
+                    return false;
+                }
+                // item found, but time has expired
+                if(item < (now.getTime()/1000)){
+                    // delete item and return false
+                    localStorage.removeItem(myOptions.cookieName);
+                    return false;
+                }
+                console.log('popup found in localstorage');
+                // item found with valid time
+                return true;
+            }
+            return false;
+        };
+
+        /**
+         * Save a popup name to cookie and localstorage
+         */
+        var onPopupClose = function(){
+            var expiry_date = new Date();
+            expiry_date = Math.round((expiry_date.getTime()/1000) + myOptions.cookieExpiryDays*24*60*60);
+            // set cookie
+            document.cookie = myOptions.cookieName+"="+myOptions.cookieName+"_closed; expires="+expiry_date+"; path=/";
+            if(window.localStorage){
+                localStorage.setItem(myOptions.cookieName, expiry_date);
             }
         };
 
@@ -66,8 +149,12 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             disable: function(){
 
             },
+            /**
+             * Set how many times the visitor should see the popup
+             * @param number int
+             */
             setCloseCount: function(number){
-
+                maxCloseCount = number;
             },
             reset: function(){
 
