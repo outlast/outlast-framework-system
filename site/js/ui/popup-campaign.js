@@ -23,6 +23,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         /** Private properties **/
         var closeCount = 0;
         var maxCloseCount = 0;
+        var popupEnabled = true;
 
 
         /** Private API **/
@@ -37,13 +38,27 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             // save showCount
             maxCloseCount = myOptions.showCount;
 
+            // check cookies, localstorage, showCount
             if(checkPopup()) return;
 
-            setTimeout(function(){
-                createPopup();
-            }, myOptions.timeDelay);
+            // if openButton is set, open popup on button click
+            if(myOptions.openButton != null){
+                $(myOptions.openButton).click(function(e){
+                   createPopup();
+                });
+            }
+            // if openButton is null, open popup after seconds defined in timeDelay parameter
+            else{
+                setTimeout(function(){
+                    createPopup();
+                }, myOptions.timeDelay);
+            }
         };
 
+        /**
+         * Create and open popup
+         * @returns {*}
+         */
         var createPopup = function(){
             // popup campaign called without a controller
             if(myOptions.url == null && myOptions.selector == null){
@@ -69,8 +84,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         var checkPopup = function(){
             var cookieSet = checkCookie();
             var localStorageSet = checkLocalStorage();
-            if(cookieSet || localStorageSet) return true;
-            else return false;
+            return cookieSet || localStorageSet;
         };
 
         /**
@@ -78,6 +92,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * @returns {boolean}
          */
         var checkCookie = function(){
+            // get all cookies
             var cookies = document.cookie.split(';');
             for(var i = 0; i <cookies.length; i++) {
                 var c = cookies[i];
@@ -86,8 +101,8 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 }
                 if (c.indexOf(myOptions.cookieName) == 0) {
                     var cookieData = c.split('=');
+                    // cookie found
                     if(cookieData[0] == myOptions.cookieName) {
-                        console.log('item found in cookie');
                         return true;
                     }
                 }
@@ -110,7 +125,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 // item found, but time has expired
                 if(item < (now.getTime()/1000)){
                     // delete item and return false
-                    localStorage.removeItem(myOptions.cookieName);
+                    deleteLocalStorage();
                     return false;
                 }
                 console.log('popup found in localstorage');
@@ -118,6 +133,26 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 return true;
             }
             return false;
+        };
+
+        /**
+         * Delete item from localstorage
+         */
+        var deleteLocalStorage = function(){
+            if(window.localStorage){
+                if(localStorage.getItem(myOptions.cookieName)){
+                    localStorage.removeItem(myOptions.cookieName);
+                }
+            }
+        };
+
+        /**
+         * Delete cookie
+         */
+        var deleteCookie = function(){
+           if(checkCookie()){
+               document.cookie = myOptions.cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+           }
         };
 
         /**
@@ -144,10 +179,10 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             },
 
             enable: function(){
-
+                popupEnabled = true;
             },
             disable: function(){
-
+                popupEnabled = false;
             },
             /**
              * Set how many times the visitor should see the popup
@@ -156,14 +191,18 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             setCloseCount: function(number){
                 maxCloseCount = number;
             },
+            /**
+             * Reset campaign
+             */
             reset: function(){
-
+                deleteLocalStorage();
+                deleteCookie();
             },
             closePopup: function(){
 
             },
             openPopup: function(){
-
+                createPopup();
             }
 
         };
