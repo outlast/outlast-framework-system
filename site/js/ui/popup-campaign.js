@@ -35,11 +35,9 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             // Merge default options
             myOptions = $.extend(true, {}, defaultOptions, options);
 
-            // save showCount
-            maxCloseCount = myOptions.showCount;
-
-            // check cookies, localstorage, showCount
-            if(checkPopup()) return;
+            if(checkCookie(myOptions.cookieName+'_closecount')){
+                closeCount = checkCookie(myOptions.cookieName+'_closecount');
+            }
 
             // if openButton is set, open popup on button click
             if(myOptions.openButton != null){
@@ -60,6 +58,9 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * @returns {*}
          */
         var createPopup = function(){
+            console.log('Createpopup running');
+            // check cookies, localstorage, showCount
+            if(checkPopup() || !popupEnabled) return;
             // popup campaign called without a controller
             if(myOptions.url == null && myOptions.selector == null){
                 return console.error('Popup campaign called without url and selector. Check the documentation and define the url or selector parameter.');
@@ -80,18 +81,30 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
 
         /**
          * Check cookie and localstorage
+         * @returns boolean true if everything is OK
          */
         var checkPopup = function(){
-            var cookieSet = checkCookie();
-            var localStorageSet = checkLocalStorage();
-            return cookieSet || localStorageSet;
+            var cookieSet = checkCookie(myOptions.cookieName);
+            var showCountCookieCheck = checkCookie(myOptions.cookieName + '_closecount');
+            var localStorageSet = checkLocalStorage(myOptions.cookieName);
+            var showCountStorageSet = checkLocalStorage(myOptions.cookieName + '_closecount');
+            if(cookieSet){
+                if(showCountCookieCheck < myOptions.showCount) return false;
+                return true;
+            }
+            else if(localStorageSet){
+                if(showCountStorageSet < myOptions.showCount) return false;
+                return true;
+            }
+            return false;
         };
 
         /**
          * Check cookie
+         * @param name String cookie name
          * @returns {boolean}
          */
-        var checkCookie = function(){
+        var checkCookie = function(name){
             // get all cookies
             var cookies = document.cookie.split(';');
             for(var i = 0; i <cookies.length; i++) {
@@ -99,11 +112,12 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 while (c.charAt(0)==' ') {
                     c = c.substring(1);
                 }
-                if (c.indexOf(myOptions.cookieName) == 0) {
+                if (c.indexOf(name) == 0) {
                     var cookieData = c.split('=');
                     // cookie found
-                    if(cookieData[0] == myOptions.cookieName) {
-                        return true;
+                    if(cookieData[0] == name) {
+                        // return cookie value
+                        return cookieData[1];
                     }
                 }
             }
@@ -113,24 +127,23 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         /**
          * Check localstorage
          */
-        var checkLocalStorage = function(){
+        var checkLocalStorage = function(name){
             if(window.localStorage){
                 var now = new Date();
-                var item = localStorage.getItem(myOptions.cookieName);
+                var item = localStorage.getItem(name);
 
                 // item not found
                 if(typeof(item) == 'undefined' || item == null){
                     return false;
                 }
                 // item found, but time has expired
-                if(item < (now.getTime()/1000)){
+                if(item < (now.getTime()/1000) && name == myOptions.cookieName){
                     // delete item and return false
                     deleteLocalStorage();
                     return false;
                 }
-                console.log('popup found in localstorage');
                 // item found with valid time
-                return true;
+                return item;
             }
             return false;
         };
@@ -143,6 +156,10 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 if(localStorage.getItem(myOptions.cookieName)){
                     localStorage.removeItem(myOptions.cookieName);
                 }
+
+                if(localStorage.getItem(myOptions.cookieName+'_closecount')){
+                    localStorage.removeItem(myOptions.cookieName+'_closecount');
+                }
             }
         };
 
@@ -150,9 +167,18 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * Delete cookie
          */
         var deleteCookie = function(){
-           if(checkCookie()){
-               document.cookie = myOptions.cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-           }
+           document.cookie = myOptions.cookieName + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+           document.cookie = myOptions.cookieName + '_closecount=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        };
+
+        /**
+         * Close popup
+         */
+        var closePopup = function(){
+          if(myOptions.selector){
+              $(myOptions.selector).addClass('hide');
+              onPopupClose();
+          }
         };
 
         /**
@@ -161,11 +187,16 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         var onPopupClose = function(){
             var expiry_date = new Date();
             expiry_date = Math.round((expiry_date.getTime()/1000) + myOptions.cookieExpiryDays*24*60*60);
+            // increment closecount
+            closeCount++;
             // set cookie
             document.cookie = myOptions.cookieName+"="+myOptions.cookieName+"_closed; expires="+expiry_date+"; path=/";
+            document.cookie = myOptions.cookieName+"_closecount="+closeCount+"; expires="+expiry_date+"; path=/";
             if(window.localStorage){
                 localStorage.setItem(myOptions.cookieName, expiry_date);
+                localStorage.setItem(myOptions.cookieName+'_closecount', closeCount);
             }
+
         };
 
         /** Public API **/
@@ -177,10 +208,15 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             start: function(){
                 init();
             },
-
+            /**
+             * Enable popup campaigns
+             */
             enable: function(){
                 popupEnabled = true;
             },
+            /**
+             * Disable popup campaigns
+             */
             disable: function(){
                 popupEnabled = false;
             },
@@ -189,7 +225,11 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
              * @param number int
              */
             setCloseCount: function(number){
-                maxCloseCount = number;
+                closeCount = number;
+                document.cookie = myOptions.cookieName+"_closecount="+closeCount+"; expires="+0+"; path=/";
+                if(window.localStorage){
+                    localStorage.setItem(myOptions.cookieName+'_closecount', closeCount);
+                }
             },
             /**
              * Reset campaign
@@ -198,9 +238,15 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 deleteLocalStorage();
                 deleteCookie();
             },
+            /**
+             * Close popup
+             */
             closePopup: function(){
-
+                closePopup();
             },
+            /**
+             * Open popup
+             */
             openPopup: function(){
                 createPopup();
             }
