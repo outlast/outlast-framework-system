@@ -22,11 +22,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
 
         /** Private properties **/
         var closeCount = 0;
-        var maxCloseCount = 0;
         var popupEnabled = true;
-
-
-        /** Private API **/
 
         /**
          * Object init
@@ -58,9 +54,8 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * @returns {*}
          */
         var createPopup = function(){
-            console.log('Createpopup running');
             // check cookies, localstorage, showCount
-            if(checkPopup() || !popupEnabled) return;
+            if(!allowPopup() || !popupEnabled) return;
             // popup campaign called without a controller
             if(myOptions.url == null && myOptions.selector == null){
                 return console.error('Popup campaign called without url and selector. Check the documentation and define the url or selector parameter.');
@@ -83,18 +78,21 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * Check cookie and localstorage
          * @returns boolean true if everything is OK
          */
-        var checkPopup = function(){
+        var allowPopup = function(){
+            var now = new Date();
+            now = Math.round(now.getTime()/1000);
             var cookieSet = checkCookie(myOptions.cookieName);
             var showCountCookieCheck = checkCookie(myOptions.cookieName + '_closecount');
             var localStorageSet = checkLocalStorage(myOptions.cookieName);
             var showCountStorageSet = checkLocalStorage(myOptions.cookieName + '_closecount');
+
             if(cookieSet){
-                if(showCountCookieCheck < myOptions.showCount) return false;
-                return true;
+                if(showCountCookieCheck < myOptions.showCount && (cookieSet - myOptions.cookieExpiryDays*24*60*60) <= now - (myOptions.showAgainAfterDays*24*60*60)) return true;
+                return false;
             }
             else if(localStorageSet){
-                if(showCountStorageSet < myOptions.showCount) return false;
-                return true;
+                if(showCountStorageSet < myOptions.showCount &&  (localStorageSet - myOptions.cookieExpiryDays*24*60*60) <= now - (myOptions.showAgainAfterDays*24*60*60)) return true;
+                return false;
             }
             return false;
         };
