@@ -1,0 +1,18 @@
+<!-- A key/value object editor for json fields -->
+<div id='{{field.uid}}'></div>
+<a class="btn btn-mini btn-success" onclick="add_field_{{field.uid}}('', '');">{{#system_field_keyvalue_new#}}</a>
+
+<script language="javascript">
+    function add_field_{{field.uid}}(key, val){
+        var el = $("<div class='alert alert-info'><input class='field text input-mini' type='text' name='{{field.name}}[key][]' placeholder='{{#system_field_keyvalue_key#}}' value='"+key+"'> - <input class='field text input-small' type='text' name='{{field.name}}[value][]' placeholder='{{#system_field_keyvalue_value#}}' value='"+val+"'> <a class='close' href='#delete' onclick=\"$(this).parents('div.alert').first().remove();\">&times;</a></div>");
+        $('#{{field.uid}}').append(el);
+    }
+    {% if field.value %}
+
+        zaj.ready(function(){
+            {% foreach field.value as val %}
+            add_field_{{field.uid}}('{{forloop.key|escapejs}}', '{{val|escapejs}}');
+            {% endforeach %}
+        });
+        {% endif %}
+</script>

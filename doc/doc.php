@@ -16,10 +16,10 @@ die("This file is for documentation.");
  * @method static zajDb files
  * @method static zajDb float
  * @method static zajDbFriendly friendly
- * @method static zajDb hours
  * @method static zajDb id
  * @method static zajDb integer
  * @method static zajDb json
+ * @method static zajDb keyvalue
  * @method static zajDb locale
  * @method static zajDb locales
  * @method static zajDb manytomany(string $other_object, string $other_field='')
