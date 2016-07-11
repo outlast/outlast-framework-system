@@ -8,7 +8,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         var defaultOptions = {
             url: null,     // The controller that displays the popup HTML (in ofw.alert)
             selector: null,       // OR you can use this instead of url to simple removeClass('hide') on the popup campaign div
-            timeDelay: 1000,                   // 25 seconds delay before the popup is shown. You should use localStorage for the start time, so that the timer is preserved across page views.
+            timeDelay: 25000,                   // 25 seconds delay before the popup is shown. You should use localStorage for the start time, so that the timer is preserved across page views.
             cookieName: 'popupcampaign',        // Optional, defaults to 'popupcampaign' - The name of the cookie (or localstorage key?) that stores the number of times this user has seen this item. Only needed if you have several per page.
             cookieExpiryDays: 90,               // Optional, defaults to 90 - The number of days after which the cookie / localstorage expires.
             showCount: 1,                       // Optional, defaults to 1 - The number of times this visitor sees the popup campaign before it is no longer shown again (until the cookie expires).
@@ -23,6 +23,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         /** Private properties **/
         var closeCount = 0;
         var popupEnabled = true;
+        var popupTimeout = null;
 
         /**
          * Object init
@@ -36,14 +37,19 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             }
 
             // if openButton is set, open popup on button click
-            if(myOptions.openButton != null){
-                $(myOptions.openButton).click(function(e){
-                   createPopup();
-                });
-            }
+
+            $(myOptions.openButton).click(function(e){
+               createPopup();
+            });
+
+            // if closeButton is set, hide popup on button click
+            $(myOptions.closeButton).click(function(e){
+               closePopup();
+            });
+
             // if openButton is null, open popup after seconds defined in timeDelay parameter
-            else{
-                setTimeout(function(){
+            if(myOptions.timeDelay != null){
+                popupTimeout = setTimeout(function(){
                     createPopup();
                 }, myOptions.timeDelay);
             }
@@ -54,6 +60,8 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * @returns {*}
          */
         var createPopup = function(){
+            // delete timeout
+            if(popupTimeout != null) clearTimeout(popupTimeout);
             // check cookies, localstorage, showCount
             if(!allowPopup() || !popupEnabled) return;
             // popup campaign called without a controller
@@ -94,7 +102,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 if(showCountStorageSet < myOptions.showCount &&  (localStorageSet - myOptions.cookieExpiryDays*24*60*60) <= now - (myOptions.showAgainAfterDays*24*60*60)) return true;
                 return false;
             }
-            return false;
+            return true;
         };
 
         /**
@@ -188,7 +196,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             // increment closecount
             closeCount++;
             // set cookie
-            document.cookie = myOptions.cookieName+"="+myOptions.cookieName+"_closed; expires="+expiry_date+"; path=/";
+            document.cookie = myOptions.cookieName+"="+expiry_date+"; expires="+expiry_date+"; path=/";
             document.cookie = myOptions.cookieName+"_closecount="+closeCount+"; expires="+expiry_date+"; path=/";
             if(window.localStorage){
                 localStorage.setItem(myOptions.cookieName, expiry_date);
