@@ -56,9 +56,9 @@
 				runtimes : 'html5,flash,html4',
 				browse_button : '{{field.uid}}-pickfiles',
 				drop_element : '{{field.uid}}-filelist',
-            {% if field.options.max_height %}
+            	{% if field.options.max_file_size %}
 				max_file_size : '{{field.options.max_file_size|escapejs}}',
-            {% endif %}
+            	{% endif %}
                 url : '{% block upload_url %}{{baseurl}}system/plupload/upload/photo/{% endblock upload_url %}',
 				flash_swf_url : '{{baseurl}}system/js/plupload/plupload.flash.swf'
 			});
