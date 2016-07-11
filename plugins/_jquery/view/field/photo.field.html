@@ -56,8 +56,10 @@
 				runtimes : 'html5,flash,html4',
 				browse_button : '{{field.uid}}-pickfiles',
 				drop_element : '{{field.uid}}-filelist',
+            	{% if field.options.max_file_size %}
 				max_file_size : '{{field.options.max_file_size|escapejs}}',
-				url : '{% block upload_url %}{{baseurl}}system/plupload/upload/photo/{% endblock upload_url %}',
+            	{% endif %}
+                url : '{% block upload_url %}{{baseurl}}system/plupload/upload/photo/{% endblock upload_url %}',
 				flash_swf_url : '{{baseurl}}system/js/plupload/plupload.flash.swf'
 			});
 			var uploadergo_{{field.uid}} = function(){
@@ -99,7 +101,7 @@
 			 * Expects an object as such:
 			 *	res.height, res.width, res.id
 			 **/
-			uploader_update_{{field.uid}} = function(res){				
+			uploader_update_{{field.uid}} = function(res){
 				// Is it wide/tall enough?
 					{% if field.options.min_height and field.options.min_width %}
 						if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("{{#system_field_picture_too_small#|printf:field.options.min_width|printf:field.options.min_height|escapejs}}");
