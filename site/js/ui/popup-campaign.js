@@ -4,6 +4,7 @@
 define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
 
     return function PopupCampaign(options){
+        var popupCampaign = this;
         /** Options **/
         var defaultOptions = {
             url: null,     // The controller that displays the popup HTML (in ofw.alert)
@@ -15,7 +16,10 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             showAgainAfterDays: 3,              // Optional, defaults to 3 - The number of days after which a visitor should again see the popup (only relevant if showCount > 1)
             openButton: null,      // Optional, defaults to null - If set, a click event will be added to this selector that triggers openPopup()
             closeButton: null,      // Optional, defaults to null - If set, a click event will be added to this selector that triggers closePopup()
-            handleUrlResponse: null
+            handleUrlResponse: null, // Optional, defaults to null - If set, the response from the url option will be passed to this callback function, along with the campaign as second parameter.
+                                     // ...if null (the default), the response from url will be ofw.alert()-ed.
+            onOpenPopup: null, // Optional, defaults to empty function - Callback called after the popup is openned.
+            onClosePopup: null // Optional, defaults to empty function - Callback called after the popup is closed.
         };
 
         var myOptions = {};
@@ -64,6 +68,10 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 return console.error('Popup campaign called without url and selector. Check the documentation and define the url or selector parameter.');
             }
 
+            if(myOptions.onOpenPopup != null){
+                myOptions.onOpenPopup(popupCampaign);
+            }
+
             // a controller was defined
             if(myOptions.url != null){
                 ofw.ajax.post(myOptions.url, function(r){
@@ -87,7 +95,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             }
 
             // if closeButton is set, hide popup on button click
-            $(myOptions.closeButton).click(function(e){
+            $(myOptions.closeButton).off('click').on('click', function(e){
                 closePopup();
             });
         };
@@ -201,6 +209,11 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * Save a popup name to cookie and localstorage
          */
         var onPopupClose = function(){
+            // check if there is a callback function
+            if(myOptions.onClosePopup != null){
+                myOptions.onClosePopup(popupCampaign);
+            }
+            // get expiry date
             var expiry_date = new Date();
             expiry_date = Math.round((expiry_date.getTime()/1000) + myOptions.cookieExpiryDays*24*60*60);
             // increment closecount
