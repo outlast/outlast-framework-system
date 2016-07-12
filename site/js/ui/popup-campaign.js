@@ -14,8 +14,8 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             showCount: 1,                       // Optional, defaults to 1 - The number of times this visitor sees the popup campaign before it is no longer shown again (until the cookie expires).
             showAgainAfterDays: 3,              // Optional, defaults to 3 - The number of days after which a visitor should again see the popup (only relevant if showCount > 1)
             openButton: null,      // Optional, defaults to null - If set, a click event will be added to this selector that triggers openPopup()
-            closeButton: null      // Optional, defaults to null - If set, a click event will be added to this selector that triggers closePopup()
-
+            closeButton: null,      // Optional, defaults to null - If set, a click event will be added to this selector that triggers closePopup()
+            handleUrlResponse: null
         };
 
         var myOptions = {};
@@ -42,11 +42,6 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                createPopup();
             });
 
-            // if closeButton is set, hide popup on button click
-            $(myOptions.closeButton).click(function(e){
-               closePopup();
-            });
-
             // if openButton is null, open popup after seconds defined in timeDelay parameter
             if(myOptions.timeDelay != null){
                 popupTimeout = setTimeout(function(){
@@ -71,8 +66,18 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
 
             // a controller was defined
             if(myOptions.url != null){
-                ofw.ajax.alert(myOptions.url, function(){
-                    onPopupClose();
+                ofw.ajax.post(myOptions.url, function(r){
+                    if(myOptions.handleUrlResponse == null){
+                        ofw.alert(r, function(){
+                            onPopupClose();
+                        });
+                    }
+                    else{
+                        if(typeof(myOptions.handleUrlResponse) != 'function'){
+                            myOptions.handleUrlResponse = new Function(myOptions.handleUrlResponse);
+                        }
+                        myOptions.handleUrlResponse(r);
+                    }
                 });
             }
 
@@ -80,6 +85,11 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             if(myOptions.url == null && myOptions.selector != null){
                 $(myOptions.selector).removeClass('hide');
             }
+
+            // if closeButton is set, hide popup on button click
+            $(myOptions.closeButton).click(function(e){
+                closePopup();
+            });
         };
 
         /**
