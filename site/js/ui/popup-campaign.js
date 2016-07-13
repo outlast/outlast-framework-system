@@ -228,11 +228,21 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             if(myOptions.onClosePopup != null){
                 myOptions.onClosePopup(popupCampaign);
             }
+
+            // increment closecount and set
+            closeCount++;
+            setCloseCount(closeCount);
+        };
+
+        /**
+         * Set how many times the visitor has seen the popup.
+         * @param closeCount int
+         */
+        var setCloseCount = function(closeCount){
             // get expiry date
             var expiry_date = new Date();
             expiry_date = Math.round((expiry_date.getTime()/1000) + myOptions.cookieExpiryDays*24*60*60);
-            // increment closecount
-            closeCount++;
+
             // set cookie
             document.cookie = myOptions.cookieName+"="+expiry_date+"; expires="+expiry_date+"; path=/";
             document.cookie = myOptions.cookieName+"_closecount="+closeCount+"; expires="+expiry_date+"; path=/";
@@ -240,8 +250,8 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 localStorage.setItem(myOptions.cookieName, expiry_date);
                 localStorage.setItem(myOptions.cookieName+'_closecount', closeCount);
             }
-
         };
+
 
         /** Public API **/
         var api = {
@@ -252,42 +262,44 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             start: function(){
                 init();
             },
+
             /**
              * Enable popup campaigns
              */
             enable: function(){
                 popupEnabled = true;
             },
+
             /**
              * Disable popup campaigns
              */
             disable: function(){
                 popupEnabled = false;
             },
+
             /**
              * Set how many times the visitor should see the popup
-             * @param number int
+             * @param closeCount int
              */
-            setCloseCount: function(number){
-                closeCount = number;
-                document.cookie = myOptions.cookieName+"_closecount="+closeCount+"; expires="+0+"; path=/";
-                if(window.localStorage){
-                    localStorage.setItem(myOptions.cookieName+'_closecount', closeCount);
-                }
+            setCloseCount: function(closeCount){
+                setCloseCount(closeCount);
             },
+
             /**
-             * Reset campaign
+             * Reset campaign (restart the count)
              */
             reset: function(){
                 deleteLocalStorage();
                 deleteCookie();
             },
+
             /**
              * Close popup
              */
             closePopup: function(){
                 closePopup();
             },
+
             /**
              * Open popup
              */
