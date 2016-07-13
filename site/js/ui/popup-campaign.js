@@ -36,22 +36,20 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             // Merge default options
             myOptions = $.extend(true, {}, defaultOptions, options);
 
+            // Set current close count
             if(checkCookie(myOptions.cookieName+'_closecount')){
                 closeCount = checkCookie(myOptions.cookieName+'_closecount');
             }
 
-            // if openButton is set, open popup on button click
-
-            $(myOptions.openButton).click(function(e){
-               createPopup();
-            });
-
-            // if openButton is null, open popup after seconds defined in timeDelay parameter
+            // Open popup after seconds defined in timeDelay parameter
             if(myOptions.timeDelay != null){
                 popupTimeout = setTimeout(function(){
                     createPopup();
                 }, myOptions.timeDelay);
             }
+
+            // Initialize buttons
+            initButtons();
         };
 
         /**
@@ -79,12 +77,16 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                         ofw.alert(r, function(){
                             onPopupClose();
                         });
+                        initButtons();
                     }
                     else{
                         if(typeof(myOptions.handleUrlResponse) != 'function'){
                             myOptions.handleUrlResponse = new Function(myOptions.handleUrlResponse);
                         }
                         myOptions.handleUrlResponse(r);
+
+                        // Init buttons
+                        initButtons();
                     }
                 });
             }
@@ -94,7 +96,21 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
                 $(myOptions.selector).removeClass('hide');
             }
 
-            // if closeButton is set, hide popup on button click
+            // Init buttons
+            initButtons();
+
+        };
+
+		/**
+		 * Initialize my buttons.
+         */
+        var initButtons = function(){
+            // If openButton is set, open popup on button click
+            $(myOptions.openButton).off('click').on('click', function(e){
+               createPopup();
+            });
+
+            // If closeButton is set, hide popup on button click
             $(myOptions.closeButton).off('click').on('click', function(e){
                 closePopup();
             });
@@ -199,10 +215,9 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * Close popup
          */
         var closePopup = function(){
-          if(myOptions.selector){
-              $(myOptions.selector).addClass('hide');
-              onPopupClose();
-          }
+            // Hide
+            if(myOptions.selector) $(myOptions.selector).addClass('hide');
+            onPopupClose();
         };
 
         /**

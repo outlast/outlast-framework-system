@@ -991,6 +991,14 @@ define('system/js/ofw-jquery', [], function() {
 		},
 
 		/**
+		 * Run through the context (defaults to body) and activate all registered data attribute handlers.
+		 * @param {jQuery} [$context=$(document)] The jQuery object in which the handlers are searched for.
+		 **/
+		activateDataAttributeHandlers: function($context){
+			activateDataAttributeHandlers($context);
+		},
+
+		/**
 		 * Add a data attribute handler. If the data attribute is found on the page, the associated helper js is loaded.
 		 * @param {string} handlerName The name of the handler which should be the data attribute to look for without data-. So for data-autopagination it is 'autopagination'.
 		 */
