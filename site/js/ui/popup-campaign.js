@@ -249,14 +249,15 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
          * Save a popup name to cookie and localstorage
          */
         var onPopupClose = function(){
+            // increment closecount and set
+            closeCount++;
+            setCloseCount(closeCount);
+
             // check if there is a callback function
             if(myOptions.onClosePopup != null){
                 myOptions.onClosePopup(popupCampaign);
             }
 
-            // increment closecount and set
-            closeCount++;
-            setCloseCount(closeCount);
         };
 
         /**
@@ -338,13 +339,6 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
              */
             openPopup: function(){
                 createPopup();
-            },
-
-            /**
-             * Save cookies
-             */
-            saveCookie: function(){
-              onPopupClose();
             }
 
         };
