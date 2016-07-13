@@ -60,7 +60,7 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
             // delete timeout
             if(popupTimeout != null) clearTimeout(popupTimeout);
             // check cookies, localstorage, showCount
-            if(!allowPopup() || !popupEnabled) return;
+            if(!isPopupReadyForNextShow()) return;
             // popup campaign called without a controller
             if(myOptions.url == null && myOptions.selector == null){
                 return console.error('Popup campaign called without url and selector. Check the documentation and define the url or selector parameter.');
@@ -117,26 +117,51 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
         };
 
         /**
-         * Check cookie and localstorage
+         * Check to see if the popup is ready to be shown.
          * @returns boolean true if everything is OK
          */
-        var allowPopup = function(){
+        var isPopupReadyForNextShow = function(){
+
+            // If popup is disabled, then we know its not
+            if(!popupEnabled) return false;
+
+            // Now let's check based on rules
             var now = new Date();
             now = Math.round(now.getTime()/1000);
+
+            var showCount = getShowCount();
+            var showTime = getShowTime();
+
+            return (
+                // If the show count is less than the max
+                showCount < myOptions.showCount &&
+                // If the last shown time is at least showAgainAfterDays away
+                showTime - myOptions.cookieExpiryDays*24*60*60 <= now - myOptions.showAgainAfterDays*24*60*60
+               );
+        };
+
+		/**
+		 * Get the last show time.
+         */
+        var getShowTime = function(){
             var cookieSet = checkCookie(myOptions.cookieName);
-            var showCountCookieCheck = checkCookie(myOptions.cookieName + '_closecount');
             var localStorageSet = checkLocalStorage(myOptions.cookieName);
+
+            if(cookieSet) return cookieSet;
+            else if(localStorageSet) return localStorageSet;
+            else return 0;
+        };
+
+		/**
+		 * Get the current show count.
+         */
+        var getShowCount = function(){
+            var showCountCookieCheck = checkCookie(myOptions.cookieName + '_closecount');
             var showCountStorageSet = checkLocalStorage(myOptions.cookieName + '_closecount');
 
-            if(cookieSet){
-                if(showCountCookieCheck < myOptions.showCount && (cookieSet - myOptions.cookieExpiryDays*24*60*60) <= now - (myOptions.showAgainAfterDays*24*60*60)) return true;
-                return false;
-            }
-            else if(localStorageSet){
-                if(showCountStorageSet < myOptions.showCount &&  (localStorageSet - myOptions.cookieExpiryDays*24*60*60) <= now - (myOptions.showAgainAfterDays*24*60*60)) return true;
-                return false;
-            }
-            return true;
+            if(showCountCookieCheck) return showCountCookieCheck;
+            else if(showCountStorageSet) return showCountStorageSet;
+            else return 0;
         };
 
         /**
@@ -283,6 +308,14 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
              */
             setCloseCount: function(closeCount){
                 setCloseCount(closeCount);
+            },
+
+            /**
+             * Add one to the closed count (but without actually closing).
+             * @param closeCount int
+             */
+            incrementCloseCount: function(){
+
             },
 
             /**
