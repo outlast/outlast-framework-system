@@ -293,6 +293,13 @@ define('system/js/ui/popup-campaign', ["../ofw-jquery"], function() {
              */
             openPopup: function(){
                 createPopup();
+            },
+
+            /**
+             * Save cookies
+             */
+            saveCookie: function(){
+              onPopupClose();
             }
 
         };
