@@ -62,7 +62,6 @@ define(["../ofw-jquery"], function() {
 		 * Sends a keyup event to retrigger search
 		 **/
 		keyup: function(){
-			lastQuery = '';
 			api.resetTimer();
 		},
 
