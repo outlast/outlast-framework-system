@@ -396,53 +396,65 @@ class zajlib_template_zajvariables {
 					$mode = htmlspecialchars($this->zajlib->mode);
 					return <<<EOF
 <script type='text/javascript'>
-	require.config({
-    	baseUrl: "{$baseurl}",
-		urlArgs: "cachebuster=" + (new Date()).getTime()    	
-    });
-	if(typeof ofw == 'undefined' || ofw == null){
-		// Backwards compatibility for unready set langs
-		var ofwSetLang = [];
-		// Define ready and jquery is ready
-		var ofw = {
-			ready: function(func){
-				ofw.readyFunctions.push(func);
-			},
-			setLang: function(keyOrArray, value, section){ ofwSetLang.push([keyOrArray, value, section]); },
-			log: function(m){ console.log(m) },
-			readyFunctions: [],
-			jqueryIsReady: false	
-		};
-		$(document).ready(function(){ ofw.jqueryIsReady = true; });
-		var zaj = ofw;
-		
-		// Now require and create
-        requirejs(["system/js/ofw-jquery"], function(ofwsys){
-        	ofwsys.init({
-				baseurl: '{$protocol}:{$baseurl}',
-				fullrequest: '{$protocol}:{$fullrequest}',
-				fullurl: '{$protocol}:{$fullurl}',
-				app: '{$app}',
-				mode: '{$mode}',
-				debug_mode: $debug_mode,
-				protocol: '{$protocol}',
-				trackeventsLocal: $trackevents_local,
-				trackeventsAnalytics: $trackevents_analytics,
-				locale: '$locale',
-				readyFunctions: ofw.readyFunctions,
-				jqueryIsReady: ofw.jqueryIsReady	
-			});
-			// Now call each ofw set lang
-			for(var i = 0; i < ofwSetLang.length; i++) ofwsys.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);
+    var ofwsettings = {
+        baseurl: '{$protocol}:{$baseurl}',
+        fullrequest: '{$protocol}:{$fullrequest}',
+        fullurl: '{$protocol}:{$fullurl}',
+        app: '{$app}',
+        mode: '{$mode}',
+        debug_mode: $debug_mode,
+        protocol: '{$protocol}',
+        trackeventsLocal: $trackevents_local,
+        trackeventsAnalytics: $trackevents_analytics,
+        locale: '$locale'
+    };
 
-			// Finally, set variables
-			ofw = zaj = ofwsys;
+    if(typeof require != 'undefined'){
+        /** require init **/
+        require.config({
+            baseUrl: "{$baseurl}",
+            urlArgs: "cachebuster=" + (new Date()).getTime()    	
         });
-        
-        // Define jquery so that require knows about it
-		define('jquery', [], function() {
-			return jQuery;
-		});        
+        if(typeof ofw == 'undefined' || ofw == null){
+            // Backwards compatibility for unready set langs
+            var ofwSetLang = [];
+            // Define ready and jquery is ready
+            var ofw = {
+                ready: function(func){
+                    ofw.readyFunctions.push(func);
+                },
+                setLang: function(keyOrArray, value, section){ ofwSetLang.push([keyOrArray, value, section]); },
+                log: function(m){ console.log(m) },
+                readyFunctions: [],
+                jqueryIsReady: false	
+            };
+            $(document).ready(function(){ ofw.jqueryIsReady = true; });
+            var zaj = ofw;
+            
+            // Now require and create
+            requirejs(["system/js/ofw-jquery"], function(ofwsys){
+                // Set my ready functions and init
+                ofwsettings.readyFunctions = ofw.readyFunctions;
+                ofwsettings.jqueryIsReady = ofw.jqueryIsReady;
+                ofwsys.init(ofwsettings);
+                // Now call each ofw set lang
+                for(var i = 0; i < ofwSetLang.length; i++) ofwsys.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);    
+                // Finally, set variables
+                ofw = zaj = ofwsys;
+            });
+            
+            // Define jquery so that require knows about it
+            define('jquery', [], function() {
+                return jQuery;
+            });
+        }
+    }
+    else{
+        /** legacy init **/
+        if(typeof zaj != 'undefined'){
+            $.extend(zaj, ofwsettings);
+            var ofw = zaj;
+        }
     }
 </script>
 EOF;
