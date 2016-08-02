@@ -401,10 +401,11 @@ class Photo extends zajModel {
 	 * @param string|boolean $id Use this to override random id generation.
 	 * @return Photo Returns a new photo object with all files duplicated.
 	 */
-	public function duplicate($id = false){
+	public function duplicate($id = false, $parent = false){
 		// First duplicate my object
 			/** @var Photo $new_object */
 			$new_object = parent::duplicate($id);
+			if($parent) $new_object->set('parent', $parent);
 			$new_object->temporary = true;
 			$new_object->set('status', 'uploaded')->save();
 		// Create a copy of my original file
