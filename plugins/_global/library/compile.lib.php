@@ -217,6 +217,7 @@ class zajElementsLoader{
  * Abstract parent class from which all filter and tag extensions originate.
  **/
 abstract class zajElementCollection{
+	/** @var zajLib */
 	protected $zajlib;
 	
 	public function __construct(&$zajlib){

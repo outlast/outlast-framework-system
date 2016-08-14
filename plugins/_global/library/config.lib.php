@@ -85,6 +85,23 @@ class zajlib_config extends zajLibExtension{
 		 	return $this->$name;
 	 	}
 
+    /**
+     * Set a specific variable in the global scope. You should use this only on rare occasion, for system-specific development!
+     * @param string $key The variable key.
+     * @param mixed $value The value.
+     */
+    public function set_variable($key, $value){
+        $this->variable->$key = $value;
+    }
+
+    /**
+     * Unset a specific variable in the global scope. You should use this only on rare occasion, for system-specific development!
+     * @param string $key The variable key.
+     */
+    public function unset_variable($key){
+        unset($this->variable->$key);
+    }
+
 	/**
 	 * Sets the key/value variable object. Be careful, this overwrites the entire current setting. Because conf and lang are actually the same (just separated by name) lang values will also be overwritten.
 	 * @param stdClass $variables The key/value pairs to use for the new variable.
