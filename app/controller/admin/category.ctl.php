@@ -42,7 +42,7 @@
 						else $this->zajlib->variable->objects->filter('parentcategory', '');
 				}
 			// send to list template
-				if($this->zajlib->request->is_ajax()) return $this->zajlib->template->block("admin/category/category_list.html", "content");
+				if($this->zajlib->request->is_ajax()) return $this->zajlib->template->block("admin/category/category_list.html", "autopagination");
 				else return $this->zajlib->template->show("admin/category/category_list.html");
 		}
 
