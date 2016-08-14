@@ -48,7 +48,6 @@ class zajlib_template extends zajLibExtension {
 			$this->zajlib->variable->ofw = $this->zajlib->variable->zaj;
 		// set up a few other globals
 			$this->zajlib->variable->baseurl = $this->zajlib->baseurl;
-			$this->zajlib->variable->self = $this->zajlib->variable->app.'/'.$this->zajlib->variable->mode;
 			$this->zajlib->variable->fullurl = $this->zajlib->fullurl;
 			$this->zajlib->variable->fullrequest = $this->zajlib->fullrequest;
 		
@@ -56,6 +55,7 @@ class zajlib_template extends zajLibExtension {
 		 * ALL VARIABLES BELOW ARE NOT TO BE USED! THEY WILL BE REMOVED IN A FUTURE RELEASE!
 		 *******/
 		
+			$this->zajlib->variable->self = $this->zajlib->fullrequest; // @deprecated!
 		// access to request variables and version info
 			$this->zajlib->variable->debug_mode = $this->zajlib->variable->zaj->bc_get('debug_mode');
 			$this->zajlib->variable->app = $this->zajlib->variable->zaj->bc_get('app');
@@ -284,7 +284,6 @@ class zajlib_template_zajvariables {
 	private $zajlib;	// The local copy of zajlib variable
 	
 	var $baseurl; 		// The base url of this project.
-	var $self; 			// My own app/mode request.
 	var $fullurl; 		// The base url + the request.
 	var $fullrequest; 	// The base url + the request + query string.	
 	
@@ -296,7 +295,6 @@ class zajlib_template_zajvariables {
 			$this->zajlib = $zajlib;
 		// Important variables
 			$this->baseurl = $this->zajlib->baseurl;
-			$this->self = $this->zajlib->variable->app.'/'.$this->zajlib->variable->mode;
 			$this->fullurl = $this->zajlib->fullurl;
 			$this->fullrequest = $this->zajlib->fullrequest;
 		// Constants
@@ -323,10 +321,13 @@ class zajlib_template_zajvariables {
 				case 'debug':
 				case 'debug_mode':
 					return $this->zajlib->debug_mode;
-			// My current app
+			// My current app, mode, requestpath
 				case 'app': return $this->zajlib->app;
-			// My current mode/action
 				case 'mode': return $this->zajlib->mode;
+                case 'requestpath': return $this->zajlib->requestpath;
+                case 'self':
+                    $this->zajlib->deprecated("ofw.self is deprecated, use ofw.requestpath instead.");
+                    return $this->zajlib->requestpath;
 			// The GET request
 				case 'get': return $this->zajlib->array->to_object($_GET);
 			// The POST request

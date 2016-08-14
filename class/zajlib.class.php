@@ -50,7 +50,7 @@ class zajLib {
 			 **/
 			public $basepath;
 			/**
-			 * The project root url, with trailing slash. This is automatically determined.
+			 * The project root url, with trailing slash. This is automatically determined and will include a /subfolder/ if need be.
 			 * @var string
 			 **/
 			public $baseurl;
