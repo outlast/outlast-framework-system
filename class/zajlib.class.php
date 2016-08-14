@@ -39,6 +39,7 @@ define('MAX_GLOBAL_EVENT_STACK', 50);
  * @property zajlib_test $test
  * @property zajlib_text $text
  * @property zajlib_url $url
+ * @property string $requestpath This is read-only public.
  * @todo All instance variables should be changed to read-only!
  **/
 class zajLib {
@@ -70,10 +71,10 @@ class zajLib {
 			 **/
 			public $fullrequest;
 			/**
-			 * The request path with trailing slash but without base url and without query string.
+			 * The request path with trailing slash but without base url and without query string. Private because it is built up from scratch on request.
 			 * @var string
 			 **/
-			public $requestpath;
+			private $requestpath = null;
 			/**
 			 * The host of the current request. This is automatically determined, though keep in mind the end user can modify this!
 			 * @var string
@@ -299,7 +300,6 @@ class zajLib {
 		// fix my app and mode to always have a single trailing slash
 			$this->app = trim($this->app, '/').'/';
 			$this->mode = trim($this->mode, '/').'/';
-			$this->requestpath =  rtrim($this->app.$this->mode, '/').'/';
 		// autodetect my domain (todo: optimize this part with regexp!)
 			// if not an ip address
 			if(!preg_match('/^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/', $this->host)){
@@ -548,8 +548,15 @@ class zajLib {
 	 * @return zajLibExtension Return the library class.
 	 **/
 	public function __get($name){
-		// return from loader
-			return $this->load->library($name);
+	    // load smart properties or libraries
+	    switch($name){
+            case 'requestpath':
+                if(is_null($this->requestpath)) $this->requestpath = $this->url->get_requestpath($this->fullurl);
+                return $this->requestpath;
+            default:
+                // load up a library
+                return $this->load->library($name);
+	    }
 	}
 	
 	/**

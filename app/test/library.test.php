@@ -378,6 +378,17 @@ class OfwLibraryTest extends zajTest {
 				zajTestAssert::isFalse($r);
 				$r = $this->zajlib->url->valid('chat://asdf/asdf/example.php');
 				zajTestAssert::isFalse($r);
+
+        // Let's try path calc
+                $r = $this->zajlib->url->get_requestpath('https://www.google.com/');
+                zajTestAssert::areIdentical('/', $r);
+                $r = $this->zajlib->url->get_requestpath('https://www.google.com/asdf');
+                zajTestAssert::areIdentical('asdf/', $r);
+                $r = $this->zajlib->url->get_requestpath('https://www.google.com/asdf///?test=sdf');
+                zajTestAssert::areIdentical('asdf/', $r);
+                $r = $this->zajlib->url->get_requestpath('asdf//test');
+                zajTestAssert::areIdentical('asdf/test/', $r);
+                zajTestAssert::areIdentical($this->zajlib->app.$this->zajlib->mode, $this->zajlib->requestpath);
 	}
 
 
