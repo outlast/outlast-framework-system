@@ -177,7 +177,7 @@ class zajfield_onetomany extends zajField {
 		// add source
 			$as_name = strtolower('sub_'.$this->class_name.'_'.$this->options['model'].'_'.$this->name);
 			$fetcher->add_source('('.$other_fetcher->get_query().')', $as_name);
-            $fetcher->group('model.id');
+            $fetcher->group('id');
             //$fetcher->add_field_source('COUNT(*)', 'count');
 		// create local query
 			return "$as_name.other_field = model.id";
