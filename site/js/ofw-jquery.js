@@ -39,9 +39,11 @@ define('system/js/ofw-jquery', [], function() {
     	'trackeventsAnalytics',
     	'trackeventsLocal',
     	'fields',
-    	'lang',
+		'locale',
+		'lang',
     	'config'
     ];
+
 	var ajaxIsSubmitting = false;			// True if ajax is currently submitting
 	var dataAttributes = [];				// The registered data attributes to look for
 	var dataAttributesObjects = {};			// A key/value pair where key is attr name and value is the loaded data attribute object
