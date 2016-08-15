@@ -161,10 +161,11 @@ class zajfield_onetomany extends zajField {
 		// if value is a fetcher
 			if(is_object($value) && is_a($value, 'zajFetcher')){
 				// get my other query
-					$other_fetcher = $value->limit(false)->sort(false);
+                /** @var zajFetcher $other_fetcher */
+                $other_fetcher = $value->limit(false)->sort(false);
 				// add field source
-					$other_fetcher->add_field_source('model.'.$other_field, 'other_field', true);
-			}	
+                $other_fetcher->add_field_source('model.'.$other_field, 'other_field', true);
+			}
 		// else value is an id
 			else{
 				$model = $this->options['model'];
@@ -176,6 +177,8 @@ class zajfield_onetomany extends zajField {
 		// add source
 			$as_name = strtolower('sub_'.$this->class_name.'_'.$this->options['model'].'_'.$this->name);
 			$fetcher->add_source('('.$other_fetcher->get_query().')', $as_name);
+            $fetcher->group('model.id');
+            //$fetcher->add_field_source('COUNT(*)', 'count');
 		// create local query
 			return "$as_name.other_field = model.id";
 	}
