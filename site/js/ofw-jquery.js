@@ -20,7 +20,7 @@ define('system/js/ofw-jquery', [], function() {
 		lang: {},
 		config: {},
         readyFunctions: [],
-        dataAttributes: ['single-click', 'autopagination', 'action-value', 'track'],
+        dataAttributes: ['single-click', 'autopagination', 'action-value', 'track', 'featured'],
         jqueryIsReady: false
     };
     var myOptions = {};
