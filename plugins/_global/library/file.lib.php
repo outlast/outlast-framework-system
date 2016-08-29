@@ -286,7 +286,7 @@ class zajlib_file extends zajLibExtension {
 	 **/
 	function get_mime_type($filename, $file_path = false){
 		// Validate path
-			$filename = $this->file_check($filename, "Invalid file requested for get_mime_type.");
+			$filename = $this->file_check($filename, "Invalid file requested for get_mime_type.", false);
 		// Define mime types
 	        $mime_types = array(
 	            'txt' => 'text/plain',
