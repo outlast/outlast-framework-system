@@ -274,12 +274,18 @@ define('system/js/ofw-jquery', [], function() {
 					// Handle my results
 						if(typeof result == "function") result(data, jsondata);
 						else if(typeof result == "object"){
+							if(jsondata.message) ofw.alert(jsondata.message);
 							$(result).html(data);
 							activateDataAttributeHandlers($(result));
 						}
 						else{
 							var validationResult = api.ajax.validate(data);
-							if(validationResult === true) api.redirect(result);
+							if(validationResult === true){
+								if(jsondata.message){
+									ofw.alert(jsondata.message, function(){ api.redirect(result); });
+								}
+								else api.redirect(result);
+							}
 							else return validationResult;
 						}
 					// pushState actions
