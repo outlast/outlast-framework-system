@@ -15,220 +15,240 @@ class zajlib_lang extends zajlib_config {
 	/**
 	 * Contains the current locale. Available locales are set in the config file site/index.php.
 	 **/
-	 	private $current_locale;
+    private $current_locale;
+
+	/**
+	 * Contains the current locale variation. False means no variation.
+	 **/
+    private $current_variation = false;
+
 
 	/**
 	 * Contains the default locale. The default is set in the config file site/index.php.
 	 **/
-	 	private $default_locale;
+    private $default_locale;
 
 	/**
 	 * Contains all the available locales. These are set in the config file site/index.php.
 	 **/
-	 	private $available_locales;
+    private $available_locales;
 
 	/**
 	 * Set to true if lang was already set at any point.
 	 */
-		private $was_set = false;
+    private $was_set = false;
 
 	/**
 	 * Extend the config file loading mechanism.
 	 **/
-		protected $dest_path = 'cache/lang/';	// string - subfolder where compiled conf files are stored (cannot be changed)
-		protected $conf_path = 'lang/';			// string - default subfolder where uncompiled conf files are stored
-		protected $type_of_file = 'language';	// string - the name of the file type this is (either configuration or language)
+	protected $dest_path = 'cache/lang/';	// string - subfolder where compiled conf files are stored (cannot be changed)
+	protected $conf_path = 'lang/';			// string - default subfolder where uncompiled conf files are stored
+	protected $type_of_file = 'language';	// string - the name of the file type this is (either configuration or language)
 
 	/**
 	 * Creates a new language library.
 	 **/
 	public function __construct(&$zajlib, $system_library) {
 		parent::__construct($zajlib, $system_library);
+
 		// set default locale and available locales
-			$this->reload_locale_settings();
+        $this->reload_locale_settings();
+
 		// set my default locale
-			$this->set();
+        $this->set();
+
+        // set my default variation
+        $this->set_variation();
 	}
 
 	/**
 	 * Methods for loading and changing current language.
 	 **/
 
-		/**
-		 * Get the current locale.
-		 * @return string The locale code of the current language.
-		 **/
-		public function get(){
-			// Return the current locale language
-				return $this->current_locale;
-		}
+    /**
+     * Get the current locale.
+     * @return string The locale code of the current language.
+     **/
+    public function get(){
+        // Return the current locale language
+            return $this->current_locale;
+    }
 
-		/**
-		 * Get the current two-letter language code based on the current locale.
-		 * @return string The language code based on current locale.
-		 **/
-		public function get_code(){
-			// Return the current locale language
-				return substr($this->current_locale, 0, 2);
-		}
+    /**
+     * Get the current two-letter language code based on the current locale.
+     * @return string The language code based on current locale.
+     **/
+    public function get_code(){
+        // Return the current locale language
+            return substr($this->current_locale, 0, 2);
+    }
 
-		/**
-		 * Change locale language to a new one.
-		 * @param bool|string $new_language If set, it will try to choose this locale. Otherwise the default locale will be chosen.
-		 * @return string Returns the name of the locale that was set.
-		 */
-	 	public function set($new_language = false){
-	 		// Check to see if the language to be set is not false and is in locales available. If problem, set to default locale.
-	 			if(!empty($new_language) && in_array($new_language, $this->available_locales)){
-	 				$this->current_locale = $new_language;
-	 			}
-	 			else{
-	 				// Warn if non-existent requested
-					if(!empty($new_language)) $this->zajlib->warning("Requested locale $new_language not found, using default locale (".$this->default_locale.") instead.");
-					$this->current_locale = $this->default_locale;
-				}
-			// Now if Wordpress is enabled, switch to locale
-				if($this->zajlib->plugin->is_enabled('wordpress') && !empty($GLOBALS['sitepress']) && !is_admin()){
-					$GLOBALS['sitepress']->switch_lang(substr($this->current_locale, 0, 2), true);
-				}
-			// Set locale
-				setlocale(LC_TIME, $this->current_locale);
-			// Set as set
-				$this->was_set = true;
-	 		// Return new locale
-	 			return $this->current_locale;
-		}
+    /**
+     * Change locale language to a new one.
+     * @param bool|string $new_language If set, it will try to choose this locale. Otherwise the default locale will be chosen.
+     * @return string Returns the name of the locale that was set.
+     */
+    public function set($new_language = false){
+        // Check to see if the language to be set is not false and is in locales available. If problem, set to default locale.
+            if(!empty($new_language) && in_array($new_language, $this->available_locales)){
+                $this->current_locale = $new_language;
+            }
+            else{
+                // Warn if non-existent requested
+                if(!empty($new_language)) $this->zajlib->warning("Requested locale $new_language not found, using default locale (".$this->default_locale.") instead.");
+                $this->current_locale = $this->default_locale;
+            }
+        // Now if Wordpress is enabled, switch to locale
+            if($this->zajlib->plugin->is_enabled('wordpress') && !empty($GLOBALS['sitepress']) && !is_admin()){
+                $GLOBALS['sitepress']->switch_lang(substr($this->current_locale, 0, 2), true);
+            }
+        // Set locale
+            setlocale(LC_TIME, $this->current_locale);
+        // Set as set
+            $this->was_set = true;
+        // Return new locale
+            return $this->current_locale;
+    }
 
-		/**
-		 * Set the current language (locale) using a two-letter language code. In case two or more locales use the same two letter code, the first will be chosen. If possible, use {@link $this->set()} instead.
-		 * @param string|bool $new_language If set, it will try to choose this language. Otherwise the default langauge will be chosen based on the default locale.
-		 * @return string The two-letter language code based on current locale.
-		 **/
-		public function set_by_code($new_language = false){
-			if(!empty($new_language)){
-				// Let's see if we have a compatible locale
-					$locale = $this->get_locale_by_code($new_language);
-					if($locale){
-						$set_to_locale = $this->set($locale);
-						return substr($set_to_locale, 0, 2);
-					}
-	 		}
-	 		// Not found, set to default locale and return it
-	 			if(!empty($new_language)) $this->zajlib->warning("Requested language code $new_language not found, using default locale (".$this->default_locale.") instead.");
-	 			return substr($this->set(), 0, 2);
-		}
+    /**
+     * Set the current language (locale) using a two-letter language code. In case two or more locales use the same two letter code, the first will be chosen. If possible, use {@link $this->set()} instead.
+     * @param string|bool $new_language If set, it will try to choose this language. Otherwise the default langauge will be chosen based on the default locale.
+     * @return string The two-letter language code based on current locale.
+     **/
+    public function set_by_code($new_language = false){
+        if(!empty($new_language)){
+            // Let's see if we have a compatible locale
+                $locale = $this->get_locale_by_code($new_language);
+                if($locale){
+                    $set_to_locale = $this->set($locale);
+                    return substr($set_to_locale, 0, 2);
+                }
+        }
+        // Not found, set to default locale and return it
+            if(!empty($new_language)) $this->zajlib->warning("Requested language code $new_language not found, using default locale (".$this->default_locale.") instead.");
+            return substr($this->set(), 0, 2);
+    }
 
-		/**
-		 * Get the locale for a two-letter code.
-		 * @param string $two_letter_code The two letter code.
-		 * @return string|boolean Returns the locale or false if not found.
-		 */
-		public function get_locale_by_code($two_letter_code){
-			// Lowercase it!
-				$two_letter_code = strtolower($two_letter_code);
-			// Let's see if we have a compatible locale
-	 			foreach($this->available_locales as $l){
-	 				// If found, set the locale and return me
-	 				$lcompare = substr($l, 0, 2);
-	 				$rcompare = strtolower(substr($l, -2));
-	 				if($lcompare == $two_letter_code || $rcompare == $two_letter_code){
-	 					return $l;
-	 				}
-	 			}
-	 		return false;
-		}
+    /**
+     * Get the locale for a two-letter code.
+     * @param string $two_letter_code The two letter code.
+     * @return string|boolean Returns the locale or false if not found.
+     */
+    public function get_locale_by_code($two_letter_code){
+        // Lowercase it!
+            $two_letter_code = strtolower($two_letter_code);
+        // Let's see if we have a compatible locale
+            foreach($this->available_locales as $l){
+                // If found, set the locale and return me
+                $lcompare = substr($l, 0, 2);
+                $rcompare = strtolower(substr($l, -2));
+                if($lcompare == $two_letter_code || $rcompare == $two_letter_code){
+                    return $l;
+                }
+            }
+        return false;
+    }
 
-		/**
-		 * Try to set the locale automatically first by querystring, then by cookie, then by subdomain, then by top level domain, finally by default. Saves a cookie for next page load.
-		 */
-		public function auto(){
-			// Set by query string, subdomain, top level domain, or by cookie
-				// If there is a query string, set it to that either by code or by
-					if(!empty($_GET['lang'])){
-						// Is it a code or a locale?
-						if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
-						else $this->set($_GET['lang']);
-					}
-				// If a cookie is set, use that
-					elseif(!empty($_COOKIE['lang']) && isset($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
-				// If an Apache variable is set, use that
-					elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
-				// If the subdomain is two letters, it will consider it a language code
-					elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
-				// If the tld is two letters, it will consider it a language code
-					elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
-				// Finally, just set to default
-					else $this->set();
+    /**
+     * Try to set the locale automatically first by querystring, then by cookie, then by subdomain, then by top level domain, finally by default. Saves a cookie for next page load.
+     */
+    public function auto(){
+        // Set by query string, subdomain, top level domain, or by cookie
+            // If there is a query string, set it to that either by code or by
+                if(!empty($_GET['lang'])){
+                    // Is it a code or a locale?
+                    if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
+                    else $this->set($_GET['lang']);
+                }
+            // If a cookie is set, use that
+                elseif(!empty($_COOKIE['lang']) && isset($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
+            // If an Apache variable is set, use that
+                elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
+            // If the subdomain is two letters, it will consider it a language code
+                elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
+            // If the tld is two letters, it will consider it a language code
+                elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
+            // Finally, just set to default
+                else $this->set();
 
-			// If the current locale is not the same as the cookie, then set a cookie
-				// Get current
-					$current = $this->get();
-				// Set a cookie if not the same as current
-					if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) {
-						if(headers_sent() === false)
-							$this->zajlib->cookie->add('lang', $current);
-						else
-							$this->zajlib->warning('Headers already sent, cannot set cookie for locale '. $current);
-					}
-			return $current;
-		}
+        // If the current locale is not the same as the cookie, then set a cookie
+            // Get current
+                $current = $this->get();
+            // Set a cookie if not the same as current
+                if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) {
+                    if(headers_sent() === false)
+                        $this->zajlib->cookie->add('lang', $current);
+                    else
+                        $this->zajlib->warning('Headers already sent, cannot set cookie for locale '. $current);
+                }
+        return $current;
+    }
 
-		/**
-		 * Get default locales.
-		 * @return string Returns the hard-coded default locale.
-		 **/
-		public function get_default_locale(){
-			return $this->default_locale;
-		}
+    /**
+     * Get default locales.
+     * @return string Returns the hard-coded default locale.
+     **/
+    public function get_default_locale(){
+        return $this->default_locale;
+    }
 
-		/**
-		 * Returns true if the current locale is the default locale.
-		 * @return boolean True if the current locale, false otherwise.
-		 **/
-		public function is_default_locale(){
-			return ($this->default_locale == $this->get());
-		}
+    /**
+     * Returns true if the current locale is the default locale.
+     * @return boolean True if the current locale, false otherwise.
+     **/
+    public function is_default_locale(){
+        return ($this->default_locale == $this->get());
+    }
 
-		/**
-		 * Returns true if the language was already set at some point.
-		 */
-		public function is_already_set(){
-			return $this->was_set;
-		}
+    /**
+     * Returns true if the language was already set at some point.
+     */
+    public function is_already_set(){
+        return $this->was_set;
+    }
+
+    /**
+     * Set language variation, typically useful for applying formal variations of a locale.
+     * @param string|boolean The current locale variation. Can be used for formal vs informal.
+     */
+    public function set_variation($variation = null){
+        if($variation == null) $variation = $this->zajlib->zajconf['locale_variation'];
+        $this->current_variation = $variation;
+    }
 
 	/**
 	 * All locales.
 	 **/
-		/**
-		 * Get all locales.
-		 * @return array Returns an array of all available locales.
-		 **/
-		public function get_locales(){
-			return $this->available_locales;
-		}
 
-		/**
-		 * Get all the available two-letter language codes.
-		 * @return array Returns an array of all available codes.
-		 **/
-		public function get_codes(){
-			// Run through
-				$codes = array();
-				foreach($this->available_locales as $al){
-					$code = substr($al, 0, 2);
-					$codes[$code] = $code;
-				}
-			return $codes;
-		}
+    /**
+     * Get all locales.
+     * @return array Returns an array of all available locales.
+     **/
+    public function get_locales(){
+        return $this->available_locales;
+    }
 
-		/**
-		 * Reload all the available locales and default locale settings.
-		 */
-		public function reload_locale_settings(){
-	 		$this->default_locale = trim($this->zajlib->zajconf['locale_default']);
-	 		$this->available_locales = array_map('trim', explode(',', $this->zajlib->zajconf['locale_available']));
-		}
+    /**
+     * Get all the available two-letter language codes.
+     * @return array Returns an array of all available codes.
+     **/
+    public function get_codes(){
+        // Run through
+            $codes = array();
+            foreach($this->available_locales as $al){
+                $code = substr($al, 0, 2);
+                $codes[$code] = $code;
+            }
+        return $codes;
+    }
 
+    /**
+     * Reload all the available locales and default locale settings.
+     */
+    public function reload_locale_settings(){
+        $this->default_locale = trim($this->zajlib->zajconf['locale_default']);
+        $this->available_locales = array_map('trim', explode(',', $this->zajlib->zajconf['locale_available']));
+    }
 
 	/**
 	 * Template loading based on current locale.
