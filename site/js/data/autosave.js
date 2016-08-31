@@ -6,6 +6,7 @@ define('system/js/data/autosave', ["../ofw-jquery"], function() {
 
     /** Private properties **/
 	var _keys = [];			// An array of keys found on this page
+	var _keyPrefix = 'data-autosave-';
 
     /** Private API **/
 
@@ -29,7 +30,7 @@ define('system/js/data/autosave', ["../ofw-jquery"], function() {
         	$elements.each(function(){
         		// Get my info
         		var $this = $(this);
-        		var myKey = 'data-autosave-'+$this.attr('data-autosave');
+        		var myKey = _keyPrefix+$this.attr('data-autosave');
         		if(!window.localStorage) return false;
         		if(!myKey){ return ofw.error("No key supplied for [data-autosave], autosave not activated!"); }
 
@@ -46,19 +47,32 @@ define('system/js/data/autosave', ["../ofw-jquery"], function() {
 
 	        	// Add clear event on submit of parent form
 	        	_keys.push(myKey);
+
+	        	// Automatically clear items within the form if successfully posted
+	        	$this.parents('form').on('ofw-ajax-success', function(){
+	        		var $form = $(this);
+	        		var keys = [];
+	        		$form.find('[data-autosave]').each(function(){
+						keys.push(_keyPrefix+$(this).attr('data-autosave'));
+	        		});
+	        		api.clear(keys);
+	        	});
+
         	});
     	},
 
 		/**
-		 * Clear my keys from this page or a specific key.
-		 * @param {string} [key=null] If key is not specified, all keys found on this page will be cleared.
+		 * Clear my keys from this page or a specific key or a set of keys.
+		 * @param {string|Array} [key=null] Can be a specific key or an array of keys. If key is not specified, all keys found on this page will be cleared.
 		 */
 		clear: function(key){
-			if(!window.localStorage) return false;
 
+			if(!window.localStorage) return false;
+			
 			// Single or all
 			var myKeys;
-			if(key != null) myKeys = [key];
+			if(typeof key == 'object') myKeys = key;
+			else if(key != null) myKeys = [key];
 			else myKeys = _keys;
 
 			// Remove each item
