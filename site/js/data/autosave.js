@@ -1,6 +1,7 @@
 /**
  * Autosave allows you to save the value of an input automatically on the client side in local storage.
  * @attr data-autosave This is a unique key which defines under which key the localStorage stores the data.
+ * @attr data-autosave-clear You can set this attribute to 'false' to disable automatically clearing the key when the parent form is submitted.
  **/
 define('system/js/data/autosave', ["../ofw-jquery"], function() {
 
@@ -53,7 +54,10 @@ define('system/js/data/autosave', ["../ofw-jquery"], function() {
 	        		var $form = $(this);
 	        		var keys = [];
 	        		$form.find('[data-autosave]').each(function(){
-						keys.push(_keyPrefix+$(this).attr('data-autosave'));
+	        			// Make sure clearing is not disabled
+						if($(this).attr('data-autosave-clear') != 'false'){
+							keys.push(_keyPrefix+$(this).attr('data-autosave'));
+						}
 	        		});
 	        		api.clear(keys);
 	        	});
@@ -68,7 +72,7 @@ define('system/js/data/autosave', ["../ofw-jquery"], function() {
 		clear: function(key){
 
 			if(!window.localStorage) return false;
-			
+
 			// Single or all
 			var myKeys;
 			if(typeof key == 'object') myKeys = key;

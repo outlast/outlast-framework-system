@@ -277,12 +277,12 @@ define('system/js/ofw-jquery', [], function() {
 					// Trigger events
 					if(jsondata){
 						if(jsondata.status == 'ok' || jsondata.status == 'success'){
-							$(document).trigger('ofw-ajax-success');
-							$eventContext.trigger('ofw-ajax-success');
+							$(document).trigger('ofw-ajax-success', [data, jsondata]);
+							$eventContext.trigger('ofw-ajax-success', [data, jsondata]);
 						}
 						if(jsondata.status == 'error'){
-							$(document).trigger('ofw-ajax-error');
-							$eventContext.trigger('ofw-ajax-error');
+							$(document).trigger('ofw-ajax-error', [data, jsondata]);
+							$eventContext.trigger('ofw-ajax-error', [data, jsondata]);
 						}
 					}
 
