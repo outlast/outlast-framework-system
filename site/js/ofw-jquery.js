@@ -295,7 +295,7 @@ define('system/js/ofw-jquery', [], function() {
 					else{
 						var validationResult = api.ajax.validate(data);
 						if(validationResult === true){
-							if(jsondata && jsondata.message){
+							if(typeof jsondata == 'object' && jsondata != 'null' && jsondata.message){
 								ofw.alert(jsondata.message, function(){ api.redirect(result); });
 							}
 							else api.redirect(result);
