@@ -53,7 +53,8 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		private $ordermode = "DESC";						// default order ASC or DESC (defined by model)
 		private $groupby = "";								// not grouped by default
 		private $filter_deleted = "model.status!='deleted'";	// this does not show deleted items by default
-		private $filters = array();							// an array of filters to be applied
+		private $filters = [];	    						// an array of filters to be applied
+		private $filter_groups = [];                        // an array of filter groups to be applied (useful for OR logic)
 		private $filterstr = "";							// the generated filter query
 		private $wherestr = "";								// where is empty by default
 	// connection related stuff
@@ -365,10 +366,25 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function filter($field, $value, $operator='LIKE', $type='AND'){
-		// add to filters array
-			$this->filters[] = array($field, $value, $operator, $type);
-		// changes query, so reset me
-			$this->reset();
+		// add to filters array and reset
+        $this->filters[] = [$field, $value, $operator, $type];
+		$this->reset();
+		return $this;
+	}
+
+	/**
+	 * Results are filtered according to $field and $value.
+	 * @param string $field The name of the field to be filtered
+	 * @param array $values A group of values by which to filter, usually
+	 * @param string $operator The operator with which to filter. Can be any valid MySQL-compatible operator: LIKE, NOT LIKE, <, >, <=, =, REGEXP etc.
+	 * @param string $type AND or OR depending on how you want this filter to connect. Defaults to AND.
+	 * @param string $group_type AND or OR depending on how you want this filter to connect. Defaults to OR.
+	 * @return zajFetcher This method can be chained.
+	 **/
+	public function filter_group($field, $values, $operator='LIKE', $type='AND', $group_type = 'OR'){
+		// add to filter_groups array
+		$this->filter_groups[] = [$field, $values, $operator, $type, $group_type];
+		$this->reset();
 		return $this;
 	}
 
@@ -378,10 +394,17 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @return zajFetcher This method can be chained.
 	 */
 	public function remove_filters($field = false){
-		if($field === false) $this->filters = [];
+		if($field === false){
+		    $this->filters = [];
+		    $this->filter_groups = [];
+        }
 		else{
+		    // Run through filters and filter groups
 			foreach($this->filters as $key => $filter){
 				if($filter[0] == $field) unset($this->filters[$key]);
+			}
+			foreach($this->filter_groups as $key => $filter_group){
+				if($filter_group[0] == $field) unset($this->filter_groups[$key]);
 			}
 		}
 		return $this;
@@ -550,53 +573,92 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		// distinct?
 			if($this->distinct) $distinct = "DISTINCT";
 			else $distinct = "";
-		// otherwise, generate a query
-			// create filters
-				$filters_sql = '';
-				foreach($this->filters as $key=>$filter){
-					// pre-process input parameters
-						// Explode my filter into a list
-							list($field, $value, $logic, $type) = $filter;
-						// Validate the field name
-							if(!zajLib::me()->db->verify_field($field)) return zajLib::me()->warning("Field '$classname.$field' contains invalid characters and did not pass safety inspection!");
-						// Now process type
-							if($type == "OR" || $type == "||") $type = "||";
-							else $type = "&&";
-						// Verify logic param
-							if($logic != "SOUNDS LIKE" && $logic != "LIKE" && $logic != "NOT LIKE" && $logic != "REGEXP" && $logic != "NOT REGEXP" && $logic != "!=" && $logic != "==" && $logic != "=" && $logic != "<=>" && $logic != ">" && $logic != ">=" && $logic != "<" && $logic != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($logic) specified is not valid.");
-						// if $value is a model object, use its id
-							if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
+		// generate filters
+			// apply filters to WHERE clause
+            $filters_sql = '';
+            foreach($this->filters as $key=>$filter){
+                $filters_sql .= $this->filter_to_sql($mymodel, $filter);
+            }
+			// apply group filters to WHERE clause
+            foreach($this->filter_groups as $key=>$filter_group){
+                list($field, $values, $operator, $type, $group_type) = $filter_group;
 
-					// fix name if virtual field
-						if($mymodel->{$field}->virtual){
-							$field = $mymodel->{$field}->virtual;
-							$filter = array($field, $value, $logic, $type);
-						}
-					// if use_filter is true, then not a standard field object
-						if($mymodel->{$field}->use_filter){
-							// create the model
-								$fieldobject = $classname::__field($field);
-							// call my filter generator
-								$filters_sql .= " $type ".$fieldobject->filter($this, $filter);
-						}
-						else{
-							// check if it is a string
-								if(is_object($value)) zajLib::me()->error("Invalid filter/exclude value on fetcher object for $classname/$field! Value cannot be an object since this is not a special field!");
-							// allow subquery
-								if($logic != 'IN' && $logic != 'NOT IN') $filters_sql .= " $type model.`$field` $logic '".$this->db->escape($value)."'";
-								else $filters_sql .= " $type model.`$field` $logic ($value)";
-						}
-				}
-			// generate from and what
-				$from = join(', ', $this->select_from);
-				$what = join(', ', $this->select_what);
-			// save filter query
-				$this->filterstr = $filters_sql;
-			// generate
-				return "SELECT $distinct $what FROM $from WHERE $this->filter_deleted $filters_sql $this->wherestr $this->connection_wherestr $this->groupby $this->orderby $this->ordermode $this->limit";
+                // Now process group type to make sure it is valid (defaults to ||)
+                if(strtoupper($group_type) == "AND" || $group_type == "&&"){
+                    $group_type = "&&";
+                    $group_starter = "1";
+                }
+                else{
+                    $group_type = "||";
+                    $group_starter = "0";
+                }
+
+                // Run through each value item
+                $group_filter_sql = " $type (".$group_starter." ";
+                foreach($values as $value){
+                    $group_filter_sql .= $this->filter_to_sql($mymodel, [$field, $value, $operator, $group_type]);
+                }
+                $group_filter_sql .= ")";
+                $filters_sql .= $group_filter_sql;
+            }
+
+        // generate from and what
+			$from = join(', ', $this->select_from);
+			$what = join(', ', $this->select_what);
+		// save filter query
+			$this->filterstr = $filters_sql;
+		// generate full query
+			return "SELECT $distinct $what FROM $from WHERE $this->filter_deleted $filters_sql $this->wherestr $this->connection_wherestr $this->groupby $this->orderby $this->ordermode $this->limit";
 	}
-	
-	
+
+    /**
+     * Prepare a logical WHERE clause section based on a specific filter.
+	 * @param stdClass $mymodel The model definition.
+     * @param array $filter A filter array.
+     * @return string The generated sql.
+     */
+    private function filter_to_sql($mymodel, $filter){
+
+        // define my vars
+		list($field, $value, $operator, $type) = $filter;
+        $classname = $this->class_name;
+        $filters_sql = "";
+
+        // Validate the field name
+        if(!zajLib::me()->db->verify_field($field)) return zajLib::me()->warning("Field '$classname.$field' contains invalid characters and did not pass safety inspection!");
+
+        // Now process type
+        if(strtoupper($type) == "OR" || $type == "||") $type = "||";
+        else $type = "&&";
+
+        // Verify logic param
+        if($operator != "SOUNDS LIKE" && $operator != "LIKE" && $operator != "NOT LIKE" && $operator != "REGEXP" && $operator != "NOT REGEXP" && $operator != "!=" && $operator != "==" && $operator != "=" && $operator != "<=>" && $operator != ">" && $operator != ">=" && $operator != "<" && $operator != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($operator) specified is not valid.");
+        // if $value is a model object, use its id
+        if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
+
+        // fix name if virtual field
+        if($mymodel->{$field}->virtual){
+            $field = $mymodel->{$field}->virtual;
+            $filter = array($field, $value, $operator, $type);
+        }
+
+        // if use_filter is true, then not a standard field object
+        if($mymodel->{$field}->use_filter){
+            // create the model
+            /** @var zajModel $classname */
+            $fieldobject = $classname::__field($field);
+            // call my filter generator
+            $filters_sql .= " $type ".$fieldobject->filter($this, $filter);
+        }
+        else{
+            // check if it is a string
+            if(is_object($value)) zajLib::me()->error("Invalid filter/exclude value on fetcher object for $classname/$field! Value cannot be an object since this is not a special field!");
+            // allow subquery
+            if($operator != 'IN' && $operator != 'NOT IN') $filters_sql .= " $type model.`$field` $operator '".$this->db->escape($value)."'";
+            else $filters_sql .= " $type model.`$field` $operator ($value)";
+        }
+        return $filters_sql;
+    }
 
 	/**
 	 * Executes the fetcher query.
