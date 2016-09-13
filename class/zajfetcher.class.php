@@ -268,7 +268,15 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			$this->reset();
 		return $this;
 	}
-	
+
+    /**
+     * Provide a full custom sql query. Any additional, non-model columns can be referenced as well. See documentation for full information.
+     * @param string $query The full query. Custom SQL queries should query all the columns of the relevant table.
+	 * @return zajFetcher This method can be chained.
+     */
+    public function sql($query){
+        return $this->add_source("($query)", 'model', true)->sort(false);
+    }
 
 	/**
 	 * This method adds a field to be selected from a joined source. This is mostly for internal use.
@@ -515,6 +523,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	/**
 	 * Execute a full, customized query. Any query must return a column 'id' with the IDs of corresponding {@link zajModel} objects. Otherwise it will not be a valid {@link zajFetcher} object and related methods will fail. A full query will override any other methods used, except for paginate and limit (the limit is appended to the end, if specified!).
 	 * @param string $full_sql The full, customized query.
+     * @deprecated You should use sql() instead nowadays.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function full_query($full_sql){
