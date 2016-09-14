@@ -45,7 +45,8 @@
 		// Init with select 2
 		{% if field.choices.total <= 50 %}
 			$('#{{field.uid}}').select2({
-				allowClear: true
+				allowClear: true,
+				width: '100%'
 			});
 		{% elseif %}
 			$('#{{field.uid}}').select2({
