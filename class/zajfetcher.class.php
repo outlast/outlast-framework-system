@@ -222,6 +222,17 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		return $this;
 	}
 
+    /**
+     * Set distinct from a method.
+     * @param bool $distinct Set to true or false.
+     * @return zajFetcher This method can be chained.
+     */
+    public function distinct($distinct){
+        $this->distinct = $distinct;
+        $this->reset();
+        return $this;
+    }
+
 	/**
 	 * Set filter deleted to 0, 1, or the default.
 	 * @param string|integer $filter_deleted Takes 0, 1, or 'default'.
