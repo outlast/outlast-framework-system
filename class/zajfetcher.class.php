@@ -287,7 +287,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @return zajFetcher This method can be chained.
      */
     public function sql($query){
-        return $this->add_source("($query)", 'model', true)->sort(false);
+        return $this->add_source("($query)", 'model', true);
     }
 
 	/**
