@@ -232,19 +232,6 @@ EOF;
 	}
 
 	/**
-	 * Filter: key - Return the key value of an associative array.
-	 *
-	 *  <b>{{assocarray|key:'red'}}</b> If ['green'=>'grass', 'red'=>'apple'], then this will return 'apple'.
-	 **/
-	public function filter_key($parameter, &$source){
-		// default for parameter
-			if(empty($parameter)) $parameter = '';
-		// write to file
-			$this->zajlib->compile->write('$filter_var=$filter_var['.$parameter.'];');
-		return true;
-	}
-
-	/**
 	 * Filter: subtract - Subtract the amount specified by parameter from the variable.
 	 *
 	 *  <b>{{variable|subtract:'1'}}</b> Assuming variable is 3, the returned value will be 2.
@@ -468,6 +455,14 @@ EOF;
 		$this->zajlib->compile->write($contents);
 		return true;
 	}
+
+    /**
+     * @deprecated
+     */
+	public function filter_key($parameter, &$source){
+	    // @todo add this warning: $source->warning('|key is deprecated and you should use |keyvalue instead.');
+        return $this->filter_keyvalue($parameter, $source);
+    }
 
 	/**
 	 * Filter: trim - Trims characters (space by default) from left and right side of string.
