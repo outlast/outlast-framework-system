@@ -494,23 +494,36 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function search($query, $similarity_search = false, $type = 'AND'){
+		/** @var zajModel $class_name */
 		$class_name = $this->class_name;
+
 		// retrieve model
-			$model = $class_name::__model();
-		// similarity?
-			if($similarity_search) $sim = "SOUNDS";
-			else $sim = "";
-		// type?
-			if($type != 'AND') $type = 'OR';
-		// figure out search fields (searchfield=true is usually the case for text and id fields)
-			$this->wherestr .= " $type (0";
-			foreach($model as $key=>$field){
-				if($field->search_field) $this->wherestr .= " || model.$key $sim LIKE '".$this->db->escape($query)."' || model.$key LIKE '%".$this->db->escape($query)."%'";
-			}
-			$this->wherestr .= ")";
-		// changes query, so reset me
-			$this->reset();
-		return $this;	
+        $model = $class_name::__model();
+
+        // try to call search method
+        $result = $class_name::__onSearchFetcher($this, $query, $similarity_search, $type);
+
+        // perform the default if result is false
+        if($result === false){
+            // similarity?
+            if($similarity_search) $sim = "SOUNDS";
+            else $sim = "";
+
+            // type?
+            if($type != 'AND') $type = 'OR';
+
+            // figure out search fields (searchfield=true is usually the case for text and id fields)
+            $this->wherestr .= " $type (0";
+            foreach($model as $key=>$field){
+                if($field->search_field) $this->wherestr .= " || model.$key $sim LIKE '".$this->db->escape($query)."' || model.$key LIKE '%".$this->db->escape($query)."%'";
+            }
+            $this->wherestr .= ")";
+
+            // changes query, so reset me
+            $this->reset();
+        }
+
+		return $this;
 	}
 	/**
 	 * Execute a full, customized query. Any query must return a column 'id' with the IDs of corresponding {@link zajModel} objects. Otherwise it will not be a valid {@link zajFetcher} object and related methods will fail. A full query will override any other methods used, except for paginate and limit (the limit is appended to the end, if specified!).
