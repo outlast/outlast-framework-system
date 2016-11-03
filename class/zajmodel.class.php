@@ -783,6 +783,15 @@ abstract class zajModel implements JsonSerializable {
 				// now return it
 				return $this->name_key;
 		}
+
+		// Enable extended __get()
+		$class_name = get_called_class();
+		// Am I extended?
+		$ext = $class_name::extension();
+		if(method_exists($ext, '__get')){
+			$extobj = $ext::create($this->id, $this);
+			return $extobj->__get($name);
+		}
 	}
 	/**
 	 * @ignore

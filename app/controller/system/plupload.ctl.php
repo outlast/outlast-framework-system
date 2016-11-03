@@ -252,7 +252,7 @@
 		public function preview(){
 			// Retrieve image
 				$pobj = Photo::fetch($_GET['id']);
-				$pobj->show('preview');
+				if($pobj !== false) $pobj->show('preview');
 			exit();	
 		}
 

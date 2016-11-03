@@ -7,3 +7,8 @@
 		<option value='{{choice}}' {% if field.value eq choice %}selected{%endif%}>{{choice}}</option>
 	{% endfor %}
 </select>
+{% if field.options.choices|count > 5 %}
+	<script>
+        $('#{{field.uid}}').chosen({});
+	</script>
+{% endif %}
