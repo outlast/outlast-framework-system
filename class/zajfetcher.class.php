@@ -964,6 +964,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			$my_fetcher = new zajFetcher($other_model);
 		// Now filter to only ones where id matches me!
 			$my_fetcher->filter($other_field, $object->id);
+			$my_fetcher->sort($other_model::$fetch_order_field, $other_model::$fetch_order);
 		// Set my parent object
 			$my_fetcher->connection_parent = $object;			
 			$my_fetcher->connection_field = $field;
