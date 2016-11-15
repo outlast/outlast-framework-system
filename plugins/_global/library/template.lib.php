@@ -390,11 +390,11 @@ class zajlib_template_zajvariables {
 					// Locale
 						$locale = $this->zajlib->lang->get();
 					// Disable
-					$baseurl = htmlspecialchars($this->zajlib->baseurl);
-					$fullrequest = htmlspecialchars($this->zajlib->fullrequest);
-					$fullurl = htmlspecialchars($this->zajlib->fullurl);
-					$app = htmlspecialchars($this->zajlib->app);
-					$mode = htmlspecialchars($this->zajlib->mode);
+					$baseurl = htmlspecialchars($this->zajlib->baseurl, ENT_QUOTES);
+					$fullrequest = htmlspecialchars($this->zajlib->fullrequest, ENT_QUOTES);
+					$fullurl = htmlspecialchars($this->zajlib->fullurl, ENT_QUOTES);
+					$app = htmlspecialchars($this->zajlib->app, ENT_QUOTES);
+					$mode = htmlspecialchars($this->zajlib->mode, ENT_QUOTES);
 					return <<<EOF
 <script type='text/javascript'>
     var ofwsettings = {
