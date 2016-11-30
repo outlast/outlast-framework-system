@@ -74,24 +74,26 @@
 		 **/
 		function save(){
 			// Validate data
-				if(empty($_POST['name'])) return $this->zajlib->ajax($this->zajlib->config->variable->save_error);
-			// Resume tje object
-				$obj = Category::fetch($_POST['id']);
+            if(empty($_POST['name'])) return $this->zajlib->json(['status'=>'error', 'message'=>$this->zajlib->config->variable->save_error]);
+
+			// Resume object
+            $obj = Category::fetch($_POST['id']);
+
 			// Check for existing friendlyurl
-				if(Category::fetch()->filter('friendlyurl', $_POST['friendlyurl'])->filter('id', $obj->id, 'NOT LIKE')->next() !== false) return $this->zajlib->ajax($this->zajlib->config->variable->category_frielndlyurl_error);
-				if($_POST['parentcategory'] == $obj->id) return $this->zajlib->ajax($this->zajlib->config->variable->category_parent_error);
+            if(Category::fetch()->filter('friendlyurl', $_POST['friendlyurl'])->filter('id', $obj->id, 'NOT LIKE')->next() !== false) return $this->zajlib->ajax($this->zajlib->config->variable->category_frielndlyurl_error);
+            if($_POST['parentcategory'] == $obj->id) return $this->zajlib->ajax($this->zajlib->config->variable->category_parent_error);
+
 			// Update the object
-				$obj->set_these('name', 'description', 'photo', 'parentcategory', 'friendlyurl', 'featured');
+            $obj->set_with_data($_POST);
+
 			// Now update other stuff related to name
-				$obj->set('abc', $this->zajlib->lang->convert_eng($_POST['name']));
-			// If more than one locale
-				if(count($this->zajlib->lang->get_locales()) > 1){
-					$obj->set_translations('name', 'description', 'friendlyurl');
-				}
+            $obj->set('abc', $this->zajlib->lang->convert_eng($_POST['name']));
+
 			// Now save
-				$obj->save();
+			$obj->save();
+
 			// Return success
-				return $this->zajlib->ajax("ok");
+			return $this->zajlib->json(['status'=>'ok']);
 		}
 
 		/**
