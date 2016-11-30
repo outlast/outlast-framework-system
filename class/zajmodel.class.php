@@ -935,24 +935,40 @@ abstract class zajModel implements JsonSerializable {
 		if(!zajLib::me()->security->is_valid_id($this->id)) return zajLib::me()->warning("Tried to save cache with invalid id: $this->id");
 		// get filename
 		$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name,$this->id.".cache", true, CACHE_DIR_LEVEL);
+
 		// model, data do not need to be saved!
 		$data = $this->data;
 		$model = $this->model;
-		$this->data=$this->model=$this->zajlib="";
-		// check for objects
-		foreach($this as $varname=>$varval) if(is_object($varval) || is_array($varval)){
-		    $this->zajlib->warning("You cannot cache an object or an array! Stick to simple data types. This will be a fatal error in the future. Found at variable $this->class_name / $varname.");
-		    // @todo change this to fatal error
-		    if(is_a($varval, 'zajModel') || is_a($varval, 'zajFetcher')){
-		        // @todo just don't save it in cache in the future!
-		        $this->$varname = "[Cache error: $this->class_name / $varname]";
-		    }
+		$event_stack = $this->event_stack;
+		$event_child_fired = $this->event_child_fired;
+		unset($this->zajlib, $this->data, $this->model, $this->event_stack, $this->event_child_fired);
+
+		if($this->fetchdata){
+		    $fetchdata = $this->fetchdata;
+		    unset($this->fetchdata);
         }
+		if($this->translations){
+		    $translations = $this->translations;
+		    unset($this->translations);
+        }
+
+		// check for objects
+		foreach($this as $varname=>$varval){
+            if(is_a($varval, 'zajModel') || is_a($varval, 'zajFetcher')){
+                zajLib::me()->warning("You cannot cache an zajModel or zajFetcher object! Stick to simple data types. This will be a fatal error in the future. Found at variable $this->class_name / $varname.");
+            }
+        }
+
 		// now serialize and save to file
 		file_put_contents($filename, serialize($this));
+
 		// now bring back data
 		$this->data = $data;
 		$this->model = $model;
+		$this->event_stack = $event_stack;
+		$this->event_child_fired = $event_child_fired;
+		if(!empty($translations)) $this->translations = $translations;
+		if(!empty($fetchdata)) $this->fetchdata = $fetchdata;
 		$this->zajlib = zajLib::me();
 		// call the callback function
 		$this->fire('afterCache');
