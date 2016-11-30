@@ -940,7 +940,14 @@ abstract class zajModel implements JsonSerializable {
 		$model = $this->model;
 		$this->data=$this->model=$this->zajlib="";
 		// check for objects
-		foreach($this as $varname=>$varval) if(is_object($varval) && is_a($varval, 'zajModel')){ zajLib::me()->warning("You cannot cache a Model object! Found at variable $this->class_name / $varname."); $this->$varname = "[Cache error: $this->class_name / $varname]"; }
+		foreach($this as $varname=>$varval) if(is_object($varval) || is_array($varval)){
+		    $this->zajlib->warning("You cannot cache an object or an array! Stick to simple data types. This will be a fatal error in the future. Found at variable $this->class_name / $varname.");
+		    // @todo change this to fatal error
+		    if(is_a($varval, 'zajModel') || is_a($varval, 'zajFetcher')){
+		        // @todo just don't save it in cache in the future!
+		        $this->$varname = "[Cache error: $this->class_name / $varname]";
+		    }
+        }
 		// now serialize and save to file
 		file_put_contents($filename, serialize($this));
 		// now bring back data
