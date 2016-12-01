@@ -110,9 +110,9 @@ define('system/js/ofw-jquery', [], function() {
 			// Create my object and return
 			return {
 				// Get or post serialized data
-				get: function(url, response){ return api.ajax.get(api.querymode(url)+$target.serialize(), response); },
-				post: function(url, response){ return api.ajax.post(api.querymode(url)+$target.serialize(), response, false, $target); },
-				submit: function(url, response){ return api.ajax.submit(api.querymode(url)+$target.serialize(), response, false, $target); },
+				get: function(url, response, pushstate){ return api.ajax.get(api.querymode(url)+$target.serialize(), response, pushstate); },
+				post: function(url, response, pushstate){ return api.ajax.post(api.querymode(url)+$target.serialize(), response, pushstate, $target); },
+				submit: function(url, response, pushstate){ return api.ajax.submit(api.querymode(url)+$target.serialize(), response, pushstate, $target); },
 				inviewport: function(partially){ return api.inviewport($target, partially); },
 				alert: function(msg){ return api.alert(msg, $target); },
 				sortable: function(receiver, callback, handle){
