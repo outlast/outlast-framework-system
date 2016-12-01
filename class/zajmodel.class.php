@@ -338,19 +338,24 @@ abstract class zajModel implements JsonSerializable {
 	 * @return zajModel Returns me to allow chaining.
 	 */
 	public function set_with_data($data){
+	    // Fields to ignore @todo move this to field settings somehow
+	    $ignore_fields = ['unit_test', 'id', 'time_create', 'time_edit', 'ordernum', 'translation'];
+
 		// Verify data
-			$data = (object) $data;
-			if(!is_object($data)){
-				$this->zajlib->warning("Called set_with_data() with invalid data. Must be an object or array.");
-				return $this;
-			}
-		// Set settings
-			foreach($data as $field_name => $field_value){
-				// everything except the system stuff @todo this check should be a field property
-				if($field_name != 'unit_test' && $field_name != 'id' && $field_name != 'time_create' && $field_name != 'time_edit' && $field_name != 'ordernum'){
-					$this->set($field_name, $field_value);
-				}
-			}
+        $data = (object) $data;
+        if(!is_object($data)){
+            $this->zajlib->warning("Called set_with_data() with invalid data. Must be an object or array.");
+            return $this;
+        }
+
+		// Set data fields
+        foreach($data as $field_name => $field_value){
+            if(!in_array($field_name, $ignore_fields)) $this->set($field_name, $field_value);
+        }
+
+        // Also set translations if applicable
+        $this->set_translations_with_data($data);
+
 		return $this;
 	}
 
@@ -381,6 +386,9 @@ abstract class zajModel implements JsonSerializable {
 	 * @return zajModel Returns me to allow chaining.
 	 */
 	public function set_translations(){
+        // If only one locale, then return
+        if(count($this->zajlib->lang->get_locales()) <= 1) return $this;
+
 		// Use _GET or _POST
 		$_POST = array_merge($_GET, $_POST);
 		// Run through each argument
@@ -390,6 +398,34 @@ abstract class zajModel implements JsonSerializable {
 			}
 		}
 		return $this;
+	}
+
+	/**
+	 * Sets the translation of all the locales with data much like set_with_data(). set_with_data() will call this if translation keys exist
+	 * @param array|stdClass $data The data to create from. This can be a standard class or associative array.
+	 * @return zajModel Returns me to allow chaining.
+	 */
+	public function set_translations_with_data($data){
+        // If only one locale, then return
+        if(count($this->zajlib->lang->get_locales()) <= 1) return $this;
+
+        // Validate data. Unlike set_with_data this is optional so will not fail if empty
+        $data = (object) $data;
+        if(!is_object($data)) return $this;
+
+        // Check to see if this is the root data or the translations data
+        if(is_object($data->translation) || is_array($data->translation)){
+            $data = (object) $data->translation;
+        }
+
+        // Loop through each field
+        foreach($data as $field_name=>$locale_values){
+            foreach($locale_values as $locale=>$value){
+                $this->set_translation($field_name, $value, $locale);
+            }
+        }
+
+        return $this;
 	}
 
 	/**
@@ -899,17 +935,40 @@ abstract class zajModel implements JsonSerializable {
 		if(!zajLib::me()->security->is_valid_id($this->id)) return zajLib::me()->warning("Tried to save cache with invalid id: $this->id");
 		// get filename
 		$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name,$this->id.".cache", true, CACHE_DIR_LEVEL);
+
 		// model, data do not need to be saved!
 		$data = $this->data;
 		$model = $this->model;
-		$this->data=$this->model=$this->zajlib="";
+		$event_stack = $this->event_stack;
+		$event_child_fired = $this->event_child_fired;
+		unset($this->zajlib, $this->data, $this->model, $this->event_stack, $this->event_child_fired);
+
+		if($this->fetchdata){
+		    $fetchdata = $this->fetchdata;
+		    unset($this->fetchdata);
+        }
+		if($this->translations){
+		    $translations = $this->translations;
+		    unset($this->translations);
+        }
+
 		// check for objects
-		foreach($this as $varname=>$varval) if(is_object($varval) && is_a($varval, 'zajModel')){ zajLib::me()->warning("You cannot cache a Model object! Found at variable $this->class_name / $varname."); $this->$varname = "[Cache error: $this->class_name / $varname]"; }
+		foreach($this as $varname=>$varval){
+            if(is_a($varval, 'zajModel') || is_a($varval, 'zajFetcher')){
+                zajLib::me()->warning("You cannot cache an zajModel or zajFetcher object! Stick to simple data types. This will be a fatal error in the future. Found at variable $this->class_name / $varname.");
+            }
+        }
+
 		// now serialize and save to file
 		file_put_contents($filename, serialize($this));
+
 		// now bring back data
 		$this->data = $data;
 		$this->model = $model;
+		$this->event_stack = $event_stack;
+		$this->event_child_fired = $event_child_fired;
+		if(!empty($translations)) $this->translations = $translations;
+		if(!empty($fetchdata)) $this->fetchdata = $fetchdata;
 		$this->zajlib = zajLib::me();
 		// call the callback function
 		$this->fire('afterCache');
