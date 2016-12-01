@@ -68,9 +68,16 @@ class zajlib_export extends zajLibExtension {
             $phpexcel_path = $this->zajlib->config->variable->php_excel_path;
             if(substr($phpexcel_path, 0, 1) != '/') $phpexcel_path = $this->zajlib->basepath.$phpexcel_path;
 
-            // Output
-            if(is_string($file)) $output_path = 'php://output';
-            else $output_path = $this->zajlib->basepath.$file->get_file_path();
+            // Output path
+            if(!File::is_instance_of_me($file)){
+                $output_path = 'php://output';
+                $write_mode = "w";
+            }
+            else{
+                $output_path = $this->zajlib->basepath.$file->get_file_path();
+                if(file_exists($output_path)) $write_mode = "a";
+                else $write_mode = "w";
+            }
 
 			// Try using PHPExcel if available
             @include_once($phpexcel_path);
@@ -81,36 +88,63 @@ class zajlib_export extends zajLibExtension {
                 // Standard CSV or Excel header?
                 if($encoding){
                     // Use excel encoding or custom encoding
-                    if(is_string($file)){
+                    if(!File::is_instance_of_me($file)){
                         if($encoding === OFW_EXPORT_ENCODING_EXCEL) header("Content-Type: application/vnd.ms-excel; charset=UTF-16LE");
                         else  header("Content-Type: application/vnd.ms-excel; charset=".$encoding);
                         header("Content-Disposition: attachment; filename=\"$file\"");
                     }
+                    else{
+                        /** @var File $file */
+                        $file->set('status', 'saved');
+                        $file->set('mime', 'application/vnd.ms-excel');
+                        $file->save();
+                    }
                     if(!$delimiter) $delimiter = ';';
                 }
                 else{
-                    if(is_string($file)){
+                    if(!File::is_instance_of_me($file)){
                         header("Content-Type: text/csv; charset=UTF-8");
                         header("Content-Disposition: attachment; filename=\"$file\"");
+                    }
+                    else{
+                        /** @var File $file */
+                        $file->set('status', 'saved');
+                        $file->set('mime', 'text/csv');
+                        $file->save();
                     }
                     if(!$delimiter) $delimiter = ',';
                 }
 
                 // Write output
-                $output = fopen($output_path, 'w');
+                $output = fopen($output_path, $write_mode);
                 $rows_written = $this->send_data($output, $fetcher, $fields, $encoding, $delimiter, $rowcount_resume);
                 fclose($output);
             }
             else{
                 // Create the csv file with PHPExcel
                 if(!$delimiter) $delimiter = ',';
-                $workbook = new PHPExcel();
+
+                // Create or resume the excel file
+                if(!File::is_instance_of_me($file) || !file_exists($output_path)){
+                    $workbook = new PHPExcel();
+                    if(File::is_instance_of_me($file)){
+                        // Set as uploaded
+                        /** @var File $file */
+                        $file->set('status', 'saved');
+                        $file->set('mime', 'text/csv');
+                        $file->save();
+                    }
+                }
+                else{
+                    $ioworkbook = PHPExcel_IOFactory::createReader('Excel2007');
+                    $workbook = $ioworkbook->load($output_path);
+                }
                 $workbook->setActiveSheetIndex(0);
 
                 zajLib::me()->model_autoloading = true;
                 $rows_written = $this->send_data($workbook, $fetcher, $fields, false, false, $rowcount_resume);
                 zajLib::me()->model_autoloading = false;
-                if(is_string($file)){
+                if(File::is_instance_of_me($file)){
                     header('Content-Type: text/csv');
                     header('Content-Disposition: attachment;filename="'.$file.'"');
                     header('Cache-Control: max-age=0');
@@ -127,7 +161,7 @@ class zajlib_export extends zajLibExtension {
 
             // Autoload back on, exit or return
             zajLib::me()->model_autoloading = true;
-            if(is_string($file)) exit();
+            if(File::is_instance_of_me($file)) exit();
             else return $rows_written;
 
 		}
@@ -145,39 +179,60 @@ class zajlib_export extends zajLibExtension {
 			$this->zajlib->config->load('export.conf.ini');
 			
 			// No more autoloading for OFW
-				zajLib::me()->model_autoloading = false;
+            zajLib::me()->model_autoloading = false;
+
 			// Get my PhpExcel path
-				$phpexcel_path = $this->zajlib->config->variable->php_excel_path;
-				if(substr($phpexcel_path, 0, 1) != '/') $phpexcel_path = $this->zajlib->basepath.$phpexcel_path;
+            $phpexcel_path = $this->zajlib->config->variable->php_excel_path;
+            if(substr($phpexcel_path, 0, 1) != '/') $phpexcel_path = $this->zajlib->basepath.$phpexcel_path;
 			// Require it if it is available
-				include_once($phpexcel_path);
-				if(!class_exists('PHPExcel', false)) $this->zajlib->error("PHPExcel is required for XLS exports. See documentation.", true);
-			// Create the excel file
+            include_once($phpexcel_path);
+            if(!class_exists('PHPExcel', false)) $this->zajlib->error("PHPExcel is required for XLS exports. See documentation.", true);
+
+            // Output path
+            if(!File::is_instance_of_me($file)) $output_path = 'php://output';
+            else $output_path = $this->zajlib->basepath.$file->get_file_path();
+
+			// Create or resume the excel file
+			if(!File::is_instance_of_me($file) || !file_exists($output_path)){
 				$workbook = new PHPExcel();
-			    $workbook->setActiveSheetIndex(0);
-			    
+                if(File::is_instance_of_me($file)){
+                    // Set as uploaded
+                    /** @var File $file */
+                    $file->set('status', 'saved');
+                    $file->set('mime', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    $file->save();
+                }
+			}
+			else{
+			    $ioworkbook = PHPExcel_IOFactory::createReader('Excel2007');
+                $workbook = $ioworkbook->load($output_path);
+			}
+
+			// Set active sheet to first
+		    $workbook->setActiveSheetIndex(0);
+
 			// Write output
-				zajLib::me()->model_autoloading = true;
-				$rows_written = $this->send_data($workbook, $fetcher, $fields, false, false, $rowcount_resume);
+            zajLib::me()->model_autoloading = true;
+            $rows_written = $this->send_data($workbook, $fetcher, $fields, false, false, $rowcount_resume);
 			
 			// Send output
-				zajLib::me()->model_autoloading = false;
-				$writer = PHPExcel_IOFactory::createWriter($workbook, 'Excel2007');
+            zajLib::me()->model_autoloading = false;
+            $writer = PHPExcel_IOFactory::createWriter($workbook, 'Excel2007');
 
-                if(is_string($file)){
-                    // Redirect output to a client’s web browser (Excel2007)
-                    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                    header('Content-Disposition: attachment;filename="'.$file.'"');
-                    header('Cache-Control: max-age=0');
+            if(!File::is_instance_of_me($file)){
+                // Redirect output to a client’s web browser (Excel2007)
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment;filename="'.$file.'"');
+                header('Cache-Control: max-age=0');
 
-                    $writer->save('php://output');
-                    exit;
-                }
-                else{
-                    $writer->save($this->zajlib->basepath.$file->get_file_path());
-                    zajLib::me()->model_autoloading = true;
-                    return $rows_written;
-                }
+                $writer->save('php://output');
+                exit;
+            }
+            else{
+                $writer->save($output_path);
+                zajLib::me()->model_autoloading = true;
+                return $rows_written;
+            }
 		}
 
 		/**
@@ -229,7 +284,6 @@ class zajlib_export extends zajLibExtension {
 				}
 			
 			// Run through all of my rows
-			    $initial_rowcount = $rowcount;
 				$column_order = array();
 				foreach($fetcher as $s){
 					// Create row data
