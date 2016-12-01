@@ -19,10 +19,10 @@ class zajlib_export extends zajLibExtension {
 		 * Export model data as JSON.
 		 * @param zajModel|array|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export. NOT YET IMPLEMENTED!
-		 * @param string $file_name The name of the file which will be used during download.
+		 * @param string $file The name of the file which will be used during download.
 		 * @return string|boolean Print the json or return it in test mode.
 		 */
-		public function json($fetcher, $fields = false, $file_name='export.json'){
+		public function json($fetcher, $fields = false, $file='export.json'){
 			$array_data = array();
 			// If this is a model
 				if(is_a($fetcher, 'zajModel') || is_a($fetcher, 'zajModelExtender')){
@@ -39,7 +39,7 @@ class zajlib_export extends zajLibExtension {
 					}
 				}
 			// Now convert to JSON data and write to file output
-				header('Content-Disposition: attachment; filename="'.$file_name);
+				header('Content-Disposition: attachment; filename="'.$file);
 				header('Content-Type: application/json;');
 				$out = fopen("php://output", 'w');
 				fputs($out, json_encode($array_data));
@@ -51,12 +51,12 @@ class zajlib_export extends zajLibExtension {
 		 * Export model data as csv.
 		 * @param array|zajlib_db_session|zajlib_mssql_resultset|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
-		 * @param string $file_name The name of the file which will be used during download.
+		 * @param string $file The name of the file which will be used during download.
 		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
 		 * @return string|boolean Print the csv or return it in test mode.
 		 */
-		public function csv($fetcher, $fields = false, $file_name='export.csv', $encoding = false, $delimiter = false){
+		public function csv($fetcher, $fields = false, $file='export.csv', $encoding = false, $delimiter = false){
 			// Show template
 			$this->zajlib->config->load('export.conf.ini');
 			// No more autoloading for OFW
@@ -74,12 +74,12 @@ class zajlib_export extends zajLibExtension {
 							// Use excel encoding or custom encoding
 							if($encoding === OFW_EXPORT_ENCODING_EXCEL) header("Content-Type: application/vnd.ms-excel; charset=UTF-16LE");
 							else  header("Content-Type: application/vnd.ms-excel; charset=".$encoding);
-							header("Content-Disposition: attachment; filename=\"$file_name\"");
+							header("Content-Disposition: attachment; filename=\"$file\"");
 							if(!$delimiter) $delimiter = ';';
 						}
 						else{
 							header("Content-Type: text/csv; charset=UTF-8");
-							header("Content-Disposition: attachment; filename=\"$file_name\"");
+							header("Content-Disposition: attachment; filename=\"$file\"");
 							if(!$delimiter) $delimiter = ',';
 						}
 						$output = fopen('php://output', 'w');
@@ -96,7 +96,7 @@ class zajlib_export extends zajLibExtension {
 
 						zajLib::me()->model_autoloading = false;
 						header('Content-Type: text/csv');
-						header('Content-Disposition: attachment;filename="'.$file_name.'"');
+						header('Content-Disposition: attachment;filename="'.$file.'"');
 						header('Cache-Control: max-age=0');
 
 						$writer = PHPExcel_IOFactory::createWriter($workbook, 'CSV');
@@ -113,11 +113,12 @@ class zajlib_export extends zajLibExtension {
 		 * Export model data as excel. It should be noted that CSV export is much less memory and processor intensive, so for large exports we recommend that.
 		 * @param array|zajlib_db_session|zajlib_mssql_resultset|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
-		 * @param string $file_name The name of the file which will be used during download.
+		 * @param string|File $file The name of the file which will be used during download or the File object if writing to a file.
+         * @param int $rowcount_resume Set this to the row count at which you wish to resume the export. This only makes sense if writing to file.
 		 * @require Requires the Spreadsheet_Excel_Writer PEAR module.
-		 * @return string|boolean Print the xlsx or return it in test mode.
+		 * @return integer|boolean Will return false if error, the xls data if downloading, or the row count if writing to file.
 		 */
-		public function xls($fetcher, $fields = false, $file_name='export.xlsx'){
+		public function xls($fetcher, $fields = false, $file='export.xlsx', $rowcount_resume = 1){
 			$this->zajlib->config->load('export.conf.ini');
 			
 			// No more autoloading for OFW
@@ -134,18 +135,25 @@ class zajlib_export extends zajLibExtension {
 			    
 			// Write output
 				zajLib::me()->model_autoloading = true;
-				$this->send_data($workbook, $fetcher, $fields);
+				$rows_written = $this->send_data($workbook, $fetcher, $fields, false, false, $rowcount_resume);
 			
 			// Send output
 				zajLib::me()->model_autoloading = false;
-				// Redirect output to a client’s web browser (Excel2007)
-				header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-				header('Content-Disposition: attachment;filename="'.$file_name.'"');
-				header('Cache-Control: max-age=0');
-
 				$writer = PHPExcel_IOFactory::createWriter($workbook, 'Excel2007');
-				$writer->save('php://output');
-			exit;
+
+                if(is_string($file)){
+                    // Redirect output to a client’s web browser (Excel2007)
+                    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                    header('Content-Disposition: attachment;filename="'.$file.'"');
+                    header('Cache-Control: max-age=0');
+
+                    $writer->save('php://output');
+                    exit;
+                }
+                else{
+                    $writer->save($file->get_file_path());
+                    return $rows_written;
+                }
 		}
 
 		/**
@@ -155,9 +163,10 @@ class zajlib_export extends zajLibExtension {
 		 * @param array $fields A list of fields from the model which should be included in the export.
 		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
+         * @param int $rowcount Set this to the row count at which you wish to resume the export.
 		 * @return integer Returns the number of rows written.
 		 */
-		private function send_data(&$output, $fetcher, $fields, $encoding=false, $delimiter=false){
+		private function send_data(&$output, $fetcher, $fields, $encoding=false, $delimiter=false, $rowcount = 1){
 			// If encoding is boolean true, it is excel-encoding
 				if($encoding === OFW_EXPORT_ENCODING_EXCEL) $encoding = "UTF-16LE";
 			// Set my time limit and memory limit
@@ -195,8 +204,8 @@ class zajlib_export extends zajLibExtension {
 				}
 			
 			// Run through all of my rows
+			    $initial_rowcount = $rowcount;
 				$column_order = array();
-				$linecount = 1;
 				foreach($fetcher as $s){
 					// Create row data
 						$data = array();
@@ -243,7 +252,7 @@ class zajlib_export extends zajLibExtension {
 						}
 
 					// If firstline, display fields
-						if($linecount == 1){
+						if($rowcount == 1){
 							// Write XLS
 								if(is_a($output, 'PHPExcel')){
 									// Write names
@@ -260,7 +269,7 @@ class zajlib_export extends zajLibExtension {
 									fputcsv($output, array_keys($data), $delimiter);
 									foreach(array_keys($data) as $field_name) $column_order[] = $field_name;
 								}
-							$linecount++;
+							$rowcount++;
 						}
 						
 					// Display values
@@ -283,16 +292,16 @@ class zajlib_export extends zajLibExtension {
 									// Replace new lines
 										//$field_val = str_ireplace("\n", " ", $field_val);
 									// Now output
-										$output->getActiveSheet()->setCellValueByColumnAndRow($col, $linecount, $field_val);
+										$output->getActiveSheet()->setCellValueByColumnAndRow($col, $rowcount, $field_val);
 								}
 								zajLib::me()->model_autoloading = true;
 						}
 						// Write standard CSV
 						else fputcsv($output, $data, $delimiter);
 					// Add to linecount
-						$linecount++;
+						$rowcount++;
 				}
-			return $linecount;
+			return ($rowcount - $initial_rowcount);
 		}
 	
 		/**
