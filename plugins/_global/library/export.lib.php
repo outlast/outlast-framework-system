@@ -54,7 +54,7 @@ class zajlib_export extends zajLibExtension {
 		 * @param string|File $file The name of the file which will be used during download or the File object if writing to a file.
 		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
-         * @param int $rowcount_resume Set this to the row count at which you wish to resume the export. This only makes sense if writing to file.
+         * @param int $rowcount_resume Set this to the row count at which you wish to resume the export. This only makes sense if writing to file. Header row not included!
 		 * @return integer|boolean Will return false if error, the csv data if downloading, or the row count if writing to file.
 		 */
 		public function csv($fetcher, $fields = false, $file='export.csv', $encoding = false, $delimiter = false, $rowcount_resume = 1){
@@ -171,7 +171,7 @@ class zajlib_export extends zajLibExtension {
 		 * @param array|zajlib_db_session|zajlib_mssql_resultset|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
 		 * @param string|File $file The name of the file which will be used during download or the File object if writing to a file.
-         * @param int $rowcount_resume Set this to the row count at which you wish to resume the export. This only makes sense if writing to file.
+         * @param int $rowcount_resume Set this to the row count at which you wish to resume the export. This only makes sense if writing to file. Header row not included!
 		 * @require Requires the Spreadsheet_Excel_Writer PEAR module.
 		 * @return integer|boolean Will return false if error, the xls data if downloading, or the row count if writing to file.
 		 */
@@ -242,16 +242,21 @@ class zajlib_export extends zajLibExtension {
 		 * @param array $fields A list of fields from the model which should be included in the export.
 		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
-         * @param int $rowcount Set this to the row count at which you wish to resume the export.
+         * @param int $rowcount_resume Set this to the row count at which you wish to resume the export. Header row not included!
 		 * @return integer Returns the number of rows exported (excluding the header row).
 		 */
-		private function send_data(&$output, $fetcher, $fields, $encoding=false, $delimiter=false, $rowcount = 1){
+		private function send_data(&$output, $fetcher, $fields, $encoding=false, $delimiter=false, $rowcount_resume = 1){
 			// If encoding is boolean true, it is excel-encoding
 				if($encoding === OFW_EXPORT_ENCODING_EXCEL) $encoding = "UTF-16LE";
 			// Set my time limit and memory limit
 				ini_set('memory_limit', '2048M');
 				set_time_limit(OFW_EXPORT_MAX_EXECUTION_TIME);
-				$rowswritten = 0;
+
+            // Figure out where to start
+            if($rowcount_resume <= 1) $rowcount = 1;
+            else $rowcount = $rowcount_resume + 1; // Add the header row to it!
+			$rowswritten = 0;
+
 			// Initialize zajdbs
 				$field_objects = [];
 			// Get fields of fetcher class if fields not passed
