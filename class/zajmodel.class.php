@@ -37,7 +37,9 @@ define('CACHE_DIR_LEVEL', 4);
  * @method void __onFetch() EVENT. Executed when a fetch method is requested.
  * @method void __onCreate() EVENT. Executed when a create method is requested.
  * @method static zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when the client side search API is requested. The API is disabled by default.
- * @method static boolean __onSearchFetcher() __onSearchFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when search() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default search() is applied.
+ * @method static boolean __onSearchFetcher() __onSearchFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when search() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default search is applied.
+ * @method static boolean __onFilterQueryFetcher() __onFilterQueryFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when filter_query() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default filter query is applied.
+ *
  * Properties...
  * @property zajLib $zajlib A pointer to the global object.
  * @property string $name The name of the object.
@@ -761,6 +763,8 @@ abstract class zajModel implements JsonSerializable {
 			case '__onSearch':
 				if(!method_exists($arguments[0], $name)) return zajLib::me()->warning("You are trying to access the client-side search API for ".$class_name." and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
 			case '__onSearchFetcher':
+			    return false;
+			case '__onFilterQueryFetcher':
 			    return false;
 		}
 		// redirect static method calls to local private ones

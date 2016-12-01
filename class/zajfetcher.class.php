@@ -567,6 +567,52 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 
 		return $this;
 	}
+
+    /**
+     * Apply a filter query to the list.
+     * @param array|boolean $query The filter query. See documentation for formatting. Defaults to $_GET.
+	 * @param boolean $similarity_search If set to true (false is the default), similar sounding results will be returned as well.
+	 * @param string $type AND or OR depending on how you want this filter to connect
+	 * @todo Add the option to specify fields.
+	 * @return zajFetcher This method can be chained.
+     */
+    public function filter_query($query = false, $similarity_search = false, $type = 'AND'){
+		// Default query
+		if($query == false) $query = $_GET;
+
+		/** @var zajModel $class_name */
+		$class_name = $this->class_name;
+        $result = $class_name::__onFilterQueryFetcher($this, $query, $similarity_search, $type);
+
+        // perform the default if result is false
+        if($result === false){
+
+            // Do we have a regular query
+            if(!empty($query['query'])){
+                $this->search($query['query']);
+            }
+
+            // Now apply field queries
+            if(!empty($query['filter']) && is_array($query['filter'])){
+                foreach($query['filter'] as $field => $values){
+                    if(is_array($values)){
+                        // Empty values mean no filter will be applied
+                        foreach($values as $key=>$value){
+                            if(empty($value)) unset($values[$key]);
+                        }
+
+                        // Run through all filters for the field
+                        if(count($values) > 0) $this->filter_group($field, $values, 'LIKE', $type);
+                    }
+
+                }
+            }
+        }
+
+        return $this;
+    }
+
+
 	/**
 	 * Execute a full, customized query. Any query must return a column 'id' with the IDs of corresponding {@link zajModel} objects. Otherwise it will not be a valid {@link zajFetcher} object and related methods will fail. A full query will override any other methods used, except for paginate and limit (the limit is appended to the end, if specified!).
 	 * @param string $full_sql The full, customized query.
