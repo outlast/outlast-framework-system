@@ -1097,7 +1097,8 @@ class zajField {
 	const use_export = false;		// boolean - true if export is formatted
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = true;		// boolean - true if this field is used during search()
-	const edit_template = 'field/base.field.html';	// string - the edit template, false if not used
+	const edit_template = 'field/base.field.html';	    // string - the edit template, defaults to base
+    const filter_template = 'field/base.filter.html';   // string - the filter template, defaults to base
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 
 	/**
@@ -1220,6 +1221,17 @@ class zajField {
 	 * @return bool Returns true by default.
 	 **/
 	public function __onInputGeneration($param_array, &$source){
+		// does not do anything by default
+		return true;
+	}
+
+    /**
+	 * This method is called just before the filter field is generated. Here you can set specific variables and such that are needed by the field's GUI control.
+	 * @param array $param_array The array of parameters passed by the filter field tag. This is the same as for tag definitions.
+	 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
+	 * @return bool Returns true by default.
+	 **/
+	public function __onFilterGeneration($param_array, &$source){
 		// does not do anything by default
 		return true;
 	}

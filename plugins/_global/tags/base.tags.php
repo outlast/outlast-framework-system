@@ -111,25 +111,6 @@ EOF;
 			return true;
 	}
 
-
-	/**
-	 * Tag: filter - Applies a filter to all text within tag.
-	 *
-	 *  <b>{% filter lowercase|escapejs %}</b>
-	 *  1. <b>filters</b> - A list of filters to apply to the text.
-	 * @todo Implement this, but this may have to work differently!
-	 **/
-	public function tag_filter($param_array, &$source){
-
-		// TODO: do this with capture output
-		
-		
-		// write to file
-			//$this->zajlib->compile->write($contents);
-		// return true
-			return true;
-	}
-	
 	/**
 	 * Tag: firstof - Prints the first in a list which evaluates to true.
 	 *

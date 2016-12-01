@@ -14,7 +14,8 @@ class zajfield_boolean extends zajField {
 	const use_filter = true;		// boolean - true if fetcher needs to be modified
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
-	const edit_template = 'field/boolean.field.html';	// string - the edit template, false if not used
+	const edit_template = 'field/boolean.field.html';	// string - the edit template
+	const filter_template = 'field/boolean.filter.html';	// string - the filter template
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 		
 	// Construct
