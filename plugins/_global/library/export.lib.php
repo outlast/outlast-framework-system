@@ -61,13 +61,6 @@ class zajlib_export extends zajLibExtension {
 			// Show template
 			$this->zajlib->config->load('export.conf.ini');
 
-			// No more autoloading for OFW
-            zajLib::me()->model_autoloading = false;
-
-			// Get my PhpExcel path
-            $phpexcel_path = $this->zajlib->config->variable->php_excel_path;
-            if(substr($phpexcel_path, 0, 1) != '/') $phpexcel_path = $this->zajlib->basepath.$phpexcel_path;
-
             // Output path
             if(!File::is_instance_of_me($file)){
                 $output_path = 'php://output';
@@ -78,6 +71,13 @@ class zajlib_export extends zajLibExtension {
                 if(file_exists($output_path)) $write_mode = "a";
                 else $write_mode = "w";
             }
+
+			// No more autoloading for OFW
+            zajLib::me()->model_autoloading = false;
+
+			// Get my PhpExcel path
+            $phpexcel_path = $this->zajlib->config->variable->php_excel_path;
+            if(substr($phpexcel_path, 0, 1) != '/') $phpexcel_path = $this->zajlib->basepath.$phpexcel_path;
 
 			// Try using PHPExcel if available
             @include_once($phpexcel_path);
@@ -178,6 +178,10 @@ class zajlib_export extends zajLibExtension {
 		public function xls($fetcher, $fields = false, $file='export.xlsx', $rowcount_resume = 1){
 			$this->zajlib->config->load('export.conf.ini');
 			
+            // Output path
+            if(!File::is_instance_of_me($file)) $output_path = 'php://output';
+            else $output_path = $this->zajlib->basepath.$file->get_file_path();
+
 			// No more autoloading for OFW
             zajLib::me()->model_autoloading = false;
 
@@ -188,9 +192,6 @@ class zajlib_export extends zajLibExtension {
             include_once($phpexcel_path);
             if(!class_exists('PHPExcel', false)) $this->zajlib->error("PHPExcel is required for XLS exports. See documentation.", true);
 
-            // Output path
-            if(!File::is_instance_of_me($file)) $output_path = 'php://output';
-            else $output_path = $this->zajlib->basepath.$file->get_file_path();
 
 			// Create or resume the excel file
 			if(!File::is_instance_of_me($file) || !file_exists($output_path)){
