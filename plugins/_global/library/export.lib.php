@@ -188,7 +188,7 @@ class zajlib_export extends zajLibExtension {
 		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
          * @param int $rowcount Set this to the row count at which you wish to resume the export.
-		 * @return integer Returns the number of rows written.
+		 * @return integer Returns the number of rows exported (excluding the header row).
 		 */
 		private function send_data(&$output, $fetcher, $fields, $encoding=false, $delimiter=false, $rowcount = 1){
 			// If encoding is boolean true, it is excel-encoding
@@ -196,6 +196,7 @@ class zajlib_export extends zajLibExtension {
 			// Set my time limit and memory limit
 				ini_set('memory_limit', '2048M');
 				set_time_limit(OFW_EXPORT_MAX_EXECUTION_TIME);
+				$rowswritten = 0;
 			// Initialize zajdbs
 				$field_objects = [];
 			// Get fields of fetcher class if fields not passed
@@ -323,9 +324,10 @@ class zajlib_export extends zajLibExtension {
 						// Write standard CSV
 						else fputcsv($output, $data, $delimiter);
 					// Add to linecount
+					    $rowswritten++;
 						$rowcount++;
 				}
-			return ($rowcount - $initial_rowcount);
+			return $rowswritten;
 		}
 	
 		/**
