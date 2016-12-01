@@ -67,7 +67,7 @@ class zajlib_export extends zajLibExtension {
                 $write_mode = "w";
             }
             else{
-                $output_path = $this->zajlib->basepath.$file->get_file_path();
+                $output_path = $this->zajlib->basepath.$file->get_file_path(false, true);
                 if(file_exists($output_path)) $write_mode = "a";
                 else $write_mode = "w";
             }
@@ -180,7 +180,7 @@ class zajlib_export extends zajLibExtension {
 			
             // Output path
             if(!File::is_instance_of_me($file)) $output_path = 'php://output';
-            else $output_path = $this->zajlib->basepath.$file->get_file_path();
+            else $output_path = $this->zajlib->basepath.$file->get_file_path(false, true);
 
 			// No more autoloading for OFW
             zajLib::me()->model_autoloading = false;
