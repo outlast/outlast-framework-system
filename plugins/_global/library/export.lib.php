@@ -268,7 +268,7 @@ class zajlib_export extends zajLibExtension {
 
             // Create and open writer
             $writer = WriterFactory::create($type); // for XLSX files
-            if($is_a_file) $writer->openToFile($this->zajlib->basepath.$file->get_file_path());
+            if($is_a_file) $writer->openToFile($this->zajlib->basepath.$file->get_file_path(false, true));
             else $writer->openToBrowser($file);
 
             // Copy old existing data
