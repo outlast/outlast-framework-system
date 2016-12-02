@@ -1,13 +1,14 @@
 <?php
 /**
- * Library helps you export data from Mozajik models, database queries, or an array of standard PHP objects. Using PHPExcel will provide more features and better export results.
+ * Library helps you export data from Outlast Framework models, database queries, or an array of standard PHP objects. Using PHPExcel will provide more features and better export results.
  * @author Aron Budinszky <aron@outlast.hu>
  * @version 3.0
  * @package Library
  **/
 
-
-define("OFW_EXPORT_MAX_EXECUTION_TIME", 300);
+use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Writer\WriterFactory;
+use Box\Spout\Common\Type;
 
 define("OFW_EXPORT_ENCODING_DEFAULT", false);
 define("OFW_EXPORT_ENCODING_EXCEL", true);
@@ -74,6 +75,8 @@ class zajlib_export extends zajLibExtension {
 
 			// No more autoloading for OFW
             zajLib::me()->model_autoloading = false;
+
+            // Inlcude
 
 			// Get my PhpExcel path
             $phpexcel_path = $this->zajlib->config->variable->php_excel_path;
@@ -236,6 +239,80 @@ class zajlib_export extends zajLibExtension {
             }
 		}
 
+        /**
+         * Get the writer object
+         * @param File|string $file If it is a File, we check to see if it exists and will resume if it does. If it is a string, we will output to browser.
+         * @param $format
+		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
+		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
+         * @return WriterFactory Returns a new writer.
+         */
+		private function get_writer($file, $format='csv', $encoding=false, $delimiter=false){
+            // Are we in file or browser mode
+            if(File::is_instance_of_me($file)) $is_a_file = false;
+            else $is_a_file = true;
+
+            // Define type
+            switch($format){
+                case 'xlsx':
+                case 'xls':
+                    $type = Type::XLSX;
+                    break;
+                case 'ods':
+                    $type = Type::ODS;
+                    break;
+                case 'csv':
+                default:
+                    $type = Type::CSV;
+                    break;
+            }
+
+            // Load up writer
+            zajLib::me()->model_autoloading = false;
+            require_once $this->zajlib->basepath.'system/ext/spout/Autoloader/autoload.php';
+
+            // @todo add file path verification! should be in data folder.
+
+            // Do we have an existing file?
+            if($is_a_file && $file->file_exists()){
+                // Move to a temporary location
+                $temporary_file_path = $this->zajlib->basepath.$file->get_file_path().'.copying.tmp';
+                rename($this->zajlib->basepath.$file->get_file_path(), $temporary_file_path);
+                $reader = ReaderFactory::create($type);
+                $reader->open($temporary_file_path);
+                $reader->setShouldFormatDates(true); // this is to be able to copy dates
+            }
+            else $reader = false;
+
+            // Create and open writer
+            $writer = WriterFactory::create($type); // for XLSX files
+            if($is_a_file) $writer->openToFile($this->zajlib->basepath.$file->get_file_path());
+            else $writer->openToBrowser($file);
+
+            // Copy old existing data
+            if($is_a_file && $reader !== false){
+                // let's read and write the entire spreadsheet...
+                foreach ($reader->getSheetIterator() as $sheetIndex => $sheet) {
+                    // Add sheets in the new file, as we read new sheets in the existing one
+                    if ($sheetIndex !== 1) {
+                        $writer->addNewSheetAndMakeItCurrent();
+                    }
+
+                    foreach ($sheet->getRowIterator() as $row) {
+                        // ... and copy each row into the new spreadsheet
+                        $writer->addRow($row);
+                    }
+                }
+
+                // now remove the temporary file and close reader
+                $reader->close();
+                if(!empty($temporary_file_path)) unlink($temporary_file_path);
+            }
+
+            zajLib::me()->model_autoloading = true;
+            return $writer;
+		}
+
 		/**
 		 * Write data to an output.
 		 * @param resource|PHPExcel $output The output object or handle.
@@ -250,8 +327,9 @@ class zajlib_export extends zajLibExtension {
 			// If encoding is boolean true, it is excel-encoding
 				if($encoding === OFW_EXPORT_ENCODING_EXCEL) $encoding = "UTF-16LE";
 			// Set my time limit and memory limit
-				ini_set('memory_limit', '2048M');
-				set_time_limit(OFW_EXPORT_MAX_EXECUTION_TIME);
+			    $this->zajlib->config->load('export');
+				if($this->zajlib->config->variable->export_max_memory) ini_set('memory_limit', $this->zajlib->config->variable->export_max_memory);
+				if($this->zajlib->config->variable->export_max_execution_time) set_time_limit($this->zajlib->config->variable->export_max_execution_time);
 
             // Figure out where to start
             if($rowcount_resume <= 1) $rowcount = 1;

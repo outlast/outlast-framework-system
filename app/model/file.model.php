@@ -145,6 +145,14 @@ class File extends zajModel {
 		else return $this->extension;
 	}
 
+    /**
+     * Underlying permanent physical file exists or not.
+     * @return boolean True if yes, false if not.
+     */
+    public function file_exists(){
+        return file_exists($this->zajlib->basepath.$this->get_file_path());
+    }
+
 	/**
 	 * Forces a download dialog for the browser.
 	 * @param boolean $force_download If set to true (default), this will force a download for the user.
