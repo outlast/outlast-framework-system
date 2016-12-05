@@ -218,7 +218,11 @@ class zajlib_export extends zajLibExtension {
             }
 
             // Send the data
-            return $this->send_data($writer, $fetcher, $fields, false, false, $rowcount_resume);
+            $response = $this->send_data($writer, $fetcher, $fields, false, false, $rowcount_resume);
+
+            // If we are downloading, exit!
+            if(!File::is_instance_of_me($file)) exit();
+            else return $response;
 		}
 
         /**
