@@ -80,7 +80,7 @@
             $obj = Category::fetch($_POST['id']);
 
 			// Check for existing friendlyurl
-            if(Category::fetch()->filter('friendlyurl', $_POST['friendlyurl'])->filter('id', $obj->id, 'NOT LIKE')->next() !== false) return $this->zajlib->ajax($this->zajlib->config->variable->category_frielndlyurl_error);
+            if(Category::fetch()->filter('friendlyurl', $_POST['friendlyurl'])->filter('id', $obj->id, 'NOT LIKE')->next() !== false) return $this->zajlib->ajax($this->zajlib->config->variable->category_friendlyurl_error);
             if($_POST['parentcategory'] == $obj->id) return $this->zajlib->ajax($this->zajlib->config->variable->category_parent_error);
 
 			// Update the object
