@@ -51,6 +51,9 @@ class Photo extends zajModel {
 			$f->cropdata = zajDb::json();   // Stores original photo data and associated cropping values. {"x":0,"y":0,"w":540,"h":525,"path":'data/something/beforecrop.jpg'}. Path is empty if original not saved during crop.
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
 
+			$f->alttext = zajDb::text();
+			$f->caption = zajDb::text();
+
 			// Deprecated because everything is timepath now! Always true.
 			$f->timepath = zajDb::boolean(true);
 			$f->original = zajDb::text();
