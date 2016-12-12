@@ -14,13 +14,20 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
     /** Private API **/
     var defaultOptions = {
         // Timeout of the delayed scroll event handling
-        addScrollCheckTimeout: 10000
+        addScrollCheckTimeout: 10000,
+
+        // Interval for checking scroll position
+        scrollCheckInterval: 1000
+
     };
 
     var postOptions = {};
     var options = {};
 
     var dimensions = {};
+
+    var scrollCheckIntervalTimer;
+    var previousScrollTop;
 
     // scroll events
     var events = {
@@ -109,34 +116,63 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
         }
         dimensions.postHeight = $post.height();
         dimensions.postTop = $post.offset().top;
+        console.log("Setting ofw-track dimensions", dimensions);
     };
 
-    /**
-     * Add scroll event.
-     */
-    var addScrollCheck = function($el, category, action, label, value) {
-        $(window).on('scroll', function() {
-            var scroll_top = $(window).scrollTop();
-            if (events.postScrollPercents.length && scroll_top > dimensions.postTop && scroll_top < dimensions.postTop + dimensions.postHeight) {
-                // Initial post scroll percent
-                var percent = 0;
+	/**
+     * Run scroll check.
+     * @return boolean Returns true if any event was triggered, false if none.
+	 */
+    var processScrollCheck = function($el, category, action, label, value) {
 
-                // Look through all the percents
-                for (var perc_idx in events.postScrollPercents) {
-                    percent = events.postScrollPercents[perc_idx];
-                    if (scroll_top >= dimensions.postHeight * percent / 100) {
+        // Check if our scroll top is different from previous
+        var scrollTop = $(window).scrollTop();
+        if(previousScrollTop == scrollTop) return false;
+        else previousScrollTop = scrollTop;
+
+        // Set variable defaults
+        var somethingTriggered = false;
+        var percentsToCheckAreRemaining = false;
+        var percent;
+
+        // Check to see if we are within range of the reading zone
+        if (scrollTop > dimensions.postTop && scrollTop < dimensions.postTop + dimensions.postHeight){
+
+            // Look through all the percents (we need to clone so that splice does not affect me)
+            console.log("Checking events", events.postScrollPercents);
+            for (var perc_idx = 0; perc_idx < events.postScrollPercents.length; perc_idx++) {
+                percent = events.postScrollPercents[perc_idx];
+                if (percent !== false) {
+                    console.log(scrollTop, ">=", dimensions.postHeight, "*", percent, "/", 100);
+                    if (scrollTop >= dimensions.postHeight * percent / 100){
                         // Send GA event
                         ofw.track(category, action, label, percent);
                         // Trigger event
                         $el.trigger('ofw:track:trigger', [category, action, label, value]);
-                        // Mark as visited (remove from array)
-                        delete events.postScrollPercents[perc_idx];
+                        // Mark as visited (set element to boolean false)
+                        events.postScrollPercents[perc_idx] = false;
+                        somethingTriggered = true;
                     }
+                    percentsToCheckAreRemaining = true;
                 }
-            } else {
-                $(window).unbind('scroll');
             }
-        });
+        }
+
+        // If no more events left to check then clear interval and return false
+        if(!percentsToCheckAreRemaining){
+            clearInterval(scrollCheckIntervalTimer);
+		}
+
+        return somethingTriggered;
+     };
+
+	/**
+     * Add scroll event check.
+     */
+    var addScrollCheck = function($el, category, action, label, value){
+        scrollCheckIntervalTimer = setInterval(function(){
+            processScrollCheck($el, category, action, label, value);
+        }, postOptions.scrollCheckInterval);
     };
 
     /** Perform private initialization **/
