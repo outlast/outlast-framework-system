@@ -4,6 +4,7 @@
  * @attr data-track-label  Event label, required
  * @attr data-track-action  Event action, optional, defaults to "click"
  * @attr data-track-value  Event value, optional, must be a string
+ * @event ofw:track:trigger  A callback function called when the event is triggered. Will pass category, action, label, value in this order.
  **/
 define('system/js/data/track', ["../ofw-jquery"], function() {
 
@@ -82,13 +83,14 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
                     setDimensions();
                     // Delayed call of addScrollCheck
                     setTimeout(function(){
-                        addScrollCheck(category, action, label, value)
+                        addScrollCheck($el, category, action, label, value);
                     }, postOptions.addScrollCheckTimeout);
                 }
                 // track click events
                 else{
                     $el.click(function(){
                         ofw.track(category, action, label, value);
+                        $el.trigger('ofw:track:trigger', [category, action, label, value]);
                     });
                 }
             });
@@ -112,7 +114,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
     /**
      * Add scroll event.
      */
-    var addScrollCheck = function(category, action, label, value) {
+    var addScrollCheck = function($el, category, action, label, value) {
         $(window).on('scroll', function() {
             var scroll_top = $(window).scrollTop();
             if (events.postScrollPercents.length && scroll_top > dimensions.postTop && scroll_top < dimensions.postTop + dimensions.postHeight) {
@@ -125,6 +127,8 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
                     if (scroll_top >= dimensions.postHeight * percent / 100) {
                         // Send GA event
                         ofw.track(category, action, label, percent);
+                        // Trigger event
+                        $el.trigger('ofw:track:trigger', [category, action, label, value]);
                         // Mark as visited (remove from array)
                         delete events.postScrollPercents[perc_idx];
                     }
