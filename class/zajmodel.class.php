@@ -419,6 +419,7 @@ abstract class zajModel implements JsonSerializable {
         if(is_object($data->translation) || is_array($data->translation)){
             $data = (object) $data->translation;
         }
+        else return $this;
 
         // Loop through each field
         foreach($data as $field_name=>$locale_values){

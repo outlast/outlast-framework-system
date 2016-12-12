@@ -1278,6 +1278,24 @@
         }
     }
 
+	/**
+	 * Throttle function delays a function execution by {delay}ms
+	 * This is useful when using keyup or scroll functions, because on a scroll
+	 * the function won't execute {scroll} times, only once after the {delay}
+	 * @param fn the callback function
+	 * @param delay
+	 * @returns {Function}
+	 */
+	zaj.setThrottledTimeout = function(fn, delay) {
+		var timer = null;
+		return function () {
+			var context = this, args = arguments;
+			clearTimeout(timer);
+			timer = setTimeout(function () {
+				fn.apply(context, args);
+			}, delay);
+		};
+    }
 
 	/**
 	 * Pushstate excitement
