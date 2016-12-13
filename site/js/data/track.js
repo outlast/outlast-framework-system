@@ -148,7 +148,7 @@ define('system/js/data/track', ["../ofw-jquery"], function() {
                         // Send GA event
                         ofw.track(category, action, label, percent);
                         // Trigger event
-                        $el.trigger('ofw:track:trigger', [category, action, label, value]);
+                        $el.trigger('ofw:track:trigger', [category, action, label, percent]);
                         // Mark as visited (set element to boolean false)
                         events.postScrollPercents[perc_idx] = false;
                         somethingTriggered = true;
