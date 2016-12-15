@@ -60,139 +60,36 @@ class zajlib_export extends zajLibExtension {
 		 */
 		public function csv($fetcher, $fields = false, $file='export.csv', $encoding = false, $delimiter = false, $rowcount_resume = 1){
             // Get writer
-            $writer = $this->get_writer($file, 'csv');
+            $writer = $this->get_writer($file, 'csv', $encoding, $delimiter);
 
-            $encoding = 'application/vnd.ms-excel';
-            $encoding = 'text/csv';
+            // Decide on mime and encoding
+            switch($encoding){
+                case OFW_EXPORT_ENCODING_EXCEL:
+                    $mime = 'application/vnd.ms-excel';
+                    $encoding = 'UTF-16LE';
+                    break;
+                default:
+                    $mime = 'text/csv';
+                    $encoding = 'UTF-8';
+                    break;
+            }
 
             // Save file data
             if(File::is_instance_of_me($file)){
                 // Set as uploaded
                 /** @var File $file */
                 $file->set('status', 'saved');
-                $file->set('mime', $encoding);
+                $file->set('encoding', $encoding);
+                $file->set('mime', $mime);
                 $file->save();
             }
 
-            return $this->send_data($writer, $fetcher, $fields);
+            // Send the data
+            $response = $this->send_data($writer, $fetcher, $fields, $encoding, $delimiter);
 
-
-
-
-
-
-			// Show template
-			$this->zajlib->config->load('export.conf.ini');
-
-			// If encoding is boolean true, it is excel-encoding
-			//	if($encoding === OFW_EXPORT_ENCODING_EXCEL) $encoding = "UTF-16LE";
-
-
-            // Output path
-            if(!File::is_instance_of_me($file)){
-                $output_path = 'php://output';
-                $write_mode = "w";
-            }
-            else{
-                $output_path = $this->zajlib->basepath.$file->get_file_path(false, true);
-                if(file_exists($output_path)) $write_mode = "a";
-                else $write_mode = "w";
-            }
-
-			// No more autoloading for OFW
-            zajLib::me()->model_autoloading = false;
-
-            // Inlcude
-
-			// Get my PhpExcel path
-            $phpexcel_path = $this->zajlib->config->variable->php_excel_path;
-            if(substr($phpexcel_path, 0, 1) != '/') $phpexcel_path = $this->zajlib->basepath.$phpexcel_path;
-
-			// Try using PHPExcel if available
-            @include_once($phpexcel_path);
-            if(!class_exists('PHPExcel', false) || $encoding){
-                // Standard CSV export
-                zajLib::me()->model_autoloading = true;
-
-                // Standard CSV or Excel header?
-                if($encoding){
-                    // Use excel encoding or custom encoding
-                    if(!File::is_instance_of_me($file)){
-                        if($encoding === OFW_EXPORT_ENCODING_EXCEL) header("Content-Type: application/vnd.ms-excel; charset=UTF-16LE");
-                        else  header("Content-Type: application/vnd.ms-excel; charset=".$encoding);
-                        header("Content-Disposition: attachment; filename=\"$file\"");
-                    }
-                    else{
-                        /** @var File $file */
-                        $file->set('status', 'saved');
-                        $file->set('mime', 'application/vnd.ms-excel');
-                        $file->save();
-                    }
-                    if(!$delimiter) $delimiter = ';';
-                }
-                else{
-                    if(!File::is_instance_of_me($file)){
-                        header("Content-Type: text/csv; charset=UTF-8");
-                        header("Content-Disposition: attachment; filename=\"$file\"");
-                    }
-                    else{
-                        /** @var File $file */
-                        $file->set('status', 'saved');
-                        $file->set('mime', 'text/csv');
-                        $file->save();
-                    }
-                    if(!$delimiter) $delimiter = ',';
-                }
-
-                // Write output
-                $output = fopen($output_path, $write_mode);
-                $rows_written = $this->send_data($output, $fetcher, $fields, $encoding, $delimiter, $rowcount_resume);
-                fclose($output);
-            }
-            else{
-                // Create the csv file with PHPExcel
-                if(!$delimiter) $delimiter = ',';
-
-                // Create or resume the excel file
-                if(!File::is_instance_of_me($file) || !file_exists($output_path)){
-                    $workbook = new PHPExcel();
-                    if(File::is_instance_of_me($file)){
-                        // Set as uploaded
-                        /** @var File $file */
-                        $file->set('status', 'saved');
-                        $file->set('mime', 'text/csv');
-                        $file->save();
-                    }
-                }
-                else{
-                    $ioworkbook = PHPExcel_IOFactory::createReader('Excel2007');
-                    $workbook = $ioworkbook->load($output_path);
-                }
-                $workbook->setActiveSheetIndex(0);
-
-                zajLib::me()->model_autoloading = true;
-                $rows_written = $this->send_data($workbook, $fetcher, $fields, false, false, $rowcount_resume);
-                zajLib::me()->model_autoloading = false;
-                if(File::is_instance_of_me($file)){
-                    header('Content-Type: text/csv');
-                    header('Content-Disposition: attachment;filename="'.$file.'"');
-                    header('Cache-Control: max-age=0');
-                }
-
-                // Write output
-                $writer = PHPExcel_IOFactory::createWriter($workbook, 'CSV');
-                $writer->setDelimiter($delimiter);
-                //$writer->setEnclosure('\'.$delimiter);
-                $writer->setLineEnding("\r\n");
-                $writer->setSheetIndex(0);
-                $writer->save($output_path);
-            }
-
-            // Autoload back on, exit or return
-            zajLib::me()->model_autoloading = true;
-            if(File::is_instance_of_me($file)) exit();
-            else return $rows_written;
-
+            // If we are downloading, exit!
+            if(!File::is_instance_of_me($file)) exit();
+            else return $response;
 		}
 
 		/**
@@ -229,8 +126,8 @@ class zajlib_export extends zajLibExtension {
          * Get the writer object
          * @param File|string $file If it is a File, we check to see if it exists and will resume if it does. If it is a string, we will output to browser.
          * @param $format
-		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
-		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
+		 * @param boolean|string $encoding If set to false, it won't set anything. If set to a string, it will set that.
+		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma. Only relevant for CSV format.
          * @return \Box\Spout\Writer\XLSX\Writer|\Box\Spout\Writer\CSV\Writer|\Box\Spout\Writer\ODS\Writer Returns a new writer.
          */
 		private function get_writer($file, $format='csv', $encoding=false, $delimiter=false){
@@ -266,6 +163,8 @@ class zajlib_export extends zajLibExtension {
                 rename($this->zajlib->basepath.$file->get_file_path(), $temporary_file_path);
                 $reader = ReaderFactory::create($type);
                 $reader->open($temporary_file_path);
+                if($format == 'csv' && $delimiter) $reader->setFieldDelimiter($delimiter);
+                if($format == 'csv' && $encoding) $reader->setEncoding($encoding);
                 $reader->setShouldFormatDates(true); // this is to be able to copy dates
             }
             else $reader = false;
@@ -274,6 +173,10 @@ class zajlib_export extends zajLibExtension {
             $writer = WriterFactory::create($type); // for XLSX files
             if($is_a_file) $writer->openToFile($this->zajlib->basepath.$file->get_file_path(false, true));
             else $writer->openToBrowser($file);
+
+            // Set encoding and delimiter
+            if($format == 'csv' && $delimiter) $writer->setFieldDelimiter($delimiter);
+            if($format == 'csv' && $encoding) $writer->setEncoding($encoding);
 
             // Copy old existing data
             if($is_a_file && $reader !== false){

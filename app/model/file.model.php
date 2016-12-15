@@ -50,6 +50,7 @@ class File extends zajModel {
 			$f->field = zajDb::text();
 			$f->name = zajDb::name();
 			$f->mime = zajDb::text();
+			$f->encoding = zajDb::text();
 			$f->size = zajDb::integer();
 			$f->description = zajDb::textbox();
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
