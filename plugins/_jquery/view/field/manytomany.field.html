@@ -28,7 +28,7 @@
 	{% endif %}
 </select>
 <script>
-	requirejs(["system/js/ext/select2/select2.min"], function(select2){
+	requirejs(["system/js/ofw-jquery", "system/js/ext/select2/select2.min"], function(select2){
 		// Show it
 		$('#{{field.uid}}').removeClass('hide');
 		$('#{{field.uid}}-loader').addClass('hide');
