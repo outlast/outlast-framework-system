@@ -235,13 +235,13 @@ define('system/js/ofw-jquery', [], function() {
 	 * Send an AJAX request via POST or GET.
 	 * @param {string} mode Can be post or get.
 	 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
-	 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+	 * @param {function|string|object} callback The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
 	 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 	 * @param {boolean} set_submitting If set to true, it will set ajaxIsSubmitting when the request returns with a response.
 	 * @param {jQuery} [$eventContext=null] The event context is the jQuery object on which ajax success events are fired. Events are always fired on document.
 	 * @return {string} Returns the request url as sent.
 	 */
-	var ajaxRequest = function(mode,request,result,pushstate,set_submitting, $eventContext){
+	var ajaxRequest = function(mode,request,callback,pushstate,set_submitting, $eventContext){
 		// is pushstate used now
 			var psused = myOptions.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object' || (typeof pushstate == 'boolean' && pushstate === true));
 			var psdata = false;
@@ -285,23 +285,9 @@ define('system/js/ofw-jquery', [], function() {
 						}
 					}
 
-					// Handle my results
-					if(typeof result == "function") result(data, jsondata);
-					else if(typeof result == "object"){
-						if(jsondata && jsondata.message) ofw.alert(jsondata.message);
-						$(result).html(data);
-						activateDataAttributeHandlers($(result));
-					}
-					else{
-						var validationResult = api.ajax.validate(data);
-						if(validationResult === true){
-							if(jsondata && jsondata.message){
-								ofw.alert(jsondata.message, function(){ api.redirect(result); });
-							}
-							else api.redirect(result);
-						}
-						else return validationResult;
-					}
+					// Handle my callback
+					var callbackResult = handleCallback(data, jsondata, callback);
+					if(callbackResult != null) return callbackResult;
 
 					// Push state actions
 					if(psused){
@@ -342,6 +328,33 @@ define('system/js/ofw-jquery', [], function() {
 				cache: false
 			});
 		return request;
+	};
+
+	/**
+	 * Handles callback properly. The callback can be function (first param will be result, second json-decoded result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+	 * @param {string} data The raw data returned by the ajax call.
+	 * @param {Object} jsondata Decoded json data from the response. Expects an object with at least a status property.
+	 * @param {function|string|object} callback The item which should process the results. Can be function (first param will be result, second json-decoded result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+	 * @returns {null|boolean} Returns null if nothing to return or boolean if there is a result.
+	 */
+	var handleCallback = function(data, jsondata, callback){
+		if(typeof callback == "function") callback(data, jsondata);
+		else if(typeof callback == "object"){
+			if(jsondata && jsondata.message) api.alert(jsondata.message);
+			$(callback).html(data);
+			activateDataAttributeHandlers($(callback));
+		}
+		else{
+			var validationResult = api.ajax.validate(data);
+			if(validationResult === true){
+				if(jsondata && jsondata.message){
+					api.alert(jsondata.message, function(){ api.redirect(callback); });
+				}
+				else api.redirect(callback);
+			}
+			else return validationResult;
+		}
+		return null;
 	};
 
 	/**
@@ -710,6 +723,17 @@ define('system/js/ofw-jquery', [], function() {
 				}
 				// all other cases return false
 				return false;
+			},
+
+			/**
+			 * Handles callback properly. The callback can be function (first param will be result, second json-decoded result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string} data The raw data returned by the ajax call.
+			 * @param {Object} jsondata Decoded json data from the response. Expects an object with at least a status property.
+			 * @param {function|string|object} callback The item which should process the results. Can be function (first param will be result, second json-decoded result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @returns {null|boolean} Returns null if nothing to return or boolean if there is a result.
+			 */
+			handleCallback: function(data, jsondata, callback){
+				return handleCallback(data, jsondata, callback);
 			}
 
 		},
