@@ -32,7 +32,7 @@ class zajData {
 		 * An array of my loaded data.
 		 * @var array
 		 **/
-		private $data = array();
+		private $data = [];
 		/**
 		 * The database connection session object.
 		 * @var zajlib_db_session
@@ -42,12 +42,12 @@ class zajData {
 		 * The array of data which has been loaded. Each element is either true or false.
 		 * @var array
 		 **/
-		private $loaded = array();
+		private $loaded = [];
 		/**
 		 * The array of data which has been modified. Each element is either true or false.
 		 * @var array
 		 **/
-		private $modified = array();
+		private $modified = [];
 		/**
 		 * This is set to true if the data has been loaded from the database.
 		 * @var boolean
@@ -84,8 +84,8 @@ class zajData {
 			// load from db
 				$this->data = $this->db->select("SELECT * FROM `{$this->zajobject->table_name}` WHERE `{$this->zajobject->id_column}`='".addslashes($this->zajobject->id)."' LIMIT 1", true);
 			// set exists to true (if any rows returned)
-				$this->exists = $this->db->get_num_rows();
-				if(!$this->exists) $this->data = array();
+				$this->exists = (boolean) $this->db->get_num_rows();
+				if(!$this->exists) $this->data = [];
 			// set to loaded from db
 				$this->fetched = true;
 			return $this->exists;
@@ -108,7 +108,7 @@ class zajData {
 			// if nothing modified, then return
 				if(count($this->modified) <= 0) return true;
 			// run through all modified variables
-				$objupdate = array();
+				$objupdate = [];
 				foreach($this->modified as $name=>$value){
 					// is preprocessing required for save?
 						if($this->zajobject->model->{$name}->use_save || $this->zajobject->model->{$name}->virtual){
@@ -143,11 +143,11 @@ class zajData {
 		 **/
 		public function reset(){
 			// reset modified array
-				$this->modified = array();
+				$this->modified = [];
 			// reset loaded array
-				$this->loaded = array();
+				$this->loaded = [];
 			// reset data
-				$this->data = array();
+				$this->data = [];
 			// reset fetched status
 				$this->fetched = false;
 			return true;
@@ -209,7 +209,9 @@ class zajData {
 			// check for error
 				if(!$this->zajobject->model->$name) return $this->zajobject->zajlib->warning("Cannot get value of '$name'. field '$name' does not exist in model '{$this->zajobject->class_name}'!");
 			// do i need to reload the data?
-				if(!$this->fetched) $exists = $this->reload();
+				if(!$this->fetched) $this->reload();
+            // if it still does not exist
+                //if(!$this->exists) @todo it should return default value
 							
 			// is preprocessing required for get?
 				if(empty($this->loaded[$name]) && ($this->zajobject->model->{$name}->use_get|| $this->zajobject->model->{$name}->virtual)){

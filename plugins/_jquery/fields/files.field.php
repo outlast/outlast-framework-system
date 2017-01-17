@@ -45,7 +45,7 @@ class zajfield_files extends zajField {
 	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
-		return File::fetch()->filter('parent',$object->id);
+		return File::fetch()->filter('parent',$object->id); // ->filter('field', $this->name);
 	}
 
 	/**
@@ -61,29 +61,44 @@ class zajfield_files extends zajField {
 				// check to see if already has parent (disable hijacking of photos)
 					if($data->data->parent && $data->data->parent != $object->id) $this->zajlib->error("Cannot edit File: The requested File object is not an object of this parent!");
 				// now set parent
+                    $data->set('class', $object->class_name);
 					$data->set('parent', $object->id);
+					$data->set('field', $this->name);
 					$data->set('status', 'saved');
 					$data->save();
 			}
 		// else if it is an array (form field input)
 			else{
 				$data = json_decode($data);
+				// If data is empty alltogether, it means that it wasnt JSON data, so it's a single photo id to be added!
+					if(empty($data) && !empty($sdata)){
+						$fobj = File::fetch($sdata);
+							// cannot reclaim here!
+							if($object->id != $fobj->parent && $fobj->status == 'saved') return $this->zajlib->warning("Cannot attach an existing and saved File object to another object!");
+                        $fobj->set('class', $object->class_name);
+						$fobj->set('parent',$object->id);
+						$fobj->set('field',$this->name);
+						$fobj->upload();
+						return array(false, false);
+					}
 				// get new ones
 					if(!empty($data->add)){
 						foreach($data->add as $count=>$id){
-							$pobj = File::fetch($id);
+							$fobj = File::fetch($id);
 							// cannot reclaim here!
-							if($pobj->status == 'saved' && $pobj->data->parent != $object->id) return $this->zajlib->error("Cannot attach an existing and saved File object to another object!");
-							$pobj->set('parent', $object->id);
-							$pobj->upload();
+							if($fobj->status == 'saved' && $fobj->data->parent != $object->id) return $this->zajlib->error("Cannot attach an existing and saved File object to another object!");
+        					$fobj->set('class', $object->class_name);
+							$fobj->set('parent', $object->id);
+        					$fobj->set('field', $this->name);
+							$fobj->upload();
 						}
 					}
 				// delete old ones
 					if(!empty($data->remove)){
 						foreach($data->remove as $count=>$id){
-							$pobj = File::fetch($id);
-							// TODO: check to see if photo not someone else's
-							$pobj->delete();
+							$fobj = File::fetch($id);
+							if($object->id != $fobj->parent) return $this->zajlib->warning("Cannot delete a File object that belongs to another object!");
+							$fobj->delete();
 						}
 					}
 				// reorder
