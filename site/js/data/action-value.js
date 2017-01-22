@@ -210,21 +210,23 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
      */
     var addToActionQueue = function(element, _this) {
 
-        actionQueue[element.name] = {
-            _this: _this,
-            element: element
-        };
+        if (undefined === actionQueue[element.name]) {
 
-        actionOrder.push(element.name);
+            actionQueue[element.name] = {
+                _this: _this,
+                element: element
+            };
 
-        // The "call after all events" hack
-        window.setTimeout(function() {
-            if (!actionCheckInProgress && actionOrder.length > 0) {
-                actionCheckInProgress = true;
+            actionOrder.push(element.name);
 
-                sortActions();
-            }
-        }, 0);
+            // The "call after all events" hack
+            window.setTimeout(function() {
+                if (!actionCheckInProgress && actionOrder.length > 0) {
+                    actionCheckInProgress = true;
+                    sortActions();
+                }
+            }, 0);
+        }
     };
 
     /**
@@ -298,6 +300,7 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
             value_data,
             current_values,
             current_idx,
+            action_needed,
             action_value;
 
         // get value from source's attribute if present
@@ -314,6 +317,8 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
             value = values[idx].trim();
 
             element.destElm.each(function () {
+
+                action_needed = true;
 
                 $this = (element.destination_selector === null) ? _this : $(this);
 
@@ -334,12 +339,16 @@ define('system/js/data/action-value', ["../ofw-jquery"], function() {
                     else if (element.type != 'add' && current_idx > -1) {
                         current_values.splice(current_idx, 1);
                         action_value = current_values.join(" ");
+                    } else {
+                        action_needed = false;
                     }
                 } else {
                     action_value = value;
                 }
 
-                $(this).attr(element.attribute, action_value);
+                if (action_needed) {
+                    $(this).attr(element.attribute, action_value);
+                }
             });
         }
     };
