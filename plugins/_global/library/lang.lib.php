@@ -80,53 +80,60 @@ class zajlib_lang extends zajlib_config {
      **/
     public function get_code(){
         // Return the current locale language
-            return substr($this->current_locale, 0, 2);
+        return substr($this->current_locale, 0, 2);
     }
 
     /**
      * Change locale language to a new one.
-     * @param bool|string $new_language If set, it will try to choose this locale. Otherwise the default locale will be chosen.
+     * @param bool|string $new_locale If set, it will try to choose this locale. Otherwise the default locale will be chosen.
      * @return string Returns the name of the locale that was set.
      */
-    public function set($new_language = false){
+    public function set($new_locale = false){
+
         // Check to see if the language to be set is not false and is in locales available. If problem, set to default locale.
-            if(!empty($new_language) && in_array($new_language, $this->available_locales)){
-                $this->current_locale = $new_language;
-            }
-            else{
-                // Warn if non-existent requested
-                if(!empty($new_language)) $this->zajlib->warning("Requested locale $new_language not found, using default locale (".$this->default_locale.") instead.");
-                $this->current_locale = $this->default_locale;
-            }
+        if(!empty($new_locale) && $this->is_valid_locale($new_locale)){
+            $this->current_locale = $new_locale;
+        }
+        else{
+            // Warn if non-existent requested
+            if(!empty($new_locale)) $this->zajlib->warning("Requested locale $new_locale not found, using default locale (".$this->default_locale.") instead.");
+            $this->current_locale = $this->default_locale;
+        }
+
         // Now if Wordpress is enabled, switch to locale
-            if($this->zajlib->plugin->is_enabled('wordpress') && !empty($GLOBALS['sitepress']) && !is_admin()){
-                $GLOBALS['sitepress']->switch_lang(substr($this->current_locale, 0, 2), true);
-            }
+        if($this->zajlib->plugin->is_enabled('wordpress') && !empty($GLOBALS['sitepress']) && !is_admin()){
+            $GLOBALS['sitepress']->switch_lang(substr($this->current_locale, 0, 2), true);
+        }
+
         // Set locale
-            setlocale(LC_TIME, $this->current_locale);
+        setlocale(LC_TIME, $this->current_locale);
+
         // Set as set
-            $this->was_set = true;
+        $this->was_set = true;
+
         // Return new locale
-            return $this->current_locale;
+        return $this->current_locale;
     }
 
     /**
      * Set the current language (locale) using a two-letter language code. In case two or more locales use the same two letter code, the first will be chosen. If possible, use {@link $this->set()} instead.
-     * @param string|bool $new_language If set, it will try to choose this language. Otherwise the default langauge will be chosen based on the default locale.
+     * @param string|bool $new_code If set, it will try to choose this language. Otherwise the default langauge will be chosen based on the default locale.
      * @return string The two-letter language code based on current locale.
      **/
-    public function set_by_code($new_language = false){
-        if(!empty($new_language)){
+    public function set_by_code($new_code = false){
+
+        if(!empty($new_code)){
             // Let's see if we have a compatible locale
-                $locale = $this->get_locale_by_code($new_language);
-                if($locale){
-                    $set_to_locale = $this->set($locale);
-                    return substr($set_to_locale, 0, 2);
-                }
+            $locale = $this->get_locale_by_code($new_code);
+            if($locale){
+                $set_to_locale = $this->set($locale);
+                return substr($set_to_locale, 0, 2);
+            }
         }
+
         // Not found, set to default locale and return it
-            if(!empty($new_language)) $this->zajlib->warning("Requested language code $new_language not found, using default locale (".$this->default_locale.") instead.");
-            return substr($this->set(), 0, 2);
+        if(!empty($new_code)) $this->zajlib->warning("Requested language code $new_code not found, using default locale (".$this->default_locale.") instead.");
+        return substr($this->set(), 0, 2);
     }
 
     /**
@@ -135,17 +142,19 @@ class zajlib_lang extends zajlib_config {
      * @return string|boolean Returns the locale or false if not found.
      */
     public function get_locale_by_code($two_letter_code){
+
         // Lowercase it!
-            $two_letter_code = strtolower($two_letter_code);
+        $two_letter_code = strtolower($two_letter_code);
+
         // Let's see if we have a compatible locale
-            foreach($this->available_locales as $l){
-                // If found, set the locale and return me
-                $lcompare = substr($l, 0, 2);
-                $rcompare = strtolower(substr($l, -2));
-                if($lcompare == $two_letter_code || $rcompare == $two_letter_code){
-                    return $l;
-                }
+        foreach($this->available_locales as $l){
+            // If found, set the locale and return me
+            $lcompare = substr($l, 0, 2);
+            $rcompare = strtolower(substr($l, -2));
+            if($lcompare == $two_letter_code || $rcompare == $two_letter_code){
+                return $l;
             }
+        }
         return false;
     }
 
@@ -155,32 +164,32 @@ class zajlib_lang extends zajlib_config {
     public function auto(){
         // Set by query string, subdomain, top level domain, or by cookie
             // If there is a query string, set it to that either by code or by
-                if(!empty($_GET['lang'])){
-                    // Is it a code or a locale?
-                    if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
-                    else $this->set($_GET['lang']);
-                }
+            if(!empty($_GET['lang'])){
+                // Is it a code or a locale?
+                if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
+                else $this->set($_GET['lang']);
+            }
             // If a cookie is set, use that
-                elseif(!empty($_COOKIE['lang']) && isset($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
+            elseif(!empty($_COOKIE['lang']) && isset($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
             // If an Apache variable is set, use that
-                elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
+            elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
             // If the subdomain is two letters, it will consider it a language code
-                elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
+            elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
             // If the tld is two letters, it will consider it a language code
-                elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
+            elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
             // Finally, just set to default
-                else $this->set();
+            else $this->set();
 
         // If the current locale is not the same as the cookie, then set a cookie
             // Get current
-                $current = $this->get();
+            $current = $this->get();
             // Set a cookie if not the same as current
-                if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) {
-                    if(headers_sent() === false)
-                        $this->zajlib->cookie->add('lang', $current);
-                    else
-                        $this->zajlib->warning('Headers already sent, cannot set cookie for locale '. $current);
-                }
+            if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) {
+                if(headers_sent() === false)
+                    $this->zajlib->cookie->add('lang', $current);
+                else
+                    $this->zajlib->warning('Headers already sent, cannot set cookie for locale '. $current);
+            }
         return $current;
     }
 
@@ -205,6 +214,15 @@ class zajlib_lang extends zajlib_config {
      */
     public function is_already_set(){
         return $this->was_set;
+    }
+
+    /**
+     * Check to see if locale is valid. Returns true if it is, false if not.
+     * @param string $locale The locale to check.
+     * @return boolean True if valid, false if not.
+     */
+    public function is_valid_locale($locale){
+        return in_array($locale, $this->available_locales);
     }
 
     /**
@@ -414,7 +432,7 @@ class zajlib_lang extends zajlib_config {
 		 * @param integer $len The original accented string.
 		 * @return string
 		 * @deprecated
-		 * @todo Deprecated! Remove this from 1.0. Use mb_substr.
+		 * @todo Deprecated! Remove this from next major version. Use mb_substr.
 		 **/
 		function utf8_substr($str,$from,$len){
 			return mb_substr($str, $from, $len);
@@ -423,7 +441,7 @@ class zajlib_lang extends zajlib_config {
 		/**
 		 * Convert from central european ISO to UTF
 		 * @deprecated
-		 * @todo Remove this from 1.0
+		 * @todo Remove this from next major version
 		 **/
 		function ISO2UTF($str){
 			return iconv("ISO-8859-2", "UTF-8", $str);
@@ -432,7 +450,7 @@ class zajlib_lang extends zajlib_config {
 		/**
 		 * Convert from UTF to central european ISO
 		 * @deprecated
-		 * @todo Remove this from 1.0
+		 * @todo Remove this from next major version
 		 **/
 		function UTF2ISO($str){
 			return iconv("UTF-8", "ISO-8859-2", $str);
@@ -440,7 +458,7 @@ class zajlib_lang extends zajlib_config {
 		/**
 		 * Replaces language-related sections in a string, but this is depricated so don't use!
 		 * @deprecated
-		 * @todo Remove this from version 1.0
+		 * @todo Remove this from version next major version
 		 **/
 		function replace($search, $replace, $subject){
 			return str_ireplace("%".$search."%", $replace, $subject);
