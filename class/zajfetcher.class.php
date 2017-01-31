@@ -1168,4 +1168,14 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			else return (boolean) $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
 	}
 
+    /**
+     * Returns true if the object is a fetcher.
+     * @param mixed $object
+     * @return boolean True if yes, false if no.
+     */
+	public static function is_instance_of_me($object){
+	    // for now this is simple! but use this nonetheless...
+        return is_a($object, 'zajFetcher');
+    }
+
 }
