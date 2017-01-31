@@ -311,8 +311,10 @@ class Photo extends zajModel {
 
 	/**
 	 * Get the file path of the original image.
+     * @param boolean $fatal_error_if_not_a_photo Return a fatal error if the photo does not exist or is not a photo.
+     * @return string $returns the fule path of the original image.
 	 */
-	public function get_master_file_path(){
+	public function get_master_file_path($fatal_error_if_not_a_photo = true){
 		// Use the temporary name if not yet saved
 			if($this->temporary) $path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
 			else{
@@ -322,8 +324,11 @@ class Photo extends zajModel {
 			}
 		// Perform verification
 			$this->zajlib->file->file_check($path);
-			$my_image_data = @getimagesize($path);
-			if($my_image_data === false) return $this->zajlib->error("Could not get photo file path. Path is not a photo: ".$path);
+			if($fatal_error_if_not_a_photo && file_exists($path) === false) return $this->zajlib->error("Could not get photo file path. Path does not exist: ".$path);
+			else{
+			    $my_image_data = @getimagesize($path);
+    			if($fatal_error_if_not_a_photo && $my_image_data === false) return $this->zajlib->error("Could not get photo file path. Path is not a photo: ".$path);
+            }
 		// All is ok, return
 			return $path;
 	}
@@ -402,32 +407,63 @@ class Photo extends zajModel {
 	/**
 	 * Overrides the global duplicate method. Unlike the standard duplicate method, this actually saves the object.
 	 * @param string|boolean $id Use this to override random id generation.
+     * @param zajModel|boolean $parent The optional parent object. You can always set this later. If you set this, you must also set the $field parameter.
+     * @param string|boolean $field The name of the field. Required if you set the parent object.
 	 * @return Photo Returns a new photo object with all files duplicated.
 	 */
-	public function duplicate($id = false, $parent = false){
+	public function duplicate($id = false, $parent = false, $field = false){
 		// First duplicate my object
-			/** @var Photo $new_object */
-			$new_object = parent::duplicate($id);
-			if($parent) $new_object->set('parent', $parent);
-			$new_object->temporary = true;
-			$new_object->set('status', 'uploaded')->save();
+        /** @var Photo $new_object */
+        $new_object = parent::duplicate($id);
+
+        // Set parent
+		if($parent){
+		    // @todo change these to fatal errors
+		    if(!zajModel::is_instance_of_me($parent)) $this->zajlib->warning("Parent is not a zajModel. You need a zajModel object as the parent for duplication! This will be a fatal error in future versions.");
+		    if(!$field) $this->zajlib->warning("Field is not set during duplication! This is a required parameter and will be a fatal error in future versions.");
+
+            // Set the parent
+            /** @var zajModel $parent */
+		    if(is_string($parent)){
+		        // @todo remove this backwards compatibility
+		        $new_object->set('parent', $parent);
+            }
+            else{
+		        $new_object->set('parent', $parent->id);
+    		    $new_object->set('class', $parent->class_name);
+            }
+
+		    $new_object->set('field', $field);
+        }
+
+        // Set status
+        $new_object->temporary = true;
+        $new_object->set('status', 'uploaded')->save();
+
 		// Create a copy of my original file
-			$original_file = $this->get_master_file_path();
-			$new_file = $this->zajlib->basepath."cache/upload/".$new_object->id.".tmp";
-			copy($original_file, $new_file);
+        $original_file = $this->get_master_file_path(false);
+        $new_file = $this->zajlib->basepath."cache/upload/".$new_object->id.".tmp";
+        $this->zajlib->file->create_path_for($new_file);
+        if(file_exists($original_file)) copy($original_file, $new_file);
+        else $this->zajlib->error("You tried to duplicate a photo file ($original_file) where the original file does not exist. Make sure your data folder is up to date!");
+
 		// Create my object
-			$new_object->upload();
+        $new_object->upload();
+
 		// Create a copy of the uncropped file (if needed)
-			$original_uncropped = $this->data->cropdata->path;
-			$new_uncropped = $new_object->get_file_path($new_object->id."-beforecrop-".date('Y-m-d-h-i-s').".".$this->extension, true);
-			if(!empty($original_uncropped) && file_exists($this->zajlib->basepath.$original_uncropped)){
-				// copy the original file over the current one
-				copy($this->zajlib->basepath.$original_uncropped, $this->zajlib->basepath.$new_uncropped);
-				// set the original path again and no need to keep a copy of the original (since the original is already copied)
-				$newcropdata = $this->data->cropdata;
-				$newcropdata->path = $new_uncropped;
-				$new_object->set('cropdata', $newcropdata)->save();
-			}
+        $original_uncropped = $this->data->cropdata->path;
+        $new_uncropped = $new_object->get_file_path($new_object->id."-beforecrop-".date('Y-m-d-h-i-s').".".$this->extension, true);
+        if(!empty($original_uncropped) && file_exists($this->zajlib->basepath.$original_uncropped)){
+
+            // copy the original file over the current one
+            copy($this->zajlib->basepath.$original_uncropped, $this->zajlib->basepath.$new_uncropped);
+
+            // set the original path again and no need to keep a copy of the original (since the original is already copied)
+            $newcropdata = $this->data->cropdata;
+            $newcropdata->path = $new_uncropped;
+            $new_object->set('cropdata', $newcropdata)->save();
+        }
+
 		return $new_object;
 	}
 
