@@ -673,7 +673,7 @@ abstract class zajModel implements JsonSerializable {
 	public static function is_instance_of_me($object){
 		// Get my class name
 		$class_name = get_called_class();
-		return is_a($object, $class_name);
+		return is_a($object, $class_name) || is_a($object, 'zajModelExtender');
 	}
 
 
