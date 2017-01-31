@@ -160,17 +160,23 @@ class zajlib_lang extends zajlib_config {
 
     /**
      * Try to set the locale automatically first by querystring, then by cookie, then by subdomain, then by top level domain, finally by default. Saves a cookie for next page load.
+     * @get lang Set by either code or locale.
+     * @get disable_lang_cookie If set to a true value, a cookie will not be saved for the current language.
      */
     public function auto(){
+        $cookie_value = $this->zajlib->cookie->get('ofw_locale');
         // Set by query string, subdomain, top level domain, or by cookie
             // If there is a query string, set it to that either by code or by
-            if(!empty($_GET['lang'])){
+            if(!empty($_GET['locale'])){
+                $this->set($_GET['locale']);
+            }
+            elseif(!empty($_GET['lang'])){
                 // Is it a code or a locale?
                 if(strlen($_GET['lang']) == 2) $this->set_by_code($_GET['lang']);
                 else $this->set($_GET['lang']);
             }
             // If a cookie is set, use that
-            elseif(!empty($_COOKIE['lang']) && isset($_COOKIE['lang'])) $this->set($_COOKIE['lang']);
+            elseif(!empty($cookie_value) && isset($cookie_value)) $this->set($cookie_value);
             // If an Apache variable is set, use that
             elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
             // If the subdomain is two letters, it will consider it a language code
@@ -184,11 +190,8 @@ class zajlib_lang extends zajlib_config {
             // Get current
             $current = $this->get();
             // Set a cookie if not the same as current
-            if(empty($_COOKIE['lang']) || $current != $_COOKIE['lang']) {
-                if(headers_sent() === false)
-                    $this->zajlib->cookie->add('lang', $current);
-                else
-                    $this->zajlib->warning('Headers already sent, cannot set cookie for locale '. $current);
+            if(empty($cookie_value) || $current != $cookie_value) {
+                if(empty($_GET['disable_locale_cookie']) && $this->zajlib->output_started === false) $this->zajlib->cookie->set('ofw_locale', $current);
             }
         return $current;
     }
