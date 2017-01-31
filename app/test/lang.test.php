@@ -44,8 +44,9 @@ class OfwLangTest extends zajTest {
 		// Get my current
 			$tld = $this->zajlib->tld;
 			$subdomain = $this->zajlib->subdomain;
-			unset($_GET['lang']);
-			unset($_COOKIE['lang']);
+			unset($_GET['locale']);
+			unset($_GET['disable_locale_cookie']);
+			unset($_COOKIE['ofw_locale']);
 		// No setting means that default is set
 			$this->zajlib->tld = 'com';
 			$this->zajlib->subdomain = 'www';
@@ -60,7 +61,7 @@ class OfwLangTest extends zajTest {
 			$setting = $this->zajlib->lang->auto();
 			zajTestAssert::areIdentical('en_US', $setting);
 		// Set my query string (should be strong than tld or subdomain)
-			$_GET['lang'] = 'fr';
+			$_GET['locale'] = 'fr_FR';
 			$setting = $this->zajlib->lang->auto();
 			zajTestAssert::areIdentical('fr_FR', $setting);
 		// Reset tld and subdomain and other cleanup
