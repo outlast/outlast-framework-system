@@ -121,26 +121,35 @@ class zajCompileBlock{
 
 	/**
 	 * Pause all block cache destinations.
+	 * @param boolean $recursive If set to true, pause will be peformed for parents.
 	 */
-	public function pause_destinations(){
+	public function pause_destinations($recursive = false){
 		zajCompileSession::verbose("Pausing block cache destinations for <code>{$this->name}</code>.</li></ul>");
 
+        // Pause each
 		foreach($this->destinations as $file_name=>$dest){
 			/** @var zajCompileDestination $dest */
 			$dest->pause();
 		}
+
+		// Recursive?
+        if($recursive && $this->parent) $this->parent->pause_destinations(true);
 	}
 
 	/**
 	 * Resume all block cache destinations.
+	 * @param boolean $recursive If set to true, resume will be peformed for parents.
 	 */
-	public function resume_destinations(){
+	public function resume_destinations($recursive = false){
 		zajCompileSession::verbose("Resuming block cache destinations for <code>{$this->name}</code>.</li></ul>");
 
 		foreach($this->destinations as $file_name=>$dest){
 			/** @var zajCompileDestination $dest */
 			$dest->resume();
 		}
+
+		// Recursive?
+        if($recursive && $this->parent) $this->parent->resume_destinations(true);
 	}
 
 	/**

@@ -288,7 +288,6 @@ class zajCompileSource {
 		// Set the current block to my parent
 		$this->current_block = $this->current_block->parent;
 		$this->block_level--;
-		
 
 		return $this->current_block;
 	}
