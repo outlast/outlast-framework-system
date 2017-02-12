@@ -82,6 +82,21 @@ class zajCompileBlock{
 		return true;
 	}
 
+    /**
+     * Get the file path of the block relative to the view folder.
+	 * @param zajCompileSource|boolean $source The source object to use to generate the file name. Defaults to my own source.
+	 * @return string The file name of the block cache.
+     */
+    public function get_cache_file_path($source = false){
+
+		// Defaults to current source
+		if($source === false) $source = $this->source;
+
+        // Generate file name for permanent block store
+		return '__block/'.$source->get_requested_path().'-'.$this->name.'.html';
+
+    }
+
 	/**
 	 * Add a destination for this block.
 	 * @param zajCompileSource|boolean $source The source object to use to generate the file name. Defaults to my own source.
@@ -93,7 +108,7 @@ class zajCompileBlock{
 		if($source === false) $source = $this->source;
 
 		// Generate file name for permanent block store
-		$file_name = '__block/'.$source->get_requested_path().'-'.$this->name.'.html';
+		$file_name = $this->get_cache_file_path($source);
 
 		// Add destination for my block cache file
 		zajCompileSession::verbose("<ul><li>Starting new block cache for <code>{$this->name}</code> as {$file_name}.");
@@ -163,9 +178,13 @@ class zajCompileBlock{
 	 * Insert the block file in currently active destinations.
 	 */
 	public function insert(){
-		// @TODO rewrite
-		zajCompileSession::verbose("Inserting the block <code>{$this->name}</code> from $this->file_name");
-		zajLib::me()->compile->insert_file($this->file_name.'.php');
+
+		// Generate file name for permanent block store
+		$file_name = $this->get_cache_file_path($this->source);
+
+		zajCompileSession::verbose("Inserting the block <code>{$this->name}</code> from ".$file_name);
+		zajLib::me()->compile->insert_file($file_name.'.php');
+
 	}
 
 	/**

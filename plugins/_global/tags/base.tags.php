@@ -908,15 +908,16 @@ EOF;
 		$main_source = $source->get_session()->get_main_source();
 
 		// Was this block already processed in a lower level source?
-		if($source->child_source && $source->child_source->has_block($block_name)){
+		if($source->child_source && $source->child_source->has_block($block_name, true)){
 			// Yes.
 
 			// Write lower level block cache to all main source block caches
-			
+			$child_block = $source->child_source->get_block($block_name, true);
+			$child_block->insert();
 
 			// Close all main source block caches
-
-
+			$source->get_session()->pause_destinations();
+			// @todo I think this is too strong here
 
 		}
 		else{

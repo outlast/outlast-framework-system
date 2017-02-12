@@ -384,7 +384,7 @@ class zajCompileSource {
 						foreach(zajLib::me()->loaded_plugins as $plugin_app){
 							$path = zajLib::me()->basepath.'plugins/'.$plugin_app.'/view/'.$source_file;
 							// Return path if not ignoring and exists
-								if(!$ignore_app_level && file_exists($path)) return array($path, $plugin_app);
+								if(!$ignore_app_level && file_exists($path)) return [$path, $plugin_app];
 							// Stop ignoring?
 								if($ignore_app_level !== false && $ignore_app_level == $plugin_app) $ignore_app_level = false;
 						}
