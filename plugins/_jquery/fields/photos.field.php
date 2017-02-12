@@ -63,6 +63,7 @@ class zajfield_photos extends zajField {
 				// check to see if already has parent (disable hijacking of photos)
 					if($data->data->parent && $object->id != $data->data->parent) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
 				// now set parent
+					$data->set('class', $object->class_name);
 					$data->set('parent', $object->id);
 					$data->set('field', $this->name);
 					$data->set('status', 'saved');
@@ -77,8 +78,9 @@ class zajfield_photos extends zajField {
 						$pobj = Photo::fetch($sdata);
 							// cannot reclaim here!
 							if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->warning("Cannot save a final of a photo that already exists! You are not the owner!");
-						$pobj->set('parent',$object->id);							
-						$pobj->set('field',$this->name);
+						$pobj->set('class', $object->class_name);
+						$pobj->set('parent', $object->id);
+						$pobj->set('field', $this->name);
 						$pobj->upload();
 						return array(false, false);
 					}
@@ -88,8 +90,9 @@ class zajfield_photos extends zajField {
 							$pobj = Photo::fetch($id);
 								// cannot reclaim here!
 								if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->warning("Cannot save a final of a photo that already exists! You are not the owner!");
-							$pobj->set('parent',$object->id);							
-							$pobj->set('field',$this->name);
+							$pobj->set('class', $object->class_name);
+							$pobj->set('parent', $object->id);
+							$pobj->set('field', $this->name);
 							$pobj->upload();
 						}
 					}
@@ -97,6 +100,7 @@ class zajfield_photos extends zajField {
 					if(!empty($data->remove)){
 						foreach($data->remove as $count=>$id){
 							$pobj = Photo::fetch($id);
+							if($object->id != $pobj->parent) return $this->zajlib->warning("Cannot delete a Photo object that belongs to another object!");
 							$pobj->delete();
 						}
 					}

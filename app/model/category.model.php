@@ -31,7 +31,7 @@ class Category extends zajModel {
 			$f->featured = zajDb::boolean();
 			$f->parentcategory = zajDb::category();
 			$f->subcategories = zajDb::onetomany('Category', 'parentcategory');
-			$f->friendlyurl = zajDb::text(255);
+			$f->friendlyurl = zajDb::friendly()->from('name');
 
 		// do not modify the line below!
 			$f = parent::__model(__CLASS__, $f); return $f;

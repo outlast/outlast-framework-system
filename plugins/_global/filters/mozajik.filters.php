@@ -102,7 +102,8 @@ EOF;
 	 *  <b>{{variable|truncate:'5'}}</b> Truncates the length of variable string to 5 characters. So 'Superdooper' will be 'Super...'
 	 **/
 	public function filter_truncate($parameter, &$source){
-			if(!$parameter) return $source->warning('truncate filter parameter required!');
+        // required
+        if(!$parameter) return $source->warning('truncate filter parameter required!');
 		// write to file
 			$this->zajlib->compile->write('if(strlen($filter_var) > '.$parameter.') $filter_var=mb_substr($filter_var, 0, '.$parameter.')."...";');
 		return true;
@@ -137,10 +138,10 @@ EOF;
 	 * Filter: sort - Same as {@link zajlib_filter_base->filter_dictsort()
 	 **/
 	public function filter_sort($parameter, &$source){
-		// param required!
-			if(!$parameter) return $source->warning('dictsort filter parameter required!');
+        // param required
+        if(!$parameter) return $source->warning('sort filter parameter required!');
 		// write to file
-			$this->zajlib->compile->write('if(is_object($filter_var) && is_a($filter_var, "zajFetcher")) $filter_var->sort('.$parameter.', "ASC");');
+        $this->zajlib->compile->write('if(is_object($filter_var) && is_a($filter_var, "zajFetcher")) $filter_var->sort('.$parameter.', "ASC");');
 		return true;
 	}
 
@@ -149,9 +150,9 @@ EOF;
 	 **/
 	public function filter_rsort($parameter, &$source){
 		// param required!
-			if(!$parameter) return $source->warning('dictsort filter parameter required!');
+        if(!$parameter) return $source->warning('dictsort filter parameter required!');
 		// write to file
-			$this->zajlib->compile->write('if(is_object($filter_var) && is_a($filter_var, "zajFetcher")) $filter_var->sort('.$parameter.', "DESC");');
+        $this->zajlib->compile->write('if(is_object($filter_var) && is_a($filter_var, "zajFetcher")) $filter_var->sort('.$parameter.', "DESC");');
 		return true;
 	}
 
@@ -227,19 +228,6 @@ EOF;
 			if(!$parameter) return $source->warning('remainder filter parameter required!');
 		// write to file
 			$this->zajlib->compile->write('$filter_var= $filter_var % '.$parameter.';');
-		return true;
-	}
-
-	/**
-	 * Filter: key - Return the key value of an associative array.
-	 *
-	 *  <b>{{assocarray|key:'red'}}</b> If ['green'=>'grass', 'red'=>'apple'], then this will return 'apple'.
-	 **/
-	public function filter_key($parameter, &$source){
-		// default for parameter
-			if(empty($parameter)) $parameter = '';
-		// write to file
-			$this->zajlib->compile->write('$filter_var=$filter_var['.$parameter.'];');
 		return true;
 	}
 
@@ -448,11 +436,48 @@ EOF;
 	public function filter_keyvalue($parameter, &$source){
 		// If parameter is not defined, then the parameter is the current locale
 		if(empty($parameter) && $parameter != 0) return $source->warning('You must specify a variable name to get the value of for filter "keyvalue".');
-		// Write to file. Note: we need to use ArrayObject because $obj->{0} notation not working always.
-		$this->zajlib->compile->write('if(empty($filter_var)) $filter_var=""; elseif(is_array($filter_var) || is_object($filter_var)){ if(is_object($filter_var)){ $filter_var = new ArrayObject($filter_var); } $filter_var = $filter_var['.$parameter.']; } else $this->zajlib->warning("You tried to use the keyvalue filter on something other than an object or an array. A common mistake is to use {{zaj.lang}} instead of {{zaj.config}} for variable variables. <a href=\'http://framework.outlast.hu/advanced/internationalization/using-language-files/#docs-using-variable-language-variables\'>See docs</a>.");');
+		// Write to file.
+		$contents = <<<EOF
+        if(empty(\$filter_var)) \$filter_var="";
+        // When used numerically on zajFetcher, it will return the nth item
+        elseif(is_object(\$filter_var) && is_a(\$filter_var, "zajFetcher") && is_numeric($parameter)){
+            \$new_fetcher = clone \$filter_var;
+            \$filter_var = \$new_fetcher->limit($parameter-1, 1)->next();
+        }
+        // Standard array or object
+        elseif(is_array(\$filter_var) || is_object(\$filter_var)){
+            // Note: we need to use ArrayObject because \$obj->{0} notation not working always.
+            if(is_object(\$filter_var)){ \$filter_var = new ArrayObject(\$filter_var); }
+            \$filter_var = \$filter_var[$parameter];
+        }
+        else \$this->zajlib->warning("You tried to use the keyvalue filter on something other than an object or an array. A common mistake is to use {{zaj.lang}} instead of {{zaj.config}} for variable variables. <a href='http://framework.outlast.hu/advanced/internationalization/using-language-files/#docs-using-variable-language-variables'>See docs</a>.");
+EOF;
+		$this->zajlib->compile->write($contents);
 		return true;
 	}
 
+    /**
+     * @deprecated
+     */
+	public function filter_key($parameter, &$source){
+	    // @todo add this warning: $source->warning('|key is deprecated and you should use |keyvalue instead.');
+        return $this->filter_keyvalue($parameter, $source);
+    }
+
+	/**
+	 * Filter: trim - Trims characters (space by default) from left and right side of string.
+	 *
+	 * <b>{{' this has whitespace '|trim}}</b> Will return 'this has whitespace'.
+	 * <b>{{'/url/with/trailing/slash/'|trim:'/'}}</b> Will return without trailing or preceding slash, 'url/with/trailing/slash'
+	 *
+	 **/
+	public function filter_trim($parameter, &$source){
+		// If parameter is not defined, then the parameter is the current locale
+		if(empty($parameter) && $parameter != 0) $parameter = "' '";
+		// Write to file.
+		$this->zajlib->compile->write('$filter_var=trim($filter_var, '.$parameter.');');
+		return true;
+	}
 
 	/**
 	 * Filter: in - You can check if an item is contained within another. This is especially useful for lists.

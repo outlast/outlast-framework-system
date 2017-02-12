@@ -22,7 +22,7 @@
  * @property boolean $temporary If set to true, the file is not yet saved to the database.
  *
  * Methods
- * @method static File|zajFetcher fetch()
+ * @method static File|zajFetcher fetch($id = '')
  **/
 class File extends zajModel {
 
@@ -50,6 +50,7 @@ class File extends zajModel {
 			$f->field = zajDb::text();
 			$f->name = zajDb::name();
 			$f->mime = zajDb::text();
+			$f->encoding = zajDb::text();
 			$f->size = zajDb::integer();
 			$f->description = zajDb::textbox();
 			$f->status = zajDb::select(array("new","uploaded","saved","deleted"),"new");
@@ -144,6 +145,14 @@ class File extends zajModel {
 		if($file_path !== false) return $this->zajlib->file->get_extension($file_path);
 		else return $this->extension;
 	}
+
+    /**
+     * Underlying permanent physical file exists or not.
+     * @return boolean True if yes, false if not.
+     */
+    public function file_exists(){
+        return file_exists($this->zajlib->basepath.$this->get_file_path());
+    }
 
 	/**
 	 * Forces a download dialog for the browser.

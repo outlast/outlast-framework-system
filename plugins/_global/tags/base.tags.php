@@ -111,25 +111,6 @@ EOF;
 			return true;
 	}
 
-
-	/**
-	 * Tag: filter - Applies a filter to all text within tag.
-	 *
-	 *  <b>{% filter lowercase|escapejs %}</b>
-	 *  1. <b>filters</b> - A list of filters to apply to the text.
-	 * @todo Implement this, but this may have to work differently!
-	 **/
-	public function tag_filter($param_array, &$source){
-
-		// TODO: do this with capture output
-		
-		
-		// write to file
-			//$this->zajlib->compile->write($contents);
-		// return true
-			return true;
-	}
-	
 	/**
 	 * Tag: firstof - Prints the first in a list which evaluates to true.
 	 *
@@ -211,44 +192,46 @@ EOF;
 			if(empty(\$forloop_depth)) \$forloop_depth = 1;
 			else \$forloop_depth++;
 		// does a parent forloop exist?
-			if(is_object(\$this->zajlib->variable->forloop)) \$parent_forloop = clone \$this->zajlib->variable->forloop;
+			if(is_object(\$current_forloop)) \$parent_forloop = clone \$current_forloop;
 			else \$parent_forloop = false;
 		// create for loop variables
-			\$this->zajlib->variable->forloop = new stdClass();
-			\$this->zajlib->variable->forloop->counter0 = -1;
+			\$current_forloop = new stdClass();
+			\$current_forloop->counter0 = -1;
 			// If not countable object, then typecast to array first (todo: can we do this in lib->array_to_object?)
-			if(is_object({$fetcher}) && !is_a({$fetcher}, 'Countable')) \$this->zajlib->variable->forloop->length = count((array) {$fetcher});
-			else \$this->zajlib->variable->forloop->length = count({$fetcher});
- 			\$this->zajlib->variable->forloop->counter = 0;
-			\$this->zajlib->variable->forloop->revcounter = \$this->zajlib->variable->forloop->length+1;
-			\$this->zajlib->variable->forloop->revcounter0 = \$this->zajlib->variable->forloop->length;
-			\$this->zajlib->variable->forloop->value = false;
+			if(is_object({$fetcher}) && !is_a({$fetcher}, 'Countable')) \$current_forloop->length = count((array) {$fetcher});
+			else \$current_forloop->length = count({$fetcher});
+
+ 			\$current_forloop->counter = 0;
+			\$current_forloop->revcounter = \$current_forloop->length+1;
+			\$current_forloop->revcounter0 = \$current_forloop->length;
+			\$current_forloop->value = false;
 			if(is_object(\$parent_forloop)){
-				\$this->zajlib->variable->forloop->parentloop = \$parent_forloop;
-				\$this->zajlib->variable->forloop->totalcounter = \$parent_forloop->totalcounter;
-				\$this->zajlib->variable->forloop->totalcounter0 = \$parent_forloop->totalcounter0;
-				\$this->zajlib->variable->forloop->depth = \$this->zajlib->variable->forloop->parentloop->depth + 1;
+				\$current_forloop->parentloop = \$parent_forloop;
+				\$current_forloop->totalcounter = \$parent_forloop->totalcounter;
+				\$current_forloop->totalcounter0 = \$parent_forloop->totalcounter0;
+				\$current_forloop->depth = \$current_forloop->parentloop->depth + 1;
 			}
 			else{
-				\$this->zajlib->variable->forloop->totalcounter = 0;
-				\$this->zajlib->variable->forloop->totalcounter0 = -1;
-				\$this->zajlib->variable->forloop->depth = 1;
+				\$current_forloop->totalcounter = 0;
+				\$current_forloop->totalcounter0 = -1;
+				\$current_forloop->depth = 1;
 			}
 
 			foreach({$fetcher} as \$key=>{$item}){
-				\$this->zajlib->variable->forloop->counter++;
-				\$this->zajlib->variable->forloop->counter0++;
-				\$this->zajlib->variable->forloop->revcounter--;
-				\$this->zajlib->variable->forloop->revcounter0--;
-				\$this->zajlib->variable->forloop->totalcounter++;
-				\$this->zajlib->variable->forloop->totalcounter0++;
-				\$this->zajlib->variable->forloop->odd = (\$this->zajlib->variable->forloop->counter % 2);
-				\$this->zajlib->variable->forloop->even = !(\$this->zajlib->variable->forloop->odd);
-				\$this->zajlib->variable->forloop->first = !\$this->zajlib->variable->forloop->counter0;
-				\$this->zajlib->variable->forloop->last = !\$this->zajlib->variable->forloop->revcounter0;
-				\$this->zajlib->variable->forloop->key = \$key;
-				\$this->zajlib->variable->forloop->previous = \$this->zajlib->variable->forloop->value;
-				\$this->zajlib->variable->forloop->value = {$item};
+				\$current_forloop->counter++;
+				\$current_forloop->counter0++;
+				\$current_forloop->revcounter--;
+				\$current_forloop->revcounter0--;
+				\$current_forloop->totalcounter++;
+				\$current_forloop->totalcounter0++;
+				\$current_forloop->odd = (\$current_forloop->counter % 2);
+				\$current_forloop->even = !(\$current_forloop->odd);
+				\$current_forloop->first = !\$current_forloop->counter0;
+				\$current_forloop->last = !\$current_forloop->revcounter0;
+				\$current_forloop->key = \$key;
+				\$current_forloop->previous = \$current_forloop->value;
+				\$current_forloop->value = {$item};
+				\$this->zajlib->variable->forloop = \$current_forloop;
 ?>
 EOF;
 		// write to file
@@ -290,7 +273,7 @@ EOF;
 // end while
 	}
 //only print rest if 0
-	if(\$this->zajlib->variable->forloop->length == 0){
+	if(\$current_forloop->length == 0){
 ?>
 EOF;
 		// write to file
@@ -326,16 +309,17 @@ EOF;
 		unset(\$foreach_item);
 	}
 	// if I had a parent, set me
-	if(is_object(\$this->zajlib->variable->forloop->parentloop)){
+	if(is_object(\$current_forloop->parentloop)){
 		// Set my total counters
-		\$parent_forloop->totalcounter = \$this->zajlib->variable->forloop->totalcounter;
-		\$parent_forloop->totalcounter0 = \$this->zajlib->variable->forloop->totalcounter0;
+		\$parent_forloop->totalcounter = \$current_forloop->totalcounter;
+		\$parent_forloop->totalcounter0 = \$current_forloop->totalcounter0;
 		// Unset me and reset me
-		\$this->zajlib->variable->forloop = \$this->zajlib->variable->forloop->parentloop;
+		\$this->zajlib->variable->forloop = \$current_forloop = \$current_forloop->parentloop;
 	}
 	else{
 		// unset stuff
 			\$parent_forloop = null;
+			\$current_forloop = null;
 			\$this->zajlib->variable->forloop = null;
 	}
 ?>
@@ -889,7 +873,7 @@ EOF;
 			$contents .= <<<EOF
 <?php
 // restore it
-	$localvar = $restorevar;
+	@$localvar = $restorevar;
 ?>
 EOF;
 		}
@@ -1251,7 +1235,7 @@ EOF;
 		// Check if extends is the same as insert
 			// @todo This will not solve the issue if it is not a direct parent.
 			if($this->tag_get_extend() == trim($param_array[0]->variable, "'\"")){
-				$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
+				//$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
 			}
 		// if it is a single variable, then we need to do it with template->show
 			else{
@@ -1290,7 +1274,7 @@ EOF;
 			$tvar = trim($var, "'\"");
 		// Check if extends is the same as insert
 			if($this->tag_get_extend() == trim($param_array[0]->variable, "'\"")){
-				$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
+				//$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
 			}
 		// if it is a single variable, then we need to do it with template->show
 				if(count($param_array) <= 1) $contents = <<<EOF

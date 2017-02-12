@@ -1,15 +1,41 @@
 {% lang 'system/fields' 'photos' %}
 <!-- Multiple photos -->
 <!-- jquery ui -->
-<script language="JavaScript" src="{{baseurl}}system/js/jquery/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.min.js" type="text/javascript"></script>
+<script>
+	if (jQuery.ui == undefined) {
+		var jQui = document.createElement('script');
+		$(jQui).attr({
+			src: '{{baseurl}}system/js/jquery/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.min.js',
+			type: 'text/javascript',
+			language: 'JavaScript'
+		});
+		$('head').append(jQui);
+	}
+</script>
+
 <!--[if lt IE 8]><script src="{{baseurl}}system/js/json2.js"></script><![endif]-->
 
 <!-- Current photos -->
 <script>
-	zaj.addMyPhotoPopover = function(el, url){
-		el.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='zaj.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-remove'></span></a>" });
+	var photoHandler = {};
+
+	photoHandler.addMyPhotoPopover = function(el, url){
+		var popover_markup = "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='photoHandler.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-remove'></span></a>";
+
+		el.popover({
+			toggle: 'popover',
+			html: true,
+			container: 'body',
+			placement: 'top',
+			content: popover_markup
+		});
+
+		// Hide all other popovers
+		el.on('show.bs.popover', function() {
+			$('.popover').popover('hide');
+		});
 	};
-	zaj.closeMyPhotoPopover = function(ev){
+	photoHandler.closeMyPhotoPopover = function(ev){
 		$('#'+$(ev.target).attr('data-photo')).popover('hide');
 	};
 	zaj.ready(function(){
@@ -34,10 +60,10 @@
 </script>
 <div class="col-sm-12" id="{{field.uid}}-filelist">
 	{% foreach field.value as field_thumb %}
-		<div class="col-sm-2" id="{{field_thumb.id}}" style="position: relative; cursor: pointer;">
+		<div class="col-sm-2" id="{{field_thumb.id}}" style="position: relative; cursor: pointer; margin-bottom: 10px;">
 			<img class="pull-left img-thumbnail img-responsive" src='{{field_thumb.normal}}'>
 		</div>
-		<script>zaj.ready(function(){ zaj.addMyPhotoPopover($('#{{field_thumb.id}}'), '{{field_thumb.large}}'); })</script>
+		<script>zaj.ready(function(){ photoHandler.addMyPhotoPopover($('#{{field_thumb.id}}'), '{{field_thumb.large}}'); })</script>
 	{% endforeach %}
 </div>
 <div class="clearfix"><br/></div>
@@ -121,7 +147,7 @@
 					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
 					var el = $("<div class='col-sm-2' id='"+res.id+"' style='position: relative; cursor: pointer;'><img class='pull-left img-thumbnail img-responsive' src='"+imgurl+"'></div>");
 					$('#{{field.uid}}-filelist').append(el);
-					zaj.addMyPhotoPopover(el, imgurl);
+					photoHandler.addMyPhotoPopover(el, imgurl);
 				// Set as my input value
 					file_upload_changes_{{field.uid}}.add.push(res.id);
 					$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));

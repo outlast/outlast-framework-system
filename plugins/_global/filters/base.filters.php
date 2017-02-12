@@ -152,6 +152,8 @@ class zajlib_filter_base extends zajElementCollection{
 	 *  mail: convert the string to a user[at]domain[dot]com for some minimal spam protection
 	 *  htmlquotes: convert ' and " to their HTML equivalents
 	 *  htmlspecialchars, html (default): convert &, ', ", <, and > to their HTML equivalents
+     *  shellarg: same as running escapeshellarg() in php on the variable.
+     *  shellcmd: same as running escapeshellcmd() in php on the variable.
 	 **/
 	public function filter_escape($parameter, &$source){
 		if(empty($parameter)) $parameter = "'html'";

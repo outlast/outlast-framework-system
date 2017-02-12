@@ -9,6 +9,12 @@
 class zajlib_template extends zajLibExtension {
 
 	/**
+	 * If set to true, it means that all templates will be force-recompiled (as if in debug mode).
+     * @todo Remove this!
+	 */
+	public $force_recompile = false;
+
+	/**
 	 * Compile the file specified by file_path.
 	 * @param string $source_path This is the source file's path relative to any of the active view folders.
 	 * @param bool|string $destination_path This is the destination file's path relative to the final compiled view folder. If not specified, the destination will be the same as the source (relative), which is the preferred way of doing things. You should only specify this if you are customizing the template compilation process.
@@ -31,13 +37,12 @@ class zajlib_template extends zajLibExtension {
 			if(!$destination_path) $include_file = $this->zajlib->basepath."/cache/view/".$source_path.".php";
 			else $include_file = $this->zajlib->basepath."/cache/view/".$destination_path.".php";
 		// if force_recompile or debug_mode or not yet compiled then recompile
-			if($this->zajlib->debug_mode || $force_recompile || !file_exists($include_file)) $this->compile($source_path, $destination_path);
+			if($this->zajlib->debug_mode || $this->force_recompile || $force_recompile || !file_exists($include_file)) $this->compile($source_path, $destination_path);
 		// set up my global {{zaj}} variable object
 			$this->zajlib->variable->zaj = new zajlib_template_zajvariables($this->zajlib);
 			$this->zajlib->variable->ofw = $this->zajlib->variable->zaj;
 		// set up a few other globals
 			$this->zajlib->variable->baseurl = $this->zajlib->baseurl;
-			$this->zajlib->variable->self = $this->zajlib->variable->app.'/'.$this->zajlib->variable->mode;
 			$this->zajlib->variable->fullurl = $this->zajlib->fullurl;
 			$this->zajlib->variable->fullrequest = $this->zajlib->fullrequest;
 		
@@ -45,6 +50,7 @@ class zajlib_template extends zajLibExtension {
 		 * ALL VARIABLES BELOW ARE NOT TO BE USED! THEY WILL BE REMOVED IN A FUTURE RELEASE!
 		 *******/
 		
+			$this->zajlib->variable->self = $this->zajlib->fullrequest; // @deprecated!
 		// access to request variables and version info
 			$this->zajlib->variable->debug_mode = $this->zajlib->variable->zaj->bc_get('debug_mode');
 			$this->zajlib->variable->app = $this->zajlib->variable->zaj->bc_get('app');
@@ -271,7 +277,6 @@ class zajlib_template_zajvariables {
 	private $zajlib;	// The local copy of zajlib variable
 	
 	var $baseurl; 		// The base url of this project.
-	var $self; 			// My own app/mode request.
 	var $fullurl; 		// The base url + the request.
 	var $fullrequest; 	// The base url + the request + query string.	
 	
@@ -283,7 +288,6 @@ class zajlib_template_zajvariables {
 			$this->zajlib = $zajlib;
 		// Important variables
 			$this->baseurl = $this->zajlib->baseurl;
-			$this->self = $this->zajlib->variable->app.'/'.$this->zajlib->variable->mode;
 			$this->fullurl = $this->zajlib->fullurl;
 			$this->fullrequest = $this->zajlib->fullrequest;
 		// Constants
@@ -310,10 +314,13 @@ class zajlib_template_zajvariables {
 				case 'debug':
 				case 'debug_mode':
 					return $this->zajlib->debug_mode;
-			// My current app
+			// My current app, mode, requestpath
 				case 'app': return $this->zajlib->app;
-			// My current mode/action
 				case 'mode': return $this->zajlib->mode;
+                case 'requestpath': return $this->zajlib->requestpath;
+                case 'self':
+                    $this->zajlib->deprecated("ofw.self is deprecated, use ofw.requestpath instead.");
+                    return $this->zajlib->requestpath;
 			// The GET request
 				case 'get': return $this->zajlib->array->to_object($_GET);
 			// The POST request
@@ -376,60 +383,72 @@ class zajlib_template_zajvariables {
 					// Locale
 						$locale = $this->zajlib->lang->get();
 					// Disable
-					$baseurl = htmlspecialchars($this->zajlib->baseurl);
-					$fullrequest = htmlspecialchars($this->zajlib->fullrequest);
-					$fullurl = htmlspecialchars($this->zajlib->fullurl);
-					$app = htmlspecialchars($this->zajlib->app);
-					$mode = htmlspecialchars($this->zajlib->mode);
+					$baseurl = htmlspecialchars($this->zajlib->baseurl, ENT_QUOTES);
+					$fullrequest = htmlspecialchars($this->zajlib->fullrequest, ENT_QUOTES);
+					$fullurl = htmlspecialchars($this->zajlib->fullurl, ENT_QUOTES);
+					$app = htmlspecialchars($this->zajlib->app, ENT_QUOTES);
+					$mode = htmlspecialchars($this->zajlib->mode, ENT_QUOTES);
 					return <<<EOF
 <script type='text/javascript'>
-	require.config({
-    	baseUrl: "{$baseurl}",
-		urlArgs: "cachebuster=" + (new Date()).getTime()    	
-    });
-	if(typeof ofw == 'undefined' || ofw == null){
-		// Backwards compatibility for unready set langs
-		var ofwSetLang = [];
-		// Define ready and jquery is ready
-		var ofw = {
-			ready: function(func){
-				ofw.readyFunctions.push(func);
-			},
-			setLang: function(keyOrArray, value, section){ ofwSetLang.push([keyOrArray, value, section]); },
-			log: function(m){ console.log(m) },
-			readyFunctions: [],
-			jqueryIsReady: false	
-		};
-		$(document).ready(function(){ ofw.jqueryIsReady = true; });
-		var zaj = ofw;
-		
-		// Now require and create
-        requirejs(["system/js/ofw-jquery"], function(ofwsys){
-        	ofwsys.init({
-				baseurl: '{$protocol}:{$baseurl}',
-				fullrequest: '{$protocol}:{$fullrequest}',
-				fullurl: '{$protocol}:{$fullurl}',
-				app: '{$app}',
-				mode: '{$mode}',
-				debug_mode: $debug_mode,
-				protocol: '{$protocol}',
-				trackeventsLocal: $trackevents_local,
-				trackeventsAnalytics: $trackevents_analytics,
-				locale: '$locale',
-				readyFunctions: ofw.readyFunctions,
-				jqueryIsReady: ofw.jqueryIsReady	
-			});
-			// Now call each ofw set lang
-			for(var i = 0; i < ofwSetLang.length; i++) ofwsys.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);
+    var ofwsettings = {
+        baseurl: '{$protocol}:{$baseurl}',
+        fullrequest: '{$protocol}:{$fullrequest}',
+        fullurl: '{$protocol}:{$fullurl}',
+        app: '{$app}',
+        mode: '{$mode}',
+        debug_mode: $debug_mode,
+        protocol: '{$protocol}',
+        trackeventsLocal: $trackevents_local,
+        trackeventsAnalytics: $trackevents_analytics,
+        locale: '$locale'
+    };
 
-			// Finally, set variables
-			ofw = zaj = ofwsys;
+    if(typeof require != 'undefined'){
+        /** require init **/
+        require.config({
+            baseUrl: "{$baseurl}",
+            urlArgs: "cachebuster=" + (new Date()).getTime()    	
         });
-        
-        // Define jquery so that require knows about it
-		define('jquery', [], function() {
-			return jQuery;
-		});        
+        if(typeof ofw == 'undefined' || ofw == null){
+            // Backwards compatibility for unready set langs
+            var ofwSetLang = [];
+            // Define ready and jquery is ready
+            var ofw = {
+                ready: function(func){
+                    ofw.readyFunctions.push(func);
+                },
+                setLang: function(keyOrArray, value, section){ ofwSetLang.push([keyOrArray, value, section]); },
+                log: function(m){ console.log(m) },
+                readyFunctions: [],
+                jqueryIsReady: false	
+            };
+            $(document).ready(function(){ ofw.jqueryIsReady = true; });
+            var zaj = ofw;
+            
+            // Now require and create
+            requirejs(["system/js/ofw-jquery"], function(ofwsys){
+                // Set my ready functions and init
+                ofwsettings.readyFunctions = ofw.readyFunctions;
+                ofwsettings.jqueryIsReady = ofw.jqueryIsReady;
+                ofwsys.init(ofwsettings);
+                // Now call each ofw set lang
+                for(var i = 0; i < ofwSetLang.length; i++) ofwsys.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);    
+                // Finally, set variables
+                ofw = zaj = ofwsys;
+            });
+            
+            // Define jquery so that require knows about it
+            define('jquery', [], function() {
+                return jQuery;
+            });
+        }
+    }
+    else{
+        /** legacy init **/
+        if(typeof zaj != 'undefined'){
+            $.extend(zaj, ofwsettings);
+            var ofw = zaj;
+        }
     }
 </script>
 EOF;

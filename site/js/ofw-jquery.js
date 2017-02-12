@@ -16,11 +16,11 @@ define('system/js/ofw-jquery', [], function() {
 		jslibver: 1.10,
 		trackeventsAnalytics: true,
 		trackeventsLocal: false,
-		fields: {},
+        trackExternalLinks: true,
 		lang: {},
 		config: {},
         readyFunctions: [],
-        dataAttributes: ['single-click', 'autopagination', 'action-value'],
+        dataAttributes: ['single-click', 'autopagination', 'autosave', 'action-value', 'track', 'featured'],
         jqueryIsReady: false
     };
     var myOptions = {};
@@ -39,9 +39,11 @@ define('system/js/ofw-jquery', [], function() {
     	'trackeventsAnalytics',
     	'trackeventsLocal',
     	'fields',
-    	'lang',
+		'locale',
+		'lang',
     	'config'
     ];
+
 	var ajaxIsSubmitting = false;			// True if ajax is currently submitting
 	var dataAttributes = [];				// The registered data attributes to look for
 	var dataAttributesObjects = {};			// A key/value pair where key is attr name and value is the loaded data attribute object
@@ -104,19 +106,19 @@ define('system/js/ofw-jquery', [], function() {
 	 */
 	var initJqueryFunctions = function(){
 		$.fn.$zaj = $.fn.zaj = $.fn.$ofw = function(){
-	  		var target = this;
+	  		var $target = $(this);
 			// Create my object and return
 			return {
 				// Get or post serialized data
-				get: function(url, response){ return api.ajax.get(api.querymode(url)+target.serialize(), response); },
-				post: function(url, response){ return api.ajax.post(api.querymode(url)+target.serialize(), response); },
-				submit: function(url, response){ return api.ajax.submit(api.querymode(url)+target.serialize(), response); },
-				inviewport: function(partially){ return api.inviewport(target, partially); },
-				alert: function(msg){ return api.alert(msg, target); },
+				get: function(url, response, pushstate){ return api.ajax.get(api.querymode(url)+$target.serialize(), response, pushstate); },
+				post: function(url, response, pushstate){ return api.ajax.post(api.querymode(url)+$target.serialize(), response, pushstate, $target); },
+				submit: function(url, response, pushstate){ return api.ajax.submit(api.querymode(url)+$target.serialize(), response, pushstate, $target); },
+				inviewport: function(partially){ return api.inviewport($target, partially); },
+				alert: function(msg){ return api.alert(msg, $target); },
 				sortable: function(receiver, callback, handle){
 					// Load up dependency
 					requirejs(["system/js/ui/sortable"], function(sortable) {
-						sortable.init(target, receiver, callback, handle);
+						sortable.init($target, receiver, callback, handle);
 					});
 				},
 				search: function(url, receiver, options){
@@ -131,7 +133,7 @@ define('system/js/ofw-jquery', [], function() {
 
 					// Load up dependency
 					requirejs(["system/js/ui/search"], function(search) {
-						search.init(target, options);
+						search.init($target, options);
 					});
 				}
 			};
@@ -233,12 +235,13 @@ define('system/js/ofw-jquery', [], function() {
 	 * Send an AJAX request via POST or GET.
 	 * @param {string} mode Can be post or get.
 	 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
-	 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+	 * @param {function|string|object} callback The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
 	 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 	 * @param {boolean} set_submitting If set to true, it will set ajaxIsSubmitting when the request returns with a response.
+	 * @param {jQuery} [$eventContext=null] The event context is the jQuery object on which ajax success events are fired. Events are always fired on document.
 	 * @return {string} Returns the request url as sent.
 	 */
-	var ajaxRequest = function(mode,request,result,pushstate,set_submitting){
+	var ajaxRequest = function(mode,request,callback,pushstate,set_submitting, $eventContext){
 		// is pushstate used now
 			var psused = myOptions.pushstate && (typeof pushstate == 'string' || typeof pushstate == 'object' || (typeof pushstate == 'boolean' && pushstate === true));
 			var psdata = false;
@@ -261,51 +264,62 @@ define('system/js/ofw-jquery', [], function() {
 			$.ajax(request, {
 				success: function(data, textStatus, jqXHR){
 					// Set my submitting to false
+					if(set_submitting){
+						ajaxIsSubmitting = false;
+						var el = $('[data-submit-toggle-class]');
+						if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
+					}
+
+					// Try to decode as json data
+					var jsondata = null;
+					try{ jsondata = $.parseJSON(data); }catch(error){ }
+
+					// Trigger events
+					if($eventContext){
+						$eventContext.trigger('ofw-ajax-response', [data, jsondata]);
+						if(jsondata && (jsondata.status == 'ok' || jsondata.status == 'success')){
+							$eventContext.trigger('ofw-ajax-success', [data, jsondata]);
+						}
+						if(jsondata && jsondata.status == 'error'){
+							$eventContext.trigger('ofw-ajax-error', [data, jsondata]);
+						}
+					}
+
+					// Handle my callback
+					var callbackResult = handleCallback(data, jsondata, callback);
+					if(callbackResult != null) return callbackResult;
+
+					// Push state actions
+					if(psused){
+						// if psdata not specified
+							if(psdata == false) psdata = {url: window.location.href};
+						// string mode - convert to object
+							if(typeof pushstate == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
+						// boolean mode - use current request
+							else if(typeof pushstate == 'boolean') pushstate = {'data': psdata, 'title':"", 'url': request};
+						// now set everything and fire event
+							pushstate = $.extend({}, {'title': false}, pushstate);	// default title is false
+							if(pushstate.url) window.history.pushState(psdata, pushstate.title, pushstate.url);
+							if(pushstate.title) document.title = pushstate.title;
+					}
+
+				},
+				complete: function(jqXHR, textStatus){
+					// Set error msgs
+					if(textStatus != "success"){
+
+						// Set my submitting to false
 						if(set_submitting){
 							ajaxIsSubmitting = false;
 							var el = $('[data-submit-toggle-class]');
 							if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
 						}
-					// Try to decode as json data
-						var jsondata = null;
-						try{ jsondata = $.parseJSON(data); }catch(error){ }
-					// Handle my results
-						if(typeof result == "function") result(data, jsondata);
-						else if(typeof result == "object"){
-							$(result).html(data);
-							activateDataAttributeHandlers($(result));
-						}
-						else{
-							var validationResult = api.ajax.validate(data);
-							if(validationResult === true) api.redirect(result);
-							else return validationResult;
-						}
-					// pushState actions
-						if(psused){
-							// if psdata not specified
-								if(psdata == false) psdata = {url: window.location.href};
-							// string mode - convert to object
-								if(typeof pushstate == 'string') pushstate = {'data': psdata, 'title':"", 'url': pushstate};
-							// boolean mode - use current request
-								else if(typeof pushstate == 'boolean') pushstate = {'data': psdata, 'title':"", 'url': request};
-							// now set everything and fire event
-								pushstate = $.extend({}, {'title': false}, pushstate);	// default title is false
-								if(pushstate.url) window.history.pushState(psdata, pushstate.title, pushstate.url);
-								if(pushstate.title) document.title = pushstate.title;
-						}
-				},
-				complete: function(jqXHR, textStatus){
-					// Set error msgs
-						if(textStatus != "success"){
-							// Set my submitting to false
-								if(set_submitting){
-									ajaxIsSubmitting = false;
-									var el = $('[data-submit-toggle-class]');
-									if(el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
-								}
-							// If we are in debug mode popup
-								if(textStatus == 'error' && myOptions.debug_mode) api.alert("Ajax request failed with error:<hr/>"+jqXHR.responseText);
-						}
+
+						// If we are in debug mode popup
+						if(textStatus == 'error' && myOptions.debug_mode) api.alert("Ajax request failed with error:<hr/>"+jqXHR.responseText);
+
+					}
+
 				},
 				data: datarequest,
 				dataType: 'html',
@@ -317,6 +331,33 @@ define('system/js/ofw-jquery', [], function() {
 	};
 
 	/**
+	 * Handles callback properly. The callback can be function (first param will be result, second json-decoded result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+	 * @param {string} data The raw data returned by the ajax call.
+	 * @param {Object} jsondata Decoded json data from the response. Expects an object with at least a status property.
+	 * @param {function|string|object} callback The item which should process the results. Can be function (first param will be result, second json-decoded result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+	 * @returns {null|boolean} Returns null if nothing to return or boolean if there is a result.
+	 */
+	var handleCallback = function(data, jsondata, callback){
+		if(typeof callback == "function") callback(data, jsondata);
+		else if(typeof callback == "object"){
+			if(jsondata && jsondata.message) api.alert(jsondata.message);
+			$(callback).html(data);
+			activateDataAttributeHandlers($(callback));
+		}
+		else{
+			var validationResult = api.ajax.validate(data);
+			if(validationResult === true){
+				if(jsondata && jsondata.message){
+					api.alert(jsondata.message, function(){ api.redirect(callback); });
+				}
+				else api.redirect(callback);
+			}
+			else return validationResult;
+		}
+		return null;
+	};
+
+	/**
 	 * Run through the context (defaults to body) and activate all registered data attribute handlers.
 	 * @param {jQuery} [$context=$(document)] The jQuery object in which the handlers are searched for.
 	 **/
@@ -325,6 +366,11 @@ define('system/js/ofw-jquery', [], function() {
 		for(var i = 0; i < dataAttributes.length; i++){
 			activateSingleDataAttributeHandler(dataAttributes[i], $context);
 		}
+
+        // activate event tracking for external links
+        if(myOptions.trackExternalLinks){
+            activateExternalLinkTracking();
+        }
 	};
 
 	/**
@@ -349,6 +395,27 @@ define('system/js/ofw-jquery', [], function() {
 			});
 		}
 	};
+
+    var activateExternalLinkTracking = function($context){
+        // Default value of context
+        if(typeof $context == 'undefined') $context = $('body');
+        $context.find('a').each(function(){
+            var $el = $(this);
+
+            if(typeof($el.attr('href')) == 'undefined'){
+                return;
+            }
+
+            var protocol_regexp = new RegExp("^(http(s)?:)?(\/\/)(www\.)?");
+            var baseurl = ofw.baseurl.replace(/^(http(s)?:)?/g, '');
+
+            if($el.attr('href').indexOf(baseurl) == -1 && protocol_regexp.test($el.attr('href'))){
+                $el.click(function(){
+                    ofw.track('External link', 'click', $el.attr('href'));
+                });
+            }
+        })
+    };
 
 
     /** Public API **/
@@ -428,7 +495,7 @@ define('system/js/ofw-jquery', [], function() {
 		alert: function(message, urlORfunctionORdom, buttonText, top){
 			if(api.bootstrap){
 				// Alert sent via bootstrap
-					api.track('Alert', 'Bootstrap', message.substr(0, 50));
+					api.track('OFW', 'Bootstrap Alert', message.substr(0, 50));
 				// Cache my jquery selectors
 					var $modal;
 				// If a modal markup was set with urlORfunctionORdom, then use that. If none, use #zaj_bootstrap_modal.
@@ -473,7 +540,7 @@ define('system/js/ofw-jquery', [], function() {
 			}
 			else{
 				// Alert sent via bootstrap
-					api.track('Alert', 'Standard', message.substr(0, 50));
+					api.track('OFW', 'Standard Alert', message.substr(0, 50));
 				// Send alert
 					alert(message);
 					if(typeof urlORfunctionORdom == 'function') urlORfunctionORdom();
@@ -551,9 +618,10 @@ define('system/js/ofw-jquery', [], function() {
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
 			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
+			 * @param {jQuery} [eventContext=null] The event context is the jQuery object on which ajax success events are fired.
 			 */
-			post: function(request, result, pushstate){
-				ajaxRequest('post', request, result, pushstate);
+			post: function(request, result, pushstate, eventContext){
+				ajaxRequest('post', request, result, pushstate, false, eventContext);
 			},
 
 			/**
@@ -562,8 +630,9 @@ define('system/js/ofw-jquery', [], function() {
 			 * @param {string} request The relative or absolute url. Anything that starts with http or https is considered an absolute url. Others will be prepended with the project baseurl.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
 			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
+			 * @param {jQuery} [eventContext=null] The event context is the jQuery object on which ajax success events are fired.
 			 */
-			submit: function(request, result, pushstate){
+			submit: function(request, result, pushstate, eventContext){
 				// if submitting already, just block!
 					if(ajaxIsSubmitting) return false;
 				// toggle submitting status
@@ -572,7 +641,7 @@ define('system/js/ofw-jquery', [], function() {
 					if(el.length > 0){
 						el.toggleClass(el.attr('data-submit-toggle-class'));
 					}
-				return ajaxRequest('post', request, result, pushstate, true);
+				return ajaxRequest('post', request, result, pushstate, true, eventContext);
 			},
 
 			/**
@@ -654,6 +723,17 @@ define('system/js/ofw-jquery', [], function() {
 				}
 				// all other cases return false
 				return false;
+			},
+
+			/**
+			 * Handles callback properly. The callback can be function (first param will be result, second json-decoded result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @param {string} data The raw data returned by the ajax call.
+			 * @param {Object} jsondata Decoded json data from the response. Expects an object with at least a status property.
+			 * @param {function|string|object} callback The item which should process the results. Can be function (first param will be result, second json-decoded result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
+			 * @returns {null|boolean} Returns null if nothing to return or boolean if there is a result.
+			 */
+			handleCallback: function(data, jsondata, callback){
+				return handleCallback(data, jsondata, callback);
 			}
 
 		},
@@ -962,6 +1042,14 @@ define('system/js/ofw-jquery', [], function() {
 					$(this).removeClass($(this).data('inprogress-class'))
 				});
 			}
+		},
+
+		/**
+		 * Run through the context (defaults to body) and activate all registered data attribute handlers.
+		 * @param {jQuery} [$context=$(document)] The jQuery object in which the handlers are searched for.
+		 **/
+		activateDataAttributeHandlers: function($context){
+			activateDataAttributeHandlers($context);
 		},
 
 		/**

@@ -8,7 +8,7 @@ class zajfield_integer extends zajField {
 	// name, options - these are passed to constructor and available here!
 	const in_database = true;		// boolean - true if this field is stored in database		
 	const use_validation = false;	// boolean - true if data should be validated before saving
-	const use_get = false;			// boolean - true if preprocessing required before getting data
+	const use_get = true;			// boolean - true if preprocessing required before getting data
 	const use_save = false;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = true;		// boolean - true if data should be duplicated when duplicate() is called
 	const use_filter = false;		// boolean - true if fetch is modified
@@ -74,7 +74,7 @@ class zajfield_integer extends zajField {
 	 * @return mixed Return the data that should be in the variable.
 	 **/
 	public function get($data, &$object){
-		return $data;
+		return (int) $data;
 	}
 	
 	/**

@@ -13,7 +13,7 @@ class zajfield_id extends zajField {
 	const use_get = false;			// boolean - true if preprocessing required before getting data
 	const use_save = true;			// boolean - true if preprocessing required before saving data
 	const use_duplicate = false;	// boolean - true if data should be duplicated when duplicate() is called
-	const use_filter = false;		// boolean - true if fetch is modified
+	const use_filter = true;		// boolean - true if fetch is modified
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = true;		// boolean - true if this field is used during search()
 	const edit_template = 'field/id.field.html'; // string - the edit template, false if not used
@@ -54,8 +54,33 @@ class zajfield_id extends zajField {
 		return $fields;
 	}
 	
+	/**
+	 * This is called when a filter() or exclude() methods are run on this field. It is actually executed only when the query is being built.
+	 * @param zajFetcher $fetcher A pointer to the "parent" fetcher which is being filtered.
+	 * @param array $filter An array of values specifying what type of filter this is.
+	 * @return bool|string
+	 */
+	public function filter(&$fetcher, $filter){
+		// break up filter
+		list($field, $value, $operator, $type) = $filter;
+
+		// if it is a model
+		if(zajModel::is_instance_of_me($value)) $value = $value->id;
+		elseif(zajFetcher::is_instance_of_me($value)){
+		    if($operator == "NOT LIKE" || $operator == "!=") $operator = "NOT IN";
+		    else $operator = "IN";
+            return "model.`$field` $operator (".$value->get_query().")";
+        }
+
+        // Return a standard query
+        return "model.`$field` $operator '".zajLib::me()->db->escape($value)."'";
+    }
+
+    /**
+     * Disable save as a fatal error for id fields.
+     */
 	public function save($data, &$object){
-		$this->zajlib->error("You tried modifying the id of an object. This is not allowed.");
+		return zajLib::me()->error("You tried modifying the id of an object. This is not allowed.");
 	}
 
 }
