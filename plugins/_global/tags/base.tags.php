@@ -924,8 +924,7 @@ EOF;
 			foreach($main_source->get_blocks() as $block){
 			    /** @var zajCompileBlock $block */
 			    //print "<h1>I am $block->name, my child is ".$block->child->name." and my parent is ".$block->parent->name."</h1>";
-
-			    $block->pause_destinations(true);
+			    //$block->pause_destinations(true);
 			}
 
 			// Close all parent block destinations
@@ -982,11 +981,9 @@ EOF;
         // If the parent is still overriddren, then do not resume
         if($my_block->parent && !$my_block->parent->is_overridden(true)) $my_block->resume_destinations(true);
 
-		$block_name = $my_block->name;
-
 		// Unpause main destination if we are at top level @todo use $new_current_block instead?
-		if(!$source->is_extension && $source->block_level == 0){
-			zajCompileSession::verbose("We are back at top level from $block_name in <code>$source->file_path</code>, so unpausing main destination.");
+		if(!$source->is_extension && (!$new_current_block || !$new_current_block->is_overridden())){
+			zajCompileSession::verbose("We are back at $new_current_block->name in <code>$source->file_path</code>, so unpausing main destination.");
 			$this->zajlib->compile->main_dest_paused(false);
 		}
 

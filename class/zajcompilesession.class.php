@@ -15,7 +15,8 @@
 /**
  * Verbose mode - use only for debugging!
  */
-define('OFW_COMPILE_VERBOSE', false);
+if($_GET['OFW_COMPILE_VERBOSE']) define('OFW_COMPILE_VERBOSE', true);
+else define('OFW_COMPILE_VERBOSE', false);
 
 
 

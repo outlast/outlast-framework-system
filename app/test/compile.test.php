@@ -9,7 +9,7 @@ class OfwCompileTest extends zajTest {
 	 **/
 	public function system_compile_base(){
 	    $contents = $this->zajlib->template->show('system/test/test_base.html', false, true);
-	    zajTestAssert::areIdentical("This is my base. With a test block. Some more base-level text. Block only in base.", $this->whitespace_to_space($contents));
+	    zajTestAssert::areIdentical("This is my base. With a test block. Some more base-level text. Block only in base. Finally some ending.", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_base.html', 'base_test', false, false, true);
 	    zajTestAssert::areIdentical("With a test block.", $contents);
@@ -20,7 +20,7 @@ class OfwCompileTest extends zajTest {
 	 **/
 	public function system_compile_extended(){
 	    $contents = $this->zajlib->template->show('system/test/test_extended.html', false, true);
-	    zajTestAssert::areIdentical("This is my base. Which was overwritten. Some more base-level text. Block only in base.", $this->whitespace_to_space($contents));
+	    zajTestAssert::areIdentical("This is my base. Which was overwritten. Some more base-level text. Block only in base. Finally some ending.", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_base.html', 'base_test', false, false, true);
 	    zajTestAssert::areIdentical("With a test block.", $contents);
@@ -37,7 +37,7 @@ class OfwCompileTest extends zajTest {
 	 */
 	public function system_compile_more_extended(){
 	    $contents = $this->zajlib->template->show('system/test/test_more_extended.html', false, true);
-		zajTestAssert::areIdentical("This is my base. Overwritten once more. Block only in base. Some more base-level text. Not only in base.", $this->whitespace_to_space($contents));
+		zajTestAssert::areIdentical("This is my base. Overwritten once more. Block only in base. Some more base-level text. Not only in base. Finally some ending.", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_more_extended.html', 'only_in_base', false, false, true);
 	    zajTestAssert::areIdentical("Not only in base.", $contents);
@@ -54,7 +54,7 @@ class OfwCompileTest extends zajTest {
 	 */
 	public function system_compile_parent_block(){
 	    $contents = $this->zajlib->template->show('system/test/test_parent_block.html', false, true);
-		zajTestAssert::areIdentical("This is my base. And again: Which was overwritten. Some more base-level text. Block only in base. Or is it?", $this->whitespace_to_space($contents));
+		zajTestAssert::areIdentical("This is my base. And again: Which was overwritten. Some more base-level text. Block only in base. Or is it? Finally some ending.", $this->whitespace_to_space($contents));
 
 	    $contents = $this->zajlib->template->block('system/test/test_parent_block.html', 'only_in_base', false, false, true);
 	    zajTestAssert::areIdentical("Block only in base. Or is it?", $this->whitespace_to_space($contents));
