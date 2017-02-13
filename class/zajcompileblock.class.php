@@ -8,7 +8,7 @@
  *
  * @property string $name
  * @property zajCompileBlock $parent
- * @property zajCompileBlock $child
+ * @property array $children
  * @property integer $level
  * @property zajCompileSource $source
  * @property boolean $overridden
@@ -26,14 +26,14 @@ class zajCompileBlock{
 	private $source;
 
 	/**
-	 * @var zajCompileBlock The parent is the block that is higher up in template inheritance (and is thus overwritten by me).
+	 * @var zajCompileBlock The parent is the block that contains me.
 	 */
 	private $parent;
 
 	/**
-	 * @var zajCompileBlock The child is the block that is lower in the template inheritance (and therefore overwrites me).
+	 * @var array Array of zajCompileBlock items with all my child blocks.
 	 */
-	private $child;
+	private $children;
 
 	/**
 	 * @var integer The block level where 0 means top-level block.
@@ -68,7 +68,7 @@ class zajCompileBlock{
 		$this->source = $source;
 		if($parent){
 			$this->parent = $parent;
-			$parent->set_child($this);
+			$parent->add_child($this);
 			if($level == 0) $source->error("Tried to open block $name with a parent ({$this->parent->name}) at top level. This is a system error and should never happen.");
 		}
 
@@ -200,8 +200,8 @@ class zajCompileBlock{
 	 * Set the child.
 	 * @param zajCompileBlock $child
 	 */
-	public function set_child($child){
-		$this->child = $child;
+	public function add_child($child){
+		$this->children[] = $child;
 	}
 
 	/**

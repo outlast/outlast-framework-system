@@ -900,6 +900,7 @@ EOF;
 
 		// Prepare unparsed parameter string
 		$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
+		zajCompileSession::verbose("{% block $block_name %} in <code>$source->file_path</code>.");
 
 		// Add the block to the source
 		$my_block = $source->add_block($block_name);
@@ -965,16 +966,22 @@ EOF;
 		/** @var zajCompileSource $source */
 		// remove level
 		list($my_block, $parent_block) = $source->remove_level('block');
-
+		zajCompileSession::verbose("{% endblock $my_block->name %} in <code>$source->file_path</code>.");
 
 		// end the block
 		$new_current_block = $source->end_block();
 
 		/** @var zajCompileBlock $my_block */
-        // Recursively resume detinations
-		$my_block->resume_destinations(true);
 		// Remove my direct destinations (non-recursively)
 		$my_block->remove_destinations();
+        
+        //print $my_block->name." is closing, parent is ";
+        //print $my_block->parent->name." ".$my_block->is_overridden(true);
+        //print "<br/>";
+
+        // If the parent is still overriddren, then do not resume
+        if($my_block->parent && !$my_block->parent->is_overridden(true)) $my_block->resume_destinations(true);
+
 		$block_name = $my_block->name;
 
 		// Unpause main destination if we are at top level @todo use $new_current_block instead?
