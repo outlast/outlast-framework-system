@@ -974,17 +974,21 @@ EOF;
 		// Remove my direct destinations (non-recursively)
 		$my_block->remove_destinations();
 
-        //print $my_block->name." is closing, parent is ";
-        //print $my_block->parent->name." ".$my_block->is_overridden(true);
-        //print "<br/>";
-
         // If the parent is still overriddren, then do not resume
         if($my_block->parent && !$my_block->parent->is_overridden(true)) $my_block->resume_destinations(true);
 
-		// Unpause main destination if we are at top level @todo use $new_current_block instead?
-		if(!$source->is_extension && (!$new_current_block || !$new_current_block->is_overridden())){
-			zajCompileSession::verbose("We are back at $new_current_block->name in <code>$source->file_path</code>, so unpausing main destination.");
-			$this->zajlib->compile->main_dest_paused(false);
+        // If this source is the root file (not extended)
+		if(!$source->is_extension){
+            if(
+                // If we are at 0 block level
+                $source->block_level == 0 ||
+                // If the currently ended block is not overridden (and nor are any of its parents)
+                ($new_current_block && !$new_current_block->is_overridden(true))
+            ){
+                zajCompileSession::verbose("We are back at $new_current_block->name in <code>$source->file_path</code>, so unpausing main destination.");
+                $this->zajlib->compile->main_dest_paused(false);
+            }
+
 		}
 
 		// reset current block to parent block @todo use $new_current_block instead

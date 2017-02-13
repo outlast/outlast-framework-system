@@ -49,6 +49,15 @@ class OfwCompileTest extends zajTest {
 	    zajTestAssert::areIdentical("Overwritten once more. Block only in base. ", $contents);
 	}
 
+    /**
+     * Test root extension (when an intermediate block is skipped)
+     */
+    public function system_compile_root_extended(){
+	    $contents = $this->zajlib->template->show('system/test/test_root_extended.html', false, true);
+		zajTestAssert::areIdentical("This is my base. Root only. Finally some ended.", $this->whitespace_to_space($contents));
+
+    }
+
 	/**
 	 * Test parent block feature
 	 */
