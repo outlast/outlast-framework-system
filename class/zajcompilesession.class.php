@@ -15,10 +15,7 @@
 /**
  * Verbose mode - use only for debugging!
  */
-if($_GET['OFW_COMPILE_VERBOSE']) define('OFW_COMPILE_VERBOSE', true);
-else define('OFW_COMPILE_VERBOSE', false);
-
-
+define('OFW_COMPILE_VERBOSE', false);
 
 /**
  * Regular expression to find a django-style tag.
