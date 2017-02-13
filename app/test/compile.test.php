@@ -78,13 +78,21 @@ class OfwCompileTest extends zajTest {
 
 		// Now let's test the extension file
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_extended.html', false, true);
-		zajTestAssert::areIdentical("Embeded tags. Top level. Second is overwritten with content. End of embeded tags.", $this->whitespace_to_space($contents));
+		zajTestAssert::areIdentical("Embeded tags. Top level. Second is really overwritten with content. End of embeded tags.", $this->whitespace_to_space($contents));
 
 		// Now let's test the extension sub and sub sub file
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_sub.html', false, true);
-		zajTestAssert::areIdentical("Embeded tags. Top level. Second is overflowing with content. End of embeded tags.", $this->whitespace_to_space($contents));
+		zajTestAssert::areIdentical("Embeded tags. Top level. Second is really overflowing with content. End of embeded tags.", $this->whitespace_to_space($contents));
 	    $contents = $this->zajlib->template->show('system/test/test_embeded_blocks_sub_sub.html', false, true);
 		zajTestAssert::areIdentical("Embeded tags. Top level. Second is overpowered with content. End of embeded tags.", $this->whitespace_to_space($contents));
+
+        // Let's make sure all the blocks are correct
+	    $contents = $this->zajlib->template->block('system/test/test_embeded_blocks_sub_sub.html', 'second_level_sub_sub', false, false, true);
+		zajTestAssert::areIdentical("overpowered with content.", $this->whitespace_to_space($contents));
+	    $contents = $this->zajlib->template->block('system/test/test_embeded_blocks_sub_sub.html', 'second_level_sub', false, false, true);
+		zajTestAssert::areIdentical("overwritten", $this->whitespace_to_space($contents));
+	    $contents = $this->zajlib->template->block('system/test/test_embeded_blocks_sub_sub.html', 'second_level', false, false, true);
+		zajTestAssert::areIdentical("Second is overpowered with content.", $this->whitespace_to_space($contents));
 	}
 
 	/**

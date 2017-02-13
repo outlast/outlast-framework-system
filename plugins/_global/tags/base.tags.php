@@ -974,7 +974,7 @@ EOF;
 		/** @var zajCompileBlock $my_block */
 		// Remove my direct destinations (non-recursively)
 		$my_block->remove_destinations();
-        
+
         //print $my_block->name." is closing, parent is ";
         //print $my_block->parent->name." ".$my_block->is_overridden(true);
         //print "<br/>";
