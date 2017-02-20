@@ -132,7 +132,6 @@ class zajlib_lang extends zajlib_config {
         }
 
         // Not found, set to default locale and return it
-        if(!empty($new_code)) $this->zajlib->warning("Requested language code $new_code not found, using default locale (".$this->default_locale.") instead.");
         return substr($this->set(), 0, 2);
     }
 
