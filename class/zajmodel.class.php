@@ -37,6 +37,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @method void __onFetch() EVENT. Executed when a fetch method is requested.
  * @method void __onCreate() EVENT. Executed when a create method is requested.
  * @method static zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when the client side search API is requested. The API is disabled by default.
+ * @method array __toSearchApiJson() __toSearchApiJson() EVENT. Executed when an item is being returned as part of the search API. You can override this to send more or different info about the object to the json response.
  * @method static boolean __onSearchFetcher() __onSearchFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when search() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default search is applied.
  * @method static boolean __onFilterQueryFetcher() __onFilterQueryFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when filter_query() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default filter query is applied.
  *
@@ -703,6 +704,8 @@ abstract class zajModel implements JsonSerializable {
 			case '__afterCache':
 			case '__afterUncache':
 				return true;
+            case '__toSearchApiJson':
+                return ['id'=>$this->id, 'name'=>$this->name];
 			default:		break;
 		}
 		// Search for the method in any of my parents
