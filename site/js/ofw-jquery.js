@@ -14,8 +14,8 @@ define('system/js/ofw-jquery', [], function() {
 		protocol: 'http',
 		jslib: 'jquery',
 		jslibver: 1.10,
-		trackeventsAnalytics: true,
-		trackeventsLocal: false,
+		trackEventsAnalytics: true,
+		trackEventsLocal: false,
         trackExternalLinks: true,
 		lang: {},
 		config: {},
@@ -36,8 +36,8 @@ define('system/js/ofw-jquery', [], function() {
     	'protocol',
     	'jslib',
     	'jslibver',
-    	'trackeventsAnalytics',
-    	'trackeventsLocal',
+    	'trackEventsAnalytics',
+    	'trackEventsLocal',
     	'fields',
 		'locale',
 		'lang',
@@ -47,6 +47,10 @@ define('system/js/ofw-jquery', [], function() {
 	var ajaxIsSubmitting = false;			// True if ajax is currently submitting
 	var dataAttributes = [];				// The registered data attributes to look for
 	var dataAttributesObjects = {};			// A key/value pair where key is attr name and value is the loaded data attribute object
+
+	var queueReadyFunctions = false;		// True if the ready and require functions are being queued
+	var originalRequireFunction;			// The original requirejs() function
+	var requireFunctions = [];				// A queue of the requirejs functions that should be run when ready
 
     /** Private API **/
 
@@ -65,8 +69,8 @@ define('system/js/ofw-jquery', [], function() {
 		publishPublicProperties();
 
 		// Backwards compatiblity
-		if(typeof options.trackevents_local != 'undefined') myOptions.trackeventsLocal = options.trackevents_local;
-		if(typeof options.trackevents_analytics != 'undefined') myOptions.trackeventsAnalytics = options.trackevents_analytics;
+		if(typeof options.trackevents_local != 'undefined') myOptions.trackEventsLocal = options.trackevents_local;
+		if(typeof options.trackevents_analytics != 'undefined') myOptions.trackEventsAnalytics = options.trackevents_analytics;
 
 		// Set calculated properties (and again when jquery is ready)
 		setCalculatedProperties();
@@ -83,10 +87,30 @@ define('system/js/ofw-jquery', [], function() {
     };
 
 	/**
+	 * Turn on queue ready functions. Will queue ofw.ready and requirejs.
+	 */
+	var startToQueueReadyFunctions = function(){
+		// If already queueing, return
+		if(queueReadyFunctions) return;
+
+		// Set queue ready
+		queueReadyFunctions = true;
+		// Set requirejs queuing
+		originalRequireFunction = requirejs;
+		requirejs = function(req, func){
+			requireFunctions.push({requirements: req, func: func});
+		};
+	};
+
+	/**
 	 * Call ready functions in case jquery is alredy ready. If
 	 */
 	var runReadyFunctions = function(){
 		var i;
+
+		// Set to false
+		queueReadyFunctions = false;
+
 		// If jquery is already ready, then fire away!
 		if(myOptions.jqueryIsReady){
 			for(i = 0; i < myOptions.readyFunctions.length; i++){
@@ -99,6 +123,17 @@ define('system/js/ofw-jquery', [], function() {
 				$(document).ready(myOptions.readyFunctions[i]);
 			}
 		}
+
+		// Run requirejs functions and restore requirejs
+		if(originalRequireFunction) requirejs = originalRequireFunction;
+		for(i = 0; i < requireFunctions.length; i++){
+			requirejs(requireFunctions[i].requirements, requireFunctions[i].func);
+		}
+
+		// Reset all my variables
+		originalRequireFunction = null;
+		requireFunctions = [];
+		myOptions.readyFunctions = [];
 	};
 
 	/**
@@ -449,8 +484,11 @@ define('system/js/ofw-jquery', [], function() {
 		 * @param {function} func The callback function.
 		 **/
         ready: function(func){
-			if(myOptions.jqueryIsReady) func();
-			else $(document).ready(func);
+        	// Add to queue
+			myOptions.readyFunctions.push(func);
+
+        	// Run now?
+        	if(!queueReadyFunctions) runReadyFunctions();
         },
 
 		/**
@@ -490,61 +528,79 @@ define('system/js/ofw-jquery', [], function() {
 		 * @param {string|function|jQuery} [urlORfunctionORdom=null] A callback url or function on button push. If you set this to a jQuery dom object then it will be used as the modal markup. If you set it to a function, the dialog will not close if explicit false is returned.
 		 * @param {string|boolean} [buttonText="Ok"] The text of the button. Set to false to hide the button.
 		 * @param {boolean} [top=false] Set to true if you want the url to load in window.top.location. Defaults to false.
+		 * @param {function} [callback=null] A callback function to be displayed after the bs modal is shown.
 		 * @return {jQuery} Will return the modal object.
 		 */
-		alert: function(message, urlORfunctionORdom, buttonText, top){
+		alert: function(message, urlORfunctionORdom, buttonText, top, callback){
 			if(api.bootstrap){
+
 				// Alert sent via bootstrap
-					api.track('OFW', 'Bootstrap Alert', message.substr(0, 50));
+				api.track('OFW', 'Bootstrap Alert', message.substr(0, 50));
+
 				// Cache my jquery selectors
-					var $modal;
+				var $modal;
+
 				// If a modal markup was set with urlORfunctionORdom, then use that. If none, use #zaj_bootstrap_modal.
-					if(typeof urlORfunctionORdom == 'object') $modal = urlORfunctionORdom;
-					else $modal = $('#zaj_bootstrap_modal');
+				if(typeof urlORfunctionORdom == 'object') $modal = urlORfunctionORdom;
+				else $modal = $('#zaj_bootstrap_modal');
+
 				// Create modal if not yet available
-					if($modal.length <= 0){
-						// Check to see which Bootstrap version and create markup
-							if(api.bootstrap3){
-								$modal = $('<div id="zaj_bootstrap_modal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
-							}
-							else $modal = $('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
-						// Append it!
-							$('body').append($modal);
-						// Prevent 'stuck scroll' bug
-							$(window).on('shown.bs.modal', function() {
-								$('#zaj_bootstrap_modal').css('overflow','hidden').css('overflow','auto');
-							});
-					}
+				if($modal.length <= 0){
+					// Check to see which Bootstrap version and create markup
+						if(api.bootstrap3){
+							$modal = $('<div id="zaj_bootstrap_modal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
+						}
+						else $modal = $('<div id="zaj_bootstrap_modal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
+					// Append it!
+						$('body').append($modal);
+
+					// Prevent 'stuck scroll' bug
+					$(window).on('shown.bs.modal', function() {
+						$('#zaj_bootstrap_modal').css('overflow','hidden').css('overflow','auto');
+					});
+				}
+
+				// Add modal callback
+				if(callback){
+					var modalCallbackFunction = function() {
+						callback($modal);
+						$(window).off('shown.bs.modal', modalCallbackFunction);
+					};
+					$(window).on('shown.bs.modal', modalCallbackFunction);
+				}
+
 				// Hide footer if button is set to false
-					if(buttonText === false) $modal.find('.modal-footer').addClass('hide');
-					else $modal.find('.modal-footer').removeClass('hide');
+				if(buttonText === false) $modal.find('.modal-footer').addClass('hide');
+				else $modal.find('.modal-footer').removeClass('hide');
+
 				// Reset and init button
-					// Set action
-					var $modal_button = $modal.find('a.modal-button');
-					$modal_button.unbind('click');
-					if(typeof urlORfunctionORdom == 'function'){
-						$modal_button.attr('data-dismiss', '');
-						$modal_button.click(function(){ var r = urlORfunctionORdom($modal); if(r !== false){ $modal.modal('hide'); $('.modal-backdrop').remove(); } });
-					}
-					else if(typeof urlORfunctionORdom == 'string') $modal_button.click(function(){ api.redirect(urlORfunctionORdom, top); });
-					else $modal_button.click(function(){ $modal.modal('hide'); $('.modal-backdrop').remove(); });
-					// Set text (if needed)
-					if(typeof buttonText == 'string') $modal_button.html(buttonText);
+				// Set action
+				var $modal_button = $modal.find('a.modal-button');
+				$modal_button.unbind('click');
+				if(typeof urlORfunctionORdom == 'function'){
+					$modal_button.attr('data-dismiss', '');
+					$modal_button.click(function(){ var r = urlORfunctionORdom($modal); if(r !== false){ $modal.modal('hide'); $('.modal-backdrop').remove(); } });
+				}
+				else if(typeof urlORfunctionORdom == 'string') $modal_button.click(function(){ api.redirect(urlORfunctionORdom, top); });
+				else $modal_button.click(function(){ $modal.modal('hide'); $('.modal-backdrop').remove(); });
+				// Set text (if needed)
+				if(typeof buttonText == 'string') $modal_button.html(buttonText);
+
 				// Backdrop closes on mobile
-					var backdrop = 'static';
+				var backdrop = 'static';
 				// Set body and show it (requires selector again)
-					$modal.find('div.modal-body').html(message);
-					$modal.modal({backdrop: backdrop, keyboard: false});
+				$modal.find('div.modal-body').html(message);
+				$modal.modal({backdrop: backdrop, keyboard: false});
 				// Reposition the modal if needed
-					alertReposition($modal);
+				alertReposition($modal);
 			}
 			else{
 				// Alert sent via bootstrap
-					api.track('OFW', 'Standard Alert', message.substr(0, 50));
+				api.track('OFW', 'Standard Alert', message.substr(0, 50));
 				// Send alert
-					alert(message);
-					if(typeof urlORfunctionORdom == 'function') urlORfunctionORdom();
-					else if(typeof urlORfunctionORdom == 'string') api.redirect(urlORfunctionORdom, top);
+				alert(message);
+				if(typeof urlORfunctionORdom == 'function') urlORfunctionORdom();
+				else if(typeof urlORfunctionORdom == 'string') api.redirect(urlORfunctionORdom, top);
 			}
 			return $modal;
 		},
@@ -607,9 +663,12 @@ define('system/js/ofw-jquery', [], function() {
 			 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 			 */
 			alert: function(request, urlORfunctionORdom, buttonText, top, pushstate){
+				startToQueueReadyFunctions();
 				ajaxRequest('get', request, function(r){
-						var $modal = api.alert(r, urlORfunctionORdom, buttonText, top);
-						activateDataAttributeHandlers($modal.find('div.modal-body'));
+						api.alert(r, urlORfunctionORdom, buttonText, top, function($modal){
+							runReadyFunctions();
+							activateDataAttributeHandlers($modal.find('div.modal-body'));
+						});
 					}, pushstate);
 			},
 
@@ -845,12 +904,12 @@ define('system/js/ofw-jquery', [], function() {
             // Log in api mode.
             if(myOptions.debug_mode) api.log("Event sent: "+category+", "+action+", "+label+", "+value);
 			// Track via Google Analytics (ga.js or analytics.js)
-				if(myOptions.trackeventsAnalytics){
+				if(myOptions.trackEventsAnalytics){
 					if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
 					if(typeof ga != 'undefined') ga('send', 'event', category, action, label, value);
 				}
 			// Track to local database
-				if(myOptions.trackeventsLocal){
+				if(myOptions.trackEventsLocal){
 					// Don't use api.ajax.get because that tracks events, so we'd get into loop
 					$.ajax(myOptions.baseurl+'system/track/?category='+api.urlEncode(category)+'&action='+api.urlEncode(action)+'&label='+api.urlEncode(label)+'&value='+api.urlEncode(value), {
 						dataType: 'html',
