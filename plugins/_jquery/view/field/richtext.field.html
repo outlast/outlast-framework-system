@@ -4,6 +4,10 @@
 <link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/medium-editor.css">
 <link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/themes/bootstrap.css">
 
+<style>
+	.medium-editor-toolbar { z-index: 2002; }
+</style>
+
 <div style="height: auto;" class="ofw-field-textarea form-control" id="medium-editor-{{field.uid}}">{{field.value|strip_attribute:'style'|safe}}</div>
 <script>
 	var mediumEditors;

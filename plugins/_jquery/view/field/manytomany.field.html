@@ -17,15 +17,14 @@
 		{% foreach field.choices as choice %}
 			<option value='{{choice.id}}'>{{choice.name|escape}}</option>
 		{% endforeach %}
-	{% elseif %}
-		{% block relationship_selected_values %}
+	{% endif %}
+	{% block relationship_selected_values %}
 		{% if field.value %}
 			{% foreach field.value as sitem %}
 				<option value="{{sitem.id}}">{{sitem.name|escape}}</option>
 			{% endforeach %}
 		{% endif %}
-		{% endblock relationship_selected_values %}
-	{% endif %}
+	{% endblock relationship_selected_values %}
 </select>
 <script>
 	requirejs(["system/js/ofw-jquery", "system/js/ext/select2/select2.min"], function(select2){
@@ -36,9 +35,11 @@
 		// Set selected items
 		{% block relationship_selected_values_js %}
 		{% if field.value %}
+			var relationshipSelectedValues = [];
 			{% foreach field.value as sitem %}
-                $('#{{field.uid}} option[value="{{sitem.id}}"]').attr('selected', 'selected');
+				relationshipSelectedValues.push("{{sitem.id}}");
             {% endfor %}
+			$('#{{field.uid}}').val(relationshipSelectedValues).trigger('change');
         {% endif %}
 		{% endblock relationship_selected_values_js %}
 

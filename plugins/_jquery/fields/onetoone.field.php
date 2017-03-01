@@ -101,7 +101,7 @@ class zajfield_onetoone extends zajField {
 					// First, save my child
 						$child_object = $data;
 						// Find my field!
-							$fields = $child_object::__model();							
+							$fields = $child_model::__model();
 							foreach($fields as $name=>$settings){
 								if($settings->type == 'onetoone' && reset($settings->options) == $parent_model){
 									// The other field is $child_model / $name
