@@ -20,7 +20,14 @@ define('system/js/ofw-jquery', [], function() {
 		lang: {},
 		config: {},
         readyFunctions: [],
-        dataAttributes: ['single-click', 'autopagination', 'autosave', 'action-value', 'track', 'featured'],
+        dataAttributes: [
+			{ name: 'single-click', path: 'system/js/data' },
+			{ name: 'autopagination', path: 'system/js/data' },
+			{ name: 'autosave', path: 'system/js/data' },
+			{ name: 'action-value', path: 'system/js/data' },
+			{ name: 'track', path: 'system/js/data' },
+			{ name: 'featured', path: 'system/js/data' }
+		],
         jqueryIsReady: false
     };
     var myOptions = {};
@@ -375,21 +382,24 @@ define('system/js/ofw-jquery', [], function() {
 
 	/**
 	 * Run through the parent (defaults to body) and activate any registered data attribute handlers.
-	 * @param {string} handlerName The name of the handler which should be the data attribute to look for without data-. So for data-autopagination it is 'autopagination'.
+	 * @param {object} dataAttribute An object with the name and location of the handler. The name of the handler should be the data attribute to look for without data-. So for data-autopagination it is 'autopagination'.
 	 * @param {jQuery} [$context=$(document)] The jQuery object in which the handlers are searched for.
 	 **/
-	var activateSingleDataAttributeHandler = function(handlerName, $context){
+	var activateSingleDataAttributeHandler = function(dataAttribute, $context){
 		// Default value of context
 		if(typeof $context == 'undefined') $context = $(document);
+
+		// Set name and path (and remove trailing slashes)
+		var handlerName = dataAttribute['name'].replace(/^\/|\/$/g, '');
+		var handlerPath = dataAttribute['path'].replace(/^\/|\/$/g, '');
 
 		// Let's see if we find any in context
 		var $elements = $context.find('[data-'+handlerName+']');
 		if($elements.length > 0){
 			// Load and init
-			requirejs(["system/js/data/"+handlerName], function(handlerObject) {
+			requirejs([handlerPath+'/'+handlerName], function(handlerObject) {
 				// Set the handler object
 				dataAttributesObjects[handlerName] = handlerObject;
-
 				// Activate
 				handlerObject.activate($elements, $context);
 			});
@@ -1055,10 +1065,12 @@ define('system/js/ofw-jquery', [], function() {
 		/**
 		 * Add a data attribute handler. If the data attribute is found on the page, the associated helper js is loaded.
 		 * @param {string} handlerName The name of the handler which should be the data attribute to look for without data-. So for data-autopagination it is 'autopagination'.
+		 * @param {string} handlerPath The path to the data attribute handler.
 		 */
-		addDataAttributeHandler: function(handlerName){
-			dataAttributes.push(handlerName);
-			activateSingleDataAttributeHandler(handlerName);
+		addDataAttributeHandler: function(handlerName, handlerPath){
+			var attribute = { name: handlerName, path: handlerPath };
+			dataAttributes.push(attribute);
+			activateSingleDataAttributeHandler(attribute);
 		},
 
 		/***** DEPRECATED METHODS ******/
