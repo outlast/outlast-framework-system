@@ -567,7 +567,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 							if($type == "OR" || $type == "||") $type = "||";
 							else $type = "&&";
 						// Verify logic param
-							if($logic != "SOUNDS LIKE" && $logic != "LIKE" && $logic != "NOT LIKE" && $logic != "REGEXP" && $logic != "NOT REGEXP" && $logic != "!=" && $logic != "==" && $logic != "=" && $logic != "<=>" && $logic != ">" && $logic != ">=" && $logic != "<" && $logic != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($logic) specified is not valid.");
+							if($logic != 'IN' && $logic != 'NOT IN' && $logic != "SOUNDS LIKE" && $logic != "LIKE" && $logic != "NOT LIKE" && $logic != "REGEXP" && $logic != "NOT REGEXP" && $logic != "!=" && $logic != "==" && $logic != "=" && $logic != "<=>" && $logic != ">" && $logic != ">=" && $logic != "<" && $logic != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($logic) specified is not valid.");
 						// if $value is a model object, use its id
 							if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
 
