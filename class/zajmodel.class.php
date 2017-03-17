@@ -338,11 +338,13 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Sets all fields of model data based on a passed associative array or object.
 	 * @param array|stdClass $data The data to create from. This can be a standard class or associative array.
+	 * @param array $fields_allowed If this array is specified, only the fields in the array will be updated.
+	 * @param array $fields_ignored If this array is specified, the fields in the array will be ignored. You should use either this or allowed.
 	 * @return zajModel Returns me to allow chaining.
 	 */
-	public function set_with_data($data){
+	public function set_with_data($data, $fields_allowed = [], $fields_ignored = []){
 	    // Fields to ignore @todo move this to field settings somehow
-	    $ignore_fields = ['unit_test', 'id', 'time_create', 'time_edit', 'ordernum', 'translation'];
+	    $fields_ignored = array_merge($fields_ignored, ['unit_test', 'id', 'time_create', 'time_edit', 'ordernum', 'translation']);
 
 		// Verify data
         $data = (object) $data;
@@ -353,11 +355,18 @@ abstract class zajModel implements JsonSerializable {
 
 		// Set data fields
         foreach($data as $field_name => $field_value){
-            if(!in_array($field_name, $ignore_fields)) $this->set($field_name, $field_value);
+            if(
+                // Fields allowed is empty or the field is in it
+                (count($fields_allowed) == 0 || in_array($field_name, $fields_allowed))
+                // Field is not in ignored fields
+                && !in_array($field_name, $fields_ignored)
+            ){
+                $this->set($field_name, $field_value);
+            }
         }
 
         // Also set translations if applicable
-        $this->set_translations_with_data($data);
+        $this->set_translations_with_data($data, $fields_allowed, $fields_ignored);
 
 		return $this;
 	}
@@ -406,15 +415,20 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Sets the translation of all the locales with data much like set_with_data(). set_with_data() will call this if translation keys exist
 	 * @param array|stdClass $data The data to create from. This can be a standard class or associative array.
+	 * @param array $fields_allowed If this array is specified, only the fields in the array will be updated.
+	 * @param array $fields_ignored If this array is specified, the fields in the array will be ignored. You should use either this or allowed.
 	 * @return zajModel Returns me to allow chaining.
 	 */
-	public function set_translations_with_data($data){
+	public function set_translations_with_data($data, $fields_allowed = [], $fields_ignored = []){
         // If only one locale, then return
         if(count($this->zajlib->lang->get_locales()) <= 1) return $this;
 
         // Validate data. Unlike set_with_data this is optional so will not fail if empty
         $data = (object) $data;
         if(!is_object($data)) return $this;
+
+	    // Fields to ignore @todo move this to field settings somehow
+	    $fields_ignored = array_merge($fields_ignored, ['unit_test', 'id', 'time_create', 'time_edit', 'ordernum', 'translation']);
 
         // Check to see if this is the root data or the translations data
         if(is_object($data->translation) || is_array($data->translation)){
@@ -424,8 +438,15 @@ abstract class zajModel implements JsonSerializable {
 
         // Loop through each field
         foreach($data as $field_name=>$locale_values){
-            foreach($locale_values as $locale=>$value){
-                $this->set_translation($field_name, $value, $locale);
+            if(
+                // Fields allowed is empty or the field is in it
+                (count($fields_allowed) == 0 || in_array($field_name, $fields_allowed))
+                // Field is not in ignored fields
+                && !in_array($field_name, $fields_ignored)
+            ){
+                foreach($locale_values as $locale=>$value){
+                    $this->set_translation($field_name, $value, $locale);
+                }
             }
         }
 
