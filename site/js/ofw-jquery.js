@@ -26,6 +26,7 @@ define('system/js/ofw-jquery', [], function() {
 			{ name: 'autosave', path: 'system/js/data' },
 			{ name: 'action-value', path: 'system/js/data' },
 			{ name: 'track', path: 'system/js/data' },
+			{ name: 'block', path: 'system/js/data' },
 			{ name: 'featured', path: 'system/js/data' }
 		],
         jqueryIsReady: false
@@ -436,6 +437,7 @@ define('system/js/ofw-jquery', [], function() {
 			requirejs([handlerPath+'/'+handlerName], function(handlerObject) {
 				// Set the handler object
 				dataAttributesObjects[handlerName] = handlerObject;
+
 				// Activate
 				handlerObject.activate($elements, $context);
 				// If callback set
@@ -1161,6 +1163,7 @@ define('system/js/ofw-jquery', [], function() {
 	api.request = ajaxRequest;
 	api.open = api.window;
 	api.refresh = api.reload;
+	api.plugins = dataAttributesObjects;
 	// Deprecated
 	api.urlencode = api.urlEncode;
 	api.querymode = api.queryMode;
