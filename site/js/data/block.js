@@ -80,6 +80,7 @@ define('system/js/data/block', ["../ofw-jquery"], function() {
 		/**
 		 * Enable reload block publicly.
 		 */
+		reload: reloadBlock,
 		reloadBlock: reloadBlock
 	};
 
