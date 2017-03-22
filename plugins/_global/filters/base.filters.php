@@ -449,12 +449,18 @@ EOF;
 		// write to file
 		$content = <<<EOF
 			if(\$filter_var < 60) \$filter_var = \$filter_var.' seconds';
-			else if(\$filter_var >= 60 && \$filter_var < 60*60) \$filter_var = round(\$filter_var/60).' minute(s)';
-			else if(\$filter_var >= 60*60 && \$filter_var < 60*60*24) \$filter_var = round(\$filter_var/(60*60)).' hour(s)';
-			else if(\$filter_var >= 60*60*24 && \$filter_var < 60*60*24*14) \$filter_var = round(\$filter_var/(60*60*24)).' day(s)';
-			else if(\$filter_var >= 60*60*24*14 && \$filter_var < 60*60*24*30) \$filter_var = round(\$filter_var/(60*60*24*7)).' week(s)';
-			else if(\$filter_var >= 60*60*24*30 && \$filter_var < 60*60*24*365) \$filter_var = round(\$filter_var/(60*60*24*30)).' month(s)';
-			else if(\$filter_var >= 60*60*24*365) \$filter_var = round(\$filter_var/(60*60*24*30)).' year(s)';
+			else if(\$filter_var >= 60 && \$filter_var < 60*2) \$filter_var = round(\$filter_var/60).' minute';
+			else if(\$filter_var >= 60 && \$filter_var < 60*60) \$filter_var = round(\$filter_var/60).' minutes';
+			else if(\$filter_var >= 60*60 && \$filter_var < 60*60*2) \$filter_var = round(\$filter_var/(60*60)).' hour';
+			else if(\$filter_var >= 60*60 && \$filter_var < 60*60*24) \$filter_var = round(\$filter_var/(60*60)).' hours';
+			else if(\$filter_var >= 60*60*24 && \$filter_var < 60*60*24*2) \$filter_var = round(\$filter_var/(60*60*24)).' day';
+			else if(\$filter_var >= 60*60*24 && \$filter_var < 60*60*24*14) \$filter_var = round(\$filter_var/(60*60*24)).' days';
+			else if(\$filter_var >= 60*60*24*14 && \$filter_var < 60*60*24*2) \$filter_var = round(\$filter_var/(60*60*24*7)).' week';
+			else if(\$filter_var >= 60*60*24*14 && \$filter_var < 60*60*24*30) \$filter_var = round(\$filter_var/(60*60*24*7)).' weeks';
+			else if(\$filter_var >= 60*60*24*30 && \$filter_var < 60*60*24*60) \$filter_var = round(\$filter_var/(60*60*24*30)).' month';
+			else if(\$filter_var >= 60*60*24*30 && \$filter_var < 60*60*24*365) \$filter_var = round(\$filter_var/(60*60*24*30)).' months';
+			else if(\$filter_var >= 60*60*24*365 && \$filter_var >= 60*60*24*730) \$filter_var = round(\$filter_var/(60*60*24*30)).' year';
+			else if(\$filter_var >= 60*60*24*365) \$filter_var = round(\$filter_var/(60*60*24*30)).' years';
 EOF;
 		// write to file
 		$this->zajlib->compile->write($content);
