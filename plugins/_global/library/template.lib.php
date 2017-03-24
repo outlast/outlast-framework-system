@@ -384,7 +384,7 @@ class zajlib_template_zajvariables {
 						$locale = $this->zajlib->lang->get();
 					// Disable
 					$baseurl = htmlspecialchars($this->zajlib->baseurl, ENT_QUOTES);
-					$fullrequest = htmlspecialchars($this->zajlib->fullrequest, ENT_QUOTES);
+					$fullrequest = str_ireplace("'", "&#39;", $this->zajlib->fullrequest);
 					$fullurl = htmlspecialchars($this->zajlib->fullurl, ENT_QUOTES);
 					$app = htmlspecialchars($this->zajlib->app, ENT_QUOTES);
 					$mode = htmlspecialchars($this->zajlib->mode, ENT_QUOTES);
