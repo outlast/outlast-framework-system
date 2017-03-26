@@ -223,6 +223,23 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	}
 
     /**
+     * Union of two items.
+     * @param zajFetcher $fetcher1
+     * @param zajFetcher $fetcher2
+     * @return zajFetcher
+     */
+    public function union($fetcher1, $fetcher2){
+        // Get my queries
+        $query1 = $fetcher1->add_field_source('*', '', true)->limit(false)->get_query();
+        $query2 = $fetcher2->add_field_source('*', '', true)->limit(false)->get_query();
+
+        // Build and return new fetcher
+        /** @var zajModel $class_name */
+        $class_name = $this->class_name;
+        return $class_name::fetch()->sql("($query1) UNION ($query2)");
+    }
+
+    /**
      * Set distinct from a method.
      * @param bool $distinct Set to true or false.
      * @return zajFetcher This method can be chained.
