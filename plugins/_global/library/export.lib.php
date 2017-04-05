@@ -98,7 +98,7 @@ class zajlib_export extends zajLibExtension {
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
 		 * @param string|File $file The name of the file which will be used during download or the File object if writing to a file.
          * @param int $rowcount_resume Set this to the row count at which you wish to resume the export. This only makes sense if writing to file. Header row not included! @todo implement in future if it can optimize things!
-		 * @require Requires the Spreadsheet_Excel_Writer PEAR module.
+		 * @require Requires the php_zip, php_xmlreader, and php_simplexml extensions.
 		 * @return integer|boolean Will return false if error, the xls data if downloading, or the row count if writing to file.
 		 */
 		public function xls($fetcher, $fields = false, $file='export.xlsx', $rowcount_resume = 1){
@@ -375,7 +375,7 @@ class zajlib_export extends zajLibExtension {
 				$query = '';
 				foreach($responses as $key=>$val) $query .= '&'.urlencode($key).'='.urlencode($val);
 			// Send the data
-				$response = file_get_contents("https://docs.google.com/a/zajmedia.com/spreadsheet/formResponse?formkey=".$formkey."&embedded=true&ifq&pageNumber=0&submit=Submit".$query);
+				$response = file_get_contents("https://docs.google.com/a/example.com/spreadsheet/formResponse?formkey=".$formkey."&embedded=true&ifq&pageNumber=0&submit=Submit".$query);
 			// If $ok_text is contained in the response then all is ok.
 				if(strstr($response, $ok_text) !== false) return true;
 				else{
