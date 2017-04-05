@@ -242,20 +242,20 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Fetch a single or multiple existing object(s) of this class.
 	 * @param bool|string|zajModel $id OPTIONAL. The id of the object. Leave empty if you want to fetch multiple objects. You can also pass an existing zajModel object in which case it will simply pass through the function without change - this is useful so you can easily support both id's and existing objects in a function.
-	 * @return zajFetcher|zajModel Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
+	 * @return zajFetcher|zajModel|boolean Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects) or false if failed to fetch.
 	 */
-	public static function fetch($id=false){
+	public static function fetch($id=null){
 		// Get my class_name
 			/* @var string|zajModel $class_name */
 			$class_name = get_called_class();
-		// if id is specifically  empty, then return false
-			if($id !== false && $id == '') return false;
+		// if id is specifically null or empty, then return false
+			if(!is_null($id) && ($id === false || (is_string($id) && $id == ''))) return false;
 		// call event
 			$class_name::fire_static('onFetch', array($class_name, $id));
 		// disable for non-database objects if id not given!
-			if($id === false && !$class_name::$in_database) return false;
-		// if id is false, then this is a multi-row fetch
-			if($id === false) return new zajFetcher($class_name);
+			if(is_null($id) && !$class_name::$in_database) return false;
+		// if id is null, then this is a multi-row fetch
+			if(is_null($id)) return new zajFetcher($class_name);
 		// let's see if i can resume it!
 			else{
 				// first, is it already resumed? in this case let's make sure its the proper kind of object and just return it
