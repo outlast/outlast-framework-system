@@ -92,6 +92,19 @@ class OfwLangTest extends zajTest {
 	 * Check if certain fields exist.
 	 */
 	public function system_language_file_variables(){
+	    // Verify app level lang
+        $my_files = $this->zajlib->file->get_files('app/lang/', true);
+        foreach($my_files as $f){
+            $file = str_ireplace('app/lang/', '', $this->zajlib->file->get_relative_path($f));
+            $fdata = explode('.', $file);
+            // Check for old data
+            if(strlen($fdata[1]) < 5) $this->zajlib->test->notice("Found old language file format: ".$file);
+            else{
+                $file = trim($fdata[0], '/');
+                $this->verify_single_language_file($file);
+            }
+        }
+
 		// Get all of the plugins (local lang files are in _project plugin)
 		foreach($this->zajlib->plugin->get_plugins('app') as $plugin){
 			$my_files = $this->zajlib->file->get_files('plugins/'.$plugin.'/lang/', true);
