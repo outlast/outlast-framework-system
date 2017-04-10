@@ -49,6 +49,11 @@ class OfwLangTest extends zajTest {
         $this->zajlib->lang->set('fr_FR');
         $returned_content = $this->zajlib->template->show('system/test/test_locale.html', false, true);
         zajTestAssert::areIdentical('Default locale.', $returned_content);
+
+        // @todo {% extends %} not yet supported!
+        //$this->zajlib->lang->set('en_US');
+        //$returned_content = $this->zajlib->template->show('system/test/test_locale_extends.html', false, true);
+        //zajTestAssert::areIdentical('English. With more.', $returned_content);
     }
 	/**
 	 * Check if auto loading works.
