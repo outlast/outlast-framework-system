@@ -27,7 +27,7 @@ if(empty($GLOBALS['photosizes'])) $GLOBALS['photosizes'] = array('thumb'=>50,'sm
  * @property boolean $landscape True if landscape.
  * @property boolean $square True if 1:1
  *
- * @method static Photo|zajFetcher fetch()
+ * @method static Photo|zajFetcher fetch($id="")
  **/
 class Photo extends zajModel {
 

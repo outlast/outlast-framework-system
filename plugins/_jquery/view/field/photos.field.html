@@ -1,178 +1,29 @@
 {% lang 'system/fields' 'photos' %}
-<!-- Multiple photos -->
-<!-- jquery ui -->
+
+<!-- Load existing photos -->
 <script>
-	if (jQuery.ui == undefined) {
-		var jQui = document.createElement('script');
-		$(jQui).attr({
-			src: '{{baseurl}}system/js/jquery/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.min.js',
-			type: 'text/javascript',
-			language: 'JavaScript'
+	ofw.ready(function(){
+		ofw.addDataAttributeHandler('photo', 'system/js/data/field/', function(photo){
+			{% foreach field.value as field_thumb %}
+				photo.loadExisting('{{field.uid}}', '{{field_thumb.id}}');
+			{% endforeach %}
 		});
-		$('head').append(jQui);
-	}
+	});
 </script>
 
-<!--[if lt IE 8]><script src="{{baseurl}}system/js/json2.js"></script><![endif]-->
-
-<!-- Current photos -->
-<script>
-	var photoHandler = {};
-
-	photoHandler.addMyPhotoPopover = function(el, url){
-		var popover_markup = "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='photoHandler.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-remove'></span></a>";
-
-		el.popover({
-			toggle: 'popover',
-			html: true,
-			container: 'body',
-			placement: 'top',
-			content: popover_markup
-		});
-
-		// Hide all other popovers
-		el.on('show.bs.popover', function() {
-			$('.popover').popover('hide');
-		});
-	};
-	photoHandler.closeMyPhotoPopover = function(ev){
-		$('#'+$(ev.target).attr('data-photo')).popover('hide');
-	};
-	zaj.ready(function(){
-		// Make sortable
-			$('#{{field.uid}}-filelist').sortable({
-			    start: function(event, ui) {
-			    	ui.item.addClass('draginprogress');
-			    },
-			    stop: function(event, ui) {
-			    	ui.item.removeClass('draginprogress');
-					// Build array
-						var my_array = [];
-						$('#{{field.uid}}-filelist').children('div').each(function(){
-							my_array.push(this.id);
-						});
-						file_upload_changes_{{field.uid}}.order = my_array;
-						$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
-			    }
-			});
-
-	})
-</script>
-<div class="col-sm-12" id="{{field.uid}}-filelist">
-	{% foreach field.value as field_thumb %}
-		<div class="col-sm-2" id="{{field_thumb.id}}" style="position: relative; cursor: pointer; margin-bottom: 10px;">
-			<img class="pull-left img-thumbnail img-responsive" src='{{field_thumb.normal}}'>
-		</div>
-		<script>zaj.ready(function(){ photoHandler.addMyPhotoPopover($('#{{field_thumb.id}}'), '{{field_thumb.large}}'); })</script>
-	{% endforeach %}
+<!-- Display markup for list and upload -->
+<div class="col-sm-12" data-photo="list" data-photo-field-id="{{field.uid}}">
+	<i data-photo="loader" class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+	<div class="col-sm-2 hide" data-photo="template" data-photo-field-id="{{field.uid}}" style="position: relative; cursor: pointer; margin-bottom: 10px;">
+		<img class="pull-left img-thumbnail img-responsive">
+	</div>
 </div>
-<div class="clearfix"><br/></div>
 
-<!-- Uploader -->
-<script language="JavaScript" src="{{baseurl}}system/js/plupload/plupload.full.js" type="text/javascript"></script>
+<div class="clearfix"><br/><br/></div>
 
-<a id="{{field.uid}}-pickfiles" class="btn btn-primary"><i class="icon-folder-open"></i> {{#system_field_picture_upload#}}</a>
-<div id="{{field.uid}}-transferbar" class="hidden progress progress-striped active"><div class="progress-bar bar" style="width: 0;"></div></div>
-<div id="{{field.id}}-uploadbutton"></div>
-<div id="{{field.id}}-errors"></div>
+<a data-photo="uploadButton" data-photo-field-id="{{field.uid}}" class="btn btn-primary hide"><i class="icon-folder-open"></i> {{#system_field_picture_upload#}}</a>
+<div data-photo="uploadTransferBar" class="progress progress-striped active hide"><div class="progress-bar bar" style="width: 0;"></div></div>
 
-<input type="hidden" name="{{field.name}}" id="{{field.uid}}">
+<input type="hidden" name="{{field.name}}" id="{{field.uid}}" data-photo="field" data-photo-field-id="{{field.uid}}">
 
 <div class="clearfix"><br/></div>
-
-<script type="text/javascript">
-	var file_upload_changes_{{field.uid}} = {add: [], remove: [], order: [] };
-	
-		// create objects
-			var uploader_{{field.uid}} = new plupload.Uploader({
-				runtimes : 'html5,flash,html4',
-				browse_button : '{{field.uid}}-pickfiles',
-				drop_element : '{{field.uid}}-filelist',
-				max_file_size : '{{field.options.max_file_size|escapejs}}',
-				url : '{% block upload_url %}{{baseurl}}system/plupload/upload/photo/{% endblock upload_url %}',
-				flash_swf_url : '{{baseurl}}system/js/plupload/plupload.flash.swf'
-			});
-			var uploadergo_{{field.uid}} = function(){
-				uploader_{{field.uid}}.start()
-			};
-			/**
-			 * Plupload event handlers.
-			 */
-			uploader_{{field.uid}}.bind('Init', function(up, params){
-				//console.log("Uploader initialized. Runtime: " + params.runtime);
-			});
-			uploader_{{field.uid}}.bind('FilesAdded', function(up, files) {
-				setTimeout("uploadergo_{{field.uid}}()", 800);
-			});			
-			uploader_{{field.uid}}.bind('UploadProgress', function(up, file) {
-				$('#{{field.uid}}-transferbar div').css('width', file.percent + "%")
-				$('#{{field.uid}}-transferbar').removeClass('hidden');
-			});
-			uploader_{{field.uid}}.bind('Error', function(up, err) {
-				zaj.alert("{{#system_field_file_upload_error#|printf:field.options.max_file_size|escapejs}}");
-				up.refresh(); // Reposition Flash/Silverlight
-			});
-			uploader_{{field.uid}}.bind('FileUploaded', function(up, file, result) {
-				setTimeout(function() { $('#{{field.uid}}-transferbar').addClass('hidden'); }, 1000);
-				var res = jQuery.parseJSON(result.response);
-				// check for error
-					if(res.status == 'error'){
-						zaj.alert(res.message);
-					}
-					else{
-						uploader_update_{{field.uid}}(res);
-					}
-			});
-
-			/**
-			 * Update after upload.
-			 * @param {object} res Expects a result with id, width, height.
-			 * @return {string|boolean} Returns false or the id.
-			 **/
-			uploader_update_{{field.uid}} = function(res){
-				// Is it wide/tall enough?
-					if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("{{#system_field_picture_too_small#|printf:field.options.min_width|printf:field.options.min_height|escapejs}}");
-					{% if field.options.max_height %}
-					// check for height, if is > 0;
-						var max_height = {{field.options.max_height|escapejs}} + 0;
-						if(max_height && res.height > max_height) return alert("{{#system_field_picture_too_high#|printf:field.options.max_height|escapejs}}");
-					{% endif %}
-					{% if field.options.max_width %}
-					// check for width, if is > 0;
-						if(max_width && res.width > max_width) return alert("{{#system_field_picture_too_wide#|printf:field.options.max_width|escapejs}}");					
-						var max_width = {{field.options.max_width|escapejs}} + 0;
-					{% endif %}
-
-				// Add my image
-					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
-					var el = $("<div class='col-sm-2' id='"+res.id+"' style='position: relative; cursor: pointer;'><img class='pull-left img-thumbnail img-responsive' src='"+imgurl+"'></div>");
-					$('#{{field.uid}}-filelist').append(el);
-					photoHandler.addMyPhotoPopover(el, imgurl);
-				// Set as my input value
-					file_upload_changes_{{field.uid}}.add.push(res.id);
-					$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
-				return res.id;
-			};
-
-			/**
-			 * Update after remove
-			 * @param {object} ev The event which is passed when clicking on the delete element.
-			 **/
-			upload_remove_{{field.uid}} = function(ev){
-				var id = $(ev.target).attr('data-photo');
-				var $photodiv = $('#'+id);
-				// Turn off my popover
-					$photodiv.popover('hide');
-				// Remove my div
-					$photodiv.remove();
-				// Remove from add value
-					file_upload_changes_{{field.uid}}.add = jQuery.grep(file_upload_changes_{{field.uid}}.add, function(value) { return value != id; });
-				// Update my remove value
-					file_upload_changes_{{field.uid}}.remove.push(id);
-                // Set input
-					$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
-			};
-
-		// Run init
-			uploader_{{field.uid}}.init();
-</script>
