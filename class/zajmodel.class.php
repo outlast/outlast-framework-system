@@ -145,7 +145,7 @@ abstract class zajModel implements JsonSerializable {
 	 * The event stack, which is basically an array of events currently running.
 	 * @var array
 	 **/
-	private $event_stack = array();
+	private $event_stack = [];
 
 	/**
 	 * This is an object-specific private variable which registers if any extension of $this has had its event fired. This is used to prevent infinite loops.
@@ -160,7 +160,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @var array
 	 * @todo If it is possible to store this on a per-class basis, it would be better than this 'global' way!
 	 **/
-	public static $extensions = array();
+	public static $extensions = [];
 
 	/**
 	 * Constructor for model object. You should never directly call this. Use {@link: create()} instead.

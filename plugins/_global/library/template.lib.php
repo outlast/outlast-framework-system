@@ -108,7 +108,7 @@ class zajlib_template extends zajLibExtension {
 	 **/
 	public function show($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
 		// override source path if device mode @todo make this more efficient so it does not search files each time!
-			$source_path = $this->get_device_source_path($source_path);
+			$source_path = $this->get_source_path($source_path);
 		// do i need to show by block (if pushState request detected)
 			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
 		// prepare
@@ -131,7 +131,7 @@ class zajlib_template extends zajLibExtension {
 	 */
 	public function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
 		// override source path if device mode @todo make this more efficient so it does not search files each time!
-			$source_path = $this->get_device_source_path($source_path);
+			$source_path = $this->get_source_path($source_path);
 		// do i need to show by block (if pushState request detected)
 			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
 		// first do a show to compile (if needed)
@@ -154,6 +154,19 @@ class zajlib_template extends zajLibExtension {
 		// now display or return
 			return $this->display($include_file, $return_contents);
 	}
+
+    /**
+     * Modify the template source path based on device mode and locale.
+	 * @param string $source_path The source path to check for.
+     * @todo A html extension should not be required for this!
+     * @todo The device and locale source paths should be combinable!
+     * @todo This should be cached somehow so that we dont need so many checks
+	 * @return string Return a new source path for the current device if available or the same if not.
+     */
+    private function get_source_path($source_path){
+        $source_path = $this->get_device_source_path($source_path);
+        return $this->get_locale_source_path($source_path);
+    }
 
 	/**
 	 * Modify the template source path of any .html files if we are in a device mode (if set_device_mode() was called previously).
@@ -182,6 +195,25 @@ class zajlib_template extends zajLibExtension {
 
 		// It's not the default, so let's check to see if
 		$device_source_path = str_ireplace('.html', '.'.$device_mode.'.html', $source_path);
+		if($this->exists($device_source_path)) return $device_source_path;
+		else return $source_path;
+	}
+
+	/**
+	 * Modify the template source path of any .html files if we have a locale-specific template available.
+	 * @param string $source_path The source path to check for.
+     * @todo Add support for {% extends %} and {% insert %}
+	 * @return string Return a new source path for the current locale if available or the same if not.
+	 */
+	private function get_locale_source_path($source_path){
+		// Get the locale
+		$locale = $this->zajlib->lang->get();
+
+		// If the locale is not set, just return the unmodified source path
+		if($locale === false) return $source_path;
+
+		// It's not the default, so let's check to see if
+		$device_source_path = str_ireplace('.html', '.'.$locale.'.html', $source_path);
 		if($this->exists($device_source_path)) return $device_source_path;
 		else return $source_path;
 	}

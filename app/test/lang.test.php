@@ -37,6 +37,19 @@ class OfwLangTest extends zajTest {
 		zajTestAssert::areIdentical($this->zajlib->config->variable->section->files->system_field_files_upload, $this->zajlib->lang->section->files->system_field_files_upload);
 	}
 
+
+    /**
+     * Test locale templates
+     */
+    public function system_template_variations(){
+        $this->zajlib->lang->set('hu_HU');
+        $returned_content = $this->zajlib->template->show('system/test/test_locale.html', false, true);
+        zajTestAssert::areIdentical('Hungarian.', $returned_content);
+
+        $this->zajlib->lang->set('fr_FR');
+        $returned_content = $this->zajlib->template->show('system/test/test_locale.html', false, true);
+        zajTestAssert::areIdentical('Default locale.', $returned_content);
+    }
 	/**
 	 * Check if auto loading works.
 	 */
