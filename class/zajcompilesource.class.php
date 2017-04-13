@@ -371,7 +371,7 @@ class zajCompileSource {
 	    }
 
         // Show the error
-		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)", true);
+		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)");
 		exit;
 	}
 
