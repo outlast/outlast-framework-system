@@ -294,6 +294,15 @@ class zajCompileSession {
 	}
 
 	/**
+	 * Gets all of the current destinations.
+	 *
+	 * @return array
+	 */
+	public function get_destinations(){
+		return $this->destinations;
+	}
+
+	/**
 	 * Returns true if destinations are paused, false otherwise.
 	 *
 	 * @return boolean True or false, depending on whether destinations are currently paused.

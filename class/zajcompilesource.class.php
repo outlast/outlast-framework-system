@@ -214,7 +214,7 @@ class zajCompileSource {
 	 * @return zajCompileBlock The new block object.
 	 */
 	public function add_block($block_name){
-		if($this->has_block($block_name)) $this->warning("The block $block_name was found more than once.");
+		if($this->has_block($block_name)) $this->error("The block $block_name was found more than once.");
 
 		// Increment block level
 		$this->current_block = $this->blocks[$block_name] = new zajCompileBlock($block_name, $this, $this->current_block, $this->block_level);
@@ -364,6 +364,13 @@ class zajCompileSource {
 		$this->zajlib->warning("Template compile warning: $message (file: $this->file_path / line: $this->line_number)");
 	}
 	public function error($message){
+	    // Remove all my destination files
+	    foreach($this->compile_session->get_destinations() as $destination){
+	        /** @var zajCompileDestination $destination */
+	        $destination->unlink();
+	    }
+
+        // Show the error
 		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)", true);
 		exit;
 	}
