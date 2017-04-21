@@ -24,6 +24,7 @@
 
 			// am i not in debug mode?
 				if(!$this->zajlib->debug_mode){
+					$denied_message = "ACCESS DENIED. If regular http pw auth is not working you can use the update_user/update_password query string as well.";
 					// is my password defined?
 						if(!$this->zajlib->zajconf['update_user'] || !$this->zajlib->zajconf['update_password']) return $this->install();
 					// realm
@@ -34,11 +35,11 @@
 							// Verify!
 								if($_REQUEST['update_user'] != $this->zajlib->zajconf['update_user'] || $_REQUEST['update_password'] != $this->zajlib->zajconf['update_password']){
 									header('HTTP/1.0 401 Unauthorized');
-									return exit("Access denied.");
+									return exit($denied_message);
 								}
 								else return true;
 						}
-						else return $this->zajlib->security->protect($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm);
+						else return $this->zajlib->security->protect($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm, $denied_message);
 				}
 			return true;
 		}
