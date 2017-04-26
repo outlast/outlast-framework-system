@@ -24,12 +24,6 @@ class CustomFieldEntry extends zajModel{
         return parent::__model($f);
 	}
 
-	/**
-	 * Construction and required methods
-	 */
-	public function __construct($id = ""){ parent::__construct($id, __CLASS__); return true; }
-	public static function __callStatic($name, $arguments){ array_unshift($arguments, __CLASS__); return call_user_func_array(array('parent', $name), $arguments); }
-
 	///////////////////////////////////////////////////////////////
 	// !Custom methods
 	///////////////////////////////////////////////////////////////

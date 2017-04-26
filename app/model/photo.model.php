@@ -65,11 +65,6 @@ class Photo extends zajModel {
 		// do not modify the line below!
         return parent::__model($f);
 	}
-	///////////////////////////////////////////////////////////////
-	// !Construction and other required methods
-	///////////////////////////////////////////////////////////////
-	public function __construct($id = ""){ parent::__construct($id, __CLASS__);	}
-	public static function __callStatic($name, $arguments){ array_unshift($arguments, __CLASS__); return call_user_func_array(array('parent', $name), $arguments); }
 
 	///////////////////////////////////////////////////////////////
 	// !Magic methods
