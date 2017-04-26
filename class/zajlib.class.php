@@ -672,7 +672,7 @@ class zajLibLoader{
 			$controller_class = 'zajapp_'.$controller_name;
 		// Create a new object
 			$cobj = new $controller_class($this->zajlib, $controller_name);
-			if($call_load_method && method_exists($cobj, "__load")) return $cobj->__load($optional_parameters);
+			if($call_load_method && method_exists($cobj, "__load")) return $cobj->__load($this->zajlib->mode, $optional_parameters);
 		// Return the controller object since no __load method
 			return $cobj;
 	}
