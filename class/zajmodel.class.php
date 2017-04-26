@@ -180,7 +180,7 @@ abstract class zajModel implements JsonSerializable {
 			else $this->id = $id;
 
 		// everything else is loaded on request!
-		return true;
+		return $this;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,14 +200,15 @@ abstract class zajModel implements JsonSerializable {
 		// Get my class_name
         /* @var string|zajModel $class_name */
         $class_name = get_called_class();
-        if(!$class_name::$in_database) return false; 	// disable for non-database objects
+        if(!$class_name::$in_database) return new stdClass(); 	// disable for non-database objects
 
-		// do I have an extension? if so, these override my own settings
+		// do I have an extension? if so, merge fields
+        /** @var zajModel $ext */
         $ext = $class_name::extension();
-        if($ext){
-            // Merge my field objects together.
-            $fields = (object) array_merge((array) $fields, (array) $ext::__model());
-        }
+        if($ext) $fields = $ext::__model($fields);
+
+        // Check for errors
+        if(!is_object($fields)) zajLib::me()->error("The __model() method of $fields is not yet upgraded to the new PHP 7 standard. Please review its other methods as well to avoid warnings and errors.");
 
 		// now set defaults (if not already set)
         if(!isset($fields->unit_test)) $fields->unit_test = zajDb::unittest();
@@ -223,7 +224,7 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Get the field object for a specific field in the model.
 	 * @param string $field_name The name of the field in the model.
-	 * @return zajField Returns a zajField object.
+	 * @return zajField|boolean Returns a zajField object or false if error.
 	 */
 	public static function __field($field_name){
 		// Get my class_name
@@ -243,7 +244,7 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Fetch a single or multiple existing object(s) of this class.
 	 * @param bool|string|zajModel $id OPTIONAL. The id of the object. Leave empty if you want to fetch multiple objects. You can also pass an existing zajModel object in which case it will simply pass through the function without change - this is useful so you can easily support both id's and existing objects in a function.
-	 * @return zajFetcher|zajModel Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
+	 * @return zajFetcher|zajModel|false Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects) or false if error.
 	 */
 	public static function fetch($id=false){
 		// Get my class_name
