@@ -543,9 +543,9 @@ class zajLib {
 	}
 
 	/**
-	 * Magic method to automatically load libraries on first request.
-	 * @param string $name The name of the library.
-	 * @return zajLibExtension Return the library class.
+	 * Magic method to automatically load libraries or magic properties on first request.
+	 * @param string $name The name of the library or property.
+	 * @return zajLibExtension|mixed Return the library class or some other magic property.
 	 **/
 	public function __get($name){
 	    // load smart properties or libraries
