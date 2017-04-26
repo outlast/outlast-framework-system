@@ -26,16 +26,16 @@ define('CACHE_DIR_LEVEL', 4);
  * @method boolean __beforeCache() EVENT. Executed before the object is saved to a cache file. If returns false, the object is not cached!
  * @method boolean __beforeUncache() EVENT. Executed before the object cache is removed. If it returns false, the object cache will not be removed! Note: This may not be called in every situation!
  * @method boolean __beforeDelete() EVENT. Executed before the object is deleted. If returns false, the object is not deleted!
- * @method void __afterCreateSave() EVENT. Executed after the object is created in the database.
- * @method void __afterCreate() EVENT. Executed after the object is created in memory.
- * @method void __afterSave() EVENT. Executed after the object is saved to the database.
- * @method void __afterFetch() EVENT. Executed after the object is fetched from the database (and NOT from cache). Also fired after save.
- * @method void __afterFetchCache() EVENT. Executed after the object is fetched from a cache file. Note that this is also fired after a database fetch.
- * @method void __afterCache() EVENT. Executed after the object is saved to a cache file.
- * @method void __afterUncache() EVENT. Executed after the object cache is removed (but only if the remove was successful) Note: This may not be called in every situation!
- * @method void __afterDelete() EVENT. Executed after the object is deleted.
- * @method void __onFetch() EVENT. Executed when a fetch method is requested.
- * @method void __onCreate() EVENT. Executed when a create method is requested.
+ * @method __afterCreateSave() EVENT. Executed after the object is created in the database.
+ * @method __afterCreate() EVENT. Executed after the object is created in memory.
+ * @method __afterSave() EVENT. Executed after the object is saved to the database.
+ * @method __afterFetch() EVENT. Executed after the object is fetched from the database (and NOT from cache). Also fired after save.
+ * @method __afterFetchCache() EVENT. Executed after the object is fetched from a cache file. Note that this is also fired after a database fetch.
+ * @method __afterCache() EVENT. Executed after the object is saved to a cache file.
+ * @method __afterUncache() EVENT. Executed after the object cache is removed (but only if the remove was successful) Note: This may not be called in every situation!
+ * @method __afterDelete() EVENT. Executed after the object is deleted.
+ * @method __onFetch() EVENT. Executed when a fetch method is requested.
+ * @method __onCreate() EVENT. Executed when a create method is requested.
  * @method static zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when the client side search API is requested. The API is disabled by default.
  * @method static boolean __onSearchFetcher() __onSearchFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when search() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default search is applied.
  * @method static boolean __onFilterQueryFetcher() __onFilterQueryFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when filter_query() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default filter query is applied.
