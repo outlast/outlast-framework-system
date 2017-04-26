@@ -34,7 +34,7 @@ class Translation extends zajModel {
 		// do not modify the line below!
         return parent::__model($f);
 	}
-    
+
 	/**
 	 * Caching the information.
 	 **/
