@@ -543,9 +543,9 @@ class zajLib {
 	}
 
 	/**
-	 * Magic method to automatically load libraries on first request.
-	 * @param string $name The name of the library.
-	 * @return zajLibExtension Return the library class.
+	 * Magic method to automatically load libraries or magic properties on first request.
+	 * @param string $name The name of the library or property.
+	 * @return zajLibExtension|mixed Return the library class or some other magic property.
 	 **/
 	public function __get($name){
 	    // load smart properties or libraries
@@ -672,7 +672,7 @@ class zajLibLoader{
 			$controller_class = 'zajapp_'.$controller_name;
 		// Create a new object
 			$cobj = new $controller_class($this->zajlib, $controller_name);
-			if($call_load_method && method_exists($cobj, "__load")) return $cobj->__load($optional_parameters);
+			if($call_load_method && method_exists($cobj, "__load")) return $cobj->__load($this->zajlib->mode, $optional_parameters);
 		// Return the controller object since no __load method
 			return $cobj;
 	}
