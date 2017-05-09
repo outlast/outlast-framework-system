@@ -19,6 +19,7 @@ define('system/js/ofw-jquery', [], function() {
         trackExternalLinks: true,
 		lang: {},
 		config: {},
+        plugins: {},
         readyFunctions: [],
         dataAttributes: [
 			{ name: 'single-click', path: 'system/js/data' },
