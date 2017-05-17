@@ -758,7 +758,6 @@ abstract class zajModel implements JsonSerializable {
 	 * Shortcuts to static events and actions.
 	 *
 	 * @ignore
-	 * @todo Once you remove passing of CLASS_NAME via $arguments[0] you MUST also remove array_shift() in this function.
 	 */
 	public static function __callStatic($name, $arguments){
 		// get current class
@@ -781,7 +780,6 @@ abstract class zajModel implements JsonSerializable {
 		if($ext && $name != '__model' && $name != 'create'){
 			// now, check if method exists on extension
 			if(method_exists($ext, $name)){
-				array_shift($arguments);
 				return call_user_func_array("$ext::$name", $arguments);
 			}
 			else  $extended_but_does_not_exist = true;
