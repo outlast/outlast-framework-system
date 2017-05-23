@@ -55,7 +55,6 @@ class zajlib_template extends zajLibExtension {
 			$this->zajlib->variable->debug_mode = $this->zajlib->variable->zaj->bc_get('debug_mode');
 			$this->zajlib->variable->app = $this->zajlib->variable->zaj->bc_get('app');
 			$this->zajlib->variable->mode = $this->zajlib->variable->zaj->bc_get('mode');
-			$this->zajlib->variable->mozajik = $this->zajlib->variable->zaj->bc_get('mozajik');
 		// init js layer
 		// requests and urls
 			if($this->zajlib->https) $this->zajlib->variable->protocol = 'https';
@@ -308,9 +307,10 @@ class zajlib_template extends zajLibExtension {
 class zajlib_template_zajvariables {
 	private $zajlib;	// The local copy of zajlib variable
 	
-	var $baseurl; 		// The base url of this project.
-	var $fullurl; 		// The base url + the request.
-	var $fullrequest; 	// The base url + the request + query string.	
+	public $baseurl; 		// The base url of this project.
+	public $fullurl; 		// The base url + the request.
+	public $fullrequest; 	// The base url + the request + query string.
+    public $tmp;            // A class that contains any temporary variables. Can be used in tags.
 	
 	/**
 	 * Initializes all of the important variables which are always available.
@@ -325,6 +325,8 @@ class zajlib_template_zajvariables {
 		// Constants
 			$this->zajlib->variable->true = true;
 			$this->zajlib->variable->false = false;
+        // Create an empty class to store temporary variables that need to be potentially passed on
+            $this->tmp = new stdClass();
 		// The rest of the variables are built on request via the __get() magic method...
 	}
 	
@@ -333,7 +335,7 @@ class zajlib_template_zajvariables {
 	 * @todo Remove this from a future version (when the depricated vars are removed as well)
 	 **/
 	public function bc_get($name){
-		//$this->zajlib->warning("You are using an depricated variable ({{{$name}}}). Please use {{zaj.variable_name}} for all such variables.");
+		//$this->zajlib->warning("You are using an depricated variable ({{{$name}}}). Please use {{ofw.variable_name}} for all such variables.");
 		return $this->__get($name);
 	}	
 	
@@ -379,8 +381,11 @@ class zajlib_template_zajvariables {
 			// Return the current lang (two letter version of locale)
 				case 'lang': return $this->zajlib->lang->get_code();
 			// Outlast Framework version info and other stuff
-				case 'ofw': return $this->zajlib->mozajik;
-				case 'mozajik': return $this->zajlib->mozajik;
+				case 'ofw':
+				case 'mozajik':
+				    $this->zajlib->warning("{{ofw.ofw}} and {{ofw.mozajik}} are deprecated. Use {{ofw.version}} instead.");
+				    return $this->zajlib->mozajik;
+                case 'version': return $this->zajlib->mozajik;
 			// Mobile and tablet detection (uses server-side detection)
 				case 'mobile': return $this->zajlib->mobile->is_mobile();
 				case 'tablet': return $this->zajlib->mobile->is_tablet();

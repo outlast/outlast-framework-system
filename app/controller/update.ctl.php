@@ -57,7 +57,7 @@
 		 **/
 		function main(){
 			// load menu
-				$this->zajlib->template->show("update/base-update.html");						
+				$this->zajlib->template->show("update/base-update.html");
 		}
 
 		/**

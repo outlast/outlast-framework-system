@@ -148,6 +148,7 @@ class zajCompileSession {
 		// compile while i dont reach its eof
 			zajCompileSession::verbose("Now compiling source $current_source->file_path");
 			while(!$current_source->eof()) $current_source->compile();
+			$current_source->close();
 		// remove the source
 			array_shift($this->sources);
 		// now recursive if more sources left
@@ -179,7 +180,7 @@ class zajCompileSession {
 			$source->set_parse(false);
 		// now compile
 			while(!$source->eof()) $source->compile();
-		
+		    $source->close();
 		return true;
 	}
 

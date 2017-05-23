@@ -106,7 +106,8 @@ class zajCompileSource {
 
 		zajCompileSession::verbose("Adding <code>$this->file_path</code> to compile sources.");
 
-		return $this->file = fopen($this->file_path, 'r');
+		$this->file = fopen($this->file_path, 'r');
+		return $this;
 	}
 
 	/**
@@ -122,6 +123,12 @@ class zajCompileSource {
 				$this->current_line = fgets($this->file);
 				$this->line_number++;
 			}
+        // write debug info
+            if($this->zajlib->debug_mode){
+                if($this->line_number == 1) $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug = (object) [ 'file_path'=>'".addslashes($this->file_path)."', 'line_number'=>1 ]; ?>");
+                $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug->line_number = $this->line_number; ?>");
+            }
+
 		// check for php related stuff (but only if parsing is on)
 			if($this->parse){
 				// disable PHP tags
@@ -181,6 +188,12 @@ class zajCompileSource {
 	////////////////////////////////////////////////////////
 	public function eof(){
 		return (!$this->current_line && feof($this->file));
+	}
+	public function close(){
+        if($this->zajlib->debug_mode){
+            $this->write("<?php unset(\$this->zajlib->variable->ofw->tmp->compile_source_debug); ?>");
+        }
+	    fclose($this->file);
 	}
 	public function pause(){
 		zajCompileSession::verbose("Pausing <code>$this->file_path</code> compile source.");
@@ -371,6 +384,7 @@ class zajCompileSource {
 	    }
 
         // Show the error
+        $this->close();
 		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)");
 		exit;
 	}

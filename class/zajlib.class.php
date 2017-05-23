@@ -131,6 +131,11 @@ class zajLib {
 			 **/
 			public $output_started = false;
 			/**
+			 * Set to true if compile of any template has begun already.
+			 * @var boolean
+			 **/
+			public $compile_started = false;
+			/**
 			 * An object which stores version information.
 			 * @var MozajikVersion
 			 **/

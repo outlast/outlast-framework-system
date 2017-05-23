@@ -18,11 +18,6 @@ class MozajikVersion extends zajModel {
 	 **/
 	static $minor = 2;			// minor version count
 	/**
-	 * Build count (based on svn repo revision)
-	 * @var integer
-	 **/
-	static $build = '';		// build - based on svn repo revision
-	/**
 	 * Beta status
 	 * @var boolean
 	 **/
@@ -41,7 +36,6 @@ class MozajikVersion extends zajModel {
 
         $f->major = zajDb::integer();
         $f->minor = zajDb::integer();
-        $f->build = zajDb::integer();
         $f->beta = zajDb::boolean();
         $f->installed = zajDb::boolean();
 
@@ -61,7 +55,6 @@ class MozajikVersion extends zajModel {
 				$new_installation = MozajikVersion::create();
 				$new_installation->set('major', MozajikVersion::$major);
 				$new_installation->set('minor', MozajikVersion::$minor);
-				$new_installation->set('build', MozajikVersion::$build);
 				$new_installation->set('beta', MozajikVersion::$beta);
 				$new_installation->set('installed', true);
 				$new_installation->save();
@@ -70,7 +63,6 @@ class MozajikVersion extends zajModel {
 			$install_array = array(
 				'major'=>MozajikVersion::$major,
 				'minor'=>MozajikVersion::$minor,
-				'build'=>MozajikVersion::$build,
 				'beta'=>MozajikVersion::$beta,
 			);
 		// save to install.dat
