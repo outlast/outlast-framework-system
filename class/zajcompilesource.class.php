@@ -122,12 +122,11 @@ class zajCompileSource {
 			if($this->current_line == ''){
 				$this->current_line = fgets($this->file);
 				$this->line_number++;
+                // write debug info in debug mode
+                if($this->zajlib->debug_mode && $this->parse){
+                    $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug = (object) [ 'file_path'=>'".addslashes($this->requested_path)."', 'line_number'=>$this->line_number ]; ?>");
+                }
 			}
-        // write debug info
-            if($this->zajlib->debug_mode){
-                if($this->line_number == 1) $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug = (object) [ 'file_path'=>'".addslashes($this->file_path)."', 'line_number'=>1 ]; ?>");
-                $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug->line_number = $this->line_number; ?>");
-            }
 
 		// check for php related stuff (but only if parsing is on)
 			if($this->parse){
@@ -190,8 +189,8 @@ class zajCompileSource {
 		return (!$this->current_line && feof($this->file));
 	}
 	public function close(){
-        if($this->zajlib->debug_mode){
-            $this->write("<?php unset(\$this->zajlib->variable->ofw->tmp->compile_source_debug); ?>");
+        if($this->zajlib->debug_mode && $this->parse){
+            $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug = new stdClass(); ?>");
         }
 	    fclose($this->file);
 	}
