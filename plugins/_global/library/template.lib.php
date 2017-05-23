@@ -38,9 +38,11 @@ class zajlib_template extends zajLibExtension {
 			else $include_file = $this->zajlib->basepath."/cache/view/".$destination_path.".php";
 		// if force_recompile or debug_mode or not yet compiled then recompile
 			if($this->zajlib->debug_mode || $this->force_recompile || $force_recompile || !file_exists($include_file)) $this->compile($source_path, $destination_path);
-		// set up my global {{zaj}} variable object
-			$this->zajlib->variable->zaj = new zajlib_template_zajvariables($this->zajlib);
-			$this->zajlib->variable->ofw = $this->zajlib->variable->zaj;
+		// set up my global {{ofw}} variable object if not yet set up
+		    if(!is_object($this->zajlib->variable->ofw) || !is_a($this->zajlib->variable->ofw, 'zajlib_template_zajvariables')){
+                $this->zajlib->variable->ofw = new zajlib_template_zajvariables($this->zajlib);
+                $this->zajlib->variable->zaj = $this->zajlib->variable->ofw;
+		    }
 		// set up a few other globals
 			$this->zajlib->variable->baseurl = $this->zajlib->baseurl;
 			$this->zajlib->variable->fullurl = $this->zajlib->fullurl;
@@ -52,9 +54,9 @@ class zajlib_template extends zajLibExtension {
 		
 			$this->zajlib->variable->self = $this->zajlib->fullrequest; // @deprecated!
 		// access to request variables and version info
-			$this->zajlib->variable->debug_mode = $this->zajlib->variable->zaj->bc_get('debug_mode');
-			$this->zajlib->variable->app = $this->zajlib->variable->zaj->bc_get('app');
-			$this->zajlib->variable->mode = $this->zajlib->variable->zaj->bc_get('mode');
+			$this->zajlib->variable->debug_mode = $this->zajlib->variable->ofw->bc_get('debug_mode');
+			$this->zajlib->variable->app = $this->zajlib->variable->ofw->bc_get('app');
+			$this->zajlib->variable->mode = $this->zajlib->variable->ofw->bc_get('mode');
 		// init js layer
 		// requests and urls
 			if($this->zajlib->https) $this->zajlib->variable->protocol = 'https';

@@ -324,9 +324,11 @@ class zajLib {
 		// loader
 			$this->load = new zajLibLoader($this);
 		// template variable object
-			$this->variable = new zajVariable();				// for all variables
-			$this->variable->field = (object) array();			// for field templates scope
-			$this->variable->plugins = (object) array();		// for plugins scope
+			$this->variable = new zajVariable();		// for all variables
+			$this->variable->field = (object) [];		// for field templates scope
+			$this->variable->plugins = (object) [];		// for plugins scope
+			$this->variable->ofw = (object) [];         // for framework system scope
+
 
 		// check and load installation version (only for database format tracking)
 			$installation = @file_get_contents($this->basepath.'cache/install.dat');
@@ -1249,10 +1251,11 @@ class zajField {
  * @todo What are the benefits of defining this class? Really, we could just have an (object) array();
  **/
 class zajVariable {
+
 	/**
 	 * An array of the variable data stored herein.
 	 **/
-	private $data = array();
+	private $data = [];
 	
 	/**
 	 * Magic method to return the data.
