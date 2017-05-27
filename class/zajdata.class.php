@@ -207,30 +207,37 @@ class zajData {
 		 **/
 		public function __get($name){
 			// check for error
-				if(!$this->zajobject->model->$name) return $this->zajobject->zajlib->warning("Cannot get value of '$name'. field '$name' does not exist in model '{$this->zajobject->class_name}'!");
+            if(!$this->zajobject->model->$name) return $this->zajobject->zajlib->warning("Cannot get value of '$name'. field '$name' does not exist in model '{$this->zajobject->class_name}'!");
 			// do i need to reload the data?
-				if(!$this->fetched) $this->reload();
-            // if it still does not exist
-                //if(!$this->exists) @todo it should return default value
-							
-			// is preprocessing required for get?
+            if(!$this->fetched) $this->reload();
+
+            // if it still does not exist, return the default value
+            if(!$this->exists){
+                $field_object = zajField::create($name, $this->zajobject->model->$name);
+                $this->data[$name] = $field_object->get_default();
+            }
+	        else{
+    			// is preprocessing required for get?
 				if(empty($this->loaded[$name]) && ($this->zajobject->model->{$name}->use_get|| $this->zajobject->model->{$name}->virtual)){
 					// load my field object
-						$field_object = zajField::create($name, $this->zajobject->model->$name);
+                    $field_object = zajField::create($name, $this->zajobject->model->$name);
 					// if no value, set to null (avoids notices)
-						if(empty($this->data[$field_object->name])) $this->data[$field_object->name] = null;
+                    if(empty($this->data[$field_object->name])) $this->data[$field_object->name] = null;
 					// process get
-						$this->data[$name] = $field_object->get($this->data[$field_object->name], $this->zajobject);
+                    $this->data[$name] = $field_object->get($this->data[$field_object->name], $this->zajobject);
 				}
+            }
+
 			// It has been loaded!
-				$this->loaded[$name] = true;
+            $this->loaded[$name] = true;
+
 			// Turn off autosave
-				$autosavemode = $this->__autosave;
-				$this->__autosave = false;
+            $autosavemode = $this->__autosave;
+			$this->__autosave = false;
 			// if modified has been requested...
-				if($autosavemode && isset($this->modified[$name])) return $this->modified[$name];
+			if($autosavemode && isset($this->modified[$name])) return $this->modified[$name];
 			// else return the data
-				else return $this->data[$name];
+			else return $this->data[$name];
 		}
 
 		/**

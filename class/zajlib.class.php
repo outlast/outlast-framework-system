@@ -1194,6 +1194,14 @@ class zajField {
 		return $data;
 	}
 
+    /**
+     * Returns the default value before an object is created and saved to the database.
+     */
+    public function get_default(){
+        if(is_object($this->options)) return $this->options->default;
+        else return $this->options['default'];
+    }
+
 	/**
 	 * Returns an error message, but is this still needed?
 	 **/
