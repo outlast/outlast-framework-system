@@ -208,9 +208,12 @@ class zajLibLoader{
 		// if __load() explicitly returns false, then do not continue with but instead return false
 			if($load_result === false) return false;
 
+        // my mode is with _ and not - @todo instead of supporting both _ and - make this configurable!
+			$my_mode = str_ireplace('-', '_', $zaj_mode);
+
 		// if method does not exist, call __error
 			// TODO: make errors go backwards as well: check child folder's default controllers first!
-			if(!method_exists($my_app, $zaj_mode)){
+			if(!method_exists($my_app, $my_mode)){
 				// If I have an __error method and it is allowed, reroute to that
 					if(method_exists($my_app, '__error') && $reroute_to_error) return $my_app->__error($zaj_mode, $optional_parameters);
 				// If no error method, but $reroute_to_error is true, throw an error
@@ -230,7 +233,7 @@ class zajLibLoader{
 					else return true;
 			}
 		// it exist, so call!
-			else return call_user_func_array(array(&$my_app,$zaj_mode),$optional_parameters);
+			else return call_user_func_array(array(&$my_app,$my_mode),$optional_parameters);
 	}
 
 	/**
