@@ -185,12 +185,10 @@ class zajLibLoader{
 
 		// make it a proper object name
 			$zaj_app = str_ireplace('/', '_', $zaj_app);
+
 		// set zajlib's app and mode
 			$this->app = $zaj_app;
 			$this->mode = $zaj_mode;
-
-        // Replace - with _ in mode
-			$zaj_mode = str_ireplace('-', '_', $zaj_mode);
 
 		// assemble optional parameters
 			if(!$optional_parameters) $optional_parameters = array();
