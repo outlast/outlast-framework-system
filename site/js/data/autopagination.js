@@ -34,6 +34,7 @@ define('system/js/data/autopagination', ["../ofw-jquery"], function() {
 					if(_rawdata == '') return true;
 					var data = JSON.parse(_rawdata);
 					var block = $el.attr('data-autopagination-block');
+					var autopaginationData = $el.attr('data-autopagination-data');
 					var button = $el.attr('data-autopagination-button');
 					if(typeof block == 'undefined') block = 'autopagination';
 				// Use button or infinite scroll
@@ -49,6 +50,7 @@ define('system/js/data/autopagination', ["../ofw-jquery"], function() {
 						watchInterval: 500,
 						targetBlock: block,
 						targetElement: this,
+						autopaginationData: autopaginationData,
 						useMoreButton: _useMoreButton
 					});
 					_objects.push(autopaginationObject);
@@ -80,6 +82,7 @@ var OutlastFrameworkAutopagination = function(options){
 		watchInterval: 500,		// The ms time to watch element.
 		targetBlock: false,		// The block to use for the data
 		targetElement: false,	// The target element to use (where the paginated html should be appended)
+		autopaginationData: null,	// Will be sent along with the current request as autopagination_data=
 		useMoreButton: null		// If set, watchElement will be ignored and a click event on useMoreButton will be watched instead. This should be a selector.
 	};
 	var _myOptions;
@@ -153,8 +156,12 @@ var OutlastFrameworkAutopagination = function(options){
 			// Set as visible
 			_watchElement.css('visibility', 'visible');
 
+			// Any additional data to append?
+			var autopaginationDataQuery = '';
+			if(_myOptions.autopaginationData) autopaginationDataQuery = '&autopagination_data='+ofw.urlencode(_myOptions.autopaginationData);
+
 			// Get next data
-			ofw.ajax.get(_myOptions.url+_currentPage+'&zaj_pushstate_block='+_myOptions.targetBlock, function(res){
+			ofw.ajax.get(_myOptions.url+_currentPage+'&zaj_pushstate_block='+_myOptions.targetBlock+autopaginationDataQuery, function(res){
 				_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
 				_loading = false;
 				ofw.log("Done loading, running callbacks.");
