@@ -10,7 +10,7 @@
 		/**
 		 * Use this method to validate the admin category
 		 **/
-		function __load(){
+		function __load($request, $optional_attributes=[]){
 			// load my admin default loader
 				$this->zajlib->load->controller('admin/default.ctl.php');
 			// load language
