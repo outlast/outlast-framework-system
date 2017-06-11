@@ -162,7 +162,9 @@ var OutlastFrameworkAutopagination = function(options){
 
 			// Get next data
 			ofw.ajax.get(_myOptions.url+_currentPage+'&zaj_pushstate_block='+_myOptions.targetBlock+autopaginationDataQuery, function(res){
-				_watchElement.before(res).css('visibility', 'hidden').css('width', '100%');
+				var $res = $(res);
+				_watchElement.before($res).css('visibility', 'hidden').css('width', '100%');
+				ofw.activateDataAttributeHandlers($res);
 				_loading = false;
 				ofw.log("Done loading, running callbacks.");
 
