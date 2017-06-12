@@ -77,9 +77,9 @@ class MozajikVersion extends zajModel {
 	 **/
 	public static function check(){
 		// if no installation or db is too old return 0
-			if(!is_object(zajLib::me()->mozajik) || MozajikVersion::$major > zajLib::me()->mozajik->major || MozajikVersion::$minor > zajLib::me()->mozajik->minor || MozajikVersion::$build > zajLib::me()->mozajik->build) return 0;
+			if(!is_object(zajLib::me()->mozajik) || MozajikVersion::$major > zajLib::me()->mozajik->major || MozajikVersion::$minor > zajLib::me()->mozajik->minor) return 0;
 		// if db is too new (less likely) return 1
-			if(MozajikVersion::$major < zajLib::me()->mozajik->major || MozajikVersion::$minor < zajLib::me()->mozajik->minor || MozajikVersion::$build < zajLib::me()->mozajik->build) return -1;
+			if(MozajikVersion::$major < zajLib::me()->mozajik->major || MozajikVersion::$minor < zajLib::me()->mozajik->minor) return -1;
 		// all is good
 			return 1;
 	}
