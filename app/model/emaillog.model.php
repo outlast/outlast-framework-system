@@ -37,6 +37,13 @@ class EmailLog extends zajModel {
 	}
 
 	/**
+	 * Disable cache.
+	 */
+	public function __beforeCache(){
+		return false;
+	}
+
+	/**
 	 * Creates a new object from parameters.
 	 * @param string $subject Subject of email.
 	 * @param string $from From email address.
