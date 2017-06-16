@@ -113,9 +113,10 @@ class zajField {
 
     /**
      * Returns the default value before an object is created and saved to the database.
+	 * @param zajModel $object This parameter is a pointer to the actual object for which the default is being fetched. It is possible that the object does not yet exist.
      */
-    public function get_default(){
-        if(is_object($this->options)) return $this->options->default;
+    public function get_default(&$object){
+        if(is_object($this->options)) return $this->options->default;   // Old method
         else return $this->options['default'];
     }
 

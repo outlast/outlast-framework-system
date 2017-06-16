@@ -214,7 +214,7 @@ class zajData {
             // if it still does not exist, return the default value
             if(!$this->exists){
                 $field_object = zajField::create($name, $this->zajobject->model->$name);
-                $this->data[$name] = $field_object->get_default();
+                $this->data[$name] = $field_object->get_default($this->zajobject);
             }
 	        else{
     			// is preprocessing required for get?

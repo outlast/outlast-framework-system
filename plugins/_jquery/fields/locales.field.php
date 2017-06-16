@@ -63,7 +63,17 @@ class zajfield_locales extends zajField {
 		if(!$result) $result = (object) array();
 		return $result;
 	}
-	
+
+    /**
+     * Returns the default value before an object is created and saved to the database.
+	 * @param zajModel $object This parameter is a pointer to the actual object for which the default is being fetched. It is possible that the object does not yet exist.
+     * @return mixed Returns an empty list.
+     */
+    public function get_default(&$object){
+        if(is_object($this->options['default'])) return $this->options['default'];
+        else return (object) [];
+    }
+
 	/**
 	 * Preprocess the data before saving to the database.
 	 * @param mixed $data The first parameter is the input data.

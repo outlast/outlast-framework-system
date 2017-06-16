@@ -60,7 +60,20 @@ class zajfield_onetomany extends zajField {
 	public function get($data, &$object){
 		return zajFetcher::onetomany($this->name, $object);
 	}
-	
+
+    /**
+     * Returns the default value before an object is created and saved to the database.
+	 * @param zajModel $object This parameter is a pointer to the actual object for which the default is being fetched. It is possible that the object does not yet exist.
+     * @return zajFetcher Returns a list of objects.
+     */
+    public function get_default(&$object){
+        if(is_object($this->options['default'])) return $this->options['default'];
+        else{
+            // Return an empty zajfetcher
+            return zajFetcher::onetomany($this->name, $object);
+        }
+    }
+
 	/**
 	 * Preprocess the data before saving to the database.
 	 * @param mixed $data The first parameter is the input data.
