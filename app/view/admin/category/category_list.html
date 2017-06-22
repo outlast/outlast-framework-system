@@ -47,7 +47,7 @@
 				<tr data-sortable='{{object.id}}'>
 					<td colspan="2">
 						<a title="{{object.name|escape:'html'}}" href="{{baseurl}}admin/category/edit/?id={{object.id}}">{{object.name|truncate:'50'}}</a>
-						{% block objectlistlabels %}{% endblock objectlistlabels %}
+						{% block content_list_labels %}{% endblock content_list_labels %}
 					</td>
 					<td class="text-right">
 						<a class="btn btn-xs featured" title="{{#category_featured#|escape:'html'}}" onclick="feature_object_toggle('{{object.id}}');"><i class="glyphicon glyphicon-star{% if not object.featured %}-empty{% endif %}"></i></a>
