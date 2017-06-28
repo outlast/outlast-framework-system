@@ -53,7 +53,7 @@ class zajlib_export extends zajLibExtension {
 		 * @param array|zajlib_db_session|zajlib_mssql_resultset|zajFetcher $fetcher A zajFetcher list of zajModel objects which need to be exported. It can also be an array of objects (such as a zajDb query result) or a multi-dimensional array.
 		 * @param array|bool $fields A list of fields from the model which should be included in the export.
 		 * @param string|File $file The name of the file which will be used during download or the File object if writing to a file.
-		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible UTF-16LE), or any custom-defined encoding string.
+		 * @param boolean|string $encoding The value can be OFW_EXPORT_ENCODING_DEFAULT (utf8), OFW_EXPORT_ENCODING_EXCEL (Excel-compatible), or any custom-defined encoding string.
 		 * @param bool|string $delimiter The separator for the CSV data. Defaults to comma, unless you set excel_encoding...then it defaults to semi-colon.
          * @param int $rowcount_resume Set this to the row count at which you wish to resume the export. This only makes sense if writing to file. Header row not included!
 		 * @return integer|boolean Will return false if error, the csv data if downloading, or the row count if writing to file.
@@ -66,7 +66,7 @@ class zajlib_export extends zajLibExtension {
             switch($encoding){
                 case OFW_EXPORT_ENCODING_EXCEL:
                     $mime = 'application/vnd.ms-excel';
-                    $encoding = 'UTF-16LE';
+                    $encoding = 'UTF-8';
                     break;
                 default:
                     $mime = 'text/csv';
@@ -83,6 +83,9 @@ class zajlib_export extends zajLibExtension {
                 $file->set('mime', $mime);
                 $file->save();
             }
+
+            // Set encoding and mime type (format: 'text/csv; charset=UTF-8';)
+            $writer->setHeaderContentType($mime.'; charset='.$encoding);
 
             // Send the data
             $response = $this->send_data($writer, $fetcher, $fields, $encoding, $delimiter);
@@ -161,6 +164,7 @@ class zajlib_export extends zajLibExtension {
                 // Move to a temporary location
                 $temporary_file_path = $this->zajlib->basepath.$file->get_file_path().'.copying.tmp';
                 rename($this->zajlib->basepath.$file->get_file_path(), $temporary_file_path);
+                /** @var \Box\Spout\Reader\CSV\Reader|\Box\Spout\Reader\XLSX\Reader $reader **/
                 $reader = ReaderFactory::create($type);
                 $reader->open($temporary_file_path);
                 if($format == 'csv' && $delimiter) $reader->setFieldDelimiter($delimiter);
@@ -170,13 +174,13 @@ class zajlib_export extends zajLibExtension {
             else $reader = false;
 
             // Create and open writer
+            /** @var \Box\Spout\Writer\CSV\Writer|\Box\Spout\Writer\XLSX\Writer $writer **/
             $writer = WriterFactory::create($type); // for XLSX files
             if($is_a_file) $writer->openToFile($this->zajlib->basepath.$file->get_file_path(false, true));
             else $writer->openToBrowser($file);
 
-            // Set encoding and delimiter
+            // Set delimiter
             if($format == 'csv' && $delimiter) $writer->setFieldDelimiter($delimiter);
-            if($format == 'csv' && $encoding) $writer->setEncoding($encoding);
 
             // Copy old existing data
             if($is_a_file && $reader !== false){
@@ -273,32 +277,32 @@ class zajlib_export extends zajLibExtension {
 					// Add my values for each field
 						foreach($fields as $field_key => $field){
 							// Figure out my string value
-								if($model_mode){
-									$field_value = $s->data->$field;
-									// Do we need export formatting?
-									if($field_objects[$field] !== false){
-										/** @var zajDb|zajField $zajdb_obj */
-										$zajdb_obj = $field_objects[$field];
-										$field_value = $zajdb_obj->export($field_value, $s);
-									}
-								}
-								else{
-									// Either an array or an object
-									if(is_array($s)) $field_value = $s[$field];
-									else $field_value = $s->$field;
-								}
+                            if($model_mode){
+                                $field_value = $s->data->$field;
+                                // Do we need export formatting?
+                                if($field_objects[$field] !== false){
+                                    /** @var zajDb|zajField $zajdb_obj */
+                                    $zajdb_obj = $field_objects[$field];
+                                    $field_value = $zajdb_obj->export($field_value, $s);
+                                }
+                            }
+                            else{
+                                // Either an array or an object
+                                if(is_array($s)) $field_value = $s[$field];
+                                else $field_value = $s->$field;
+                            }
 
 							// If field value is an array or object then split into key/value columns but remove my column
-								if(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
-									foreach($field_value as $key=>$value) $data[$field.'_'.$key] = $value;
-								}
-								else{
-									// Set to array
-									$data[$field] = $field_value;
-								}
+                            if(is_array($field_value) || (is_object($field_value) && is_a($field_value, 'stdClass'))){
+                                foreach($field_value as $key=>$value) $data[$field.'_'.$key] = $value;
+                            }
+                            else{
+                                // Set to array
+                                $data[$field] = $field_value;
+                            }
 
 							// Convert encoding if excel mode selected
-								if($encoding) $data[$field] = mb_convert_encoding($data[$field], $encoding, 'UTF-8');
+                            if($encoding && $encoding != 'UTF-8') $data[$field] = mb_convert_encoding($data[$field], $encoding, 'UTF-8');
 						}
 
                     // Get the column order
