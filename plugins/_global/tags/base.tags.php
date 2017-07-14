@@ -626,6 +626,7 @@ EOF;
 	 *  <br><b>{% include '/message/new/' parameter1 'parameter two' %}</b>	 
 	 *  1. <b>request</b> - The request which will be routed as any other such URL request.
 	 *  2. <b>optional parameters</b> - zero, one, or more optional parameters, passed as parameters to the controller method.
+
 	 **/
 	public function tag_include($param_array, &$source){
 		// generate optional parameters
@@ -636,9 +637,8 @@ EOF;
 		// generate content
 			$contents = <<<EOF
 <?php
-// start include
-	\$this->zajlib->load->library('url');
-	\$this->zajlib->url->redirect($var1, array($var2));
+    // start include
+	\$this->zajlib->reroute($var1, array($var2));
 ?>
 EOF;
 		// write to file
