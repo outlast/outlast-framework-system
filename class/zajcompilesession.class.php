@@ -41,12 +41,12 @@ define('regexp_zaj_operator', '/(<=|>=|!==|!=|===|==|=|>|<)/');
 /**
  * Require my other files.
  */
-require(zajLib::me()->basepath.'system/class/zajcompileblock.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompiledestination.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompilesource.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompileelement.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompiletag.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompilevariable.class.php');
+require('zajcompileblock.class.php');
+require('zajcompiledestination.class.php');
+require('zajcompilesource.class.php');
+require('zajcompileelement.class.php');
+require('zajcompiletag.class.php');
+require('zajcompilevariable.class.php');
 
 /**
  * One compile session, which may include several source and destination files.

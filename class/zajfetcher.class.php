@@ -965,7 +965,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * This method returns the connected fetcher object. This will be a collection of {@link zajModel} objects.
 	 * @param string $field The field name.
 	 * @param zajModel $object The object.
-	 * @return zajModel
+	 * @return zajFetcher Returns a list of objects.
 	 **/
 	public static function manytomany($field, &$object){
 		// Fetch the other model and other field
@@ -1015,7 +1015,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * This method returns the connected fetcher object. This will be a collection of {@link zajModel} objects.
 	 * @param string $field The field name.
 	 * @param zajModel $object The object.
-	 * @return zajModel
+	 * @return zajFetcher Returns a list of objects.
 	 **/
 	public static function onetomany($field, &$object){
 		// Fetch the other model and other field		
@@ -1049,26 +1049,29 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @param string $class_name The class name.
 	 * @param string $field The field name.
 	 * @param string $id The id.
-	 * @return zajModel
+	 * @return zajModel|boolean Returns the connected object or boolean if no connection.
 	 **/
 	public static function manytoone($class_name, $field, $id){
 		// if not id, then return false
-			if(empty($id)) return false;
-		// if id is already an object
-			if(is_object($id) && is_a($id, 'zajModel')) return $id;
+        if(empty($id)) return false;
+
 		// get the other model
-			$field_model = $class_name::__field($field);
-			$other_model = $field_model->options['model'];
+        /** @var zajModel $class_name */
+        $field_model = $class_name::__field($field);
+        $other_model = $field_model->options['model'];
+
 		// return the one object
-			$fetcher = $other_model::fetch($id);
-			// if it exists, perform additional stuff!
-			if(is_object($fetcher)){
-				// set connection type
-					$fetcher->connection_type = 'manytoone';
-				// if it is deleted then do not return
-					if($fetcher->data->status == 'deleted') $fetcher = false;
-			}
-			return $fetcher;
+        /** @var zajModel $other_model */
+        /** @var zajModel $fetcher */
+        $fetcher = $other_model::fetch($id);
+        // if it exists, perform additional stuff!
+        if(is_object($fetcher)){
+            // set connection type
+                $fetcher->connection_type = 'manytoone';
+            // if it is deleted then do not return
+                if($fetcher->data->status == 'deleted') $fetcher = false;
+        }
+        return $fetcher;
 	}
 
 	/**

@@ -303,7 +303,7 @@
 			<div class="span12">
 			<br/><br/>
 			<h1>Outlast Framework Installation</h1>
-			<h3>Welcome to the Outlast Framework installation for version <?php echo MozajikVersion::$major; ?>.<?php echo MozajikVersion::$minor; ?>.<?php echo MozajikVersion::$build; ?> <?php if(MozajikVersion::$beta) echo "beta"; ?></h3>
+			<h3>Welcome to the Outlast Framework installation for version <?php echo MozajikVersion::$major; ?>.<?php echo MozajikVersion::$minor; ?> <?php if(MozajikVersion::$beta) echo "beta"; ?></h3>
 			<?php if($this->zajlib->debug_mode){ ?><h5><span style="color: red;">Attention!</span> This installation will be running in <strong>debug mode</strong>. This is not recommended for production sites!</h5><?php } ?>
 			<hr/>
 			<ul>

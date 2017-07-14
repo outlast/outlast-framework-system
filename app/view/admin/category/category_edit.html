@@ -59,6 +59,8 @@
 							{% input category.photo object.data.photo %}
 						</div>
 					</div>
+
+					{% block content_more_fields %}{% endblock content_more_fields %}
 				</div>
 			</div>
 			<div role="tabpanel" class="tab-pane" id="locale">
@@ -93,6 +95,7 @@
 							</div>
 						{% endif %}
 					{% endforeach %}
+					{% block content_more_localized_fields %}{% endblock content_more_localized_fields %}
 					{% endif %}
 				</div>
 			</div>

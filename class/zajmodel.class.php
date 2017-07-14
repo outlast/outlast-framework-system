@@ -46,6 +46,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @property string $name The name of the object.
  * @property boolean $exists
  * @property stdClass $translation
+ * @property zajData $data
  */
 abstract class zajModel implements JsonSerializable {
 	// Instance variables
@@ -103,6 +104,11 @@ abstract class zajModel implements JsonSerializable {
 	 * @var integer
 	 **/
 	public static $fetch_paginate = 0;
+    /**
+     * Connection type, used when object is fetched in connection to another. Empty if not a connected object.
+     * @var string
+     */
+    public $connection_type = '';
 
 	// Mysql database and child details / settings
 	/**
