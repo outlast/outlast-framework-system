@@ -48,12 +48,15 @@ define('system/js/data/block', ["../ofw-jquery"], function() {
 	/**
 	 * Reload contents of a block.
 	 * @param {string} blockName The block name.
+	 * @param {function} callback A callback function after the reload finished.
 	 */
-	var reloadBlock = function(blockName){
+	var reloadBlock = function(blockName, callback){
 		var myUrl = ofw.queryMode(_initialFullRequest)+'&zaj_pushstate_block='+blockName;
-		ofw.ajax.get(myUrl, $('[data-block="'+blockName+'"]'));
+		ofw.ajax.get(myUrl, function(r){
+			$('[data-block="'+blockName+'"]').html(r);
+			if(typeof callback === 'function') callback(blockName);
+		});
 	};
-
 
     /** Actions **/
     var actions = {
