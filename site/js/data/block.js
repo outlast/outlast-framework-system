@@ -53,7 +53,9 @@ define('system/js/data/block', ["../ofw-jquery"], function() {
 	var reloadBlock = function(blockName, callback){
 		var myUrl = ofw.queryMode(_initialFullRequest)+'&zaj_pushstate_block='+blockName;
 		ofw.ajax.get(myUrl, function(r){
-			$('[data-block="'+blockName+'"]').html(r);
+			var $block = $('[data-block="'+blockName+'"]');
+			$block.html(r);
+			ofw.activateDataAttributeHandlers($block);
 			if(typeof callback === 'function') callback(blockName);
 		});
 	};
