@@ -75,25 +75,36 @@ class zajlib_tag_mozajik extends zajElementCollection{
 
 		// generate content					
 			// generate options
-				$options_php = $this->zajlib->array->to_code($field_object->options);
+            $options_php = $this->zajlib->array->to_code($field_object->options);
+            $uniqid = uniqid("");
+
+            // input name
+            switch($mode){
+                case 'filter':
+                    // Define input name
+                    $inputname = 'filter['.$fieldname.'][]';
+                    break;
+                default:
+                    $inputname = $fieldname;
+                    break;
+            }
+
 			// create an empty field object
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field = (object) array(); ?>');
-			// callback
-			    switch($mode){
-                    case 'filter':
-        				$field_object->__onFilterGeneration($param_array, $source);
-        				$inputname = 'filter['.$fieldname.'][]';
-        				break;
-                    default:
-        				$field_object->__onInputGeneration($param_array, $source);
-        				$inputname = $fieldname;
-        				break;
-			    }
+            $this->zajlib->compile->write('<?php $this->zajlib->variable->field = new stdClass(); ?>');
 			// set stuff
-    			// @todo id should be unique as well and its content should be removed or renamed
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->type = "'.$field_object->type.'"; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->field_name = "'.$fieldname.'"; $this->zajlib->variable->field->locale = '.$fieldtranslation.'; $this->zajlib->variable->field->name = "'.$inputname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
+            $this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->type = "'.$field_object->type.'"; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->field_name = "'.$fieldname.'"; $this->zajlib->variable->field->locale = '.$fieldtranslation.'; $this->zajlib->variable->field->name = "'.$inputname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = "'.$uniqid.'";  ?>');
 			// add set value
-				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
+            if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
+			// callback
+            switch($mode){
+                case 'filter':
+                    $field_object->__onFilterGeneration($param_array, $source);
+                    break;
+                default:
+                    $field_object->__onInputGeneration($param_array, $source);
+                    break;
+            }
+
 			// now create form field
 				// @todo Is this template path checked here?
 				$this->zajlib->compile->compile($template);

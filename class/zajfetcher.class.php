@@ -589,16 +589,16 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
      * Apply a filter query to the list.
      * @param array|boolean $query The filter query. See documentation for formatting. Defaults to $_GET.
 	 * @param boolean $similarity_search If set to true (false is the default), similar sounding results will be returned as well.
-	 * @param string $type AND or OR depending on how you want this filter to connect
+	 * @param string $logic AND or OR depending on how you want this filter to connect
 	 * @return zajFetcher This method can be chained.
      */
-    public function filter_query($query = false, $similarity_search = false, $type = 'AND'){
+    public function filter_query($query = false, $similarity_search = false, $logic = 'AND'){
 		// Default query
 		if($query == false) $query = $_GET;
 
 		/** @var zajModel $class_name */
 		$class_name = $this->class_name;
-        $result = $class_name::__onFilterQueryFetcher($this, $query, $similarity_search, $type);
+        $result = $class_name::__onFilterQueryFetcher($this, $query, $similarity_search, $logic);
 
         // perform the default if result is false
         if($result === false){
@@ -618,7 +618,19 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
                         }
 
                         // Run through all filters for the field
-                        if(count($values) > 0) $this->filter_group($field, $values, 'LIKE', $type);
+                        // @todo add custom group type param
+
+                        //print_r($values);
+                        //print "$field<br/>";
+
+                        if(is_array($values) && count($values) > 0){
+                            foreach($values as $value){
+                                if(is_array($value) && array_key_exists('value', $value) && array_key_exists('operator', $value) && array_key_exists('logic', $value)){
+                                    $this->filter($field, $value['value'], $value['operator'], $value['logic']);
+                                }
+                                else $this->filter($field, $value, 'LIKE', $logic);
+                            }
+                        }
                     }
 
                 }

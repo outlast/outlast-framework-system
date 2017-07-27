@@ -1,0 +1,11 @@
+{% with field.name='filter'|add:'['|add:field.field_name|add:'][from][value]' field.id=field.id|add:'_from]' field.uid=field.uid|add:'_from' field.value=field.value|keyvalue:'from'|keyvalue:'value' %}
+	{% insert 'field/datetime.field.html' %}
+{% endwith %}
+<input type="hidden" name="filter[{{field.field_name|add:'][from]'}}[operator]" value=">=">
+<input type="hidden" name="filter[{{field.field_name|add:'][from]'}}[logic]" value="AND">
+<i class="fa fa-arrow-circle-o-down"></i>
+{% with field.name='filter'|add:'['|add:field.field_name|add:'][to][value]' field.id=field.id|add:'_to]' field.uid=field.uid|add:'_to' field.value=field.value|keyvalue:'to'|keyvalue:'value' %}
+	{% insert 'field/datetime.field.html' %}
+{% endwith %}
+<input type="hidden" name="filter[{{field.field_name|add:'][to]'}}[operator]" value="<=">
+<input type="hidden" name="filter[{{field.field_name|add:'][to]'}}[logic]" value="AND">
