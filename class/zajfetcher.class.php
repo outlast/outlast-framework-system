@@ -626,7 +626,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
                         if(is_array($values) && count($values) > 0){
                             foreach($values as $value){
                                 if(is_array($value) && array_key_exists('value', $value) && array_key_exists('operator', $value) && array_key_exists('logic', $value)){
-                                    $this->filter($field, $value['value'], $value['operator'], $value['logic']);
+                                    if(!empty($value['value'])) $this->filter($field, $value['value'], $value['operator'], $value['logic']);
                                 }
                                 else $this->filter($field, $value, 'LIKE', $logic);
                             }
