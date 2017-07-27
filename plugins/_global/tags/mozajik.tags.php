@@ -111,13 +111,16 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	}
 
 	/**
-	 * Tag: filter - Generates a filter input for the given field.
+	 * Tag: inputfilter - Generates a filter input for the given field.
 	 *
-	 *  <b>{% filter contentpage.featured 'custom_filter.html' %}</b>
+	 *  <b>{% inputfilter contentpage.featured 'custom_filter.html' %}</b>
 	 *  1. <b>model_field</b> - The field name defined in the model. The format is model_name.field_name.
 	 *  2. <b>custom_html</b> - If you want to use a custom HTML to generate your own filter html then you can specify the html relative to any of the view directories.
 	 **/
-	public function tag_filter($param_array, &$source){
+	public function tag_inputfilter($param_array, &$source){
+		// check for required param
+        if(empty($param_array[0])) $source->error("Tag {% inputfilter %} requires at least one parameter.");
+
 	    // Rearrange the param array if applicable (custom html is in 3rd place in tag_input)
 	    if(is_array($param_array) && count($param_array) > 1){
 	        $param_array[2] = $param_array[1];
@@ -138,7 +141,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	 **/
 	public function tag_inputlocale($param_array, &$source){
 		// check for required param
-			if(empty($param_array[0])) $source->error("Tag {%inputlocale%} requires at least one parameter.");
+        if(empty($param_array[0])) $source->error("Tag {% inputlocale %} requires at least one parameter.");
 		// add defaults
 			if(empty($param_array[1])) $param_array[1] = '';
 			if(empty($param_array[2])) $param_array[2] = '$this->zajlib->lang->get()';

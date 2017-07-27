@@ -590,7 +590,6 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
      * @param array|boolean $query The filter query. See documentation for formatting. Defaults to $_GET.
 	 * @param boolean $similarity_search If set to true (false is the default), similar sounding results will be returned as well.
 	 * @param string $type AND or OR depending on how you want this filter to connect
-	 * @todo Add the option to specify fields.
 	 * @return zajFetcher This method can be chained.
      */
     public function filter_query($query = false, $similarity_search = false, $type = 'AND'){
