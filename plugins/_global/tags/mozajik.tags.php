@@ -75,25 +75,36 @@ class zajlib_tag_mozajik extends zajElementCollection{
 
 		// generate content					
 			// generate options
-				$options_php = $this->zajlib->array->to_code($field_object->options);
+            $options_php = $this->zajlib->array->to_code($field_object->options);
+            $uniqid = uniqid("");
+
+            // input name
+            switch($mode){
+                case 'filter':
+                    // Define input name
+                    $inputname = 'filter['.$fieldname.'][]';
+                    break;
+                default:
+                    $inputname = $fieldname;
+                    break;
+            }
+
 			// create an empty field object
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field = (object) array(); ?>');
-			// callback
-			    switch($mode){
-                    case 'filter':
-        				$field_object->__onFilterGeneration($param_array, $source);
-        				$inputname = 'filter['.$fieldname.'][]';
-        				break;
-                    default:
-        				$field_object->__onInputGeneration($param_array, $source);
-        				$inputname = $fieldname;
-        				break;
-			    }
+            $this->zajlib->compile->write('<?php $this->zajlib->variable->field = new stdClass(); ?>');
 			// set stuff
-    			// @todo id should be unique as well and its content should be removed or renamed
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->type = "'.$field_object->type.'"; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->field_name = "'.$fieldname.'"; $this->zajlib->variable->field->locale = '.$fieldtranslation.'; $this->zajlib->variable->field->name = "'.$inputname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
+            $this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->type = "'.$field_object->type.'"; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->field_name = "'.$fieldname.'"; $this->zajlib->variable->field->locale = '.$fieldtranslation.'; $this->zajlib->variable->field->name = "'.$inputname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = "'.$uniqid.'";  ?>');
 			// add set value
-				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
+            if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
+			// callback
+            switch($mode){
+                case 'filter':
+                    $field_object->__onFilterGeneration($param_array, $source);
+                    break;
+                default:
+                    $field_object->__onInputGeneration($param_array, $source);
+                    break;
+            }
+
 			// now create form field
 				// @todo Is this template path checked here?
 				$this->zajlib->compile->compile($template);
@@ -111,13 +122,16 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	}
 
 	/**
-	 * Tag: filter - Generates a filter input for the given field.
+	 * Tag: inputfilter - Generates a filter input for the given field.
 	 *
-	 *  <b>{% filter contentpage.featured 'custom_filter.html' %}</b>
+	 *  <b>{% inputfilter contentpage.featured 'custom_filter.html' %}</b>
 	 *  1. <b>model_field</b> - The field name defined in the model. The format is model_name.field_name.
 	 *  2. <b>custom_html</b> - If you want to use a custom HTML to generate your own filter html then you can specify the html relative to any of the view directories.
 	 **/
-	public function tag_filter($param_array, &$source){
+	public function tag_inputfilter($param_array, &$source){
+		// check for required param
+        if(empty($param_array[0])) $source->error("Tag {% inputfilter %} requires at least one parameter.");
+
 	    // Rearrange the param array if applicable (custom html is in 3rd place in tag_input)
 	    if(is_array($param_array) && count($param_array) > 1){
 	        $param_array[2] = $param_array[1];
@@ -138,7 +152,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	 **/
 	public function tag_inputlocale($param_array, &$source){
 		// check for required param
-			if(empty($param_array[0])) $source->error("Tag {%inputlocale%} requires at least one parameter.");
+        if(empty($param_array[0])) $source->error("Tag {% inputlocale %} requires at least one parameter.");
 		// add defaults
 			if(empty($param_array[1])) $param_array[1] = '';
 			if(empty($param_array[2])) $param_array[2] = '$this->zajlib->lang->get()';

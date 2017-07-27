@@ -589,17 +589,16 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
      * Apply a filter query to the list.
      * @param array|boolean $query The filter query. See documentation for formatting. Defaults to $_GET.
 	 * @param boolean $similarity_search If set to true (false is the default), similar sounding results will be returned as well.
-	 * @param string $type AND or OR depending on how you want this filter to connect
-	 * @todo Add the option to specify fields.
+	 * @param string $logic AND or OR depending on how you want this filter to connect
 	 * @return zajFetcher This method can be chained.
      */
-    public function filter_query($query = false, $similarity_search = false, $type = 'AND'){
+    public function filter_query($query = false, $similarity_search = false, $logic = 'AND'){
 		// Default query
 		if($query == false) $query = $_GET;
 
 		/** @var zajModel $class_name */
 		$class_name = $this->class_name;
-        $result = $class_name::__onFilterQueryFetcher($this, $query, $similarity_search, $type);
+        $result = $class_name::__onFilterQueryFetcher($this, $query, $similarity_search, $logic);
 
         // perform the default if result is false
         if($result === false){
@@ -619,7 +618,19 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
                         }
 
                         // Run through all filters for the field
-                        if(count($values) > 0) $this->filter_group($field, $values, 'LIKE', $type);
+                        // @todo add custom group type param
+
+                        //print_r($values);
+                        //print "$field<br/>";
+
+                        if(is_array($values) && count($values) > 0){
+                            foreach($values as $value){
+                                if(is_array($value) && array_key_exists('value', $value) && array_key_exists('operator', $value) && array_key_exists('logic', $value)){
+                                    if(!empty($value['value'])) $this->filter($field, $value['value'], $value['operator'], $value['logic']);
+                                }
+                                else $this->filter($field, $value, 'LIKE', $logic);
+                            }
+                        }
                     }
 
                 }
@@ -719,7 +730,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
         else $type = "&&";
 
         // Verify logic param
-        if($operator != "SOUNDS LIKE" && $operator != "LIKE" && $operator != "NOT LIKE" && $operator != "REGEXP" && $operator != "NOT REGEXP" && $operator != "!=" && $operator != "==" && $operator != "=" && $operator != "<=>" && $operator != ">" && $operator != ">=" && $operator != "<" && $operator != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($operator) specified is not valid.");
+        if($operator != 'IN' && $operator != 'NOT IN' && $operator != "SOUNDS LIKE" && $operator != "LIKE" && $operator != "NOT LIKE" && $operator != "REGEXP" && $operator != "NOT REGEXP" && $operator != "!=" && $operator != "==" && $operator != "=" && $operator != "<=>" && $operator != ">" && $operator != ">=" && $operator != "<" && $operator != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($operator) specified is not valid.");
         // if $value is a model object, use its id
         if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
 
@@ -965,7 +976,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * This method returns the connected fetcher object. This will be a collection of {@link zajModel} objects.
 	 * @param string $field The field name.
 	 * @param zajModel $object The object.
-	 * @return zajModel
+	 * @return zajFetcher Returns a list of objects.
 	 **/
 	public static function manytomany($field, &$object){
 		// Fetch the other model and other field
@@ -1015,7 +1026,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * This method returns the connected fetcher object. This will be a collection of {@link zajModel} objects.
 	 * @param string $field The field name.
 	 * @param zajModel $object The object.
-	 * @return zajModel
+	 * @return zajFetcher Returns a list of objects.
 	 **/
 	public static function onetomany($field, &$object){
 		// Fetch the other model and other field		
@@ -1049,26 +1060,29 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @param string $class_name The class name.
 	 * @param string $field The field name.
 	 * @param string $id The id.
-	 * @return zajModel
+	 * @return zajModel|boolean Returns the connected object or boolean if no connection.
 	 **/
 	public static function manytoone($class_name, $field, $id){
 		// if not id, then return false
-			if(empty($id)) return false;
-		// if id is already an object
-			if(is_object($id) && is_a($id, 'zajModel')) return $id;
+        if(empty($id)) return false;
+
 		// get the other model
-			$field_model = $class_name::__field($field);
-			$other_model = $field_model->options['model'];
+        /** @var zajModel $class_name */
+        $field_model = $class_name::__field($field);
+        $other_model = $field_model->options['model'];
+
 		// return the one object
-			$fetcher = $other_model::fetch($id);
-			// if it exists, perform additional stuff!
-			if(is_object($fetcher)){
-				// set connection type
-					$fetcher->connection_type = 'manytoone';
-				// if it is deleted then do not return
-					if($fetcher->data->status == 'deleted') $fetcher = false;
-			}
-			return $fetcher;
+        /** @var zajModel $other_model */
+        /** @var zajModel $fetcher */
+        $fetcher = $other_model::fetch($id);
+        // if it exists, perform additional stuff!
+        if(is_object($fetcher)){
+            // set connection type
+                $fetcher->connection_type = 'manytoone';
+            // if it is deleted then do not return
+                if($fetcher->data->status == 'deleted') $fetcher = false;
+        }
+        return $fetcher;
 	}
 
 	/**

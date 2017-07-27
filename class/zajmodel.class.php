@@ -26,16 +26,16 @@ define('CACHE_DIR_LEVEL', 4);
  * @method boolean __beforeCache() EVENT. Executed before the object is saved to a cache file. If returns false, the object is not cached!
  * @method boolean __beforeUncache() EVENT. Executed before the object cache is removed. If it returns false, the object cache will not be removed! Note: This may not be called in every situation!
  * @method boolean __beforeDelete() EVENT. Executed before the object is deleted. If returns false, the object is not deleted!
- * @method void __afterCreateSave() EVENT. Executed after the object is created in the database.
- * @method void __afterCreate() EVENT. Executed after the object is created in memory.
- * @method void __afterSave() EVENT. Executed after the object is saved to the database.
- * @method void __afterFetch() EVENT. Executed after the object is fetched from the database (and NOT from cache). Also fired after save.
- * @method void __afterFetchCache() EVENT. Executed after the object is fetched from a cache file. Note that this is also fired after a database fetch.
- * @method void __afterCache() EVENT. Executed after the object is saved to a cache file.
- * @method void __afterUncache() EVENT. Executed after the object cache is removed (but only if the remove was successful) Note: This may not be called in every situation!
- * @method void __afterDelete() EVENT. Executed after the object is deleted.
- * @method void __onFetch() EVENT. Executed when a fetch method is requested.
- * @method void __onCreate() EVENT. Executed when a create method is requested.
+ * @method __afterCreateSave() EVENT. Executed after the object is created in the database.
+ * @method __afterCreate() EVENT. Executed after the object is created in memory.
+ * @method __afterSave() EVENT. Executed after the object is saved to the database.
+ * @method __afterFetch() EVENT. Executed after the object is fetched from the database (and NOT from cache). Also fired after save.
+ * @method __afterFetchCache() EVENT. Executed after the object is fetched from a cache file. Note that this is also fired after a database fetch.
+ * @method __afterCache() EVENT. Executed after the object is saved to a cache file.
+ * @method __afterUncache() EVENT. Executed after the object cache is removed (but only if the remove was successful) Note: This may not be called in every situation!
+ * @method __afterDelete() EVENT. Executed after the object is deleted.
+ * @method __onFetch() EVENT. Executed when a fetch method is requested.
+ * @method __onCreate() EVENT. Executed when a create method is requested.
  * @method static zajFetcher __onSearch() __onSearch(zajFetcher $fetcher, string $type) EVENT. Executed when the client side search API is requested. The API is disabled by default.
  * @method array __toSearchApiJson() __toSearchApiJson() EVENT. Executed when an item is being returned as part of the search API. You can override this to send more or different info about the object to the json response.
  * @method static boolean __onSearchFetcher() __onSearchFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when search() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default search is applied.
@@ -46,6 +46,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @property string $name The name of the object.
  * @property boolean $exists
  * @property stdClass $translation
+ * @property zajData $data
  */
 abstract class zajModel implements JsonSerializable {
 	// Instance variables
@@ -103,6 +104,11 @@ abstract class zajModel implements JsonSerializable {
 	 * @var integer
 	 **/
 	public static $fetch_paginate = 0;
+    /**
+     * Connection type, used when object is fetched in connection to another. Empty if not a connected object.
+     * @var string
+     */
+    public $connection_type = '';
 
 	// Mysql database and child details / settings
 	/**
@@ -145,7 +151,7 @@ abstract class zajModel implements JsonSerializable {
 	 * The event stack, which is basically an array of events currently running.
 	 * @var array
 	 **/
-	private $event_stack = array();
+	private $event_stack = [];
 
 	/**
 	 * This is an object-specific private variable which registers if any extension of $this has had its event fired. This is used to prevent infinite loops.
@@ -160,7 +166,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @var array
 	 * @todo If it is possible to store this on a per-class basis, it would be better than this 'global' way!
 	 **/
-	public static $extensions = array();
+	public static $extensions = [];
 
 	/**
 	 * Constructor for model object. You should never directly call this. Use {@link: create()} instead.
@@ -181,7 +187,7 @@ abstract class zajModel implements JsonSerializable {
 			else $this->id = $id;
 
 		// everything else is loaded on request!
-		return true;
+		return $this;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,38 +197,41 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Defines and returns the model structure.
 	 * @param bool|stdClass $fields The field's object generated by the child class.
-	 * @param bool|stdClass $compatibility_mode For older versions of OFW, this is where $fields are set and the first param is the class name.
  	 * @return stdClass Returns an object containing the field settings as parameters.
 	 */
-	public static function __model($fields = false, $compatibility_mode = false){
+	public static function __model($fields = false){
+
 		// Check fields
-			if($fields === false) zajLib::me()->error("Tried to get model without specifying fields. You must at least pass an empty array of fields.");
-		// If I am in compatibility mode
-			if($compatibility_mode !== false) $fields = $compatibility_mode;
+		if($fields === false) zajLib::me()->error("Tried to get model without specifying fields. You must at least pass an empty array of fields.");
+
 		// Get my class_name
-			/* @var string|zajModel $class_name */
-			$class_name = get_called_class();
-			if(!$class_name::$in_database) return false; 	// disable for non-database objects
-		// do I have an extension? if so, these override my own settings
-			$ext = $class_name::extension();
-			if($ext){
-				// Merge my field objects together.
-				$fields = (object) array_merge((array) $fields, (array) $ext::__model());
-			}
+        /* @var string|zajModel $class_name */
+        $class_name = get_called_class();
+        if(!$class_name::$in_database) return new stdClass(); 	// disable for non-database objects
+
+		// do I have an extension? if so, merge fields
+        /** @var zajModel $ext */
+        $ext = $class_name::extension();
+        if($ext) $fields = $ext::__model($fields);
+
+        // Check for errors
+        if(!is_object($fields)) zajLib::me()->error("The __model() method of $fields is not yet upgraded to the new PHP 7 standard. Please review its other methods as well to avoid warnings and errors.");
+
 		// now set defaults (if not already set)
-			if(!isset($fields->unit_test)) $fields->unit_test = zajDb::unittest();
-			if(!isset($fields->time_create)) $fields->time_create = zajDb::time();
-			if(!isset($fields->time_edit)) $fields->time_edit = zajDb::time();
-			if(!isset($fields->ordernum)) $fields->ordernum = zajDb::ordernum();
-			if(!isset($fields->status)) $fields->status = zajDb::select(array("new","deleted"),"new");
-			if(!isset($fields->id)) $fields->id = zajDb::id();
+        if(!isset($fields->unit_test)) $fields->unit_test = zajDb::unittest();
+        if(!isset($fields->time_create)) $fields->time_create = zajDb::time();
+        if(!isset($fields->time_edit)) $fields->time_edit = zajDb::time();
+        if(!isset($fields->ordernum)) $fields->ordernum = zajDb::ordernum();
+        if(!isset($fields->status)) $fields->status = zajDb::select(array("new","deleted"),"new");
+        if(!isset($fields->id)) $fields->id = zajDb::id();
+
 		// if i am not in static mode, then i can save it as $this->fields
 		return $fields;
 	}
 	/**
 	 * Get the field object for a specific field in the model.
 	 * @param string $field_name The name of the field in the model.
-	 * @return zajField Returns a zajField object.
+	 * @return zajField|boolean Returns a zajField object or false if error.
 	 */
 	public static function __field($field_name){
 		// Get my class_name
@@ -242,20 +251,20 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Fetch a single or multiple existing object(s) of this class.
 	 * @param bool|string|zajModel $id OPTIONAL. The id of the object. Leave empty if you want to fetch multiple objects. You can also pass an existing zajModel object in which case it will simply pass through the function without change - this is useful so you can easily support both id's and existing objects in a function.
-	 * @return zajFetcher|zajModel Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects).
+	 * @return zajFetcher|zajModel|boolean Returns a zajFetcher object (for multiple objects) or a zajModel object (for single objects) or false if failed to fetch.
 	 */
-	public static function fetch($id=false){
+	public static function fetch($id=null){
 		// Get my class_name
 			/* @var string|zajModel $class_name */
 			$class_name = get_called_class();
-		// if id is specifically  empty, then return false
-			if($id !== false && $id == '') return false;
+		// if id is specifically null or empty, then return false
+			if(!is_null($id) && ($id === false || (is_string($id) && $id == ''))) return false;
 		// call event
 			$class_name::fire_static('onFetch', array($class_name, $id));
 		// disable for non-database objects if id not given!
-			if($id === false && !$class_name::$in_database) return false;
-		// if id is false, then this is a multi-row fetch
-			if($id === false) return new zajFetcher($class_name);
+			if(is_null($id) && !$class_name::$in_database) return false;
+		// if id is null, then this is a multi-row fetch
+			if(is_null($id)) return new zajFetcher($class_name);
 		// let's see if i can resume it!
 			else{
 				// first, is it already resumed? in this case let's make sure its the proper kind of object and just return it
@@ -755,7 +764,6 @@ abstract class zajModel implements JsonSerializable {
 	 * Shortcuts to static events and actions.
 	 *
 	 * @ignore
-	 * @todo Once you remove passing of CLASS_NAME via $arguments[0] you MUST also remove array_shift() in this function.
 	 */
 	public static function __callStatic($name, $arguments){
 		// get current class
@@ -778,7 +786,6 @@ abstract class zajModel implements JsonSerializable {
 		if($ext && $name != '__model' && $name != 'create'){
 			// now, check if method exists on extension
 			if(method_exists($ext, $name)){
-				array_shift($arguments);
 				return call_user_func_array("$ext::$name", $arguments);
 			}
 			else  $extended_but_does_not_exist = true;
@@ -1178,17 +1185,17 @@ abstract class zajModelExtender {
 	}
 
 	/**
-	 * Override model. Check to see if I hae extensions and extend me.
+	 * Override model. Check to see if I have extensions and extend me.
+	 * @param bool|stdClass $fields The field's object generated by the child class.
+ 	 * @return stdClass Returns an object containing the field settings as parameters.
 	 **/
-	public static function __model($class_name, $fields){
+	public static function __model($fields = false){
+		$class_name = get_called_class();
 		// do I have an extension? if so, these override my own settings
 		/* @var zajModelExtender $class_name */
 		/* @var zajModel $ext */
 		$ext = $class_name::extension();
-		if($ext){
-			// Merge my field objects together.
-			$fields = (object) array_merge((array) $fields, (array) $ext::__model());
-		}
+		if($ext) $fields = $ext::__model($fields);
 		return $fields;
 	}
 

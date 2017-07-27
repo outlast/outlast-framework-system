@@ -106,7 +106,8 @@ class zajCompileSource {
 
 		zajCompileSession::verbose("Adding <code>$this->file_path</code> to compile sources.");
 
-		return $this->file = fopen($this->file_path, 'r');
+		$this->file = fopen($this->file_path, 'r');
+		return $this;
 	}
 
 	/**
@@ -121,7 +122,12 @@ class zajCompileSource {
 			if($this->current_line == ''){
 				$this->current_line = fgets($this->file);
 				$this->line_number++;
+                // write debug info in debug mode
+                if($this->zajlib->debug_mode && $this->parse){
+                    $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug = (object) [ 'file_path'=>'".addslashes($this->requested_path)."', 'line_number'=>$this->line_number ]; ?>");
+                }
 			}
+
 		// check for php related stuff (but only if parsing is on)
 			if($this->parse){
 				// disable PHP tags
@@ -182,6 +188,12 @@ class zajCompileSource {
 	public function eof(){
 		return (!$this->current_line && feof($this->file));
 	}
+	public function close(){
+        if($this->zajlib->debug_mode && $this->parse){
+            $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug = new stdClass(); ?>");
+        }
+	    fclose($this->file);
+	}
 	public function pause(){
 		zajCompileSession::verbose("Pausing <code>$this->file_path</code> compile source.");
 		$this->paused = true;
@@ -214,7 +226,7 @@ class zajCompileSource {
 	 * @return zajCompileBlock The new block object.
 	 */
 	public function add_block($block_name){
-		if($this->has_block($block_name)) $this->warning("The block $block_name was found more than once.");
+		if($this->has_block($block_name)) $this->error("The block $block_name was found more than once.");
 
 		// Increment block level
 		$this->current_block = $this->blocks[$block_name] = new zajCompileBlock($block_name, $this, $this->current_block, $this->block_level);
@@ -364,7 +376,15 @@ class zajCompileSource {
 		$this->zajlib->warning("Template compile warning: $message (file: $this->file_path / line: $this->line_number)");
 	}
 	public function error($message){
-		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)", true);
+	    // Remove all my destination files
+	    foreach($this->compile_session->get_destinations() as $destination){
+	        /** @var zajCompileDestination $destination */
+	        $destination->unlink();
+	    }
+
+        // Show the error
+        $this->close();
+		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)");
 		exit;
 	}
 

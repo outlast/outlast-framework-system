@@ -183,11 +183,9 @@ class zajfield_manytoone extends zajField {
 	 * @return bool
 	 **/
 	public function __onInputGeneration($param_array, &$source){
-		// override to print all choices
-			// use search method with all			
-				$class_name = $this->options['model'];
-			// write to compile destination
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); if($this->zajlib->variable->field->choices === false) $this->zajlib->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
+        // Generate available choices
+        $class_name = $this->options['model'];
+        $this->zajlib->compile->write('<?php $this->zajlib->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); if($this->zajlib->variable->field->choices === false) $this->zajlib->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
 		return true;
 	}
 
@@ -197,8 +195,15 @@ class zajfield_manytoone extends zajField {
 	 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
 	 * @return bool
 	 **/
-	public function __onFilterGeneration($param_array, &$source){
-		return $this->__onInputGeneration($param_array, $source);
+    public function __onFilterGeneration($param_array, &$source){
+        // Generate input
+        $this->__onInputGeneration($param_array, $source);
+
+        // Generate value setting
+		$class_name = $this->options['model'];
+		$this->zajlib->compile->write('<?php if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$this->name.'"])){ $this->zajlib->variable->field->value = '.$class_name.'::fetch($_REQUEST[\'filter\']["'.$this->name.'"][0]); } ?>');
+
+        return true;
 	}
 
 

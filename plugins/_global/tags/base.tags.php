@@ -176,7 +176,7 @@ EOF;
 			}
 			else $source->warning('Invalid foreach tag syntax.');
 		// add a level to hierarchy
-			$local_var = '$foreach_item_'.uniqid("");
+			$local_var = '$this->zajlib->variable->ofw->tmp->foreach_item_'.uniqid("");
 			$source->add_level('foreach', array('item'=>$item, 'local'=>$local_var));
 		
 		// generate code
@@ -192,46 +192,46 @@ EOF;
 			if(empty(\$forloop_depth)) \$forloop_depth = 1;
 			else \$forloop_depth++;
 		// does a parent forloop exist?
-			if(is_object(\$current_forloop)) \$parent_forloop = clone \$current_forloop;
-			else \$parent_forloop = false;
+			if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop)) \$this->zajlib->variable->ofw->tmp->parent_forloop = clone \$this->zajlib->variable->ofw->tmp->current_forloop;
+			else \$this->zajlib->variable->ofw->tmp->parent_forloop = false;
 		// create for loop variables
-			\$current_forloop = new stdClass();
-			\$current_forloop->counter0 = -1;
+			\$this->zajlib->variable->ofw->tmp->current_forloop = new stdClass();
+			\$this->zajlib->variable->ofw->tmp->current_forloop->counter0 = -1;
 			// If not countable object, then typecast to array first (todo: can we do this in lib->array_to_object?)
-			if(is_object({$fetcher}) && !is_a({$fetcher}, 'Countable')) \$current_forloop->length = count((array) {$fetcher});
-			else \$current_forloop->length = count({$fetcher});
+			if(is_object({$fetcher}) && !is_a({$fetcher}, 'Countable')) \$this->zajlib->variable->ofw->tmp->current_forloop->length = count((array) {$fetcher});
+			else \$this->zajlib->variable->ofw->tmp->current_forloop->length = count({$fetcher});
 
- 			\$current_forloop->counter = 0;
-			\$current_forloop->revcounter = \$current_forloop->length+1;
-			\$current_forloop->revcounter0 = \$current_forloop->length;
-			\$current_forloop->value = false;
-			if(is_object(\$parent_forloop)){
-				\$current_forloop->parentloop = \$parent_forloop;
-				\$current_forloop->totalcounter = \$parent_forloop->totalcounter;
-				\$current_forloop->totalcounter0 = \$parent_forloop->totalcounter0;
-				\$current_forloop->depth = \$current_forloop->parentloop->depth + 1;
+ 			\$this->zajlib->variable->ofw->tmp->current_forloop->counter = 0;
+			\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter = \$this->zajlib->variable->ofw->tmp->current_forloop->length+1;
+			\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter0 = \$this->zajlib->variable->ofw->tmp->current_forloop->length;
+			\$this->zajlib->variable->ofw->tmp->current_forloop->value = false;
+			if(is_object(\$this->zajlib->variable->ofw->tmp->parent_forloop)){
+				\$this->zajlib->variable->ofw->tmp->current_forloop->parentloop = \$this->zajlib->variable->ofw->tmp->parent_forloop;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter = \$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0 = \$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter0;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->depth = \$this->zajlib->variable->ofw->tmp->current_forloop->parentloop->depth + 1;
 			}
 			else{
-				\$current_forloop->totalcounter = 0;
-				\$current_forloop->totalcounter0 = -1;
-				\$current_forloop->depth = 1;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter = 0;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0 = -1;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->depth = 1;
 			}
 
 			foreach({$fetcher} as \$key=>{$item}){
-				\$current_forloop->counter++;
-				\$current_forloop->counter0++;
-				\$current_forloop->revcounter--;
-				\$current_forloop->revcounter0--;
-				\$current_forloop->totalcounter++;
-				\$current_forloop->totalcounter0++;
-				\$current_forloop->odd = (\$current_forloop->counter % 2);
-				\$current_forloop->even = !(\$current_forloop->odd);
-				\$current_forloop->first = !\$current_forloop->counter0;
-				\$current_forloop->last = !\$current_forloop->revcounter0;
-				\$current_forloop->key = \$key;
-				\$current_forloop->previous = \$current_forloop->value;
-				\$current_forloop->value = {$item};
-				\$this->zajlib->variable->forloop = \$current_forloop;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->counter++;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->counter0++;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter--;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter0--;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter++;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0++;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->odd = (\$this->zajlib->variable->ofw->tmp->current_forloop->counter % 2);
+				\$this->zajlib->variable->ofw->tmp->current_forloop->even = !(\$this->zajlib->variable->ofw->tmp->current_forloop->odd);
+				\$this->zajlib->variable->ofw->tmp->current_forloop->first = !\$this->zajlib->variable->ofw->tmp->current_forloop->counter0;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->last = !\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter0;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->key = \$key;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->previous = \$this->zajlib->variable->ofw->tmp->current_forloop->value;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->value = {$item};
+				\$this->zajlib->variable->forloop = \$this->zajlib->variable->ofw->tmp->current_forloop;
 ?>
 EOF;
 		// write to file
@@ -273,7 +273,7 @@ EOF;
 // end while
 	}
 //only print rest if 0
-	if(\$current_forloop->length == 0){
+	if(\$this->zajlib->variable->ofw->tmp->current_forloop->length == 0){
 ?>
 EOF;
 		// write to file
@@ -309,17 +309,17 @@ EOF;
 		unset(\$foreach_item);
 	}
 	// if I had a parent, set me
-	if(is_object(\$current_forloop->parentloop)){
+	if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop->parentloop)){
 		// Set my total counters
-		\$parent_forloop->totalcounter = \$current_forloop->totalcounter;
-		\$parent_forloop->totalcounter0 = \$current_forloop->totalcounter0;
+		\$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter = \$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter;
+		\$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter0 = \$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0;
 		// Unset me and reset me
-		\$this->zajlib->variable->forloop = \$current_forloop = \$current_forloop->parentloop;
+		\$this->zajlib->variable->forloop = \$this->zajlib->variable->ofw->tmp->current_forloop = \$this->zajlib->variable->ofw->tmp->current_forloop->parentloop;
 	}
 	else{
 		// unset stuff
-			\$parent_forloop = null;
-			\$current_forloop = null;
+			\$this->zajlib->variable->ofw->tmp->parent_forloop = null;
+			\$this->zajlib->variable->ofw->tmp->current_forloop = null;
 			\$this->zajlib->variable->forloop = null;
 	}
 ?>
@@ -626,6 +626,7 @@ EOF;
 	 *  <br><b>{% include '/message/new/' parameter1 'parameter two' %}</b>	 
 	 *  1. <b>request</b> - The request which will be routed as any other such URL request.
 	 *  2. <b>optional parameters</b> - zero, one, or more optional parameters, passed as parameters to the controller method.
+
 	 **/
 	public function tag_include($param_array, &$source){
 		// generate optional parameters
@@ -636,9 +637,8 @@ EOF;
 		// generate content
 			$contents = <<<EOF
 <?php
-// start include
-	\$this->zajlib->load->library('url');
-	\$this->zajlib->url->redirect($var1, array($var2));
+    // start include
+	\$this->zajlib->reroute($var1, array($var2));
 ?>
 EOF;
 		// write to file
@@ -798,7 +798,7 @@ EOF;
 		// Support old {% with business.employees.count as total %} syntax.
 		if($param_array[1]->vartext == 'as'){
 			// add level
-				$temporary_variable = '$before_with_'.uniqid();
+				$temporary_variable = '$this->zajlib->variable->ofw->tmp->before_with_'.uniqid();
 				$source->add_level('with', array([$param_array[2]->variable], [$temporary_variable]));
 			// generate with
 				$contents = <<<EOF

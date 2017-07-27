@@ -41,12 +41,12 @@ define('regexp_zaj_operator', '/(<=|>=|!==|!=|===|==|=|>|<)/');
 /**
  * Require my other files.
  */
-require(zajLib::me()->basepath.'system/class/zajcompileblock.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompiledestination.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompilesource.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompileelement.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompiletag.class.php');
-require(zajLib::me()->basepath.'system/class/zajcompilevariable.class.php');
+require('zajcompileblock.class.php');
+require('zajcompiledestination.class.php');
+require('zajcompilesource.class.php');
+require('zajcompileelement.class.php');
+require('zajcompiletag.class.php');
+require('zajcompilevariable.class.php');
 
 /**
  * One compile session, which may include several source and destination files.
@@ -148,6 +148,7 @@ class zajCompileSession {
 		// compile while i dont reach its eof
 			zajCompileSession::verbose("Now compiling source $current_source->file_path");
 			while(!$current_source->eof()) $current_source->compile();
+			$current_source->close();
 		// remove the source
 			array_shift($this->sources);
 		// now recursive if more sources left
@@ -179,7 +180,7 @@ class zajCompileSession {
 			$source->set_parse(false);
 		// now compile
 			while(!$source->eof()) $source->compile();
-		
+		    $source->close();
 		return true;
 	}
 
@@ -291,6 +292,15 @@ class zajCompileSession {
 		/** @var zajCompileDestination $dest */
 		foreach($this->destinations as $dest) $dest->resume();
 		return true;
+	}
+
+	/**
+	 * Gets all of the current destinations.
+	 *
+	 * @return array
+	 */
+	public function get_destinations(){
+		return $this->destinations;
 	}
 
 	/**

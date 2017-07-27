@@ -128,8 +128,7 @@ class RowIterator implements IteratorInterface
     {
         $this->xmlReader->close();
 
-        $sheetDataFilePath = 'zip://' . $this->filePath . '#' . $this->sheetDataXMLFilePath;
-        if ($this->xmlReader->open($sheetDataFilePath) === false) {
+        if ($this->xmlReader->openFileInZip($this->filePath, $this->sheetDataXMLFilePath) === false) {
             throw new IOException("Could not open \"{$this->sheetDataXMLFilePath}\".");
         }
 
@@ -220,9 +219,8 @@ class RowIterator implements IteratorInterface
     {
         // Read dimensions of the sheet
         $dimensionRef = $xmlReader->getAttribute(self::XML_ATTRIBUTE_REF); // returns 'A1:M13' for instance (or 'A1' for empty sheet)
-        if (preg_match('/[A-Z\d]+:([A-Z\d]+)/', $dimensionRef, $matches)) {
-            $lastCellIndex = $matches[1];
-            $this->numColumns = CellHelper::getColumnIndexFromCellIndex($lastCellIndex) + 1;
+        if (preg_match('/[A-Z]+\d+:([A-Z]+\d+)/', $dimensionRef, $matches)) {
+            $this->numColumns = CellHelper::getColumnIndexFromCellIndex($matches[1]) + 1;
         }
 
         return XMLProcessor::PROCESSING_CONTINUE;
@@ -261,6 +259,7 @@ class RowIterator implements IteratorInterface
     {
         $currentColumnIndex = $this->getColumnIndex($xmlReader);
 
+        // NOTE: expand() will automatically decode all XML entities of the child nodes
         $node = $xmlReader->expand();
         $this->currentlyProcessedRowData[$currentColumnIndex] = $this->getCellValue($node);
         $this->lastColumnIndexProcessed = $currentColumnIndex;

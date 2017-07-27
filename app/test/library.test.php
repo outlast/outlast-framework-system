@@ -388,6 +388,7 @@ class OfwLibraryTest extends zajTest {
                 zajTestAssert::areIdentical('asdf/', $r);
                 $r = $this->zajlib->url->get_requestpath('asdf//test');
                 zajTestAssert::areIdentical('asdf/test/', $r);
+                
                 zajTestAssert::areIdentical($this->zajlib->app.$this->zajlib->mode, $this->zajlib->requestpath);
 	}
 

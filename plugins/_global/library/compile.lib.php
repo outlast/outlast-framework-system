@@ -19,15 +19,17 @@ class zajlib_compile extends zajLibExtension{
 	/**
 	 * A {@link zajElementsLoader} object that loads tags and directs the execution to the correct tag processing method.
 	 **/
-		public $tags;
+    public $tags;
+
 	/**
 	 * A {@link zajElementsLoader} object that loads filters and directs the execution to the correct filter processing method.
 	 **/
-		public $filters;
+    public $filters;
+
 	/**
 	 * An array of {@link zajCompileSession} objects. When compiling a hierarchy of files, many sessions are needed to handle template inheritance correctly.
 	 **/
-		public $sessions = array();
+    public $sessions = [];
 	
 	/**
 	 * Creates a new compile session.
@@ -78,14 +80,17 @@ class zajlib_compile extends zajLibExtension{
 		// get the latest session
 			$current_session = end($this->sessions);
 		// start compiling this session
+		    $this->zajlib->compile_started = true;
 			$ended = $current_session->compile();
 		// did it end?
-			if(!$ended) return false;
+			if(!$ended){
+			    return false;
+            }
 		// remove it
 			array_pop($this->sessions);
 		// do i still have any compiling to do?
 			if(count($this->sessions) > 0) return $this->go();
-		return false;
+       return false;
 	}
 
 

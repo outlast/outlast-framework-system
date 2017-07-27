@@ -37,6 +37,24 @@ class OfwLangTest extends zajTest {
 		zajTestAssert::areIdentical($this->zajlib->config->variable->section->files->system_field_files_upload, $this->zajlib->lang->section->files->system_field_files_upload);
 	}
 
+
+    /**
+     * Test locale templates
+     */
+    public function system_template_variations(){
+        $this->zajlib->lang->set('hu_HU');
+        $returned_content = $this->zajlib->template->show('system/test/test_locale.html', false, true);
+        zajTestAssert::areIdentical('Hungarian.', $returned_content);
+
+        $this->zajlib->lang->set('fr_FR');
+        $returned_content = $this->zajlib->template->show('system/test/test_locale.html', false, true);
+        zajTestAssert::areIdentical('Default locale.', $returned_content);
+
+        // @todo {% extends %} not yet supported!
+        //$this->zajlib->lang->set('en_US');
+        //$returned_content = $this->zajlib->template->show('system/test/test_locale_extends.html', false, true);
+        //zajTestAssert::areIdentical('English. With more.', $returned_content);
+    }
 	/**
 	 * Check if auto loading works.
 	 */
@@ -74,6 +92,19 @@ class OfwLangTest extends zajTest {
 	 * Check if certain fields exist.
 	 */
 	public function system_language_file_variables(){
+	    // Verify app level lang
+        $my_files = $this->zajlib->file->get_files('app/lang/', true);
+        foreach($my_files as $f){
+            $file = str_ireplace('app/lang/', '', $this->zajlib->file->get_relative_path($f));
+            $fdata = explode('.', $file);
+            // Check for old data
+            if(strlen($fdata[1]) < 5) $this->zajlib->test->notice("Found old language file format: ".$file);
+            else{
+                $file = trim($fdata[0], '/');
+                $this->verify_single_language_file($file);
+            }
+        }
+
 		// Get all of the plugins (local lang files are in _project plugin)
 		foreach($this->zajlib->plugin->get_plugins('app') as $plugin){
 			$my_files = $this->zajlib->file->get_files('plugins/'.$plugin.'/lang/', true);
