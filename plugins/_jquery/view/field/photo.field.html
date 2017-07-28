@@ -3,6 +3,8 @@
 <script>
 {% block photo_attribute_init %}
 	photo.setFieldOption('{{field.uid}}', 'countLimit', 1);
-	photo.loadExisting('{{field.uid}}', '{{field.value.id}}');
+	{% if field.value %}
+		photo.loadExisting('{{field.uid}}', '{{field.value.id}}');
+	{% endif %}
 {% endblock %}
 </script>

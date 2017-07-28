@@ -177,7 +177,6 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 			flash_swf_url : ofw.baseurl+'system/js/plupload/plupload.flash.swf'
 		});
 		myPlupload.init();
-		alert(api.getFieldOption(fieldid, 'countLimit'));
 
 		// Add callbacks
 		myPlupload.bind('Init', function(up, params){ pluploadOnInit(fieldid, up, params) });
@@ -375,7 +374,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 * @param {string} fieldid The field unique id.
 		 */
 		removeAll: function(fieldid){
-			$('[data-photo-field-id="'+fieldid+'"]').each(function(){
+			$('[data-photo-field-id="'+fieldid+'"][data-photo-id]').each(function(){
 				var $el = $(this);
 				var photoid = $el.attr('data-photo-id');
 				api.remove(fieldid, photoid);
@@ -423,7 +422,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 */
 		addFieldValue: function(fieldid, type, photoid){
 			// If field value exists already, return
-			if(api.doesValueExistInField(fieldid, type, photoid)) return;
+			if(photoid === null || api.doesValueExistInField(fieldid, type, photoid)) return;
 
 			// Get field values
 			var fieldValues = api.getFieldValues(fieldid, type);
