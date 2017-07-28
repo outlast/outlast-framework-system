@@ -94,14 +94,32 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 	};
 
 	/**
+	 * Get my browse button
+	 * @param {string} fieldid The field identifier.
+	 * @returns {jQuery} The browse button jquery element.
+	 */
+	var getBrowseButton = function(fieldid) {
+		return $('[data-photo="uploadButton"]').filter('[data-photo-field-id="'+fieldid+'"');
+	};
+
+	/**
+	 * Get my progress bar.
+	 * @param {string} fieldid The field identifier.
+	 * @returns {jQuery} The progress bar jquery element.
+	 */
+	var getProgressBar = function(fieldid) {
+		return $('[data-photo="uploadProgressBar"]').filter('[data-photo-field-id="'+fieldid+'"');
+	};
+
+	/**
 	 * Get photo url for photo id.
 	 * @param {string} photoid The photo id.
 	 * @param {boolean} preview Set to true if preview.
 	 * @returns {string} Returns the full url.
 	 */
 	var getPhotoUrl = function(photoid, preview) {
-		if(preview) return ofw.baseurl+'system/photo/preview/?id='+photoid;
-		else return ofw.baseurl+'system/photo/show/?id='+photoid;
+		if(preview) return ofw.baseurl+'system/api/photo/preview/?id='+photoid;
+		else return ofw.baseurl+'system/api/photo/show/?id='+photoid;
 	};
 
 	/**
@@ -129,6 +147,94 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 			}
 		});
 	};
+
+	/**
+	 * Init the uploader javascript.
+	 * @param {string} fieldid The field unique id.
+	 * @param {Object} browseButton The DOM object of the browse button.
+	 * @param {Object} dropElement The DOM object of the drop element.
+	 */
+	var pluploadInit = function(fieldid, browseButton, dropElement) {
+		// Initialize
+		var myPlupload = new plupload.Uploader({
+			runtimes : 'html5,flash,html4',
+			browse_button : browseButton,
+			drop_element : dropElement,
+			//max_file_size : 100, //'{{field.options.max_file_size|escapejs}}',
+			url : ofw.baseurl+'system/plupload/upload/photo/',
+			flash_swf_url : ofw.baseurl+'system/js/plupload/plupload.flash.swf'
+		});
+		myPlupload.init();
+
+		// Add callbacks
+		myPlupload.bind('Init', function(up, params){ pluploadOnInit(fieldid, up, params) });
+		myPlupload.bind('FilesAdded', function(up, files){ pluploadOnFilesAdded(fieldid, up, files) });
+		myPlupload.bind('UploadProgress', function(up, file){ pluploadOnUploadProgress(fieldid, up, file) });
+		myPlupload.bind('Error', function(up, error){ pluploadOnError(fieldid, up, error) });
+		myPlupload.bind('FileUploaded', function(up, file, result){ pluploadOnFileUploaded(fieldid, up, file, result) });
+
+		// Set to global var
+		photoFieldUploaderObjects[fieldid] = myPlupload;
+	};
+
+	/**
+	 * Called after the plupload was initialized.
+	 */
+	var pluploadOnInit = function(fieldid, up, params){
+		var $browseButton = getBrowseButton(fieldid);
+		$browseButton.removeClass('hide');
+	};
+
+	/**
+	 * Called when files were added.
+	 */
+	var pluploadOnFilesAdded = function(fieldid, up, files){
+		setTimeout(function(){
+			up.start();
+			up.refresh();	// Reposition Flash/Silverlight
+		}, 800);
+	};
+
+	/**
+	 * Called when upload progress is updated.
+	 */
+	var pluploadOnUploadProgress = function(fieldid, up, file) {
+		var $progressBar = getProgressBar(fieldid);
+		$progressBar.find('div').css('width', file.percent + "%");
+		$progressBar.removeClass('hide');
+	};
+
+	/**
+	 * Called when the upload has finished.
+	 */
+	var pluploadOnFileUploaded = function(fieldid, up, file, result) {
+		// Hide the progress bar after a bit of delay
+		setTimeout(function() {
+			getProgressBar(fieldid).addClass('hide');
+		}, 1000);
+
+		// Parse results and update accordingly
+		var rJson = JSON.parse(result.response);
+		if(rJson.status === 'error'){
+			ofw.alert(rJson.message);
+		}
+		else{
+			// @todo check width and height
+			api.add(fieldid, rJson.id, true);
+		}
+		up.refresh();	// Reposition Flash/Silverlight
+	};
+
+
+	/**
+	 * Called when upload ends in error.
+	 */
+	var pluploadOnError = function(fieldid, up, error) {
+		ofw.alert("An error has occurred.");
+		console.log(error);
+		up.refresh();	// Reposition Flash/Silverlight
+	};
+
 
     /** Actions **/
     var actions = {
@@ -171,18 +277,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 */
 		uploadButton: function(dataset, $el){
 			var $listElement = getListElement(dataset.photoFieldId);
-
-			photoFieldUploaderObjects[dataset.photoFieldId] = new plupload.Uploader({
-				runtimes : 'html5,flash,html4',
-				browse_button : $el[0],
-				drop_element : $listElement[0],
-				max_file_size : 100, //'{{field.options.max_file_size|escapejs}}',
-				url : ofw.baseurl+'system/plupload/upload/photo/{% endblock upload_url %}',
-				flash_swf_url : ofw.baseurl+'system/js/plupload/plupload.flash.swf'
-			});
-
-			photoFieldUploaderObjects[dataset.photoFieldId].init();
-			$el.removeClass('hide');
+			pluploadInit(dataset.photoFieldId, $el[0], $listElement[0]);
 		}
 
 	};
