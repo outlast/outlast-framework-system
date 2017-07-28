@@ -143,7 +143,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 				});
 
 				// Set reorder array
-				api.setFieldValues(fieldid, 'reorder', photoReorderArray);
+				api.setFieldValues(fieldid, 'order', photoReorderArray);
 			}
 		});
 	};
@@ -363,7 +363,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		/**
 		 * Add field value and then set the input value.
 		 * @param {string} fieldid The field unique id.
-		 * @param {string} type The type which can be 'add', 'remove' or 'reorder'.
+		 * @param {string} type The type which can be 'add', 'remove' or 'order'.
 		 * @param {string} photoid A specific id.
 		 */
 		addFieldValue: function(fieldid, type, photoid){
@@ -378,7 +378,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		/**
 		 * Set field value and then set the input value.
 		 * @param {string} fieldid The field unique id.
-		 * @param {string} type The type which can be 'add', 'remove' or 'reorder'.
+		 * @param {string} type The type which can be 'add', 'remove' or 'order'.
 		 * @param {Array} values An array of ids.
 		 */
 		setFieldValues: function(fieldid, type, values){
@@ -395,7 +395,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		/**
 		 * Get field value for a specific field and type.
 		 * @param {string} fieldid The field unique id.
-		 * @param {string} type The type which can be 'add', 'remove' or 'reorder'.
+		 * @param {string} type The type which can be 'add', 'remove' or 'order'.
 		 * @return {Array} Returns an array.
 		 */
 		getFieldValues: function(fieldid, type){
@@ -407,7 +407,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		/**
 		 * Get field value for a specific field and type.
 		 * @param {string} fieldid The field unique id.
-		 * @param {string} type The type which can be 'add', 'remove' or 'reorder'.
+		 * @param {string} type The type which can be 'add', 'remove' or 'order'.
 		 * @param {string} photoid The id of the item you are looking for.
 		 * @return {boolean} Returns an array.
 		 */
