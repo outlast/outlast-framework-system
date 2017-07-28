@@ -1,7 +1,7 @@
 /**
  * Course editing API.
  **/
-define('system/js/data/field/photo', ["../../plupload/plupload.full.js", "../../jquery/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.min.js", "../../ofw-jquery"], function(plUpload, jQueryUI) {
+define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "../../jquery/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.min.js", "../../ofw-jquery"], function(plUpload, jQueryUI) {
 
     /** Properties **/
     var _dataAttributeName = 'photo';
@@ -171,15 +171,17 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.js", "../../
 		 */
 		uploadButton: function(dataset, $el){
 			var $listElement = getListElement(dataset.photoFieldId);
-			/**photoFieldUploaderObjects[dataset.photoFieldId] = new plUpload.Uploader({
+
+			photoFieldUploaderObjects[dataset.photoFieldId] = new plupload.Uploader({
 				runtimes : 'html5,flash,html4',
-				browse_button : $el,
-				drop_element : $listElement,
+				browse_button : $el[0],
+				drop_element : $listElement[0],
 				max_file_size : 100, //'{{field.options.max_file_size|escapejs}}',
 				url : ofw.baseurl+'system/plupload/upload/photo/{% endblock upload_url %}',
 				flash_swf_url : ofw.baseurl+'system/js/plupload/plupload.flash.swf'
 			});
-			photoFieldUploaderObjects[dataset.photoFieldId].init();**/
+
+			photoFieldUploaderObjects[dataset.photoFieldId].init();
 			$el.removeClass('hide');
 		}
 
