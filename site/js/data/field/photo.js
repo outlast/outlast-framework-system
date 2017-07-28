@@ -1,7 +1,7 @@
 /**
  * Course editing API.
  **/
-define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "../../jquery/jquery-ui-1.9.2/js/jquery-ui-1.9.2.custom.min.js", "../../ofw-jquery"], function(plUpload, jQueryUI) {
+define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "../../jquery/jquery-ui-1.10.3/jquery.ui.core.min.js", "../../ofw-jquery"], function(plUpload, jQueryUI) {
 
     /** Properties **/
     var _dataAttributeName = 'photo';
