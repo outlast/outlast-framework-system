@@ -4,9 +4,11 @@
 <script>
 	ofw.ready(function(){
 		ofw.addDataAttributeHandler('photo', 'system/js/data/field/', function(photo){
-			{% foreach field.value as field_thumb %}
-				photo.loadExisting('{{field.uid}}', '{{field_thumb.id}}');
-			{% endforeach %}
+			{% block photo_attribute_init %}
+				{% foreach field.value as field_thumb %}
+					photo.loadExisting('{{field.uid}}', '{{field_thumb.id}}');
+				{% endforeach %}
+			{% endblock %}
 		});
 	});
 </script>

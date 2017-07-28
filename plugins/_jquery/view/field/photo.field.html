@@ -1,0 +1,8 @@
+{% extends 'field/photos.field.html' %}
+
+<script>
+{% block photo_attribute_init %}
+	photo.setFieldOption('{{field.uid}}', 'countLimit', 1);
+	photo.loadExisting('{{field.uid}}', '{{field.value.id}}');
+{% endblock %}
+</script>

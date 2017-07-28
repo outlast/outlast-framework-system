@@ -5,12 +5,13 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 
     /** Properties **/
     var _dataAttributeName = 'photo';
-	var popoverMarkup = "<a class='btn btn-primary' target='_blank'><span class='fa fa-zoom-in'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>";
+	var _popoverMarkup = "<a class='btn btn-primary' target='_blank'><span class='fa fa-search-plus'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>";
 
 	/** Field settings **/
-	var photoFieldTemplate = {};
-	var photoFieldValues = {};
-	var photoFieldUploaderObjects = {};
+	var _photoFieldTemplate = {};
+	var _photoFieldOptions = {};		// countLimit = the number of photos this field allows (1 or 0 /unlimited/) is supported
+	var _photoFieldValues = {};
+	var _photoFieldUploaderObjects = {};
 
     /** Private API **/
 
@@ -48,9 +49,9 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 	 * @param {string} fieldid The field identifier.
 	 */
 	var setFieldInput = function(fieldid) {
-		if(typeof photoFieldValues[fieldid] !== 'undefined'){
+		if(typeof _photoFieldValues[fieldid] !== 'undefined'){
 			// Set stringified array to input
-			$('#'+fieldid).val(JSON.stringify(photoFieldValues[fieldid]));
+			$('#'+fieldid).val(JSON.stringify(_photoFieldValues[fieldid]));
 		}
 	};
 
@@ -62,7 +63,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 	 * @return {jQuery} Returns the item's jQuery element.
 	 */
 	var createPhotoMarkupFromTemplate = function(fieldid, photoid, preview) {
-		var $newPhotoMarkup = $(photoFieldTemplate[fieldid]).clone();
+		var $newPhotoMarkup = $(_photoFieldTemplate[fieldid]).clone();
 
 		// Set image url
 		var $myImage = $newPhotoMarkup;
@@ -176,6 +177,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 			flash_swf_url : ofw.baseurl+'system/js/plupload/plupload.flash.swf'
 		});
 		myPlupload.init();
+		alert(api.getFieldOption(fieldid, 'countLimit'));
 
 		// Add callbacks
 		myPlupload.bind('Init', function(up, params){ pluploadOnInit(fieldid, up, params) });
@@ -185,7 +187,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		myPlupload.bind('FileUploaded', function(up, file, result){ pluploadOnFileUploaded(fieldid, up, file, result) });
 
 		// Set to global var
-		photoFieldUploaderObjects[fieldid] = myPlupload;
+		_photoFieldUploaderObjects[fieldid] = myPlupload;
 	};
 
 	/**
@@ -264,7 +266,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 */
 		template: function(dataset, $el){
 			// Set my element
-			photoFieldTemplate[dataset.photoFieldId] = $el;
+			_photoFieldTemplate[dataset.photoFieldId] = $el;
     	},
 
 		/**
@@ -287,6 +289,13 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 * Upload button activation.
 		 */
 		uploadButton: function(dataset, $el){
+			// Set countLimit
+			if(dataset.photoFieldOptionCountLimit){
+				api.setFieldOption(dataset.photoFieldId, 'countLimit', dataset.photoFieldOptionCountLimit);
+			}
+			else api.setFieldOption(dataset.photoFieldId, 'countLimit', 0);
+
+			// Init my uploader
 			var $listElement = getListElement(dataset.photoFieldId);
 			pluploadInit(dataset.photoFieldId, $el[0], $listElement[0]);
 		}
@@ -317,6 +326,11 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		add: function(fieldid, photoid, preview){
 			// Default for preview
 			if(typeof preview === 'undefined') preview = true;
+
+			// If we only have one, then remove @todo add support for countLimit > 1
+			if(api.getFieldOption(fieldid, 'countLimit') === 1){
+				api.removeAll(fieldid);
+			}
 
 			// Create the photo item in data (but only for new photos - where preview is on)
 			if(preview === true) api.addFieldValue(fieldid, 'add', photoid);
@@ -357,6 +371,18 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		},
 
 		/**
+		 * Remove all existing files in the field.
+		 * @param {string} fieldid The field unique id.
+		 */
+		removeAll: function(fieldid){
+			$('[data-photo-field-id="'+fieldid+'"]').each(function(){
+				var $el = $(this);
+				var photoid = $el.attr('data-photo-id');
+				api.remove(fieldid, photoid);
+			});
+		},
+
+		/**
 		 * Show photo options.
 		 * @param {string} fieldid The field unique id.
 		 * @param {string} photoid The photo id.
@@ -365,9 +391,11 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		showOptions: function(fieldid, photoid, preview){
 			var $photoElement = $('[data-photo-id="'+photoid+'"]');
 			var url = getPhotoUrl(photoid, preview);
-			var $popoverContent = $("<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='fa fa-search-plus'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>");
+			var $popoverContent = $(_popoverMarkup);
 			$photoElement.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: $popoverContent });
 
+			// Add preview
+			$popoverContent.find('.btn-primary').attr('href', url);
 			// Add trash and close events
 			$popoverContent.find('.fa-remove').click(function(){
 				$photoElement.popover('hide');
@@ -432,10 +460,10 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 */
 		setFieldValues: function(fieldid, type, values){
 			// If the type does not yet exist
-			if(typeof photoFieldValues[fieldid] === 'undefined') photoFieldValues[fieldid] = {};
+			if(typeof _photoFieldValues[fieldid] === 'undefined') _photoFieldValues[fieldid] = {};
 
 			// Now set appropriate key
-			photoFieldValues[fieldid][type] = values;
+			_photoFieldValues[fieldid][type] = values;
 
 			// Set input
 			setFieldInput(fieldid);
@@ -448,9 +476,9 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 * @return {Array} Returns an array.
 		 */
 		getFieldValues: function(fieldid, type){
-			if(typeof photoFieldValues[fieldid] === 'undefined') return [];
-			else if(typeof photoFieldValues[fieldid][type] === 'undefined') return [];
-			else return photoFieldValues[fieldid][type];
+			if(typeof _photoFieldValues[fieldid] === 'undefined') return [];
+			else if(typeof _photoFieldValues[fieldid][type] === 'undefined') return [];
+			else return _photoFieldValues[fieldid][type];
 		},
 
 		/**
@@ -466,8 +494,29 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 				if(values[i] === photoid) return true;
 			}
 			return false;
-		}
+		},
 
+		/**
+		 * Set field option.
+		 * @param {string} fieldid The field unique id.
+		 * @param {string} key The option key.
+		 * @param {string|Number|Object|null} value The option value.
+		 */
+		setFieldOption: function(fieldid, key, value){
+			if(typeof _photoFieldOptions[fieldid] === 'undefined') _photoFieldOptions[fieldid] = {};
+			_photoFieldOptions[fieldid][key] = value;
+		},
+
+		/**
+		 * Set field option.
+		 * @param {string} fieldid The field unique id.
+		 * @param {string} key The option key.
+		 * @return {string|Number|Object|null} The option value or null if the key was not set.
+		 */
+		getFieldOption: function(fieldid, key){
+			if(typeof _photoFieldOptions[fieldid] === 'undefined') return null;
+			return _photoFieldOptions[fieldid][key];
+		}
 	};
 
 	/** Perform initialization **/
@@ -477,132 +526,3 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
     return api;
 
 });
-
-	/**
-	var photoHandler = {};
-
-	photoHandler.addMyPhotoPopover = function(el, url){
-		var popover_markup = "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='fa fa-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='fa fa-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='photoHandler.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='fa fa-remove'></span></a>";
-
-		el.popover({
-			toggle: 'popover',
-			html: true,
-			container: 'body',
-			placement: 'top',
-			content: popover_markup
-		});
-
-		// Hide all other popovers
-		el.on('show.bs.popover', function() {
-			$('.popover').popover('hide');
-		});
-	};
-	photoHandler.closeMyPhotoPopover = function(ev){
-		$('#'+$(ev.target).attr('data-photo')).popover('hide');
-	};
-	zaj.ready(function(){
-		// Make sortable
-			$('#{{field.uid}}-filelist').sortable({
-			    start: function(event, ui) {
-			    	ui.item.addClass('draginprogress');
-			    },
-			    stop: function(event, ui) {
-			    	ui.item.removeClass('draginprogress');
-					// Build array
-						var my_array = [];
-						$('#{{field.uid}}-filelist').children('div').each(function(){
-							my_array.push(this.id);
-						});
-						file_upload_changes_{{field.uid}}.order = my_array;
-						$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
-			    }
-			});
-
-	})**/
-
-/**
-	var file_upload_changes_{{field.uid}} = {add: [], remove: [], order: [] };
-
-		// create objects
-			var uploader_{{field.uid}} = new plupload.Uploader({
-				runtimes : 'html5,flash,html4',
-				browse_button : '{{field.uid}}-pickfiles',
-				drop_element : '{{field.uid}}-filelist',
-				max_file_size : '{{field.options.max_file_size|escapejs}}',
-				url : '{% block upload_url %}{{baseurl}}system/plupload/upload/photo/{% endblock upload_url %}',
-				flash_swf_url : '{{baseurl}}system/js/plupload/plupload.flash.swf'
-			});
-			var uploadergo_{{field.uid}} = function(){
-				uploader_{{field.uid}}.start()
-			};
-
-			uploader_{{field.uid}}.bind('Init', function(up, params){
-				//console.log("Uploader initialized. Runtime: " + params.runtime);
-			});
-			uploader_{{field.uid}}.bind('FilesAdded', function(up, files) {
-				setTimeout("uploadergo_{{field.uid}}()", 800);
-			});
-			uploader_{{field.uid}}.bind('UploadProgress', function(up, file) {
-				$('#{{field.uid}}-transferbar div').css('width', file.percent + "%")
-				$('#{{field.uid}}-transferbar').removeClass('hidden');
-			});
-			uploader_{{field.uid}}.bind('Error', function(up, err) {
-				zaj.alert("{{#system_field_file_upload_error#|printf:field.options.max_file_size|escapejs}}");
-				up.refresh(); // Reposition Flash/Silverlight
-			});
-			uploader_{{field.uid}}.bind('FileUploaded', function(up, file, result) {
-				setTimeout(function() { $('#{{field.uid}}-transferbar').addClass('hidden'); }, 1000);
-				var res = jQuery.parseJSON(result.response);
-				// check for error
-					if(res.status == 'error'){
-						zaj.alert(res.message);
-					}
-					else{
-						uploader_update_{{field.uid}}(res);
-					}
-			});
-
-
-			uploader_update_{{field.uid}} = function(res){
-				// Is it wide/tall enough?
-					if(res.height < {{field.options.min_height|escapejs}} || res.width < {{field.options.min_width|escapejs}}) return alert("{{#system_field_picture_too_small#|printf:field.options.min_width|printf:field.options.min_height|escapejs}}");
-					{% if field.options.max_height %}
-					// check for height, if is > 0;
-						var max_height = {{field.options.max_height|escapejs}} + 0;
-						if(max_height && res.height > max_height) return alert("{{#system_field_picture_too_high#|printf:field.options.max_height|escapejs}}");
-					{% endif %}
-					{% if field.options.max_width %}
-					// check for width, if is > 0;
-						if(max_width && res.width > max_width) return alert("{{#system_field_picture_too_wide#|printf:field.options.max_width|escapejs}}");
-						var max_width = {{field.options.max_width|escapejs}} + 0;
-					{% endif %}
-
-				// Add my image
-					var imgurl = '{{baseurl}}system/plupload/preview/?id='+res.id;
-					var el = $("<div class='col-sm-2' id='"+res.id+"' style='position: relative; cursor: pointer;'><img class='pull-left img-thumbnail img-responsive' src='"+imgurl+"'></div>");
-					$('#{{field.uid}}-filelist').append(el);
-					photoHandler.addMyPhotoPopover(el, imgurl);
-				// Set as my input value
-					file_upload_changes_{{field.uid}}.add.push(res.id);
-					$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
-				return res.id;
-			};
-
-			upload_remove_{{field.uid}} = function(ev){
-				var id = $(ev.target).attr('data-photo');
-				var $photodiv = $('#'+id);
-				// Turn off my popover
-					$photodiv.popover('hide');
-				// Remove my div
-					$photodiv.remove();
-				// Remove from add value
-					file_upload_changes_{{field.uid}}.add = jQuery.grep(file_upload_changes_{{field.uid}}.add, function(value) { return value != id; });
-				// Update my remove value
-					file_upload_changes_{{field.uid}}.remove.push(id);
-                // Set input
-					$('#{{field.uid}}').val(JSON.stringify(file_upload_changes_{{field.uid}}));
-			};
-
-		// Run init
-			uploader_{{field.uid}}.init();
-			**/
