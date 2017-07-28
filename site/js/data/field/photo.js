@@ -5,7 +5,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 
     /** Properties **/
     var _dataAttributeName = 'photo';
-	var popoverMarkup = "<a class='btn btn-primary' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;'><span class='glyphicon glyphicon-remove'></span></a>";
+	var popoverMarkup = "<a class='btn btn-primary' target='_blank'><span class='fa fa-zoom-in'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>";
 
 	/** Field settings **/
 	var photoFieldTemplate = {};
@@ -69,8 +69,9 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		if($myImage.tagName !== 'img') $myImage = $newPhotoMarkup.find('img');
 		$myImage.attr('src', getPhotoUrl(photoid, preview));
 
-		// Add photo id
+		// Add photo id and remove default markups
 		$newPhotoMarkup.attr('data-photo-id', photoid);
+		$newPhotoMarkup.removeAttr('data-photo');
 
 		// Add events
 		$myImage.click(function(){
@@ -91,6 +92,16 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 	 */
 	var getListElement = function(fieldid) {
 		return $('[data-photo="list"]').filter('[data-photo-field-id="'+fieldid+'"]');
+	};
+
+	/**
+	 * Get a specific foto within a field.
+	 * @param {string} fieldid The field identifier.
+	 * @param {string} photoid The photo identifier.
+	 * @return {jQuery} The list jquery element.
+	 */
+	var getPhotoElement = function(fieldid, photoid) {
+		return getListElement(fieldid).find("[data-photo-id='"+photoid+"']");
 	};
 
 	/**
@@ -304,18 +315,16 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 * @return {boolean} Will return true if added, false if not (usually when it already exists).
 		 */
 		add: function(fieldid, photoid, preview){
-			// Was the item already added?
-			if(api.doesValueExistInField(fieldid, 'add', photoid)) return false;
-
 			// Default for preview
 			if(typeof preview === 'undefined') preview = true;
 
-			// Create the photo item in data
-			api.addFieldValue(fieldid, 'add', photoid);
+			// Create the photo item in data (but only for new photos - where preview is on)
+			if(preview === true) api.addFieldValue(fieldid, 'add', photoid);
 
 			// Create the photo item in ui
 			var $photoElement = createPhotoMarkupFromTemplate(fieldid, photoid, preview);
-			getListElement(fieldid).append($photoElement);
+			if(preview === true) getListElement(fieldid).prepend($photoElement);
+			else getListElement(fieldid).append($photoElement);
 
 			// Activate sortable
 			turnOnSortableForList(fieldid);
@@ -328,12 +337,23 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 */
 		remove: function(fieldid, photoid){
 			// Does the photo currently exist in the add? If so just remove from there.
-
+			if(api.doesValueExistInField(fieldid, 'add', photoid)){
+				api.removeFieldValue(fieldid, 'add', photoid);
+			}
 			// Otherwise, add to removal
+			else{
+				api.addFieldValue(fieldid, 'remove', photoid);
+			}
 
+			// Remove it from reorder
+			api.removeFieldValue(fieldid, 'order', photoid);
 
-			// Does it exist in reorder, if so always remove from that
+			// Destroy the markup
+			var $photoElement = getPhotoElement(fieldid, photoid);
+			$photoElement.remove();
 
+			// Activate sortable
+			turnOnSortableForList(fieldid);
 		},
 
 		/**
@@ -345,10 +365,17 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		showOptions: function(fieldid, photoid, preview){
 			var $photoElement = $('[data-photo-id="'+photoid+'"]');
 			var url = getPhotoUrl(photoid, preview);
-			var $popoverContent = $("<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger'><span class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;'><span class='glyphicon glyphicon-remove'></span></a>");
+			var $popoverContent = $("<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='fa fa-search-plus'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>");
 			$photoElement.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: $popoverContent });
 
-			// @todo add events for trash and close
+			// Add trash and close events
+			$popoverContent.find('.fa-remove').click(function(){
+				$photoElement.popover('hide');
+			});
+			$popoverContent.find('.fa-trash').click(function(){
+				$photoElement.popover('hide');
+				api.remove(fieldid, photoid);
+			});
 		},
 
 		/**
@@ -367,10 +394,32 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		 * @param {string} photoid A specific id.
 		 */
 		addFieldValue: function(fieldid, type, photoid){
+			// If field value exists already, return
+			if(api.doesValueExistInField(fieldid, type, photoid)) return;
+
 			// Get field values
 			var fieldValues = api.getFieldValues(fieldid, type);
 			// Now add mine
 			fieldValues.push(photoid);
+			// Now set it!
+			api.setFieldValues(fieldid, type, fieldValues);
+        },
+
+		/**
+		 * Remove field value if it exists.
+		 * @param {string} fieldid The field unique id.
+		 * @param {string} type The type which can be 'add', 'remove' or 'order'.
+		 * @param {string} photoid A specific id.
+		 */
+		removeFieldValue: function(fieldid, type, photoid){
+			// If field value does not exist, return
+			if(!api.doesValueExistInField(fieldid, type, photoid)) return;
+
+			// If it does exist, remove it
+			var fieldValues = api.getFieldValues(fieldid, type);
+			var indexOfFieldValue = fieldValues.indexOf(photoid);
+			fieldValues.splice(indexOfFieldValue, 1);
+
 			// Now set it!
 			api.setFieldValues(fieldid, type, fieldValues);
         },
@@ -433,7 +482,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 	var photoHandler = {};
 
 	photoHandler.addMyPhotoPopover = function(el, url){
-		var popover_markup = "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='glyphicon glyphicon-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='photoHandler.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='glyphicon glyphicon-remove'></span></a>";
+		var popover_markup = "<a class='btn btn-primary' href='"+url+"' target='_blank'><span class='fa fa-zoom-in'></span></a> <a class='btn btn-danger' data-photo='"+el[0].id+"' onclick='upload_remove_{{field.uid}}(event);'><span data-photo='"+el[0].id+"' class='fa fa-trash'></span></a> <a style='margin-left: 10px;' data-photo='"+el[0].id+"' onclick='photoHandler.closeMyPhotoPopover(event)'><span data-photo='"+el[0].id+"' class='fa fa-remove'></span></a>";
 
 		el.popover({
 			toggle: 'popover',
