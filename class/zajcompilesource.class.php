@@ -393,6 +393,7 @@ class zajCompileSource {
 	 * @param string $source_file The path to the source file.
 	 * @param string|bool $ignore_app_level The name of app up to which all path levels should be ignored. Setting this to false will ignore nothing.
 	 * @return array|boolean Returns an array with full path and app level or false if it does not exist.
+     * @todo Use load->get_app_folder_paths();
 	 **/
 	public static function check_app_levels($source_file, $ignore_app_level = false){
 		// run through all the paths

@@ -196,6 +196,17 @@ class OfwLibraryTest extends zajTest {
 			zajTestAssert::areIdentical($this->zajlib->basepath.'system/site/img/outlast-framework-logo.png', $file_path);
 			zajTestAssert::areIdentical('asdf.png', $download_name);
 			zajTestAssert::areIdentical('test-mime', $mime_type);
+
+        // Check to see if app folders methods work properly
+            $files = $this->zajlib->file->get_all_files_in_app_folders('test/', true);
+            zajTestAssert::isTrue(in_array('library.test.php', $files));
+            $files = $this->zajlib->file->get_all_files_in_app_folders('controller/', true);
+            zajTestAssert::isTrue(in_array('system/api/file.ctl.php', $files));
+            $folders = $this->zajlib->file->get_all_folders_in_app_folders('controller/', true);
+            zajTestAssert::isTrue(in_array('system/api/', $folders));
+            $file_versions = $this->zajlib->file->get_all_versions_of_file_in_app_folders('conf/category.conf.ini');
+            zajTestAssert::isTrue(in_array('system/plugins/_global/conf/category.conf.ini', $file_versions));
+
 	}
 
 	/**

@@ -1123,6 +1123,7 @@ abstract class zajModelExtender {
 	 * @param bool|string $parentmodel_source_file An optional parameter which specifies the relative path to the source file containing the model to extend.
 	 * @return bool
 	 * @todo Once there is a solution for non-explicitly declared static variables, use that! See http://stackoverflow.com/questions/5513484/php-static-variables-in-an-abstract-parent-class-question-is-in-the-sample-code
+     * @todo Use load->get_app_folder_paths();
 	 */
 	public static function extend($parentmodel, $known_as = false, $parentmodel_source_file = false){
 		// Check to see if already extended (this will never run because once it is extended the parent class will exist, and any additional iterations will not autoload the other model file! fix this somehow to warn the user!)
