@@ -45,28 +45,36 @@ class zajlib_plugin extends zajLibExtension {
 	 * @param boolean $system_plugin Set to true if you want to load it as a system plugin.
 	 * @return boolean Returns true if the plugin was loaded successfully, false otherwise. In case of failure, a warning will also be issued.
 	 * @todo Make sure all plugin loading happens via this function.
+     * @todo System plugins should not modify config.
 	 **/
 	public function load($plugin, $load_function = true, $system_plugin = false){
 		// Disable double loading
-			if($this->is_loaded($plugin)) return true;
+        if($this->is_loaded($plugin)) return true;
+
 		// Result defaults to true
-			$result = true;
+        $result = true;
+
 		// Add the new plugin to the front of the assoc array
-			if($system_plugin){
-				$this->zajlib->zajconf['system_apps'] = array_merge(array($plugin=>$plugin), $this->zajlib->zajconf['system_apps']);
-				$pluginbasepath = $this->zajlib->basepath.'system/plugins/';
-			}
-			else{
-				$this->zajlib->loaded_plugins = array_merge(array($plugin=>$plugin), $this->zajlib->loaded_plugins);
-				$pluginbasepath = $this->zajlib->basepath.'plugins/';
-			}
-		// only do this if either default controller exists in the plugin folder
-			if($load_function && file_exists($pluginbasepath.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($pluginbasepath.$plugin.'/controller/'.$plugin.'/default.ctl.php')){
-				// reroute but if no __plugin method, just skip without an error message (TODO: maybe remove the false here?)!
-					$result = $this->zajlib->reroute($plugin.'/__plugin/', array($this->zajlib->app.$this->zajlib->mode, $this->zajlib->app, $this->zajlib->mode), false, false);
-				// unload the plugin if the result is explicitly false
-					if($result === false) $this->unload($plugin);
-			}
+        if($system_plugin){
+            $this->zajlib->zajconf['system_apps'] = array_merge(array($plugin=>$plugin), $this->zajlib->zajconf['system_apps']);
+            $pluginbasepath = $this->zajlib->basepath.'system/plugins/';
+        }
+        else{
+            $this->zajlib->loaded_plugins = array_merge(array($plugin=>$plugin), $this->zajlib->loaded_plugins);
+            $pluginbasepath = $this->zajlib->basepath.'plugins/';
+        }
+
+        // Reset the plugin folders
+        $this->zajlib->load->reset_app_folder_paths();
+
+		// Only do this if either default controller exists in the plugin folder
+        if($load_function && file_exists($pluginbasepath.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($pluginbasepath.$plugin.'/controller/'.$plugin.'/default.ctl.php')){
+            // reroute but if no __plugin method, just skip without an error message (TODO: maybe remove the false here?)!
+            $result = $this->zajlib->reroute($plugin.'/__plugin/', array($this->zajlib->app.$this->zajlib->mode, $this->zajlib->app, $this->zajlib->mode), false, false);
+            // unload the plugin if the result is explicitly false
+            if($result === false) $this->unload($plugin);
+        }
+
 		return $result;
 	}
 
@@ -78,9 +86,13 @@ class zajlib_plugin extends zajLibExtension {
 	 */
 	public function unload($plugin){
 		// Check to see if plugin loaded
-			if(!$this->is_loaded($plugin)) return false;
+        if(!$this->is_loaded($plugin)) return false;
 		// Unload plugin and return true
-			unset($this->zajlib->loaded_plugins[$plugin]);
+        unset($this->zajlib->loaded_plugins[$plugin]);
+
+        // Reset the plugin folders
+        $this->zajlib->load->reset_app_folder_paths();
+
 		return true;
 	}
 

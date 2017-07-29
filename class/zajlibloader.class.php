@@ -1,6 +1,6 @@
 <?php
 /**
- * This class allows the user to load files into the OFW system. These files may be libraries, apps, models, etc.
+ * This class enables one to find and load files from across the OFW folder structure. These files may be libraries, controllers, models, views, etc.
  * @package Base
  **/
 class zajLibLoader{
@@ -28,6 +28,21 @@ class zajLibLoader{
 	 * @var array
 	 **/
 	public $loaded = array();
+
+    /**
+     * App paths.
+     */
+    private static $app_paths = [			// array - array of paths to search, in order of preference
+        'app'=>'app/',
+        'plugin_apps'=>'plugins/*/',
+        'system_app'=>'system/app/',
+        'system_apps'=>'system/plugins/*/',
+    ];
+
+    /**
+     * Cached app folder paths (so we do not have to rebuild it each time)
+     */
+    private static $app_folder_paths = [];
 
 	/**
 	 * Creates a new {@link zajLibLoader}. This is run when initializing the request.
@@ -237,61 +252,16 @@ class zajLibLoader{
 	}
 
 	/**
-	 *  @todo Both js and css - preloading could be made more effecient by including them in the header during compilation.
-	 *		Certain fields require certain js and css files, so it should be easy to rewrite this such that all of this is
-	 *		already done during template compilation. This would eliminate the need for run-time file_exist and client-side
-	 *		in-line loading of files, both of which are less efficient.
-	 **/
-
-	/**
-	 * Load a js file runtime.
-	 * @param string $file_path The file path relative to the system or site folder.
-	 * @param boolean $check_if_exists Not implemented.
-	 * @return void|bool Prints the string generated, returns nothing or true if already printed.
-	 * @deprecated
-	 **/
-	public function js($file_path, $check_if_exists = false){
-		// is it loaded already?
-			if(isset($this->loaded['js'][$file_path])) return true;
-		// set it as loaded
-			$this->loaded['js'][$file_path] = true;
-		// check to see if this file exists in the user folder...if so, then use that instead of the system-provided version
-			if(file_exists($this->zajlib->basepath."site/js/$file_path")) $subfolder = "";
-			else $subfolder = "system";
-		// now load the js file into zajlib.js variable OR print it
-			if(!$this->zajlib->output_started) $this->zajlib->variable->js .= "\n\t\t<script language='JavaScript' src='".$this->zajlib->baseurl."$subfolder/js/$file_path' type='text/javascript'></script>";
-			else print "<script>zajlib.load_js('".$this->zajlib->baseurl."$subfolder/js/$file_path');</script>";
-	}
-
-	/**
-	 * Load a css file runtime.
-	 * @param string $file_path The file path relative to the system or site folder.
-	 * @param boolean $check_if_exists Not implemented.
-	 * @return void|bool Prints the string generated, returns nothing or true if already printed.
-	 * @deprecated
-	 **/
-	public function css($file_path, $check_if_exists = false){
-		// is it loaded already?
-			if(isset($this->loaded['css'][$file_path])) return true;
-		// set it as loaded
-			$this->loaded['css'][$file_path] = true;
-		// check to see if this file exists in the user folder...if so, then use that instead of the system-provided version
-			if(file_exists($this->zajlib->basepath."site/css/$file_path")) $subfolder = "";
-			else $subfolder = "system";
-		// now load the css file into zajlib.css variable OR print it
-			if(!$this->zajlib->output_started) $this->zajlib->variable->css .= "\n\t\t<link rel='stylesheet' type='text/css' href='".$this->zajlib->baseurl."$subfolder/css/$file_path' type='text/javascript'></script>";
-			else print "<script>new Asset.css('".$this->zajlib->baseurl."$subfolder/css/$file_path', { oncomplete: function(){ zajlib.onCssLoad(); } } ); zajlib.asset_css_load_at_runtime++;</script>";
-	}
-
-	/**
-	 * Include a file as relative to the base path.
+	 * Return or include a file (or files) relative to base path.
 	 * @param string $file_path The file path relative to the base path.
 	 * @param boolean $fail_with_error_message If error, then fail with a fatal error.
 	 * @param boolean $include_now If set to true (the default), the file will also be included. On false, only the file path will be returned (and $this->loaded will not be set to true!).
-	 * @param string $scope Can be "full" (looks for all variations - default), "specific" (looks for a specific relative path and fails if not found), "project" (looks for anything in the projects folder), "plugin" (looks for anything in the plugins folder), "system" (looks for anything in the system folder)
-	 * @return boolean Returns false on error, otherwise returns the path of the file found, relative to to basepath
+	 * @param string $scope Can be "full" (looks for all variations - default), "specific" (looks for a specific relative path and fails if not found), or any of the keys from self::$app_paths.
+     * @param boolean $return_all If set to true, all files that match the relative path will be returned as an array. Defaults to false. (Note: don't set this to true if you want to include_now!)
+	 * @return boolean|string|array Returns false on error, otherwise returns the path of the file found, relative to to basepath.
 	 **/
-	public function file($file_path, $fail_with_error_message = true, $include_now = true, $scope = "full"){
+	public function file($file_path, $fail_with_error_message = true, $include_now = true, $scope = "full", $return_all = false){
+	    $file_list = [];
 		// is it loaded already?
 			if(isset($this->loaded['file'][$file_path])) return true;
 		// test file path
@@ -302,48 +272,28 @@ class zajLibLoader{
 			if($scope == "specific"){
 				if(file_exists($this->zajlib->basepath.$file_path) && (!$include_now || include_once $this->zajlib->basepath.$file_path)){
 					if($include_now) $this->loaded['file'][$file_path] = true;
-					return $file_path;
+					if($return_all) $file_list[] = $file_path;
+					else return $file_path;
 				}
 			}
 		// Else, I need to search subfolders
 			else{
-				// 1. try the project path
-					if($scope == "full" || $scope == "project"){
-						if(file_exists($this->zajlib->basepath.'app/'.$file_path) && (!$include_now || include_once $this->zajlib->basepath.'app/'.$file_path)){
-							if($include_now) $this->loaded['file'][$file_path] = true;
-							return 'app/'.$file_path;
-						}
-					}
-				// 2. try plugin paths in order
-					if($scope == "full" || $scope == "plugin"){
-						foreach($this->zajlib->loaded_plugins as $app){
-							if(file_exists($this->zajlib->basepath.'plugins/'.$app.'/'.$file_path) && (!$include_now || include_once $this->zajlib->basepath.'plugins/'.$app.'/'.$file_path)){
-								// set file as loaded and return true
-									if($include_now) $this->loaded['file'][$file_path] = true;
-									return 'plugins/'.$app.'/'.$file_path;
-							}
-						}
-					}
-				// 3. try the system path
-					if($scope == "full" || $scope == "system"){
-						if(file_exists($this->zajlib->basepath.'system/app/'.$file_path) && (!$include_now || include_once $this->zajlib->basepath.'system/app/'.$file_path)){
-							if($include_now) $this->loaded['file'][$file_path] = true;
-							return 'system/app/'.$file_path;
-						}
-					}
-				// 4. try the system plugins
-					if($scope == "full" || $scope == "system"){
-						foreach($this->zajlib->zajconf['system_apps'] as $app){
-							if(file_exists($this->zajlib->basepath.'system/plugins/'.$app.'/'.$file_path) && (!$include_now || include_once $this->zajlib->basepath.'system/plugins/'.$app.'/'.$file_path)){
-								if($include_now) $this->loaded['file'][$file_path] = true;
-								return 'system/plugins/'.$app.'/'.$file_path;
-							}
-						}
-					}
+			    // Search through all app folders
+			    $app_folder_paths = $this->get_app_folder_paths($scope);
+			    foreach($app_folder_paths as $app_folder_path){
+                    if(file_exists($this->zajlib->basepath.$app_folder_path.$file_path) && (!$include_now || include_once $this->zajlib->basepath.$app_folder_path.$file_path)){
+                        if($include_now) $this->loaded['file'][$file_path] = true;
+                        if($return_all) $file_list[] = $app_folder_path.$file_path;
+                        else return $app_folder_path.$file_path;
+                    }
+			    }
 			}
 		// None worked, so fail with error or return false
-			if($fail_with_error_message) $this->zajlib->error("Search for included file $file_path failed. Is the plugin activated? Is the file where it should be?");
-			else return false;
+			if($fail_with_error_message && count($file_list) == 0) return $this->zajlib->error("Search for included file $file_path failed. Is the plugin activated? Is the file where it should be?");
+			else{
+                if($return_all) return $file_list;
+                else return false;
+            }
 	}
 
 	/**
@@ -368,4 +318,45 @@ class zajLibLoader{
 		// todo: do some more checks here!
 		return true;
 	}
+
+	/**
+     * Return all the app paths with all enabled plugins and apps.
+	 * @param string $scope Can be "full" (all folders - default) or any of the self::$app_path keys.
+     * @return array An array of app paths.
+     */
+    public function get_app_folder_paths($scope = 'full'){
+        // If already cached, return!
+        if(array_key_exists($scope, self::$app_folder_paths)) return self::$app_folder_paths[$scope];
+
+        // Initialize
+        self::$app_folder_paths[$scope] = [];
+
+        // Find the hierarchical list of enabled folder paths
+        foreach(self::$app_paths as $app_type=>$app_path){
+            // If in current scope (or full scope)
+            if($scope == 'full' || $scope == $app_type){
+                // If it is a simple app folder, set it
+                if(strstr($app_path, '*') === false){
+                    self::$app_folder_paths[$scope][] = $app_path;
+                }
+                // If it is a list of apps (plugins, system plugins) then replace *
+                else{
+                    if(is_array($this->zajlib->zajconf[$app_type])){
+                        foreach($this->zajlib->zajconf[$app_type] as $app_name){
+                            self::$app_folder_paths[$scope][] = str_replace('*', $app_name, $app_path);
+                        }
+                    }
+                }
+            }
+        }
+        return self::$app_folder_paths[$scope];
+    }
+
+    /**
+     * Reset the app folder paths. Can be called after a new plugin is loaded.
+     */
+    public function reset_app_folder_paths(){
+        self::$app_folder_paths = [];
+    }
+
 }

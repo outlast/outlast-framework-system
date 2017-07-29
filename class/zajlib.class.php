@@ -199,6 +199,13 @@ class zajLib {
 			 **/
 			public $event_stack = 0;
 
+        // libraries
+            /**
+             * A library to find and include other files.
+             * @var zajLibLoader
+             */
+            public $load;
+
 		// status of plugins
 
 			/**
