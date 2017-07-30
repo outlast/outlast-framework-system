@@ -169,9 +169,6 @@ class zajField {
         // Generate input related stuff
         $this->__onInputGeneration($param_array, $source);
 
-        // Generate value setting code
-		$this->zajlib->compile->write('<?php if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$this->name.'"])){ $this->zajlib->variable->field->value = $_REQUEST[\'filter\']["'.$this->name.'"]; } ?>');
-
         return true;
 	}
 

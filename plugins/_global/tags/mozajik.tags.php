@@ -93,14 +93,18 @@ class zajlib_tag_mozajik extends zajElementCollection{
             $this->zajlib->compile->write('<?php $this->zajlib->variable->field = new stdClass(); ?>');
 			// set stuff
             $this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->type = "'.$field_object->type.'"; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->field_name = "'.$fieldname.'"; $this->zajlib->variable->field->locale = '.$fieldtranslation.'; $this->zajlib->variable->field->name = "'.$inputname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = "'.$uniqid.'";  ?>');
-			// add set value
-            if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
 			// callback
             switch($mode){
                 case 'filter':
+                    // set value
+                    $this->zajlib->compile->write('<?php if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$fieldname.'"])){ $this->zajlib->variable->field->value = reset($_REQUEST[\'filter\']["'.$fieldname.'"]); } ?>');
+                    // callback
                     $field_object->__onFilterGeneration($param_array, $source);
                     break;
                 default:
+                    // set value
+                    if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
+                    // callback
                     $field_object->__onInputGeneration($param_array, $source);
                     break;
             }

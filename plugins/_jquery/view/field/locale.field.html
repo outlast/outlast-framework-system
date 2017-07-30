@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="{{baseurl}}system/css/chosen/chosen.css">
 <!-- Display markup -->
 <select class='ofw-field-locale form-control' id='{{field.uid}}' name='{{field.name}}'>
+	<option value=''>--</option>
 	{% foreach field.options.choices as choice %}
 		<option value='{{choice}}' {% if field.value eq choice %}selected{%endif%}>{{choice}}</option>
 	{% endfor %}
