@@ -4,7 +4,7 @@
  **/
 class OfwLangTest extends zajTest {
 
-	private $configvars;
+	private $configvars, $configsection;
 	private $locales_available;
 	private $locale_default;
 	private $locale_set;
@@ -15,6 +15,7 @@ class OfwLangTest extends zajTest {
 	public function setUp(){
 		// Save all variables (for restore afterwards)
 			$this->configvars = $this->zajlib->lang->variable;
+			$this->configsection = $this->zajlib->lang->section;
 			$this->locale_set = $this->zajlib->lang->get();
 			$this->locales_available = $this->zajlib->zajconf['locale_available'];
 			$this->locale_default = $this->zajlib->zajconf['locale_default'];
@@ -185,7 +186,7 @@ class OfwLangTest extends zajTest {
 		// Clear lang variable
 			$this->zajlib->lang->reset_variables();
 		// Restore language variables
-			$this->zajlib->lang->set_variables($this->configvars);
+			$this->zajlib->lang->set_variables($this->configvars, $this->configsection);
 	}
 
 }

@@ -356,10 +356,11 @@ class zajlib_lang extends zajlib_config {
 		/**
 		 * Sets the key/value variable object. Be careful, this overwrites the entire current setting. Because conf and lang are actually the same both values will also be overwritten.
 		 * @param stdClass $variables The key/value pairs to use for the new variable.
+    	 * @param stdClass $section The multi-dimensional key/value pairs to use for the new section variables.
 		 * @return bool Always returns true.
 		 */
-		public function set_variables($variables){
-			return $this->zajlib->config->set_variables($variables);
+		public function set_variables($variables, $section){
+			return $this->zajlib->config->set_variables($variables, $section);
 		}
 
 		/**
