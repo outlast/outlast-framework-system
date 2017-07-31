@@ -856,7 +856,7 @@ define('system/js/ofw-jquery', [], function() {
 			$("<link/>", {
 			   rel: "stylesheet",
 			   type: "text/css",
-			   href: relativeUrl
+			   href: ofw.baseurl+relativeUrl
 			}).appendTo("head");
 		},
 

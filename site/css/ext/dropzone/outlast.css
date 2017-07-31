@@ -8,3 +8,9 @@
 .dropzone .dz-preview{
     text-align: center;
 }
+.dropzone .dz-preview.landscape .dz-image img{
+    height: 100%;
+}
+.dropzone .dz-preview.portrait .dz-image img{
+    width: 100%;
+}
