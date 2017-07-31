@@ -217,23 +217,33 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	 */
 	var dropzoneActions = {
 
-		addImage: function(fieldid, photoid, preview){
+		addImage: function(fieldid, photoid, file, preview){
+			// Get photo url
 			var photoUrl = getPhotoUrl(photoid, preview);
-			var mockFile = { name: "", size: 0, id: photoid, preview: preview };
-			_photoFieldUploaderObjects[fieldid].emit("addedfile", mockFile);
-			_photoFieldUploaderObjects[fieldid].emit("thumbnail", mockFile, photoUrl);
-			_photoFieldUploaderObjects[fieldid].emit("complete", mockFile);
+			// Set up file with additional details
+			file['id'] = photoid;
+			file['preview'] = preview;
+			// Emit events
+			_photoFieldUploaderObjects[fieldid].emit("addedfile", file);
+			_photoFieldUploaderObjects[fieldid].emit("thumbnail", file, photoUrl);
+			_photoFieldUploaderObjects[fieldid].emit("complete", file);
 		},
 
 		addImageButtons: function(fieldid, photoid, previewElement, previewMode){
 			var $previewElement = $(previewElement);
-			// Fix remove file
+			// Add data attributes
+			$previewElement.data('photo-id', photoid);
+			$previewElement.data('photo-field-id', fieldid);
+
+			// Fix remove button
 			var $removeButton = $previewElement.find('.dz-remove').html(_photoFieldUploaderObjects[fieldid].options.dictRemoveFile);
-			// Add preview link
+			// Add show link
 			var $showButton = $('<a class="dz-show">'+_photoFieldUploaderObjects[fieldid].options.dictPreviewFile+'</a>')
 			$showButton.insertBefore($removeButton);
 			$showButton.attr('href', getPhotoUrl(photoid, previewMode));
 			$showButton.attr('target', '_blank');
+			// Add rename event
+			// @todo
 		},
 
 		onInit: function(fieldid){
@@ -241,11 +251,15 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			$browseButton.removeClass('hide');
 		},
 
+		/**
+		 * Called after a file is added. Could be manual adding or after upload.
+		 */
 		onComplete: function(fieldid, file){
 			// If completed from an upload, then verify the file
 			if(file.xhr){
 				var rJson = JSON.parse(file.xhr.response);
 				if(rJson.status === 'success' || rJson.status === 'ok'){
+					api.addFieldValue(fieldid, 'add', rJson.id);
 					dropzoneActions.addImageButtons(fieldid, rJson.id, file.previewElement, true);
 				}
 				else{
@@ -254,6 +268,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 				}
 
 			}
+			// Manual add
 			else{
 				dropzoneActions.addImageButtons(fieldid, file.id, file.previewElement, false);
 			}
@@ -295,7 +310,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		}
 		else{
 			// @todo check width and height
-			api.add(fieldid, rJson.id, true);
+			api.add(fieldid, rJson.id, file, true);
 		}
 		up.refresh();	// Reposition Flash/Silverlight
 	};
@@ -379,13 +394,14 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
         },
 
 		/**
-		 * Add a new photo.
+		 * Add a new photo to the UI.
 		 * @param {string} fieldid The field unique id.
 		 * @param {string} photoid The photo id.
+		 * @param {File} file The file object that must contain at least the name and size parameters.
 		 * @param {boolean} [preview=true] If true, this is a new photo and should be in preview mode. Defaults to true.
 		 * @return {boolean} Will return true if added, false if not (usually when it already exists).
 		 */
-		add: function(fieldid, photoid, preview){
+		add: function(fieldid, photoid, file, preview){
 			// Default for preview
 			if(typeof preview === 'undefined') preview = true;
 
@@ -394,18 +410,8 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 				api.removeAll(fieldid);
 			}
 
-			// Create the photo item in data (but only for new photos - where preview is on)
-			if(preview === true) api.addFieldValue(fieldid, 'add', photoid);
-
 			// Create the photo item in ui
-			dropzoneActions.addImage(fieldid, photoid, preview);
-
-			//var $photoElement = createPhotoMarkupFromTemplate(fieldid, photoid, preview);
-			//if(preview === true) getListElement(fieldid).prepend($photoElement);
-			//else getListElement(fieldid).append($photoElement);
-
-			// Activate sortable
-			turnOnSortableForList(fieldid);
+			dropzoneActions.addImage(fieldid, photoid, file, preview);
 		},
 
 		/**
@@ -474,9 +480,10 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 * Load existing photo.
 		 * @param {string} fieldid The field unique id.
 		 * @param {string} photoid The id of the photo.
+		 * @param {Object|File} file The file object that must contain at least the name and size parameters.
 		 */
-		loadExisting: function(fieldid, photoid){
-			api.add(fieldid, photoid, false);
+		loadExisting: function(fieldid, photoid, file){
+			api.add(fieldid, photoid, file, false);
 		},
 
 		/**

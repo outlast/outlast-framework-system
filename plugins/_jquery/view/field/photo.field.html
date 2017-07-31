@@ -4,7 +4,7 @@
 {% block photo_attribute_init %}
 	photo.setFieldOption('{{field.uid}}', 'countLimit', 1);
 	{% if field.value %}
-		photo.loadExisting('{{field.uid}}', '{{field.value.id}}');
+		photo.loadExisting('{{field.uid}}', '{{field.value.id}}', { name: '{{field.value.name|escapejs}}', size: '{{field.value.data.filesizes.full|escapejs}}' });
 	{% endif %}
 {% endblock %}
 </script>
