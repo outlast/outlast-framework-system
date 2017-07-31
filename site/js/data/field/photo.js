@@ -1,7 +1,7 @@
 /**
  * Course editing API.
  **/
-define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "../../jquery/jquery-ui-1.10.3/jquery.ui.core.min.js", "../../ofw-jquery"], function(plUpload, jQueryUI) {
+define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", "../../jquery/jquery-ui-1.10.3/jquery.ui.core.min.js", "../../ofw-jquery"], function(Dropzone, jQueryUI) {
 
     /** Properties **/
     var _dataAttributeName = 'photo';
@@ -111,7 +111,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 	 * @returns {jQuery} The browse button jquery element.
 	 */
 	var getBrowseButton = function(fieldid) {
-		return $('[data-photo="uploadButton"]').filter('[data-photo-field-id="'+fieldid+'"');
+		return $('[data-photo="uploadButton"]').filter('[data-photo-field-id="'+fieldid+'"]');
 	};
 
 	/**
@@ -168,7 +168,7 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 	 */
 	var pluploadInit = function(fieldid, browseButton, dropElement) {
 		// Initialize
-		var myPlupload = new plupload.Uploader({
+		/**var myPlupload = new plupload.Uploader({
 			runtimes : 'html5,flash,html4',
 			browse_button : browseButton,
 			drop_element : dropElement,
@@ -184,17 +184,62 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 		myPlupload.bind('UploadProgress', function(up, file){ pluploadOnUploadProgress(fieldid, up, file) });
 		myPlupload.bind('Error', function(up, error){ pluploadOnError(fieldid, up, error) });
 		myPlupload.bind('FileUploaded', function(up, file, result){ pluploadOnFileUploaded(fieldid, up, file, result) });
-
 		// Set to global var
 		_photoFieldUploaderObjects[fieldid] = myPlupload;
+		**/
+		var myDropzone = new Dropzone(dropElement, {
+			url: ofw.baseurl+'system/plupload/upload/photo/',
+			addRemoveLinks: true,
+			maxFiles: null,
+			clickable: browseButton,
+			// Localization
+			dictDefaultMessage: "<i class='fa fa-files-o fa-3x'></i>",
+			dictCancelUploadConfirmation: null,
+			dictCancelUpload: "<i class='fa fa-times'></i>",
+			dictRemoveFile: "<i class='fa fa-trash-o'></i>",
+
+		});
+
+		// Add callbacks
+		myDropzone.on("addedfile", function(file) {
+			dropzoneActions.onAddedFile(fieldid, file);
+		});
+		dropzoneActions.onInit(fieldid);
+
+		// Finally, set
+		_photoFieldUploaderObjects[fieldid] = myDropzone;
 	};
 
 	/**
-	 * Called after the plupload was initialized.
+	 * Callback functions for dropzone.js
 	 */
-	var pluploadOnInit = function(fieldid, up, params){
-		var $browseButton = getBrowseButton(fieldid);
-		$browseButton.removeClass('hide');
+	var dropzoneActions = {
+
+		addImage: function(fieldid, photoid, preview){
+			var photoUrl = getPhotoUrl(photoid, preview);
+			var mockFile = { name: "", size: 0 };
+			_photoFieldUploaderObjects[fieldid].options.addedfile.call(_photoFieldUploaderObjects[fieldid], mockFile);
+    		_photoFieldUploaderObjects[fieldid].options.thumbnail.call(_photoFieldUploaderObjects[fieldid], mockFile, photoUrl);
+		},
+
+		onInit: function(fieldid){
+			var $browseButton = getBrowseButton(fieldid);
+			$browseButton.removeClass('hide');
+		},
+
+		onAddedFile: function(fieldid, file){
+			// Get response if it was an upload
+			if(file.xhr){
+				var rJson = JSON.parse(file.xhr.response);
+				if(rJson.status === 'success' || rJson.status === 'ok'){
+
+				}
+				else{
+					_photoFieldUploaderObjects[fieldid].options.removefile.call(_photoFieldUploaderObjects[fieldid], file);
+				}
+
+			}
+		}
 	};
 
 	/**
@@ -335,9 +380,11 @@ define('system/js/data/field/photo', ["../../plupload/plupload.full.min.js", "..
 			if(preview === true) api.addFieldValue(fieldid, 'add', photoid);
 
 			// Create the photo item in ui
-			var $photoElement = createPhotoMarkupFromTemplate(fieldid, photoid, preview);
-			if(preview === true) getListElement(fieldid).prepend($photoElement);
-			else getListElement(fieldid).append($photoElement);
+			dropzoneActions.addImage(fieldid, photoid, preview);
+
+			//var $photoElement = createPhotoMarkupFromTemplate(fieldid, photoid, preview);
+			//if(preview === true) getListElement(fieldid).prepend($photoElement);
+			//else getListElement(fieldid).append($photoElement);
 
 			// Activate sortable
 			turnOnSortableForList(fieldid);

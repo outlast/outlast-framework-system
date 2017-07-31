@@ -1,9 +1,13 @@
 {% lang 'system/fields' 'photos' %}
 
 <!-- Load existing photos -->
-<script language="JavaScript" src="{{baseurl}}system/js/plupload/plupload.full.js" type="text/javascript"></script>
 <script>
 	ofw.ready(function(){
+		// Load stylesheets
+		ofw.loadCssStylesheet('system/css/ext/dropzone/basic.css');
+		ofw.loadCssStylesheet('system/css/ext/dropzone/dropzone.css');
+
+		// Add data attr
 		ofw.addDataAttributeHandler('photo', 'system/js/data/field/', function(photo){
 			{% block photo_attribute_init %}
 				{% foreach field.value as field_thumb %}
@@ -15,14 +19,16 @@
 </script>
 
 <!-- Display markup for list and upload -->
-<div class="col-sm-12" data-photo="list" data-photo-field-id="{{field.uid}}">
+<div class="col-sm-12 dropzone" data-photo="list" data-photo-field-id="{{field.uid}}">
 	<i data-photo="loader" class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+
+
 	<div class="col-sm-2 hide" data-photo="template" data-photo-field-id="{{field.uid}}" style="position: relative; cursor: pointer; margin-bottom: 10px;">
 		<img class="pull-left img-thumbnail img-responsive">
 	</div>
 </div>
 
-<div class="clearfix"><br/></div>
+<div class="clearfix">&nbsp;</div>
 
 <a data-photo="uploadButton" data-photo-field-id="{{field.uid}}" class="btn btn-primary hide"><i class="fa fa-file-picture-o"></i> {{#system_field_picture_upload#}}</a>
 <div data-photo="uploadProgressBar" data-photo-field-id="{{field.uid}}" class="progress progress-striped active hide"><div class="progress-bar bar" style="width: 0;"></div></div>

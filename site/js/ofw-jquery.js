@@ -60,6 +60,7 @@ define('system/js/ofw-jquery', [], function() {
 	var queueReadyFunctions = false;		// True if the ready and require functions are being queued
 	var originalRequireFunction;			// The original requirejs() function
 	var requireFunctions = [];				// A queue of the requirejs functions that should be run when ready
+	var loadedCssStylesheets = {};			// A list of loaded sheets. Key is relative url, value is the number of times it was requested
 
     /** Private API **/
 
@@ -836,6 +837,27 @@ define('system/js/ofw-jquery', [], function() {
 			if(top) window.top.location = relative_or_absolute_url;
 			else window.location = relative_or_absolute_url;
 			return true;
+		},
+
+		/** LOADING METHODS **/
+
+		/**
+		 * Dynamically load a css stylesheet. Do not overuse this! When possible, use template inheritance.
+		 * @param {string} relativeUrl The url, relative to baseurl.
+		 */
+		loadCssStylesheet: function(relativeUrl){
+			// Add to loaded list
+			if(typeof loadedCssStylesheets[relativeUrl] === 'undefined'){
+				loadedCssStylesheets[relativeUrl] = 1;
+			}
+			else loadedCssStylesheets[relativeUrl]++;
+
+			// Inject
+			$("<link/>", {
+			   rel: "stylesheet",
+			   type: "text/css",
+			   href: relativeUrl
+			}).appendTo("head");
 		},
 
 		/***** TEXT PROCESSING METHODS @todo move some of these to library/text ******/
