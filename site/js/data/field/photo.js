@@ -3,6 +3,8 @@
  **/
 define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", "../../jquery/jquery-ui-1.10.3/jquery.ui.core.min.js", "../../ofw-jquery"], function(Dropzone, jQueryUI) {
 
+	Dropzone.autoDiscover = false;
+
     /** Properties **/
     var _dataAttributeName = 'photo';
 	var _popoverMarkup = "<a class='btn btn-primary' target='_blank'><span class='fa fa-search-plus'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>";
@@ -108,15 +110,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			},
 			stop: function(event, ui) {
 				ui.item.removeClass('draginprogress');
-
-				// Build array
-				var photoReorderArray = [];
-				$el.find('[data-photo-id]').each(function(){
-					photoReorderArray.push($(this).attr('data-photo-id'));
-				});
-
-				// Set reorder array
-				api.setFieldValues(fieldid, 'order', photoReorderArray);
+				dropzoneActions.onReorder(fieldid);
 			}
 		});
 	};
@@ -154,6 +148,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		});
 		dropzoneActions.onInit(fieldid);
 
+
 		// Finally, set
 		_photoFieldUploaderObjects[fieldid] = myDropzone;
 	};
@@ -169,6 +164,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			// Set up file with additional details
 			file['id'] = photoid;
 			file['preview'] = preview;
+
 			// Emit events
 			_photoFieldUploaderObjects[fieldid].emit("addedfile", file);
 			_photoFieldUploaderObjects[fieldid].emit("thumbnail", file, photoUrl);
@@ -211,6 +207,11 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 				}
 
 			});
+
+			// Add drag event
+			$previewElement.on('dragend', function(){
+				console.log('drag ended for '+photoid);
+			});
 		},
 
 		onRenameImage: function(fieldid, photoid, newName){
@@ -246,6 +247,17 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			}
 		},
 
+		onReorder: function(fieldid){
+			// Build array
+			var photoReorderArray = [];
+			getListElement(fieldid).find('[data-photo-id]').each(function(){
+				photoReorderArray.push($(this).attr('data-photo-id'));
+			});
+
+			// Set reorder array
+			api.setFieldValues(fieldid, 'order', photoReorderArray);
+		},
+
 		onInit: function(fieldid){
 			var $browseButton = getBrowseButton(fieldid);
 			$browseButton.removeClass('hide');
@@ -270,9 +282,12 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 						});
 					}
 
-					// Now add me
+					// Add to array and to image buttons
 					api.addFieldValue(fieldid, 'add', photoid);
 					dropzoneActions.addImageButtons(fieldid, photoid, file.previewElement, true);
+
+					// Trigger onreorder
+					dropzoneActions.onReorder(fieldid);
 				}
 				else{
 					_photoFieldUploaderObjects[fieldid].removeFile(file);
