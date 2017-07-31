@@ -195,14 +195,16 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			// Localization
 			dictDefaultMessage: "<i class='fa fa-files-o fa-3x'></i>",
 			dictCancelUploadConfirmation: null,
-			dictCancelUpload: "<i class='fa fa-times'></i>",
+			dictCancelUpload: "✕",
 			dictRemoveFile: "<i class='fa fa-trash-o'></i>",
+			// Custom localizations
+			dictPreviewFile: "<i class='fa fa-external-link'></i>",		// Custom!
 
 		});
 
 		// Add callbacks
-		myDropzone.on("addedfile", function(file) {
-			dropzoneActions.onAddedFile(fieldid, file);
+		myDropzone.on("complete", function(file) {
+			dropzoneActions.onComplete(fieldid, file);
 		});
 		dropzoneActions.onInit(fieldid);
 
@@ -217,9 +219,21 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 
 		addImage: function(fieldid, photoid, preview){
 			var photoUrl = getPhotoUrl(photoid, preview);
-			var mockFile = { name: "", size: 0 };
-			_photoFieldUploaderObjects[fieldid].options.addedfile.call(_photoFieldUploaderObjects[fieldid], mockFile);
-    		_photoFieldUploaderObjects[fieldid].options.thumbnail.call(_photoFieldUploaderObjects[fieldid], mockFile, photoUrl);
+			var mockFile = { name: "", size: 0, id: photoid, preview: preview };
+			_photoFieldUploaderObjects[fieldid].emit("addedfile", mockFile);
+			_photoFieldUploaderObjects[fieldid].emit("thumbnail", mockFile, photoUrl);
+			_photoFieldUploaderObjects[fieldid].emit("complete", mockFile);
+		},
+
+		addImageButtons: function(fieldid, photoid, previewElement, previewMode){
+			var $previewElement = $(previewElement);
+			// Fix remove file
+			var $removeButton = $previewElement.find('.dz-remove').html(_photoFieldUploaderObjects[fieldid].options.dictRemoveFile);
+			// Add preview link
+			var $showButton = $('<a class="dz-show">'+_photoFieldUploaderObjects[fieldid].options.dictPreviewFile+'</a>')
+			$showButton.insertBefore($removeButton);
+			$showButton.attr('href', getPhotoUrl(photoid, previewMode));
+			$showButton.attr('target', '_blank');
 		},
 
 		onInit: function(fieldid){
@@ -227,17 +241,21 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			$browseButton.removeClass('hide');
 		},
 
-		onAddedFile: function(fieldid, file){
-			// Get response if it was an upload
+		onComplete: function(fieldid, file){
+			// If completed from an upload, then verify the file
 			if(file.xhr){
 				var rJson = JSON.parse(file.xhr.response);
 				if(rJson.status === 'success' || rJson.status === 'ok'){
-
+					dropzoneActions.addImageButtons(fieldid, rJson.id, file.previewElement, true);
 				}
 				else{
-					_photoFieldUploaderObjects[fieldid].options.removefile.call(_photoFieldUploaderObjects[fieldid], file);
+					_photoFieldUploaderObjects[fieldid].removeFile(file);
+					ofw.alert(rJson.message);
 				}
 
+			}
+			else{
+				dropzoneActions.addImageButtons(fieldid, file.id, file.previewElement, false);
 			}
 		}
 	};

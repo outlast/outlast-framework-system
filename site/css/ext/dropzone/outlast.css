@@ -1,0 +1,10 @@
+.dropzone .dz-preview .dz-show, .dropzone .dz-preview .dz-remove {
+    position: relative;
+    display: inline-block;
+    min-height: 0px;
+    width: auto;
+    margin: 5px;
+}
+.dropzone .dz-preview{
+    text-align: center;
+}
