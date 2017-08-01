@@ -1,7 +1,7 @@
 /**
  * Course editing API.
  **/
-define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", "../../jquery/jquery-ui-1.10.3/jquery.ui.core.min.js", "../../ofw-jquery"], function(Dropzone, jQueryUI) {
+define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", "../../jquery/jquery-ui-1.12.1/jquery-ui-sortable-standalone.min", "../../ofw-jquery"], function(Dropzone, jQueryUI) {
 
 	Dropzone.autoDiscover = false;
 
