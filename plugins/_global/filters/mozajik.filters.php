@@ -480,6 +480,37 @@ EOF;
 	}
 
 	/**
+	 * Filter: rtrim - Trims characters (space by default) from right side of string.
+	 *
+	 * <b>{{' this has whitespace '|rtrim}}</b> Will return ' this has whitespace'.
+	 * <b>{{'/url/with/trailing/slash/'|rtrim:'/'}}</b> Will return without trailing slash, '/url/with/trailing/slash'
+	 *
+	 **/
+	public function filter_rtrim($parameter, &$source){
+		// If parameter is not defined, then the parameter is the current locale
+		if(empty($parameter) && $parameter != 0) $parameter = "' '";
+		// Write to file.
+		$this->zajlib->compile->write('$filter_var=rtrim($filter_var, '.$parameter.');');
+		return true;
+	}
+
+	/**
+	 * Filter: ltrim - Trims characters (space by default) from left side of string.
+	 *
+	 * <b>{{' this has whitespace '|ltrim}}</b> Will return 'this has whitespace '.
+	 * <b>{{'/url/with/trailing/slash/'|ltrim:'/'}}</b> Will return without preceding slash, 'url/with/trailing/slash/'
+	 *
+	 **/
+	public function filter_ltrim($parameter, &$source){
+		// If parameter is not defined, then the parameter is the current locale
+		if(empty($parameter) && $parameter != 0) $parameter = "' '";
+		// Write to file.
+		$this->zajlib->compile->write('$filter_var=ltrim($filter_var, '.$parameter.');');
+		return true;
+	}
+
+
+	/**
 	 * Filter: in - You can check if an item is contained within another. This is especially useful for lists.
 	 *
 	 * If you check in a list, it will look for an object within that list. If you check in a string, it will check if the string is in the other. This is very similar to django's in operator {@link https://docs.djangoproject.com/en/1.2/ref/templates/builtins/#in-operator}
