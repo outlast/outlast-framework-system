@@ -173,6 +173,7 @@ define('system/js/ofw-jquery', [], function() {
 					else{
 						options = $.extend({ url: url, receiver: $(receiver), callback: function(r){
 							$(receiver).html(r);
+							activateDataAttributeHandlers($(receiver));
 						} }, options);
 					}
 
@@ -606,7 +607,9 @@ define('system/js/ofw-jquery', [], function() {
 				// Backdrop closes on mobile
 				var backdrop = 'static';
 				// Set body and show it (requires selector again)
-				$modal.find('div.modal-body').html(message);
+				var $modalBody = $modal.find('div.modal-body');
+				$modalBody.html(message);
+				activateDataAttributeHandlers($modalBody);
 				$modal.modal({backdrop: backdrop, keyboard: false});
 				// Reposition the modal if needed
 				alertReposition($modal);
