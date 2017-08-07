@@ -172,7 +172,7 @@ class zajlib_error extends zajLibExtension {
 			// Update error text
 				$original_error_text = $errortext;
 
-				if($this->zajlib->compile_started && $this->zajlib->variable->ofw->tmp->compile_source_debug){
+				if($this->zajlib->compile_started && !empty($this->zajlib->variable->ofw->tmp->compile_source_debug)){
 				    $errortext .= " (error triggered from template line ".$this->zajlib->variable->ofw->tmp->compile_source_debug->line_number." of ".$this->zajlib->variable->ofw->tmp->compile_source_debug->file_path.")";
 				}
 				else{
