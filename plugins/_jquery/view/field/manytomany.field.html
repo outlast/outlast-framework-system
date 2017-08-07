@@ -27,7 +27,7 @@
 	{% endblock relationship_selected_values %}
 </select>
 <script>
-	requirejs(["system/js/ofw-jquery", "system/js/ext/select2/select2.min"], function(select2){
+	requirejs(["system/js/ofw-jquery", "system/js/ext/select2/select2.min"], function(ofwload, select2){
 		// Show it
 		$('#{{field.uid}}').removeClass('hide');
 		$('#{{field.uid}}-loader').addClass('hide');
@@ -92,7 +92,6 @@
 				  	if(node.text) return node.text;
 				  }
 			});
-
 		{% endif %}
 	});
 </script>
