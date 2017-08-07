@@ -16,8 +16,12 @@
 	{% endif %}
 {% endblock relationship_selected_values %}
 
+{% block relationship_data_attributes %}data-relationship-field-type="manytoone"{% endblock %}
+
+<script>
 {% block relationship_selected_values_js %}
 	{% if field.value %}
-		$('#{{field.uid}}').val("{{field.value.id}}").trigger('change');
+		relationship.setFieldValue("{{field.uid}}", "{{field.value.id}}");
 	{% endif %}
 {% endblock relationship_selected_values_js %}
+</script>

@@ -848,7 +848,7 @@ define('system/js/ofw-jquery', [], function() {
 		 * Dynamically load a css stylesheet. Do not overuse this! When possible, use template inheritance.
 		 * @param {string} relativeUrl The url, relative to baseurl.
 		 */
-		loadCssStylesheet: function(relativeUrl){
+		loadCss: function(relativeUrl){
 			// Add to loaded list
 			if(typeof loadedCssStylesheets[relativeUrl] === 'undefined'){
 				loadedCssStylesheets[relativeUrl] = 1;
@@ -862,6 +862,8 @@ define('system/js/ofw-jquery', [], function() {
 			   href: ofw.baseurl+relativeUrl
 			}).appendTo("head");
 		},
+		loadCssStylesheet: function(relativeUrl){ api.loadCss(relativeUrl) },
+
 
 		/***** TEXT PROCESSING METHODS @todo move some of these to library/text ******/
 

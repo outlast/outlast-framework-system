@@ -1,7 +1,31 @@
 <!-- Load up my requirements -->
 {% lang 'system/fields' 'relationships' %}
 
-<link rel="stylesheet" href="{{baseurl}}system/css/ext/select2/select2.min.css">
+<script>
+	ofw.ready(function(){
+		ofw.loadCss('system/css/ext/select2/select2.min.css');
+		// Add data attr
+		ofw.addDataAttributeHandler('relationship', 'system/js/data/field/', function(relationship){
+			{% block relationship_selected_values_js %}
+				var fieldValueArray = [];
+				{% foreach field.value as val %}
+					fieldValueArray.push('{{val.id}}');
+				{% endforeach %}
+				relationship.setFieldValue("{{field.uid}}", fieldValueArray);
+			{% endblock %}
+		});
+	});
+</script>
+<style>
+	/** Fixes for Bootstrap modal **/
+	.select2-close-mask{
+	    z-index: 2099 !important;
+	}
+	.select2-dropdown{
+		z-index: 3051 !important;
+	}
+</style>
+
 
 {% block relationship_input %}
 <!-- Additional hidden input so that empty value is sent when nothing is selected -->
@@ -9,8 +33,23 @@
 {% endblock relationship_input %}
 
 <!-- Display markup -->
-<img id="{{field.uid}}-loader" src='{{baseurl}}system/img/assets/ajax-loader.gif'>
-<select class="{% block relationship_class %}ofw-field-manytomany{% endblock relationship_class %} form-control hide" data-placeholder="{{#system_field_relationships_search#|escape}}" id="{{field.uid}}" name="{% block relationship_name %}{{field.name}}[]{% endblock %}" {% block relationship_multiple %}multiple{% endblock %}>
+<i data-relationship="loader" data-relationship-field-id="{{field.uid}}" class="fa fa-circle-o-notch fa-spin fa-fw"></i>
+
+<select
+	data-relationship="select"
+	data-relationship-field-id="{{field.uid}}"
+	{% block relationship_data_attributes %}data-relationship-field-type="manytomany"{% endblock %}
+	{% if field.choices.total > 50 %}
+		data-relationship-ajax-mode="yes"
+		data-relationship-class-name="{{field.class_name}}"
+		data-relationship-field-name="{{field.field_name}}"
+	{% endif %}
+	class="{% block relationship_class %}ofw-field-manytomany{% endblock relationship_class %} form-control hide"
+	data-placeholder="{{#system_field_relationships_search#|escape}}"
+	id="{{field.uid}}"
+	name="{% block relationship_name %}{{field.name}}[]{% endblock %}"
+	{% block relationship_multiple %}multiple{% endblock %}>
+
 	{% block relationship_empty %}{% endblock relationship_empty %}
 	{% if field.choices.total <= 50 %}
 		<option value="" disabled>{{#system_field_relationships_search#|escape}}</option>
@@ -26,81 +65,3 @@
 		{% endif %}
 	{% endblock relationship_selected_values %}
 </select>
-<script>
-	requirejs(["system/js/ofw-jquery", "system/js/ext/select2/select2.min"], function(ofwload, select2){
-		// Show it
-		$('#{{field.uid}}').removeClass('hide');
-		$('#{{field.uid}}-loader').addClass('hide');
-
-		// Set selected items
-		{% block relationship_selected_values_js %}
-		{% if field.value %}
-			var relationshipSelectedValues = [];
-			{% foreach field.value as sitem %}
-				relationshipSelectedValues.push("{{sitem.id}}");
-            {% endfor %}
-			$('#{{field.uid}}').val(relationshipSelectedValues).trigger('change');
-        {% endif %}
-		{% endblock relationship_selected_values_js %}
-
-		// Init with select 2
-		{% if field.choices.total <= 50 %}
-			$('#{{field.uid}}').select2({
-				allowClear: true,
-				width: '100%'
-			});
-		{% elseif %}
-			$('#{{field.uid}}').select2({
- 				 allowClear: true,
-				 ajax: {
-					url: ofw.baseurl+"system/search/relation/",
-					dataType: 'json',
-					delay: 250,
-					data: function (params) {
-					  return {
-						'query': params.term, // search term
-						//'page': params.page,
-						'class': '{{field.class_name}}',
-						'field': '{{field.field_name}}'
-					  };
-					},
-					processResults: function (data, params) {
-					  // parse the results into the format expected by Select2
-					  // since we are using custom formatting functions we do not need to
-					  // alter the remote JSON data, except to indicate that infinite
-					  // scrolling can be used
-					  //params.page = params.page || 1;
-					  return {
-						results: data.data
-						/**pagination: {
-						// @todo fix pagination!
-						  more: (params.page * 30) < data.data.length
-						}**/
-					  };
-					},
-					cache: true
-				  },
-				  width: '100%',
-				  minimumInputLength: 1,
-				  templateResult: function(node){
-				  	if(node.name) return node.name;
-				  	if(node.text) return node.text;
-
-				  },
-				  templateSelection: function(node){
-				  	if(node.name) return node.name;
-				  	if(node.text) return node.text;
-				  }
-			});
-		{% endif %}
-	});
-</script>
-<style>
-	/** Fixes for Bootstrap modal **/
-	.select2-close-mask{
-	    z-index: 2099 !important;
-	}
-	.select2-dropdown{
-		z-index: 3051 !important;
-	}
-</style>
