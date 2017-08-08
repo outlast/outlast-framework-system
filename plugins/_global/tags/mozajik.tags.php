@@ -90,7 +90,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
             }
 
 			// create an empty field object
-            $this->zajlib->compile->write('<?php $this->zajlib->variable->field = new stdClass(); ?>');
+            $this->zajlib->compile->write('<?php $previous_field_'.$uniqid.' = $this->zajlib->variable->field; $this->zajlib->variable->field = new stdClass(); ?>');
 			// set stuff
             $this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->type = "'.$field_object->type.'"; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->field_name = "'.$fieldname.'"; $this->zajlib->variable->field->locale = '.$fieldtranslation.'; $this->zajlib->variable->field->name = "'.$inputname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = "'.$uniqid.'";  ?>');
 			// callback
@@ -110,11 +110,14 @@ class zajlib_tag_mozajik extends zajElementCollection{
             }
 
 			// now create form field
-				// @todo Is this template path checked here?
-				$this->zajlib->compile->compile($template);
-				$this->zajlib->compile->insert_file($template.'.php');
-		// return debug_stats
-			return true;
+            $this->zajlib->compile->compile($template);
+            $this->zajlib->compile->insert_file($template.'.php');
+
+            // Reset field value
+            $this->zajlib->compile->write('<?php $this->zajlib->variable->field = $previous_field_'.$uniqid.'; ?>');
+
+		// Return true
+		return true;
 	}
 	/**
 	 * @ignore

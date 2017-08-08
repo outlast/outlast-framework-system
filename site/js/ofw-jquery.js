@@ -853,7 +853,10 @@ define('system/js/ofw-jquery', [], function() {
 			if(typeof loadedCssStylesheets[relativeUrl] === 'undefined'){
 				loadedCssStylesheets[relativeUrl] = 1;
 			}
-			else loadedCssStylesheets[relativeUrl]++;
+			else{
+				loadedCssStylesheets[relativeUrl]++;
+				return;
+			}
 
 			// Inject
 			$("<link/>", {

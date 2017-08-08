@@ -47,7 +47,7 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 	 * @param {Array|values} values An array of ids or a single id. Depending on the type of relationship.
 	 */
 	var setFieldValues = function(fieldid, values) {
-		setTimeout(function(){ getSelectElement(fieldid).val(values).trigger('change'); }, 50);
+		getSelectElement(fieldid).val(values).trigger('change');
 	};
 
 	/**
