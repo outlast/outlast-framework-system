@@ -257,14 +257,18 @@ abstract class zajModel implements JsonSerializable {
 		// Get my class_name
 			/* @var string|zajModel $class_name */
 			$class_name = get_called_class();
-		// if id is specifically null or empty, then return false
-			if(!is_null($id) && ($id === false || (is_string($id) && $id == ''))) return false;
+        // Arguments passed?
+            $args = func_get_args();
+            if(count($args) > 0) $has_args = true;
+            else $has_args = false;
+        // if id is specifically null or empty, then return false
+			if($has_args && (is_null($id) || $id === false || (is_string($id) && $id == ''))) return false;
 		// call event
 			$class_name::fire_static('onFetch', array($class_name, $id));
 		// disable for non-database objects if id not given!
-			if(is_null($id) && !$class_name::$in_database) return false;
-		// if id is null, then this is a multi-row fetch
-			if(is_null($id)) return new zajFetcher($class_name);
+			if(!$has_args && !$class_name::$in_database) return false;
+		// if id is not given, then this is a multi-row fetch
+			if(!$has_args) return new zajFetcher($class_name);
 		// let's see if i can resume it!
 			else{
 				// first, is it already resumed? in this case let's make sure its the proper kind of object and just return it
