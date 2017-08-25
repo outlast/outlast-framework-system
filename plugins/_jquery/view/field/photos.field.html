@@ -1,4 +1,5 @@
 {% lang 'system/fields' 'photos' %}
+{% block photo_config %}{% endblock %}
 
 <!-- Load existing photos -->
 <script>
@@ -23,7 +24,6 @@
 <div class="col-sm-12 dropzone" data-photo="list" data-photo-field-id="{{field.uid}}">
 	<i data-photo="loader" class="fa fa-circle-o-notch fa-spin fa-fw"></i>
 
-
 	<div class="col-sm-2 hide" data-photo="template" data-photo-field-id="{{field.uid}}" style="position: relative; cursor: pointer; margin-bottom: 10px;">
 		<img class="pull-left img-thumbnail img-responsive">
 	</div>
@@ -31,7 +31,9 @@
 
 <div class="clearfix">&nbsp;</div>
 
-<a data-photo="uploadButton" data-photo-field-id="{{field.uid}}" class="btn btn-primary hide"><i class="fa fa-file-picture-o"></i> {{#system_field_picture_upload#}}</a>
+{% block photo_upload_button %}
+<a data-photo="uploadButton" data-photo-field-id="{{field.uid}}" class="btn btn-primary hide"><i class="fa fa-file-picture-o"></i> {{#system_field_pictures_upload#}}</a>
+{% endblock %}
 <div data-photo="uploadProgressBar" data-photo-field-id="{{field.uid}}" class="progress progress-striped active hide"><div class="progress-bar bar" style="width: 0;"></div></div>
 
 <input type="hidden" name="{{field.name}}" id="{{field.uid}}" data-photo="field" data-photo-field-id="{{field.uid}}">

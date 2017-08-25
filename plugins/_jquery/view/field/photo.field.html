@@ -1,5 +1,9 @@
 {% extends 'field/photos.field.html' %}
 
+{% block photo_upload_button %}
+	<a data-photo="uploadButton" data-photo-field-id="{{field.uid}}" class="btn btn-primary hide"><i class="fa fa-file-picture-o"></i> {{#system_field_picture_upload#}}</a>
+{% endblock %}
+
 <script>
 {% block photo_attribute_init %}
 	photo.setFieldOption('{{field.uid}}', 'countLimit', 1);

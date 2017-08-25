@@ -1,19 +1,18 @@
 /**
  * Photo field editor (uploads).
  **/
-define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", "../../jquery/jquery-ui-1.12.1/jquery-ui-sortable-standalone.min", "../../ofw-jquery"], function(Dropzone, jQueryUI) {
+define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "../../jquery/jquery-ui-1.12.1/jquery-ui-sortable-standalone.min", "../../ofw-jquery"], function(Dropzone, jQueryUI) {
 
 	Dropzone.autoDiscover = false;
 
     /** Properties **/
-    var _dataAttributeName = 'photo';
-	var _popoverMarkup = "<a class='btn btn-primary' target='_blank'><span class='fa fa-search-plus'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>";
+    var _dataAttributeName = 'file';
+	var _popoverMarkup = "<a class='btn btn-primary' target='_blank'><span class='fa fa-download'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>";
 
 	/** Field settings **/
-	var _photoFieldTemplate = {};
-	var _photoFieldOptions = {};		// countLimit = the number of photos this field allows (1 or 0 /unlimited/) is supported
-	var _photoFieldValues = {};
-	var _photoFieldUploaderObjects = {};
+	var _fileFieldOptions = {};		// countLimit = the number of files this field allows (1 or 0 /unlimited/) is supported
+	var _fileFieldValues = {};
+	var _fileFieldUploaderObjects = {};
 
     /** Private API **/
 
@@ -51,9 +50,9 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	 * @param {string} fieldid The field identifier.
 	 */
 	var setFieldInput = function(fieldid) {
-		if(typeof _photoFieldValues[fieldid] !== 'undefined'){
+		if(typeof _fileFieldValues[fieldid] !== 'undefined'){
 			// Set stringified array to input
-			$('#'+fieldid).val(JSON.stringify(_photoFieldValues[fieldid]));
+			$('#'+fieldid).val(JSON.stringify(_fileFieldValues[fieldid]));
 		}
 	};
 
@@ -61,11 +60,11 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	/**
 	 * Get my list element
 	 * @param {string} fieldid The field identifier.
-	 * @param {string} photoid The photo identifier.
+	 * @param {string} fileid The file identifier.
 	 * @return {jQuery} The list jquery element.
 	 */
-	var getPhotoElement = function(fieldid, photoid) {
-		return getListElement(fieldid).find('[data-photo-id="'+photoid+'"]');
+	var getFileElement = function(fieldid, fileid) {
+		return getListElement(fieldid).find('[data-file-id="'+fileid+'"]');
 	};
 
 	/**
@@ -74,7 +73,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	 * @return {jQuery} The list jquery element.
 	 */
 	var getListElement = function(fieldid) {
-		return $('[data-photo="list"]').filter('[data-photo-field-id="'+fieldid+'"]');
+		return $('[data-file="list"]').filter('[data-file-field-id="'+fieldid+'"]');
 	};
 
 	/**
@@ -83,18 +82,18 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	 * @returns {jQuery} The browse button jquery element.
 	 */
 	var getBrowseButton = function(fieldid) {
-		return $('[data-photo="uploadButton"]').filter('[data-photo-field-id="'+fieldid+'"]');
+		return $('[data-file="uploadButton"]').filter('[data-file-field-id="'+fieldid+'"]');
 	};
 
 	/**
-	 * Get photo url for photo id.
-	 * @param {string} photoid The photo id.
+	 * Get file url for file id.
+	 * @param {string} fileid The file id.
 	 * @param {boolean} preview Set to true if preview.
 	 * @returns {string} Returns the full url.
 	 */
-	var getPhotoUrl = function(photoid, preview) {
-		if(preview) return ofw.baseurl+'system/api/photo/preview/?id='+photoid;
-		else return ofw.baseurl+'system/api/photo/show/?id='+photoid;
+	var getFileUrl = function(fileid, preview) {
+		if(preview) return ofw.baseurl+'system/api/file/preview/?id='+fileid;
+		else return ofw.baseurl+'system/api/file/show/?id='+fileid;
 	};
 
 	/**
@@ -122,10 +121,14 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	 * @param {Object} dropElement The DOM object of the drop element.
 	 */
 	var dropzoneInit = function(fieldid, browseButton, dropElement) {
+
+		// @todo remove previews from file template
+
 		// Initialize
 		var myDropzone = new Dropzone(dropElement, {
-			url: ofw.baseurl+'system/plupload/upload/photo/',
+			url: ofw.baseurl+'system/plupload/upload/file/',
 			addRemoveLinks: true,
+			createImageThumbnails: false,
 			maxFiles: null,
 			clickable: browseButton,
 			// Localization
@@ -134,14 +137,14 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			dictCancelUpload: "✕",
 			dictRemoveFile: "<i class='fa fa-trash-o'></i>",
 			// Custom localizations
-			dictPreviewFile: "<i class='fa fa-external-link'></i>",		// Custom!
+			dictPreviewFile: ""//<i class='fa fa-external-link'></i>",		// Custom!
 
 		});
 
 		// Add callbacks
 		myDropzone.on("removedfile", function(file) {
 			var $previewElement = $(file.previewElement);
-			dropzoneActions.onRemoveImage($previewElement.attr('data-photo-field-id'), $previewElement.attr('data-photo-id'));
+			dropzoneActions.onRemoveFile($previewElement.attr('data-file-field-id'), $previewElement.attr('data-file-id'));
 		});
 		myDropzone.on("complete", function(file) {
 			dropzoneActions.onComplete(fieldid, file);
@@ -150,7 +153,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 
 
 		// Finally, set
-		_photoFieldUploaderObjects[fieldid] = myDropzone;
+		_fileFieldUploaderObjects[fieldid] = myDropzone;
 	};
 
 	/**
@@ -158,89 +161,89 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	 */
 	var dropzoneActions = {
 
-		addImage: function(fieldid, photoid, file, preview){
-			// Get photo url
-			var photoUrl = getPhotoUrl(photoid, preview);
+		addFile: function(fieldid, fileid, file, preview){
+			// Get file url
+			var fileUrl = getFileUrl(fileid, preview);
 			// Set up file with additional details
-			file['id'] = photoid;
-			file['preview'] = preview;
+			file['id'] = fileid;
+			//file['preview'] = preview;
 
 			// Emit events
-			_photoFieldUploaderObjects[fieldid].emit("addedfile", file);
-			_photoFieldUploaderObjects[fieldid].emit("thumbnail", file, photoUrl);
-			_photoFieldUploaderObjects[fieldid].emit("complete", file);
+			_fileFieldUploaderObjects[fieldid].emit("addedfile", file);
+			//_fileFieldUploaderObjects[fieldid].emit("thumbnail", file, fileUrl);
+			_fileFieldUploaderObjects[fieldid].emit("complete", file);
 		},
 
 
-		removeImage: function(fieldid, photoid, file){
-			// Get photo url
-			var $photoElement = getPhotoElement(fieldid, photoid);
+		removeFile: function(fieldid, fileid, file){
+			// Get file url
+			var $fileElement = getFileElement(fieldid, fileid);
 			// Set up file with additional details
-			file['id'] = photoid;
-			file['previewElement'] = $photoElement[0];
+			file['id'] = fileid;
+			file['previewElement'] = $fileElement[0];
 			// Emit events
-			_photoFieldUploaderObjects[fieldid].emit("removedfile", file);
-			//_photoFieldUploaderObjects[fieldid].emit("thumbnail", file, photoUrl);
-			//_photoFieldUploaderObjects[fieldid].emit("complete", file);
+			_fileFieldUploaderObjects[fieldid].emit("removedfile", file);
+			//_fileFieldUploaderObjects[fieldid].emit("thumbnail", file, fileUrl);
+			//_fileFieldUploaderObjects[fieldid].emit("complete", file);
 		},
 
 
-		addImageButtons: function(fieldid, photoid, previewElement, previewMode){
+		addFileButtons: function(fieldid, fileid, previewElement, previewMode){
 			var $previewElement = $(previewElement);
 			// Add data attributes
-			$previewElement.attr('data-photo-id', photoid);
-			$previewElement.attr('data-photo-field-id', fieldid);
+			$previewElement.attr('data-file-id', fileid);
+			$previewElement.attr('data-file-field-id', fieldid);
 
 			// Fix remove button
-			var $removeButton = $previewElement.find('.dz-remove').html(_photoFieldUploaderObjects[fieldid].options.dictRemoveFile);
+			var $removeButton = $previewElement.find('.dz-remove').html(_fileFieldUploaderObjects[fieldid].options.dictRemoveFile);
 			// Add show link
-			var $showButton = $('<a class="dz-show">'+_photoFieldUploaderObjects[fieldid].options.dictPreviewFile+'</a>')
+			var $showButton = $('<a class="dz-show">'+_fileFieldUploaderObjects[fieldid].options.dictPreviewFile+'</a>')
 			$showButton.insertBefore($removeButton);
-			$showButton.attr('href', getPhotoUrl(photoid, previewMode));
+			$showButton.attr('href', getFileUrl(fileid, previewMode));
 			$showButton.attr('target', '_blank');
 			// Add rename event
 			$previewElement.find('.dz-filename').click(function(){
 				var $nameElement = $(this).find('[data-dz-name]');
 				var newName = prompt("Enter the new name for the file", $nameElement.text());
 				if(newName){
-					dropzoneActions.onRenameImage(fieldid, photoid, newName);
+					dropzoneActions.onRenameFile(fieldid, fileid, newName);
 				}
 
 			});
 
 			// Add drag event
 			$previewElement.on('dragend', function(){
-				console.log('drag ended for '+photoid);
+				console.log('drag ended for '+fileid);
 			});
 		},
 
-		onRenameImage: function(fieldid, photoid, newName){
+		onRenameFile: function(fieldid, fileid, newName){
 			// Update UI
-			var $previewElement = getPhotoElement(fieldid, photoid);
+			var $previewElement = getFileElement(fieldid, fileid);
 			var $nameElement = $previewElement.find('[data-dz-name]');
 			$nameElement.text(newName);
 
 			// Update api values
 			var renameValues = api.getFieldValues(fieldid, 'rename');
 			if(renameValues.length === 0) renameValues = {};
-			renameValues[photoid] = newName;
+			renameValues[fileid] = newName;
 			api.setFieldValues(fieldid, 'rename', renameValues);
 		},
 
-		onRemoveImage: function(fieldid, photoid){
-			// Does the photo currently exist in the add? If so just remove from there.
-			if(api.doesValueExistInField(fieldid, 'add', photoid)){
-				api.removeFieldValue(fieldid, 'add', photoid);
+		onRemoveFile: function(fieldid, fileid){
+			// Does the file currently exist in the add? If so just remove from there.
+			if(api.doesValueExistInField(fieldid, 'add', fileid)){
+				api.removeFieldValue(fieldid, 'add', fileid);
 			}
 			// Otherwise, add to removal
 			else{
-				api.addFieldValue(fieldid, 'remove', photoid);
+				api.addFieldValue(fieldid, 'remove', fileid);
 			}
 
 			// Remove it from reorder
-			api.removeFieldValue(fieldid, 'order', photoid);
+			api.removeFieldValue(fieldid, 'order', fileid);
 
-			// Message should not show if more than one photo
+			// Message should not show if more than one file
 			var $fileList = getListElement(fieldid);
 			if($fileList.find('.dz-preview').length > 0){
 				setTimeout(function(){ $fileList.addClass('dz-started'); }, 10);
@@ -249,13 +252,13 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 
 		onReorder: function(fieldid){
 			// Build array
-			var photoReorderArray = [];
-			getListElement(fieldid).find('[data-photo-id]').each(function(){
-				photoReorderArray.push($(this).attr('data-photo-id'));
+			var fileReorderArray = [];
+			getListElement(fieldid).find('[data-file-id]').each(function(){
+				fileReorderArray.push($(this).attr('data-file-id'));
 			});
 
 			// Set reorder array
-			api.setFieldValues(fieldid, 'order', photoReorderArray);
+			api.setFieldValues(fieldid, 'order', fileReorderArray);
 		},
 
 		onInit: function(fieldid){
@@ -271,26 +274,26 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			if(file.xhr){
 				var rJson = JSON.parse(file.xhr.response);
 				if(rJson.status === 'success' || rJson.status === 'ok'){
-					var photoid = rJson.id;
+					var fileid = rJson.id;
 
 					// Do we need to remove previous images?
 					if(api.getFieldOption(fieldid, 'countLimit') === 1){
 						var $fileList = getListElement(fieldid);
 						$fileList.find('.dz-preview').each(function(){
-							var otherPhotoId = $(this).attr('data-photo-id');
-							if(otherPhotoId !== photoid) api.remove(fieldid, otherPhotoId);
+							var otherPhotoId = $(this).attr('data-file-id');
+							if(otherPhotoId !== fileid) api.remove(fieldid, otherPhotoId);
 						});
 					}
 
 					// Add to array and to image buttons
-					api.addFieldValue(fieldid, 'add', photoid);
-					dropzoneActions.addImageButtons(fieldid, photoid, file.previewElement, true);
+					api.addFieldValue(fieldid, 'add', fileid);
+					dropzoneActions.addFileButtons(fieldid, fileid, file.previewElement, true);
 
 					// Trigger onreorder
 					dropzoneActions.onReorder(fieldid);
 				}
 				else{
-					_photoFieldUploaderObjects[fieldid].removeFile(file);
+					_fileFieldUploaderObjects[fieldid].removeFile(file);
 					ofw.alert(rJson.message);
 				}
 
@@ -300,7 +303,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 				// Add orientation class
 				if(file.orientation) $(file.previewElement).addClass(file.orientation);
 				// Add image buttons
-				dropzoneActions.addImageButtons(fieldid, file.id, file.previewElement, false);
+				dropzoneActions.addFileButtons(fieldid, file.id, file.previewElement, false);
 			}
 		}
 	};
@@ -317,22 +320,12 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
     var activations = {
 
 		/**
-		 * Activate the template for uploading.
-		 * @param dataset
-		 * @param $el
-		 */
-		template: function(dataset, $el){
-			// Set my element
-			_photoFieldTemplate[dataset.photoFieldId] = $el;
-    	},
-
-		/**
-		 * Activate a list of photos for reordering and for edit popups.
+		 * Activate a list of files for reordering and for edit popups.
 		 * @param dataset
 		 * @param $el
 		 */
     	list: function(dataset, $el){
-			turnOnSortableForList(dataset.photoFieldId);
+			turnOnSortableForList(dataset.fileFieldId);
     	},
 
 		/**
@@ -347,14 +340,14 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 */
 		uploadButton: function(dataset, $el){
 			// Set countLimit
-			if(dataset.photoFieldOptionCountLimit){
-				api.setFieldOption(dataset.photoFieldId, 'countLimit', dataset.photoFieldOptionCountLimit);
+			if(dataset.fileFieldOptionCountLimit){
+				api.setFieldOption(dataset.fileFieldId, 'countLimit', dataset.fileFieldOptionCountLimit);
 			}
-			else api.setFieldOption(dataset.photoFieldId, 'countLimit', 0);
+			else api.setFieldOption(dataset.fileFieldId, 'countLimit', 0);
 
 			// Init my uploader
-			var $listElement = getListElement(dataset.photoFieldId);
-			dropzoneInit(dataset.photoFieldId, $el[0], $listElement[0]);
+			var $listElement = getListElement(dataset.fileFieldId);
+			dropzoneInit(dataset.fileFieldId, $el[0], $listElement[0]);
 		}
 
 	};
@@ -374,14 +367,14 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
         },
 
 		/**
-		 * Add a new photo to the UI.
+		 * Add a new file to the UI.
 		 * @param {string} fieldid The field unique id.
-		 * @param {string} photoid The photo id.
+		 * @param {string} fileid The file id.
 		 * @param {File|Object} file The file object that must contain at least the name and size parameters.
-		 * @param {boolean} [preview=true] If true, this is a new photo and should be in preview mode. Defaults to true.
+		 * @param {boolean} [preview=true] If true, this is a new file and should be in preview mode. Defaults to true.
 		 * @return {boolean} Will return true if added, false if not (usually when it already exists).
 		 */
-		add: function(fieldid, photoid, file, preview){
+		add: function(fieldid, fileid, file, preview){
 			// Default for preview
 			if(typeof preview === 'undefined') preview = true;
 
@@ -390,19 +383,19 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 				api.removeAll(fieldid);
 			}
 
-			// Create the photo item in ui
-			dropzoneActions.addImage(fieldid, photoid, file, preview);
+			// Create the file item in ui
+			dropzoneActions.addFile(fieldid, fileid, file, preview);
 		},
 
 		/**
-		 * Remove a photo
+		 * Remove a file
 		 * @param {string} fieldid The field unique id.
-		 * @param {string} photoid The photo id.
+		 * @param {string} fileid The file id.
 		 * @param {File|Object} [file={}] The file object that must contain at least the name and size parameters.
 		 */
-		remove: function(fieldid, photoid, file){
+		remove: function(fieldid, fileid, file){
 			if(typeof file === 'undefined') file = {};
-			dropzoneActions.removeImage(fieldid, photoid, file);
+			dropzoneActions.removeFile(fieldid, fileid, file);
 		},
 
 		/**
@@ -410,61 +403,61 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 * @param {string} fieldid The field unique id.
 		 */
 		removeAll: function(fieldid){
-			$('[data-photo-field-id="'+fieldid+'"][data-photo-id]').each(function(){
+			$('[data-file-field-id="'+fieldid+'"][data-file-id]').each(function(){
 				var $el = $(this);
-				var photoid = $el.attr('data-photo-id');
-				api.remove(fieldid, photoid);
+				var fileid = $el.attr('data-file-id');
+				api.remove(fieldid, fileid);
 			});
 		},
 
 		/**
-		 * Show photo options.
+		 * Show file options.
 		 * @param {string} fieldid The field unique id.
-		 * @param {string} photoid The photo id.
-		 * @param {boolean} preview Set this to true if the photo file needs to be a preview.
+		 * @param {string} fileid The file id.
+		 * @param {boolean} preview Set this to true if the file file needs to be a preview.
 		 */
-		showOptions: function(fieldid, photoid, preview){
-			var $photoElement = $('[data-photo-id="'+photoid+'"]');
-			var url = getPhotoUrl(photoid, preview);
+		showOptions: function(fieldid, fileid, preview){
+			var $fileElement = $('[data-file-id="'+fileid+'"]');
+			var url = getFileUrl(fileid, preview);
 			var $popoverContent = $(_popoverMarkup);
-			$photoElement.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: $popoverContent });
+			$fileElement.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: $popoverContent });
 
 			// Add preview
 			$popoverContent.find('.btn-primary').attr('href', url);
 			// Add trash and close events
 			$popoverContent.find('.fa-remove').click(function(){
-				$photoElement.popover('hide');
+				$fileElement.popover('hide');
 			});
 			$popoverContent.find('.fa-trash').click(function(){
-				$photoElement.popover('hide');
-				api.remove(fieldid, photoid);
+				$fileElement.popover('hide');
+				api.remove(fieldid, fileid);
 			});
 		},
 
 		/**
-		 * Load existing photo.
+		 * Load existing file.
 		 * @param {string} fieldid The field unique id.
-		 * @param {string} photoid The id of the photo.
+		 * @param {string} fileid The id of the file.
 		 * @param {Object|File} file The file object that must contain at least the name and size parameters.
 		 */
-		loadExisting: function(fieldid, photoid, file){
-			api.add(fieldid, photoid, file, false);
+		loadExisting: function(fieldid, fileid, file){
+			api.add(fieldid, fileid, file, false);
 		},
 
 		/**
 		 * Add field value and then set the input value.
 		 * @param {string} fieldid The field unique id.
 		 * @param {string} type The type which can be 'add', 'remove' or 'order'.
-		 * @param {string} photoid A specific id.
+		 * @param {string} fileid A specific id.
 		 */
-		addFieldValue: function(fieldid, type, photoid){
+		addFieldValue: function(fieldid, type, fileid){
 			// If field value exists already, return
-			if(photoid === null || api.doesValueExistInField(fieldid, type, photoid)) return;
+			if(fileid === null || api.doesValueExistInField(fieldid, type, fileid)) return;
 
 			// Get field values
 			var fieldValues = api.getFieldValues(fieldid, type);
 			// Now add mine
-			fieldValues.push(photoid);
+			fieldValues.push(fileid);
 			// Now set it!
 			api.setFieldValues(fieldid, type, fieldValues);
         },
@@ -473,15 +466,15 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 * Remove field value if it exists.
 		 * @param {string} fieldid The field unique id.
 		 * @param {string} type The type which can be 'add', 'remove' or 'order'.
-		 * @param {string} photoid A specific id.
+		 * @param {string} fileid A specific id.
 		 */
-		removeFieldValue: function(fieldid, type, photoid){
+		removeFieldValue: function(fieldid, type, fileid){
 			// If field value does not exist, return
-			if(!api.doesValueExistInField(fieldid, type, photoid)) return;
+			if(!api.doesValueExistInField(fieldid, type, fileid)) return;
 
 			// If it does exist, remove it
 			var fieldValues = api.getFieldValues(fieldid, type);
-			var indexOfFieldValue = fieldValues.indexOf(photoid);
+			var indexOfFieldValue = fieldValues.indexOf(fileid);
 			fieldValues.splice(indexOfFieldValue, 1);
 
 			// Now set it!
@@ -496,10 +489,10 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 */
 		setFieldValues: function(fieldid, type, values){
 			// If the type does not yet exist
-			if(typeof _photoFieldValues[fieldid] === 'undefined') _photoFieldValues[fieldid] = {};
+			if(typeof _fileFieldValues[fieldid] === 'undefined') _fileFieldValues[fieldid] = {};
 
 			// Now set appropriate key
-			_photoFieldValues[fieldid][type] = values;
+			_fileFieldValues[fieldid][type] = values;
 
 			// Set input
 			setFieldInput(fieldid);
@@ -512,22 +505,22 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 * @return {Array} Returns an array.
 		 */
 		getFieldValues: function(fieldid, type){
-			if(typeof _photoFieldValues[fieldid] === 'undefined') return [];
-			else if(typeof _photoFieldValues[fieldid][type] === 'undefined') return [];
-			else return _photoFieldValues[fieldid][type];
+			if(typeof _fileFieldValues[fieldid] === 'undefined') return [];
+			else if(typeof _fileFieldValues[fieldid][type] === 'undefined') return [];
+			else return _fileFieldValues[fieldid][type];
 		},
 
 		/**
 		 * Get field value for a specific field and type.
 		 * @param {string} fieldid The field unique id.
 		 * @param {string} type The type which can be 'add', 'remove' or 'order'.
-		 * @param {string} photoid The id of the item you are looking for.
+		 * @param {string} fileid The id of the item you are looking for.
 		 * @return {boolean} Returns an array.
 		 */
-		doesValueExistInField: function(fieldid, type, photoid){
+		doesValueExistInField: function(fieldid, type, fileid){
 			var values = api.getFieldValues(fieldid, type);
 			for(var i = 0; i < values.length; i++){
-				if(values[i] === photoid) return true;
+				if(values[i] === fileid) return true;
 			}
 			return false;
 		},
@@ -539,8 +532,8 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 * @param {string|Number|Object|null} value The option value.
 		 */
 		setFieldOption: function(fieldid, key, value){
-			if(typeof _photoFieldOptions[fieldid] === 'undefined') _photoFieldOptions[fieldid] = {};
-			_photoFieldOptions[fieldid][key] = value;
+			if(typeof _fileFieldOptions[fieldid] === 'undefined') _fileFieldOptions[fieldid] = {};
+			_fileFieldOptions[fieldid][key] = value;
 		},
 
 		/**
@@ -550,8 +543,8 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 * @return {string|Number|Object|null} The option value or null if the key was not set.
 		 */
 		getFieldOption: function(fieldid, key){
-			if(typeof _photoFieldOptions[fieldid] === 'undefined') return null;
-			return _photoFieldOptions[fieldid][key];
+			if(typeof _fileFieldOptions[fieldid] === 'undefined') return null;
+			return _fileFieldOptions[fieldid][key];
 		}
 	};
 
