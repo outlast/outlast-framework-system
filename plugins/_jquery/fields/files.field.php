@@ -84,38 +84,46 @@ class zajfield_files extends zajField {
 			else{
 				$data = json_decode($data);
 				// If data is empty alltogether, it means that it wasnt JSON data, so it's a single photo id to be added!
-					if(empty($data) && !empty($sdata)){
-						$fobj = File::fetch($sdata);
-							// cannot reclaim here!
-							if($object->id != $fobj->parent && $fobj->status == 'saved') return $this->zajlib->warning("Cannot attach an existing and saved File object to another object!");
-                        $fobj->set('class', $object->class_name);
-						$fobj->set('parent',$object->id);
-						$fobj->set('field',$this->name);
-						$fobj->upload();
-						return array(false, false);
-					}
+                if(empty($data) && !empty($sdata)){
+                    $fobj = File::fetch($sdata);
+                        // cannot reclaim here!
+                        if($object->id != $fobj->parent && $fobj->status == 'saved') return $this->zajlib->warning("Cannot attach an existing and saved File object to another object!");
+                    $fobj->set('class', $object->class_name);
+                    $fobj->set('parent',$object->id);
+                    $fobj->set('field',$this->name);
+                    $fobj->upload();
+                    return array(false, false);
+                }
 				// get new ones
-					if(!empty($data->add)){
-						foreach($data->add as $count=>$id){
-							$fobj = File::fetch($id);
-							// cannot reclaim here!
-							if($fobj->status == 'saved' && $fobj->data->parent != $object->id) return $this->zajlib->error("Cannot attach an existing and saved File object to another object!");
-        					$fobj->set('class', $object->class_name);
-							$fobj->set('parent', $object->id);
-        					$fobj->set('field', $this->name);
-							$fobj->upload();
-						}
-					}
+                if(!empty($data->add)){
+                    foreach($data->add as $count=>$id){
+                        $fobj = File::fetch($id);
+                        // cannot reclaim here!
+                        if($fobj->status == 'saved' && $fobj->data->parent != $object->id) return $this->zajlib->error("Cannot attach an existing and saved File object to another object!");
+                        $fobj->set('class', $object->class_name);
+                        $fobj->set('parent', $object->id);
+                        $fobj->set('field', $this->name);
+                        $fobj->upload();
+                    }
+                }
+				// rename
+                if(!empty($data->rename)){
+                    foreach($data->rename as $fileid=>$newname){
+                        $pobj = File::fetch($fileid);
+                        if($object->id != $pobj->parent) return $this->zajlib->warning("Cannot rename a File object that belongs to another object!");
+                        $pobj->set('name', $newname)->save();
+                    }
+                }
 				// delete old ones
-					if(!empty($data->remove)){
-						foreach($data->remove as $count=>$id){
-							$fobj = File::fetch($id);
-							if($object->id != $fobj->parent) return $this->zajlib->warning("Cannot delete a File object that belongs to another object!");
-							$fobj->delete();
-						}
-					}
+                if(!empty($data->remove)){
+                    foreach($data->remove as $count=>$id){
+                        $fobj = File::fetch($id);
+                        if($object->id != $fobj->parent) return $this->zajlib->warning("Cannot delete a File object that belongs to another object!");
+                        $fobj->delete();
+                    }
+                }
 				// reorder
-					if(!empty($data->order)) File::reorder($data->order, true);
+                if(!empty($data->order)) File::reorder($data->order, false);
 			}
 		return array(false, false);
 	}

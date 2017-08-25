@@ -8,7 +8,7 @@
 {% block file_attribute_init %}
 	file.setFieldOption('{{field.uid}}', 'countLimit', 1);
 	{% if field.value %}
-		file.loadExisting('{{field.uid}}', '{{field.value.id}}', { name: '{{field.value.name|escapejs}}', size: '{{field.value.size|escapejs}}' });
+		file.loadExisting('{{field.uid}}', '{{field.value.id}}', { name: '{{field.value.name|escapejs}}', size: '{{field.value.data.size|escapejs}}' });
 	{% endif %}
 {% endblock %}
 </script>

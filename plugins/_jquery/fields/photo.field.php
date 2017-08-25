@@ -119,7 +119,7 @@ class zajfield_photo extends zajField {
                 if(!empty($data->rename)){
                     foreach($data->rename as $fileid=>$newname){
                         $pobj = Photo::fetch($fileid);
-                        if($object->id != $pobj->parent) return $this->zajlib->warning("Cannot delete a Photo object that belongs to another object!");
+                        if($object->id != $pobj->parent) return $this->zajlib->warning("Cannot rename a Photo object that belongs to another object!");
                         $pobj->set('name', $newname)->save();
                     }
                 }
