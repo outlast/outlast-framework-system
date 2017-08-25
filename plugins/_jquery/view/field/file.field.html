@@ -1,0 +1,14 @@
+{% extends 'field/files.field.html' %}
+
+{% block file_upload_button %}
+	<a data-file="uploadButton" data-file-field-id="{{field.uid}}" class="btn btn-primary hide"><i class="fa fa-file-text-o"></i> {{#system_field_file_upload#}}</a>
+{% endblock %}
+
+<script>
+{% block file_attribute_init %}
+	file.setFieldOption('{{field.uid}}', 'countLimit', 1);
+	{% if field.value %}
+		file.loadExisting('{{field.uid}}', '{{field.value.id}}', { name: '{{field.value.name|escapejs}}', size: '{{field.value.size|escapejs}}' });
+	{% endif %}
+{% endblock %}
+</script>
