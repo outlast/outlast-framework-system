@@ -679,7 +679,7 @@ define('system/js/ofw-jquery', [], function() {
 		ajax: {
 
 			/**
-			 * Send AJAX request via GET.
+			 * Send request with structured data to an API endpoint and receive the results.
 			 * @param {string} endpoint The relative or absolute url of the endpoint.
 			 * @param {object} data An object containing all of the data that should be passed.
 			 * @param {function|string|object} result The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
