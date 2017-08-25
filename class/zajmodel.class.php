@@ -71,7 +71,7 @@ abstract class zajModel implements JsonSerializable {
 	 * Stores the field types as an associative array. See {@see zajDb}.
 	 * @var array
 	 **/
-	private $model;
+	protected $model;
 	/**
 	 * True if the object exists in the database, false otherwise.
 	 * @var boolean
@@ -144,14 +144,14 @@ abstract class zajModel implements JsonSerializable {
 	 * Access to the database-stored translation data through the object's own {@link zajModelLocalizer} object.
 	 * @var zajModelLocalizer
 	 **/
-	private $translations;
+	protected $translations;
 
 	// Object event stack
 	/**
 	 * The event stack, which is basically an array of events currently running.
 	 * @var array
 	 **/
-	private $event_stack = [];
+	protected $event_stack = [];
 
 	/**
 	 * This is an object-specific private variable which registers if any extension of $this has had its event fired. This is used to prevent infinite loops.
@@ -1349,8 +1349,17 @@ abstract class zajModelExtender {
  * @subpackage DefaultModel
  */
 class zajModelLocalizer {
+
+    /** @var string */
+    private $locale;
+
+    /** @var zajModel */
+    private $parent;
+
 	/**
 	 * Create a new localizer object.
+     * @param zajModel $parent The parent object.
+     * @param string|boolean $locale The locale (defaults to current).
 	 **/
 	public function __construct($parent, $locale = false){
 		if($locale != false) $this->locale = $locale;
@@ -1360,6 +1369,8 @@ class zajModelLocalizer {
 
 	/**
 	 * Return data using the __get() method.
+     * @param string $name The name of the field to return.
+     * @return zajModelLocalizerItem Returns the zajModelLocalizerItem object.
 	 **/
 	public function __get($name){
 		return new zajModelLocalizerItem($this->parent, $name, $this->locale);
