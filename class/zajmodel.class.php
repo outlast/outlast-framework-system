@@ -879,15 +879,16 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Gets the cached version of an object.
 	 * @param string $id. The id of the object.
-	 * @return zajModel Returns the object.
+	 * @return zajModel|bool Returns the object or false if failed.
 	 * @ignore
 	 * @todo Disable get_cache from being called outside. Events should be used instead of overriding...
 	 */
 	public static function get_cache($id){
 		// get current class
 		$class_name = get_called_class();
+		$zajlib = zajLib::me();
 		// sanitize id just to be safe
-		if(!zajLib::me()->security->is_valid_id($id)) return zajLib::me()->warning("Tried to get_cache with invalid id: $id");
+		if(!$zajlib->security->is_valid_id($id)) return false;
 
 		// return the resumed class
 		$filename = zajLib::me()->file->get_id_path(zajLib::me()->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
