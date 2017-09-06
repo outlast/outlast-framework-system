@@ -821,7 +821,7 @@ abstract class zajModel implements JsonSerializable {
 				return $this->data;
 			case "translation":
 			case "translations":if(!$this::$has_translations) return false; 	// disable where no translations available
-				if(!$this->translations || $this->translations->locale != zajLib::me()->lang->get()) return $this->translations = new zajModelLocalizer($this);
+				if(!$this->translations || $this->translations->get_locale() != zajLib::me()->lang->get()) return $this->translations = new zajModelLocalizer($this);
 				return $this->translations;
 			case "autosave":	if(!$this::$in_database) return false; 	// disable for non-database objects
 				if(!$this->data) $this->data = new zajData($this);
@@ -1366,6 +1366,13 @@ class zajModelLocalizer {
 		else $this->locale = zajLib::me()->lang->get();
 		$this->parent = $parent;
 	}
+
+    /**
+     * Return the locale of the current item.
+     */
+    public function get_locale(){
+        return $this->locale;
+    }
 
 	/**
 	 * Return data using the __get() method.
