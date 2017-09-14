@@ -93,20 +93,26 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 		 **/
 		public function connect($server="", $user="", $pass="", $db="", $fatal_error = true){
 			// connect to server
-				$this->default_connection = @mysqli_connect($server, $user, $pass);
-				if($this->default_connection === false){
-					if($fatal_error) return $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
-					else return false;
-				}
-				$this->current_session->conn = $this->default_connection;
+            $this->default_connection = @mysqli_connect($server, $user, $pass);
+            if($this->default_connection === false){
+                if($fatal_error) return $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
+                else return false;
+            }
+            $this->current_session->conn = $this->default_connection;
+
 			// select db
-				$result = mysqli_select_db($this->current_session->conn, $db);
-				if($result === false){
-					if($fatal_error) return $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
-					else return false;
-				}
+            $result = mysqli_select_db($this->current_session->conn, $db);
+            if($result === false){
+                if($fatal_error) return $this->zajlib->error("Unable to select db. Incorrect db given? Or no access for user $user?");
+                else return false;
+            }
+
 			// set to connection encoding setting
-				$this->set_encoding();
+            $this->set_encoding();
+
+            // turn off strict mode (@todo instead fix issues!)
+            $this->turn_off_strict_mode();
+
 			return true;
 		}
 
@@ -197,6 +203,20 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 				mysqli_query($connection, "SET CHARACTER SET ".$encoding);
 				mysqli_set_charset($connection, $encoding);
 			return $encoding;
+		}
+
+		/**
+		 * Turn off strict mode.
+         * @todo Remove this and instead fix so that everything works in strict mode.
+		 * @param resource|boolean $connection The connection resource. Defaults to current.
+		 * @return boolean Returns true or false, depending on the result of the query.
+		 */
+		public function turn_off_strict_mode($connection = false){
+			// Default connection
+			if($connection === false) $connection = $this->current_session->conn;
+
+			// Set sql mode to empty
+            return mysqli_query($connection, "SET SESSION sql_mode=''");
 		}
 
 
