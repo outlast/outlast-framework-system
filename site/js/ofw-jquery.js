@@ -289,7 +289,7 @@ define('system/js/ofw-jquery', [], function() {
 	 */
 	var ajaxRequest = function(method, request, callback, pushstate, set_submitting, $eventContext){
 		// Pushstate defaults
-		var psused = myOptions.pushstate && (typeof pushstate === 'string' || typeof pushstate === 'object' || (typeof pushstate === 'boolean' && pushstate === true));
+		var psused = api.pushstate && (typeof pushstate === 'string' || typeof pushstate === 'object' || (typeof pushstate === 'boolean' && pushstate === true));
 		var psdata = false;
 		if(typeof pushstate === 'object' && pushstate !== null && pushstate.data) psdata = pushstate.data;
 
