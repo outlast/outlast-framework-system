@@ -21,6 +21,9 @@
  * @method zajDb default(mixed $default_value) Specify a default value for this field.
  * @method zajDb validate(boolean $validate_or_not) Set the use_validation setting for this field. (not fully supported yet)
  * @method zajDb validation($validation_function) Override the validation function for this field. (not fully supported yet)
+ * Types:
+ * @method static zajfield_file file()
+ * @method static zajfield_files files()
  **/
 class zajDb {
 		/**

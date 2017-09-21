@@ -49,10 +49,10 @@ class File extends zajModel {
 		// begin custom fields definition:
         if($f === false) $f = new stdClass();
 
+        $f->name = zajDb::name();
         $f->class = zajDb::text();
         $f->parent = zajDb::text();
         $f->field = zajDb::text();
-        $f->name = zajDb::name();
         $f->mime = zajDb::text();
         $f->encoding = zajDb::text();
         $f->size = zajDb::integer();
@@ -172,6 +172,9 @@ class File extends zajModel {
 		// get mime type, try to determine if not set
 			$mime = $this->data->mime;
 			if(empty($mime)) $mime = $this->zajlib->file->get_mime_type($download_as, $file_relative_path);
+			if(!file_exists($file_full_path)){
+			    return $this->zajlib->reroute('__error', [false, false]);
+            }
 		// pass file thru to user
 			header('Content-Type: '.$mime);
 			header('Content-Length: '.filesize($file_full_path));

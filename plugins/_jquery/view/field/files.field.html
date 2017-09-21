@@ -21,7 +21,7 @@
 </script>
 
 <!-- Display markup for list and upload -->
-<div class="col-sm-12 dropzone" data-file="list" data-file-field-id="{{field.uid}}">
+<div class="col-sm-12 dropzone" data-file="list" data-file-field-id="{{field.uid}}" {% if field.options.download_url %}data-file-field-download-url="{{field.options.download_url}}"{% endif %}>
 	<i data-file="loader" class="fa fa-circle-o-notch fa-spin fa-fw"></i>
 </div>
 

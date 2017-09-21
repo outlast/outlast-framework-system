@@ -384,7 +384,9 @@ class Photo extends zajModel {
 			$preview_path = $this->zajlib->basepath."cache/upload/".$this->id.".tmp";
 			if($this->temporary && $size == "preview") $file_path = $preview_path;
 		// final test, if file exists
-			if(!file_exists($file_path)) return $this->zajlib->error("File could not be found.");
+			if(!file_exists($file_path)){
+			    return $this->zajlib->reroute('__error', [false, false]);
+            }
 		// file name default
 			if($file_name === false) $file_name = $this->data->name;
 		// pass file thru to user

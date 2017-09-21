@@ -2,6 +2,8 @@
 /**
  * Field definition for photo collections.
  * @package Fields
+ * @method zajfield_file max_file_size(int $m)
+ * @method zajfield_file download_url(string $relative_url) Use {{id}} for file id. Example: admin/files/download/?id={{id}}
  * @subpackage BuiltinFields
  **/
 class zajfield_file extends zajField {

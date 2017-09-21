@@ -7,7 +7,6 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 
     /** Properties **/
     var _dataAttributeName = 'file';
-	var _popoverMarkup = "<a class='btn btn-primary' target='_blank'><span class='fa fa-download'></span></a> <a class='btn btn-danger'><span class='fa fa-trash'></span></a> <a style='margin-left: 10px;'><span class='fa fa-remove'></span></a>";
 
 	/** Field settings **/
 	var _fileFieldOptions = {};		// countLimit = the number of files this field allows (1 or 0 /unlimited/) is supported
@@ -87,13 +86,14 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 
 	/**
 	 * Get file url for file id.
+	 * @param {string} fieldid The field identifier.
 	 * @param {string} fileid The file id.
-	 * @param {boolean} preview Set to true if preview.
 	 * @returns {string} Returns the full url.
 	 */
-	var getFileUrl = function(fileid, preview) {
-		if(preview) return ofw.baseurl+'system/api/file/preview/?id='+fileid;
-		else return ofw.baseurl+'system/api/file/show/?id='+fileid;
+	var getFileUrl = function(fieldid, fileid) {
+		var url = getListElement(fieldid).attr('data-file-field-download-url');
+		if(url) return ofw.baseurl+url.replace('{{id}}', fileid);
+		else return "";
 	};
 
 	/**
@@ -122,7 +122,12 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 	 */
 	var dropzoneInit = function(fieldid, browseButton, dropElement) {
 
-		// @todo remove previews from file template
+		// To download or not to download
+		var hasUrl = getFileUrl(fieldid, '');
+		var downloadButton = "";
+		if(hasUrl){
+			downloadButton = "<i class='fa fa-download'></i>";
+		}
 
 		// Initialize
 		var myDropzone = new Dropzone(dropElement, {
@@ -137,8 +142,7 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 			dictCancelUpload: "✕",
 			dictRemoveFile: "<i class='fa fa-trash-o'></i>",
 			// Custom localizations
-			dictPreviewFile: ""//<i class='fa fa-external-link'></i>",		// Custom!
-
+			dictPreviewFile: downloadButton		// Custom!
 		});
 
 		// Add callbacks
@@ -162,15 +166,11 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 	var dropzoneActions = {
 
 		addFile: function(fieldid, fileid, file, preview){
-			// Get file url
-			var fileUrl = getFileUrl(fileid, preview);
 			// Set up file with additional details
 			file['id'] = fileid;
-			//file['preview'] = preview;
 
 			// Emit events
 			_fileFieldUploaderObjects[fieldid].emit("addedfile", file);
-			//_fileFieldUploaderObjects[fieldid].emit("thumbnail", file, fileUrl);
 			_fileFieldUploaderObjects[fieldid].emit("complete", file);
 		},
 
@@ -196,11 +196,16 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 
 			// Fix remove button
 			var $removeButton = $previewElement.find('.dz-remove').html(_fileFieldUploaderObjects[fieldid].options.dictRemoveFile);
+
 			// Add show link
-			var $showButton = $('<a class="dz-show">'+_fileFieldUploaderObjects[fieldid].options.dictPreviewFile+'</a>')
-			$showButton.insertBefore($removeButton);
-			$showButton.attr('href', getFileUrl(fileid, previewMode));
-			$showButton.attr('target', '_blank');
+			var fileUrl = getFileUrl(fieldid, fileid);
+			if(fileUrl){
+				var $showButton = $('<a cofw.baseurl+lass="dz-show">'+_fileFieldUploaderObjects[fieldid].options.dictPreviewFile+'</a>')
+				$showButton.insertBefore($removeButton);
+				$showButton.attr('href', fileUrl);
+				$showButton.attr('target', '_blank');
+
+			}
 			// Add rename event
 			$previewElement.find('.dz-filename').click(function(){
 				var $nameElement = $(this).find('[data-dz-name]');
@@ -406,30 +411,6 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 			$('[data-file-field-id="'+fieldid+'"][data-file-id]').each(function(){
 				var $el = $(this);
 				var fileid = $el.attr('data-file-id');
-				api.remove(fieldid, fileid);
-			});
-		},
-
-		/**
-		 * Show file options.
-		 * @param {string} fieldid The field unique id.
-		 * @param {string} fileid The file id.
-		 * @param {boolean} preview Set this to true if the file file needs to be a preview.
-		 */
-		showOptions: function(fieldid, fileid, preview){
-			var $fileElement = $('[data-file-id="'+fileid+'"]');
-			var url = getFileUrl(fileid, preview);
-			var $popoverContent = $(_popoverMarkup);
-			$fileElement.popover({toggle: 'popover', html: true, container: 'body', placement: 'top', content: $popoverContent });
-
-			// Add preview
-			$popoverContent.find('.btn-primary').attr('href', url);
-			// Add trash and close events
-			$popoverContent.find('.fa-remove').click(function(){
-				$fileElement.popover('hide');
-			});
-			$popoverContent.find('.fa-trash').click(function(){
-				$fileElement.popover('hide');
 				api.remove(fieldid, fileid);
 			});
 		},
