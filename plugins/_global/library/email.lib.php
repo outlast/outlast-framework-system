@@ -24,9 +24,10 @@ class zajlib_email extends zajLibExtension {
 	 * @param bool|string $bcc If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
 	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
 	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
+     * @param bool $save_log If set to true (the default) it will log the sent email in the database.
 	 * @return boolean True if successful, false otherwise. Only returns the result of the last one sent. To get results for multiple recipients, use send_single().
 	 */
-	public function send($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
+	public function send($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false, $save_log = true){
 		// Figure out my recipients
 		if(is_array($to)) $recipients = $to;
 		else $recipients = explode(',', $to);
@@ -36,7 +37,7 @@ class zajlib_email extends zajLibExtension {
 		// Now send to each recipient, but bcc only to first
 		foreach($recipients as $recipient){
 			// Send a single message
-			$result = $this->send_single($from, $recipient, $subject, $body, $bcc, $additional_headers, $send_at);
+			$result = $this->send_single($from, $recipient, $subject, $body, $bcc, $additional_headers, $send_at, $save_log);
 			// Don't send BCC after first one
 			$bcc = false;
 		}
@@ -52,9 +53,10 @@ class zajlib_email extends zajLibExtension {
 	 * @param bool|string $bcc If set, a copy of the email will be sent (bcc) to the specified email address. By default, no copy is sent.
 	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair. You can send a plain text version with the key 'TextBody'.
 	 * @param bool|integer $send_at Unix timestamp of the time at which to send the email (in case of delayed send) or false if no delay is needed. Not all providers support this feature.
+     * @param bool $save_log If set to true (the default) it will log the sent email in the database.
 	 * @return boolean True if successful, false otherwise.
 	 */
-	private function send_single($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false){
+	private function send_single($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false, $save_log = true){
 		// Load up my old legacy file name, if it exists @todo remove this eventually, as it is deprecated
 		$this->zajlib->config->load('email_smtp.conf.ini', false, false, false);
 		if(empty($this->zajlib->config->variable->email_use_api)){
@@ -118,7 +120,7 @@ class zajlib_email extends zajLibExtension {
 			$success = (isset($status_prop) && $status_prop == $status_ok);
 
 			// If database is enabled, create a log entry
-			if($this->zajlib->zajconf['mysql_enabled']) {
+			if($this->zajlib->zajconf['mysql_enabled'] && $save_log) {
 				$status = ($success) ? 'sent' : 'failed';
 				EmailLog::create_from_email($subject, $from, $to, $body, $bcc, $additional_headers, $send_at, $status, json_encode($responses));
 			}
@@ -373,17 +375,18 @@ class zajlib_email extends zajLibExtension {
 	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
 	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
 	 * @param bool|string $text_body If set, text-version will be set to this. If not set, text version will be a strip-tagged version.
+     * @param bool $save_log If set to true (the default) it will log the sent email in the database.
 	 * @deprecated Use send() instead with the TextBody additional header.
 	 * @return boolean True if successful, false otherwise.
 	 */
-	public function send_html($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false, $text_body = false){
+	public function send_html($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false, $text_body = false, $save_log = true){
 		// Create a plain text version (if not set by default)
 			if(empty($text_body)) $text_body = strip_tags($this->zajlib->text->brtonl($body));
 		// Create additional headers if not exists
 			if($additional_headers == false) $additional_headers = [];
 			$additional_headers['TextBody'] = $text_body;
 		// Now send
-			return $this->send($from, $to, $subject, $body, $bcc, $additional_headers, $send_at);
+			return $this->send($from, $to, $subject, $body, $bcc, $additional_headers, $send_at, $save_log);
 	}
 
 	/**

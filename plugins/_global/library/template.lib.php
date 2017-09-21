@@ -275,15 +275,22 @@ class zajlib_template extends zajLibExtension {
 	 * @param bool|array $additional_headers Any additional email headers you may want to send defined as a key/value pair.
 	 * @param bool|string $plain_text_version The path to the template to be compiled for the plain text version.
 	 * @param bool|integer $send_at Unix timestamp of the delayed sending or false if no delay is needed
+     * @param bool $save_log If set to true (the default) it will log the sent email in the database.
 	 * @return bool Will return true. Depending on the email gateway implementation it may return false if the email failed.
 	 */
-	public function email($source_path, $from, $to, $subject, $sendcopyto = "", $additional_headers = false, $send_at = false, $plain_text_version = false){
+	public function email($source_path, $from, $to, $subject, $sendcopyto = "", $additional_headers = false, $send_at = false, $plain_text_version = false, $save_log = true){
 		// capture output of this template
-			$body = $this->show($source_path, false, true);
+        $body = $this->show($source_path, false, true);
+
 		// capture output of plain text template
-			if($plain_text_version !== false) $plain_text_version = $this->show($plain_text_version, false, true);
-		// load email library
-			return $this->zajlib->email->send_html($from, $to, $subject, $body, $sendcopyto, $additional_headers, $send_at, $plain_text_version);
+        if($plain_text_version !== false){
+            $plain_text_version = $this->show($plain_text_version, false, true);
+            if($additional_headers === false) $additional_headers = [];
+            $additional_headers['TextBody'] = $plain_text_version;
+        }
+
+		// set html
+        return $this->zajlib->email->send($from, $to, $subject, $body, $sendcopyto, $additional_headers, $send_at, $save_log);
 	}
 
 	/**
