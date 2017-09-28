@@ -93,8 +93,8 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	 * @returns {string} Returns the full url.
 	 */
 	var getPhotoUrl = function(photoid, preview) {
-		if(preview) return ofw.baseurl+'system/api/photo/preview/?id='+photoid;
-		else return ofw.baseurl+'system/api/photo/show/?id='+photoid;
+		if(preview) return ofw.baseurl+'system/api/photo/preview/?id='+photoid+'&size=full';
+		else return ofw.baseurl+'system/api/photo/show/?id='+photoid+'&size=full';
 	};
 
 	/**
