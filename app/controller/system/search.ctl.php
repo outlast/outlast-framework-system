@@ -36,8 +36,8 @@
 
             // now what is my field connected to?
             /** @var zajModel $class_name */
-            $my_model = $class_name::__model();
-            $other_model = reset($my_model->{$field_name}->options);
+            $field_data = $class_name::__field($field_name);
+            $other_model = $field_data->options['model'];
             if(empty($other_model)) $this->zajlib->error("Cannot connect to field '$field_name' because it is not defined as a relation or its relation model has not been defined!");
 
             // first fetch all

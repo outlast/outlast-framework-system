@@ -11,10 +11,11 @@ class zajfield_categories extends zajfield_manytomany {
 
 	// only editor is different
 	const edit_template = 'field/categories.field.html';  // string - the edit template, false if not used
+	const filter_template = 'field/categories.filter.html';	// string - the filter template
 
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
-		$options = array('Category');
+		$options = ['Category'];
 		return parent::__construct($name, $options, $class_name, $zajlib);
 	}
 

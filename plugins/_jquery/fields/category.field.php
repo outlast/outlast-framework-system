@@ -14,7 +14,7 @@ class zajfield_category extends zajfield_manytoone {
 
 	// Construct
 	public function __construct($name, $options, $class_name, &$zajlib){
-		$options = array('Category');
+		$options = ['Category'];
 		return parent::__construct($name, $options, $class_name, $zajlib);
 	}
 
