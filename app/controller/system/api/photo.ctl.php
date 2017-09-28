@@ -61,11 +61,17 @@
 
 		/**
 		 * Shows an image which has been saved.
+         * @get id The id.
+         * @get size The size, defaults to preview.
 		 **/
 		public function show(){
+		    // Default size is preview
+            if(!empty($_GET['size'])) $size = $_GET['size'];
+            else $size = 'preview';
+
             /** @var Photo $pobj */
             $pobj = Photo::fetch($_GET['id']);
-            if($pobj !== false && !$pobj->temporary && $pobj->data->status == 'saved') $pobj->show('preview');
+            if($pobj !== false && !$pobj->temporary && $pobj->data->status == 'saved') $pobj->show($size);
             else $this->zajlib->reroute('__error', ['system_api_photo_show', []]);
 		}
 
