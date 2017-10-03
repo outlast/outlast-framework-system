@@ -144,11 +144,44 @@ class zajlib_graphics extends zajLibExtension {
 	 **/
 	private function prepare_image($oldpath){	   
 		// Check for GD library
-			if(!function_exists("imagecreatefromjpeg")) return $this->zajlib->error("PHP GD library not installed! Please contact your system administrator.");
+		if(!function_exists("imagecreatefromjpeg")) return $this->zajlib->error("PHP GD library not installed! Please contact your system administrator.");
+
+		// Check for file type
+		$imagedata = getimagesize($oldpath);
+
+		// If failed return false
+		if($imagedata === false || !is_array($imagedata)) return false;
+
 		// First try jpeg, then gif and png
-			$im = @imagecreatefromjpeg($oldpath);
-			if($im === false) $im = @imagecreatefromgif($oldpath);
-			if($im === false) $im = @imagecreatefrompng($oldpath);	   
+		switch($imagedata[2]){
+			case IMAGETYPE_JPEG:
+			case IMAGETYPE_JPEG2000:
+				$im = imagecreatefromjpeg($oldpath);
+				break;
+			case IMAGETYPE_PNG:
+				$im = imagecreatefrompng($oldpath);
+				break;
+			case IMAGETYPE_GIF:
+				$im = imagecreatefromgif($oldpath);
+				break;
+			case IMAGETYPE_XBM:
+				$im = imagecreatefromxbm($oldpath);
+				break;
+			case IMAGETYPE_WBMP:
+				$im = imagecreatefromwbmp($oldpath);
+				break;
+			case IMAGETYPE_BMP:
+			case IMAGETYPE_ICO:
+				$im = imagecreatefrombmp($oldpath);
+				break;
+			case IMAGETYPE_WEBP:
+				$im = imagecreatefromgif($oldpath);
+				break;
+			default:
+				$im = false;
+				break;
+		}
+
 		return $im;
 	}
 
