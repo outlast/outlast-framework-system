@@ -72,6 +72,26 @@ class zajfield_id extends zajField {
             return "model.`$field` $operator (".$value->get_query().")";
         }
 
+        // If it is an array of ids
+        elseif(is_array($value)){
+		    if($operator == "NOT LIKE" || $operator == "!=") $operator = "NOT IN";
+		    else $operator = "IN";
+            $in_array = "(";
+
+            // Run through all the ids
+            $i = 0;
+            $length = count($value);
+            foreach($value as $item){
+                $in_array .= "'".zajLib::me()->db->escape($item)."'";
+                if ($i != $length - 1) $in_array .= ', ';
+                $i++;
+            }
+            $in_array .= ")";
+
+
+            return "model.`$field` $operator $in_array";
+        }
+
         // Return a standard query
         return "model.`$field` $operator '".zajLib::me()->db->escape($value)."'";
     }
