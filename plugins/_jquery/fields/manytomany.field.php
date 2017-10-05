@@ -317,7 +317,7 @@ class zajfield_manytomany extends zajField {
 
         // Generate value setting
 		$class_name = $this->options['model'];
-		$this->zajlib->compile->write('<?php if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$this->name.'"])){ $this->zajlib->variable->field->value = '.$class_name.'::fetch($_REQUEST[\'filter\']["'.$this->name.'"][0]); } else { $this->zajlib->variable->field->value = '.$class_name.'::fetch()->exclude_all(); } ?>');
+		$this->zajlib->compile->write('<?php $this->zajlib->variable->field->name = "filter['.$this->name.']"; if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$this->name.'"])){ $this->zajlib->variable->field->value = '.$class_name.'::fetch()->filter(\'id\', $_REQUEST[\'filter\']["'.$this->name.'"]); } else { $this->zajlib->variable->field->value = '.$class_name.'::fetch()->exclude_all(); } ?>');
 
         return true;
 	}
