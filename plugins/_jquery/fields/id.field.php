@@ -78,12 +78,14 @@ class zajfield_id extends zajField {
 		    else $operator = "IN";
             $in_array = "(";
 
-            // Run through all the ids
+            // Run through all the non-empty ids
             $i = 0;
             $length = count($value);
             foreach($value as $item){
-                $in_array .= "'".zajLib::me()->db->escape($item)."'";
-                if ($i != $length - 1) $in_array .= ', ';
+                if(!empty($item)){
+                    $in_array .= "'".zajLib::me()->db->escape($item)."'";
+                    if ($i != $length - 1) $in_array .= ', ';
+                }
                 $i++;
             }
             $in_array .= ")";
