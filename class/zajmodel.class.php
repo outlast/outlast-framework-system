@@ -739,7 +739,7 @@ abstract class zajModel implements JsonSerializable {
 			case '__afterUncache':
 				return true;
             case '__toSearchApiJson':
-                return ['id'=>$this->id, 'name'=>$this->name];
+                return ['id'=>$this->id, 'name'=>$this->__get('name')];
 			default:		break;
 		}
 		// Search for the method in any of my parents
