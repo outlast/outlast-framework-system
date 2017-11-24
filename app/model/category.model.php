@@ -145,6 +145,54 @@ class Category extends zajModel {
 		return Category::fetch()->filter('parentcategory', '');
 	}
 
+    /**
+     * Add any parent categories recursively. For internal use only. Set category_auto_add_parents in category.conf.ini if you want this feature!
+     * @ignore
+     * @param zajModel $object The zajModel object which to add the categories for.
+     * @param string $fieldname The field name.
+     * @return integer Return the number of categories added.
+     */
+    public function add_parent_categories_recursively($object, $fieldname){
+        // Do I even have a parent?
+        if($this->data->parentcategory){
+            // Reload and add me if not yet connected
+            $object->data->unload($fieldname);
+            if(!$object->data->{$fieldname}->is_connected($this->data->parentcategory)){
+                $object->data->{$fieldname}->add($this->data->parentcategory);
+            }
+            // Try running on parent too! (recursive!)
+            $c = $this->data->parentcategory->add_parent_categories_recursively($object, $fieldname);
+            return $c + 1;
+        }
+        else return 0;
+    }
+
+    /**
+     * Remove any subcategories recursively. For internal use only. Set category_auto_remove_subs in category.conf.ini if you want this feature!
+     * @ignore
+     * @todo Implement in categories.field.php (we need to know which categories were removed during save())
+     * @param zajModel $object The zajModel object which to add the categories for.
+     * @param string $fieldname The field name.
+     * @return integer Return the number of categories added.
+     */
+    public function remove_subcategories_recursively($object, $fieldname){
+        // Do I even have a subcategories?
+        if($this->data->subcategories->total > 0){
+            $count = 0;
+            foreach($this->data->subcategories as $subcat){
+                // Reload and remove me if connected
+                $object->data->unload($fieldname);//?
+                if($object->data->{$fieldname}->is_connected($subcat)){
+                    $object->data->{$fieldname}->remove($subcat);
+                }
+                // Try running on subcategories too! (recursive!)
+                $count += $subcat->remove_subcategories_recursively($object, $fieldname);
+            }
+            return $count;
+        }
+        else return 0;
+    }
+
 	/**
 	 * Categories are completely public by default.
 	 * @param zajFetcher $fetcher

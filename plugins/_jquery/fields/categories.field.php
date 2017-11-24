@@ -34,14 +34,14 @@ class zajfield_categories extends zajfield_manytomany {
         // Now check if parent categories need to be added (recursive)
         $this->zajlib->config->load('category');
         /** @var Category $my_category */
-        $my_categories = $object->data->{$this->name};
-        if($this->zajlib->config->variable->category_auto_add_parents && $my_categories->total > 0){
+        $my_categories = clone $object->data->{$this->name};
+        if($this->zajlib->config->variable->category_auto_add_parents){
             foreach($my_categories as $my_category){
-                if($my_category->data->parentcategory && !$object->data->{$this->name}->is_connected($my_category->data->parentcategory)){
-                    $object->data->{$this->name}->add($my_category->data->parentcategory);
-                }
+                $my_category->add_parent_categories_recursively($object, $this->name);
             }
         }
+
+        // @todo Add remove subcats recursively (implemented in Category->remove_subcategories_recursively)
 
         return $return;
     }
