@@ -18,6 +18,7 @@ class zajfield_category extends zajfield_manytoone {
 		return parent::__construct($name, $options, $class_name, $zajlib);
 	}
 
+
 	/**
 	 * This method is called just before the input field is generated. Here you can set specific variables and such that are needed by the field's GUI control.
 	 * @param array $param_array The array of parameters passed by the input field tag. This is the same as for tag definitions.

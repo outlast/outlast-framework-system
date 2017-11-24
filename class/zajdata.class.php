@@ -218,7 +218,7 @@ class zajData {
             }
 	        else{
     			// is preprocessing required for get?
-				if(empty($this->loaded[$name]) && ($this->zajobject->model->{$name}->use_get|| $this->zajobject->model->{$name}->virtual)){
+				if(empty($this->loaded[$name]) && ($this->zajobject->model->{$name}->use_get || $this->zajobject->model->{$name}->virtual)){
 					// load my field object
                     $field_object = zajField::create($name, $this->zajobject->model->$name);
 					// if no value, set to null (avoids notices)
@@ -255,9 +255,8 @@ class zajData {
 		}
 		
 		/**
-		 * Unload a specific field.
-		 * @todo Do we still need this?
-		 **/		
+		 * Unload a specific field (will trigger reload during next).
+		 **/
 		public function unload($name){
 			// unset the data
 				$this->loaded[$name] = false;

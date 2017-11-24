@@ -119,7 +119,10 @@ class zajDataMap {}
  * @property boolean $featured
  * @property zajFetcher $subcategories
  */
-class zajDataCategory extends zajData {}
+class CategoryData extends zajData {}
+// backwards compatibility
+class zajDataCategory extends CategoryData {}
+
 
 /**
  * Add properties to Translation data.

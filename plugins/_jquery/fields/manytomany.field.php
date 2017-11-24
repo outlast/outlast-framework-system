@@ -131,18 +131,19 @@ class zajfield_manytomany extends zajField {
 			if(is_array($data) || is_object($data) && is_a($data, 'zajFetcher')){
 				// Add new data
 				$added = array();
-				foreach($data as $id=>$otherobject){
+				foreach($data as $otherobject){
 					// check if object or id
-						if(!is_a($otherobject, 'zajModel') && is_string($otherobject)) $otherobject = $othermodel::fetch($otherobject);
+                    if(!is_a($otherobject, 'zajModel') && is_string($otherobject)) $otherobject = $othermodel::fetch($otherobject);
 					// only save if not connected already (TODO: make this an option!)
-						if($otherobject !== false){
-							if(!$object->data->$field_name->is_connected($otherobject)){
-								$object->data->$field_name->add($otherobject, 'add', $additional_fields);
-							}
-						}
-					$added[$otherobject->id] = true;
+                    if($otherobject !== false){
+                        if(!$object->data->$field_name->is_connected($otherobject)){
+                            $object->data->$field_name->add($otherobject, 'add', $additional_fields);
+                        }
+                        $added[$otherobject->id] = true;
+                    }
 				}
 				// Remove missing old data
+				$object->data->unload($field_name);
 				foreach($object->data->$field_name as $current_item){
 					if(empty($added[$current_item->id])){
 						// It wasn't added so just remove it

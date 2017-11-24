@@ -19,6 +19,34 @@ class zajfield_categories extends zajfield_manytomany {
 		return parent::__construct($name, $options, $class_name, $zajlib);
 	}
 
+    /**
+	 * Preprocess the data before saving to the database.
+	 * @param mixed $data The first parameter is the input data.
+	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
+	 * @param array|bool $additional_fields Use this to save additional columns in the manytomany table. This parameter is really only useful if you override this method to create a custom field.
+	 * @return array Returns an array where the first parameter is the database update, the second is the object update
+	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
+	 **/
+	public function save($data, &$object, $additional_fields = false){
+	    // Run manytoone version
+	    $return = parent::save($data, $object);
+
+        // Now check if parent categories need to be added (recursive)
+        $this->zajlib->config->load('category');
+        /** @var Category $my_category */
+        $my_categories = $object->data->{$this->name};
+        if($this->zajlib->config->variable->category_auto_add_parents && $my_categories->total > 0){
+            foreach($my_categories as $my_category){
+                if($my_category->data->parentcategory && !$object->data->{$this->name}->is_connected($my_category->data->parentcategory)){
+                    $object->data->{$this->name}->add($my_category->data->parentcategory);
+                }
+            }
+        }
+
+        return $return;
+    }
+
+
 	/**
 	 * This method is called just before the input field is generated. Here you can set specific variables and such that are needed by the field's GUI control.
 	 * @param array $param_array The array of parameters passed by the input field tag. This is the same as for tag definitions.

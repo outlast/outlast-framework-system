@@ -8,7 +8,7 @@
  * @property string $parentcategoryname
  * @property integer $child_count The number of children this category has.
  * @property boolean $featured
- * @property zajDataCategory $data
+ * @property CategoryData $data
  */
 class Category extends zajModel {
 
