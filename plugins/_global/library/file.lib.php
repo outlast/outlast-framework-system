@@ -18,7 +18,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param boolean $fatal_error If this is a true, fatal error will stop execution on failure. Defaults to true.
 	 * @return string|boolean Returns the sanitized path relative to the basepath if successful. Fatal error if not. If parameter $fatal_error was set to false, then boolean false is returned for invalid path.
 	 **/
-	function folder_check($path, $custom_error = "Invalid folder path given.", $add_trailing_slash = true, $fatal_error = true){
+	public function folder_check($path, $custom_error = "Invalid folder path given.", $add_trailing_slash = true, $fatal_error = true){
 		// Save original
 			$opath = $path;
 		// First we need to get rid of our full path (if it exists) and trim /-es, \-es, and spaces.
@@ -47,7 +47,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param boolean $fatal_error If this is a true, fatal error will stop execution on failure. Defaults to true.
 	 * @return string Returns the sanitized file path relative to the basepath if successful. Fatal error if not.
 	 **/
-	function file_check($path, $custom_error = "Invalid file path given.", $fatal_error = true){
+	public function file_check($path, $custom_error = "Invalid file path given.", $fatal_error = true){
 		return $this->folder_check($path, $custom_error, false, $fatal_error);
 	}
 
@@ -56,7 +56,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param string $filename The original file name.
 	 * @return string The sanitized file name.
 	 **/
-	function sanitize($filename){
+	public function sanitize($filename){
 		$special_chars = array("?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", "\"", "&", "$", "#", "*", "(", ")", "|", "~", "`", "!", "{", "}");
 		$filename = str_replace($special_chars, '', $filename);
 		$filename = preg_replace('/[\s-]+/', '-', $filename);
@@ -70,7 +70,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param string $absolute_path The absolute path to a file or folder.
 	 * @return string|boolean The relative path to the file or folder or false if failed.
 	 **/
-	function get_relative_path($absolute_path){
+	public function get_relative_path($absolute_path){
 		// Check if exists
 			if(!file_exists($absolute_path)) return $this->zajlib->warning("Tried to get relative path of non-existant file/folder.");
 		// Check if dir
@@ -84,38 +84,52 @@ class zajlib_file extends zajLibExtension {
 
 	/**
 	 * Returns an array of files found in this folder.
-	 * @param string $path The absolute path to check for files.
+	 * @param string $absolute_path The absolute path to check for files.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
 	 * @param string $mode Can be 'files' or 'folders'. This should not be used. If you want to check for folders, use {@link get_folders_in_dir()} instead.	 
 	 * @param boolean $hidden_files_and_folders If set to true, hidden files and folders (beginning with .) will also be included. False by default.
-	 * @param boolean $return_relative_to_input_path If set to true, the returned path will relative to the input path you set.
+	 * @param boolean|string $return_relative_to_input_path If set to true, the returned path will relative to the input path you set. You can also pass a string which will be prepended to the relative path.
 	 * @return array An array of file paths within the directory.
 	 **/
-	function get_files_in_dir($path, $recursive = false, $mode = "files", $hidden_files_and_folders = false, $return_relative_to_input_path = false){
-		$files = $folders = array();
+	public function get_files_in_dir($absolute_path, $recursive = false, $mode = "files", $hidden_files_and_folders = false, $return_relative_to_input_path = false){
+		// Defaults
+		$files = $folders = [];
+		if($return_relative_to_input_path && is_string($return_relative_to_input_path)){
+            $prepend_path = $return_relative_to_input_path;
+		}
+		else $prepend_path = "";
+
 		// validate path
-			$path = $this->folder_check($path, "Invalid path requested for get_files_in_dir.");
+        $path = $this->folder_check($absolute_path, "Invalid path requested for get_files_in_dir.");
+
 		// check if folder
-			if(!is_dir($path)) return array();
-		// else, fetch files in folder		
+        if(!is_dir($path)) return [];
+
+		// else, fetch files in folder
 			$dir = @opendir($path);
 			while (false !== ($file = @readdir($dir))) { 
 				if($file != "." && $file != ".." && ($hidden_files_and_folders || substr($file, 0, 1) != '.')){
 					// if it is a file
 					if(is_file($path."/".$file)){
-						if($return_relative_to_input_path) $files[] = trim($file, '/');
+						if($return_relative_to_input_path){
+						    // Also set return relative to input path, because it is passed recursively and needs to be prepended in next round
+						    $files[] = $return_relative_to_input_path = $prepend_path.trim($file, '/');
+                        }
 						else $files[] = rtrim($path, '/')."/".$file;
 					}
 					// if it is a dir
 					elseif(is_dir($path."/".$file)){
-						if($return_relative_to_input_path) $folders[] = trim($file, '/').'/';
+						if($return_relative_to_input_path){
+						    // Also set return relative to input path, because it is passed recursively and needs to be prepended in next round
+						    $folders[] = $return_relative_to_input_path = $prepend_path.trim($file, '/').'/';
+                        }
 						else $folders[] = rtrim($path, '/')."/".$file.'/';
 						// is recursive?
 						if($recursive){
-							$newfiles = $this->get_files_in_dir($path."/".$file, true, $mode);
+							$newfiles = $this->get_files_in_dir($path."/".$file, true, $mode, $hidden_files_and_folders, $return_relative_to_input_path);
 							// add to files or folders
-							if($mode == "files") $files = $this->zajlib->array->merge($files, $newfiles);
-							else $folders = $this->zajlib->array->merge($folders, $newfiles);
+							if($mode == "files") $files = array_merge($files, $newfiles);
+							else $folders = array_merge($folders, $newfiles);
 						}
 					}
 				}
@@ -127,44 +141,105 @@ class zajlib_file extends zajLibExtension {
 
 	/**
 	 * Returns an array of files found in this folder. Same as get_files_in_dir, but path is relative to basepath.
-	 * @param string $path The path to check for files relative to the apps basepath.
+	 * @param string $relative_path The path to check for files relative to the apps basepath.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
 	 * @param string $mode Can be 'files' or 'folders'. This should not be used. If you want to check for folders, use {@link get_folders_in_dir()} instead.
 	 * @param boolean $hidden_files_and_folders If set to true, hidden files and folders (beginning with .) will also be included. False by default.
 	 * @param boolean $return_relative_to_input_path If set to true, the returned path will relative to the input path you set.
 	 * @return array An array of absolute file paths within the directory.
 	 */
-	function get_files($path, $recursive = false, $mode = "files", $hidden_files_and_folders = false, $return_relative_to_input_path = false){
+	public function get_files($relative_path, $recursive = false, $mode = "files", $hidden_files_and_folders = false, $return_relative_to_input_path = false){
 		// jail my path
-		$this->folder_check($this->zajlib->basepath.$path);
-		return $this->get_files_in_dir($this->zajlib->basepath.$path, $recursive, $mode, $hidden_files_and_folders, $return_relative_to_input_path);
+		$this->folder_check($this->zajlib->basepath.$relative_path);
+		return $this->get_files_in_dir($this->zajlib->basepath.$relative_path, $recursive, $mode, $hidden_files_and_folders, $return_relative_to_input_path);
 	}
+
+    /**
+	 * Returns an array of files found in any app or plugin or system folder. Your path needs to be relative.
+	 * @param string $relative_path The path to check for files relative to the app folders (not to basepath!).
+	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
+	 * @param string $scope Can be "full" (all folders - default) or any of the zajLibLoader::$app_path keys.
+	 * @return array An array of file paths relative to basepath.
+	 */
+	public function get_all_files_in_app_folders($relative_path, $recursive = false, $scope = 'full'){
+		// jail my path
+		$this->folder_check($this->zajlib->basepath.$relative_path);
+
+        // Get app paths
+        $files = [];
+        $app_paths = $this->zajlib->load->get_app_folder_paths($scope);
+        foreach($app_paths as $app_path){
+            $files = array_merge($files, $this->get_files($app_path.$relative_path, $recursive, "files", false, true));
+        }
+        return $files;
+	}
+
+    /**
+	 * Returns an array of folders found in any app or plugin or system folder. Your path needs to be relative.
+	 * @param string $relative_path The path to check for folders relative to the app folders (not to basepath!).
+	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
+	 * @param string $scope Can be "full" (all folders - default) or any of the zajLibLoader::$app_path keys.
+	 * @return array An array of file paths relative to basepath.
+	 */
+	public function get_all_folders_in_app_folders($relative_path, $recursive = false, $scope = 'full'){
+		// jail my path
+		$this->folder_check($this->zajlib->basepath.$relative_path);
+
+        // Get app paths
+        $folders = [];
+        $app_paths = $this->zajlib->load->get_app_folder_paths($scope);
+        foreach($app_paths as $app_path){
+            $folders = array_merge($folders, $this->get_folders($app_path.$relative_path, $recursive, false, true));
+        }
+        return $folders;
+	}
+
+    /**
+	 * Returns an array of versions found for a specific file in any app or plugin or system folder. Your path needs to be relative.
+	 * @param string $relative_path The path to check for files relative to the app folders (not to basepath!).
+	 * @param string $scope Can be "full" (all folders - default) or any of the zajLibLoader::$app_path keys.
+	 * @return array An array of file paths relative to basepath.
+	 */
+    public function get_all_versions_of_file_in_app_folders($relative_path, $scope = 'full'){
+		// jail my path
+		$this->folder_check($this->zajlib->basepath.$relative_path);
+
+        // Get app paths
+        $files = [];
+        $app_paths = $this->zajlib->load->get_app_folder_paths($scope);
+        foreach($app_paths as $app_path){
+            if(file_exists($this->zajlib->basepath.$app_path.$relative_path)){
+                $files[] = $app_path.$relative_path;
+            }
+        }
+        return $files;
+    }
 
 	/**
 	 * Returns an array of folders found in this folder. If set to recursive, the folder paths will be returned relative to the specified path.
-	 * @param string $path The path to check for folders.
+	 * @param string $absolute_path The path to check for folders.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
 	 * @param boolean $hidden_files_and_folders If set to true, hidden files and folders (beginning with .) will also be included. False by default.
 	 * @param boolean $return_relative_to_input_path If set to true, the returned path will relative to the input path you set.
 	 * @return array An array of folder paths within the directory.
 	 **/
-	function get_folders_in_dir($path, $recursive = false, $hidden_files_and_folders=false, $return_relative_to_input_path = false){
-		$folders = $this->get_files_in_dir($path, $recursive, "folders", $hidden_files_and_folders, $return_relative_to_input_path);
+	public function get_folders_in_dir($absolute_path, $recursive = false, $hidden_files_and_folders=false, $return_relative_to_input_path = false){
+		$folders = $this->get_files_in_dir($absolute_path, $recursive, "folders", $hidden_files_and_folders, $return_relative_to_input_path);
 		return $folders;
 	}
 
 	/**
-	 * Returns an array of folders found in this folder. If set to recursive, the folder paths will be returned relative to the specified path. ame as get_folders_in_dir, but relative to basepath.
-	 * @param string $path The path to check for folders.
+	 * Returns an array of folders found in this folder. If set to recursive, the folder paths will be returned relative to the specified path. Same as get_folders_in_dir, but relative to basepath.
+	 * @param string $relative_path The path to check for folders.
 	 * @param boolean $recursive If set to true, subfolders will also be checked. False by default.
 	 * @param boolean $hidden_files_and_folders If set to true, hidden files and folders (beginning with .) will also be included. False by default.
 	 * @param boolean $return_relative_to_input_path If set to true, the returned path will relative to the input path you set.
 	 * @return array An array of absolute folder paths within the directory.
 	 **/
-	function get_folders($path, $recursive = false, $hidden_files_and_folders = false, $return_relative_to_input_path = false){
+	public function get_folders($relative_path, $recursive = false, $hidden_files_and_folders = false, $return_relative_to_input_path = false){
 		// jail my path
-		$this->folder_check($this->zajlib->basepath.$path);
-		return $this->get_folders_in_dir($this->zajlib->basepath.$path, $recursive, $hidden_files_and_folders, $return_relative_to_input_path);
+		$this->folder_check($this->zajlib->basepath.$relative_path);
+		return $this->get_folders_in_dir($this->zajlib->basepath.$relative_path, $recursive, $hidden_files_and_folders, $return_relative_to_input_path);
 	}
 	
 	/**
@@ -172,7 +247,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param string $filename The full filename, including extension.
 	 * @return string The file's extension
 	 **/
-	function get_extension($filename){
+	public function get_extension($filename){
 		$path_parts = pathinfo($filename);
 		$path_parts['extension'] = mb_strtolower($path_parts['extension']);
 		return $path_parts['extension'];
@@ -183,7 +258,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param string $filename The full filename, including extension.
 	 * @return bool
 	 */
-	function create_path_for($filename){
+	public function create_path_for($filename){
 		// get folder
 			$path = dirname($filename);
 		// validate path
@@ -198,7 +273,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param array|string $extORextarray A single extension (string) or an array of extensions (array of strings). Defaults to an array of image extensions (jpg, jpeg, png, gif)
 	 * @return boolean True if the file extension is valid according to the specified list.
 	 */
-	function is_correct_extension($filename, $extORextarray = ""){
+	public function is_correct_extension($filename, $extORextarray = ""){
 		// set default (for images)
 			if($extORextarray == "") $extORextarray = array("jpg", "jpeg", "png", "gif");
 		// now check to see if not array
@@ -218,7 +293,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param bool $include_day Whether to include the day level as well.
 	 * @return string The new full path of the file.
 	 */
-	function get_time_path($basepath, $filename, $timestamp = 0, $create_folders_if_they_dont_exist = true, $include_day=true){
+	public function get_time_path($basepath, $filename, $timestamp = 0, $create_folders_if_they_dont_exist = true, $include_day=true){
 		// Validate path
 			$basepath = $this->folder_check($basepath, "Invalid path requested for get_time_path.");
 		// Validate file
@@ -250,7 +325,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param integer $level The number of levels of subfolders to calculate with.
 	 * @return string The new full path of the file.
 	 **/
-	function get_id_path($basepath, $filename, $create_folders_if_they_dont_exist = true, $level = 10){
+	public function get_id_path($basepath, $filename, $create_folders_if_they_dont_exist = true, $level = 10){
 		// Validate path
 			$basepath = $this->folder_check($basepath, "Invalid path requested for get_id_path.");
 		// Validate file
@@ -284,7 +359,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param string|boolean $file_path The relative file path to the project base path. This is optional. It will be used to check the actual file as well if the mime based on extension fails.
 	 * @return string The mime type of the file
 	 **/
-	function get_mime_type($filename, $file_path = false){
+	public function get_mime_type($filename, $file_path = false){
 		// Validate path
 			$filename = $this->file_check($filename, "Invalid file requested for get_mime_type.", false);
 		// Define mime types
@@ -366,7 +441,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param string|boolean $mime_type The mime type for the file. If not given, it will try to detect it automatically.
 	 * @return boolean|array There is no return value and execution stop here because the file is returned. Tests return an array.
 	 */
-	function download($file_path, $download_name = false, $mime_type = false){
+	public function download($file_path, $download_name = false, $mime_type = false){
 		// check file
 			$this->file_check($file_path);
 		// disable some specific files
@@ -398,7 +473,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param integer $kbps The connection speed in Kbps (kiloBITS per second!)
 	 * @return integer The time in seconds
 	 **/
-	function download_time($bytes, $kbps=512)	{
+	public function download_time($bytes, $kbps=512)	{
 		// convert kbps to Bytes Per Second
 		$speed = ($kbps/8)*1024;
 		// by seconds
@@ -411,7 +486,7 @@ class zajlib_file extends zajLibExtension {
 	 * @param integer $bytes The number of bytes.
 	 * @return string A human-readable string of file size.
 	 **/
-	function file_size_format($bytes){
+	public function file_size_format($bytes){
 		if($bytes < 950) return $bytes.' bytes';
 		elseif($bytes < 1024*1024) return number_format($bytes/1024, 1, '.', ' ').' KB';
 		elseif($bytes < 1024*1024*1024) return number_format($bytes/1024/1024, 1, '.', ' ').' MB';

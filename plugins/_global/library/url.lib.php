@@ -48,6 +48,18 @@ class zajlib_url extends zajLibExtension {
 			return $matches[2];
 	}
 
+    /**
+     * Get the request path for a url.
+	 * @param string $url Any url.
+     * @return string Return the request path which will not include the baseurl or query string.
+     */
+    function get_requestpath($url){
+        $url = parse_url($url, PHP_URL_PATH);
+        $url = str_ireplace($this->zajlib->basefolder, '', $url);
+        $url = preg_replace('~/+~', '/', $url);
+        return trim($url, '/').'/';
+    }
+
 	/**
 	 * Generates a friendly url based on an input string.
 	 * @param string $title Any string such as a name or title.
@@ -74,10 +86,6 @@ class zajlib_url extends zajLibExtension {
 			if(strstr($url, '?')) return $url.'&';
 			else return $url.'?';
 	}
-
-
-
-
 
 	/** Below are old, deprecated methods. */
 

@@ -3,10 +3,10 @@
  *	and 'ui' (user interface elements)
  * @author Aron Budinszky /aron@outlast.hu/
  * @version 1.0
- * 
+ *
  * @changes 1.0 Now supports pushstate, but ajax methods' parameter order has changed: bind is now the fourth param, the third is the new url.
  **/
- 
+
 // Create a new class which will contain the sections
 	var ofw;
 	var zaj = {
@@ -314,7 +314,7 @@
 			window.location.reload(false);
 		};
 		zaj.refresh = zaj.reload;
-			
+
 	/**
 	 * Redirect to a page relative to baseurl or absolute.
 	 * @param {string} relative_or_absolute_url The URL relative to baseurl. If it starts with // or http or https it is considered an absolute url
@@ -602,14 +602,14 @@
 		 */
 		zaj.search = {
 			options: {
-				delay: 300,						// Number of miliseconds before 
+				delay: 300,						// Number of miliseconds before
 				url: false,						// The url to send the request to. This should be relative. &query=your+query will be appended. If no url (false), it will not be submitted anywhere.
 				callback: false,				// A function or an element.
 				method: 'get',					// The method to send by. Values can be 'post' or 'get' (default).
 				allow_empty_query: true,		// If set to true, an empty query will also execute
 				pushstate_url: 'auto'			// If set to 'auto', the url will automatically change via pushstate. Set to false for not pushstate. Set to specific for custom.
 			},
-			
+
 			/**
 			 * Creates a new Search object
 			 **/
@@ -626,7 +626,7 @@
 						});
 					return self;
 				},
-			
+
 			/**
 			 * Sends a keyup event to retrigger search!
 			 **/
@@ -655,7 +655,7 @@
 					// if the element value is empty, do not do anything
 						if(!this.options.allow_empty_query && !this.element.val()) return false;
 					// if url not set, just do callback immediately!
-					if(this.options.url){			
+					if(this.options.url){
 						// append element value to url
 							var url = this.options.url;
 							if(this.options.url.indexOf('?') >= 0) url += '&query='+this.element.val();
@@ -1233,7 +1233,7 @@
 				this.cropper(options)
 			}
 		};
-		
+
 		/**
          * Encode html characters.
          * @param {string} str The incoming string.
@@ -1278,6 +1278,24 @@
         }
     }
 
+	/**
+	 * Throttle function delays a function execution by {delay}ms
+	 * This is useful when using keyup or scroll functions, because on a scroll
+	 * the function won't execute {scroll} times, only once after the {delay}
+	 * @param fn the callback function
+	 * @param delay
+	 * @returns {Function}
+	 */
+	zaj.setThrottledTimeout = function(fn, delay) {
+		var timer = null;
+		return function () {
+			var context = this, args = arguments;
+			clearTimeout(timer);
+			timer = setTimeout(function () {
+				fn.apply(context, args);
+			}, delay);
+		};
+    }
 
 	/**
 	 * Pushstate excitement

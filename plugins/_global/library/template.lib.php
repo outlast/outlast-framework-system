@@ -9,10 +9,10 @@
 class zajlib_template extends zajLibExtension {
 
 	/**
-	 * This variables is used to verify the validity of each included file.
-	 * @var boolean
-	 **/
-	private $template_valid = false;
+	 * If set to true, it means that all templates will be force-recompiled (as if in debug mode).
+     * @todo Remove this!
+	 */
+	public $force_recompile = false;
 
 	/**
 	 * Compile the file specified by file_path.
@@ -37,13 +37,14 @@ class zajlib_template extends zajLibExtension {
 			if(!$destination_path) $include_file = $this->zajlib->basepath."/cache/view/".$source_path.".php";
 			else $include_file = $this->zajlib->basepath."/cache/view/".$destination_path.".php";
 		// if force_recompile or debug_mode or not yet compiled then recompile
-			if($this->zajlib->debug_mode || $force_recompile || !file_exists($include_file)) $this->compile($source_path, $destination_path);
-		// set up my global {{zaj}} variable object
-			$this->zajlib->variable->zaj = new zajlib_template_zajvariables($this->zajlib);
-			$this->zajlib->variable->ofw = $this->zajlib->variable->zaj;
+			if($this->zajlib->debug_mode || $this->force_recompile || $force_recompile || !file_exists($include_file)) $this->compile($source_path, $destination_path);
+		// set up my global {{ofw}} variable object if not yet set up
+		    if(!is_object($this->zajlib->variable->ofw) || !is_a($this->zajlib->variable->ofw, 'zajlib_template_zajvariables')){
+                $this->zajlib->variable->ofw = new zajlib_template_zajvariables($this->zajlib);
+                $this->zajlib->variable->zaj = $this->zajlib->variable->ofw;
+		    }
 		// set up a few other globals
 			$this->zajlib->variable->baseurl = $this->zajlib->baseurl;
-			$this->zajlib->variable->self = $this->zajlib->variable->app.'/'.$this->zajlib->variable->mode;
 			$this->zajlib->variable->fullurl = $this->zajlib->fullurl;
 			$this->zajlib->variable->fullrequest = $this->zajlib->fullrequest;
 		
@@ -51,11 +52,11 @@ class zajlib_template extends zajLibExtension {
 		 * ALL VARIABLES BELOW ARE NOT TO BE USED! THEY WILL BE REMOVED IN A FUTURE RELEASE!
 		 *******/
 		
+			$this->zajlib->variable->self = $this->zajlib->fullrequest; // @deprecated!
 		// access to request variables and version info
-			$this->zajlib->variable->debug_mode = $this->zajlib->variable->zaj->bc_get('debug_mode');
-			$this->zajlib->variable->app = $this->zajlib->variable->zaj->bc_get('app');
-			$this->zajlib->variable->mode = $this->zajlib->variable->zaj->bc_get('mode');
-			$this->zajlib->variable->mozajik = $this->zajlib->variable->zaj->bc_get('mozajik');
+			$this->zajlib->variable->debug_mode = $this->zajlib->variable->ofw->bc_get('debug_mode');
+			$this->zajlib->variable->app = $this->zajlib->variable->ofw->bc_get('app');
+			$this->zajlib->variable->mode = $this->zajlib->variable->ofw->bc_get('mode');
 		// init js layer
 		// requests and urls
 			if($this->zajlib->https) $this->zajlib->variable->protocol = 'https';
@@ -86,8 +87,6 @@ class zajlib_template extends zajLibExtension {
 		// now include the file
 			// but should i return the contents?
 				if($return_contents) ob_start();	// start output buffer
-			// validity
-				$this->template_valid = false;
 			// now include the file
 				include($include_file);
 			// verify validity
@@ -110,7 +109,7 @@ class zajlib_template extends zajLibExtension {
 	 **/
 	public function show($source_path, $force_recompile = false, $return_contents = false, $custom_compile_destination = false){
 		// override source path if device mode @todo make this more efficient so it does not search files each time!
-			$source_path = $this->get_device_source_path($source_path);
+			$source_path = $this->get_source_path($source_path);
 		// do i need to show by block (if pushState request detected)
 			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $r = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); return $this->block($source_path, $r, $force_recompile, $return_contents); }
 		// prepare
@@ -133,7 +132,7 @@ class zajlib_template extends zajLibExtension {
 	 */
 	public function block($source_path, $block_name, $recursive = false, $force_recompile = false, $return_contents = false){
 		// override source path if device mode @todo make this more efficient so it does not search files each time!
-			$source_path = $this->get_device_source_path($source_path);
+			$source_path = $this->get_source_path($source_path);
 		// do i need to show by block (if pushState request detected)
 			if($this->zajlib->request->is_ajax() && !empty($_REQUEST['zaj_pushstate_block']) && preg_match("/^[a-z0-9_]{1,25}$/", $_REQUEST['zaj_pushstate_block'])){ $block_name = $_REQUEST['zaj_pushstate_block']; unset($_REQUEST['zaj_pushstate_block']); }
 		// first do a show to compile (if needed)
@@ -156,6 +155,19 @@ class zajlib_template extends zajLibExtension {
 		// now display or return
 			return $this->display($include_file, $return_contents);
 	}
+
+    /**
+     * Modify the template source path based on device mode and locale.
+	 * @param string $source_path The source path to check for.
+     * @todo A html extension should not be required for this!
+     * @todo The device and locale source paths should be combinable!
+     * @todo This should be cached somehow so that we dont need so many checks
+	 * @return string Return a new source path for the current device if available or the same if not.
+     */
+    private function get_source_path($source_path){
+        $source_path = $this->get_device_source_path($source_path);
+        return $this->get_locale_source_path($source_path);
+    }
 
 	/**
 	 * Modify the template source path of any .html files if we are in a device mode (if set_device_mode() was called previously).
@@ -184,6 +196,25 @@ class zajlib_template extends zajLibExtension {
 
 		// It's not the default, so let's check to see if
 		$device_source_path = str_ireplace('.html', '.'.$device_mode.'.html', $source_path);
+		if($this->exists($device_source_path)) return $device_source_path;
+		else return $source_path;
+	}
+
+	/**
+	 * Modify the template source path of any .html files if we have a locale-specific template available.
+	 * @param string $source_path The source path to check for.
+     * @todo Add support for {% extends %} and {% insert %}
+	 * @return string Return a new source path for the current locale if available or the same if not.
+	 */
+	private function get_locale_source_path($source_path){
+		// Get the locale
+		$locale = $this->zajlib->lang->get();
+
+		// If the locale is not set, just return the unmodified source path
+		if($locale === false) return $source_path;
+
+		// It's not the default, so let's check to see if
+		$device_source_path = str_ireplace('.html', '.'.$locale.'.html', $source_path);
 		if($this->exists($device_source_path)) return $device_source_path;
 		else return $source_path;
 	}
@@ -278,10 +309,10 @@ class zajlib_template extends zajLibExtension {
 class zajlib_template_zajvariables {
 	private $zajlib;	// The local copy of zajlib variable
 	
-	var $baseurl; 		// The base url of this project.
-	var $self; 			// My own app/mode request.
-	var $fullurl; 		// The base url + the request.
-	var $fullrequest; 	// The base url + the request + query string.	
+	public $baseurl; 		// The base url of this project.
+	public $fullurl; 		// The base url + the request.
+	public $fullrequest; 	// The base url + the request + query string.
+    public $tmp;            // A class that contains any temporary variables. Can be used in tags.
 	
 	/**
 	 * Initializes all of the important variables which are always available.
@@ -291,12 +322,13 @@ class zajlib_template_zajvariables {
 			$this->zajlib = $zajlib;
 		// Important variables
 			$this->baseurl = $this->zajlib->baseurl;
-			$this->self = $this->zajlib->variable->app.'/'.$this->zajlib->variable->mode;
 			$this->fullurl = $this->zajlib->fullurl;
 			$this->fullrequest = $this->zajlib->fullrequest;
 		// Constants
 			$this->zajlib->variable->true = true;
 			$this->zajlib->variable->false = false;
+        // Create an empty class to store temporary variables that need to be potentially passed on
+            $this->tmp = new stdClass();
 		// The rest of the variables are built on request via the __get() magic method...
 	}
 	
@@ -305,7 +337,7 @@ class zajlib_template_zajvariables {
 	 * @todo Remove this from a future version (when the depricated vars are removed as well)
 	 **/
 	public function bc_get($name){
-		//$this->zajlib->warning("You are using an depricated variable ({{{$name}}}). Please use {{zaj.variable_name}} for all such variables.");
+		//$this->zajlib->warning("You are using an depricated variable ({{{$name}}}). Please use {{ofw.variable_name}} for all such variables.");
 		return $this->__get($name);
 	}	
 	
@@ -318,10 +350,13 @@ class zajlib_template_zajvariables {
 				case 'debug':
 				case 'debug_mode':
 					return $this->zajlib->debug_mode;
-			// My current app
+			// My current app, mode, requestpath
 				case 'app': return $this->zajlib->app;
-			// My current mode/action
 				case 'mode': return $this->zajlib->mode;
+                case 'requestpath': return $this->zajlib->requestpath;
+                case 'self':
+                    $this->zajlib->deprecated("ofw.self is deprecated, use ofw.requestpath instead.");
+                    return $this->zajlib->requestpath;
 			// The GET request
 				case 'get': return $this->zajlib->array->to_object($_GET);
 			// The POST request
@@ -348,8 +383,11 @@ class zajlib_template_zajvariables {
 			// Return the current lang (two letter version of locale)
 				case 'lang': return $this->zajlib->lang->get_code();
 			// Outlast Framework version info and other stuff
-				case 'ofw': return $this->zajlib->mozajik;
-				case 'mozajik': return $this->zajlib->mozajik;
+				case 'ofw':
+				case 'mozajik':
+				    $this->zajlib->warning("{{ofw.ofw}} and {{ofw.mozajik}} are deprecated. Use {{ofw.version}} instead.");
+				    return $this->zajlib->mozajik;
+                case 'version': return $this->zajlib->mozajik;
 			// Mobile and tablet detection (uses server-side detection)
 				case 'mobile': return $this->zajlib->mobile->is_mobile();
 				case 'tablet': return $this->zajlib->mobile->is_tablet();
@@ -384,12 +422,75 @@ class zajlib_template_zajvariables {
 					// Locale
 						$locale = $this->zajlib->lang->get();
 					// Disable
-					$baseurl = htmlspecialchars($this->zajlib->baseurl);
-					$fullrequest = htmlspecialchars($this->zajlib->fullrequest);
-					$fullurl = htmlspecialchars($this->zajlib->fullurl);
-					$app = htmlspecialchars($this->zajlib->app);
-					$mode = htmlspecialchars($this->zajlib->mode);
-					return "\n\t\t<script type='text/javascript'>if(typeof zaj != 'undefined'){zaj.baseurl = '{$protocol}:{$baseurl}'; zaj.fullrequest = '{$protocol}:{$fullrequest}'; zaj.fullurl = '{$protocol}:{$fullurl}'; zaj.app = '{$app}'; zaj.mode = '{$mode}'; zaj.debug_mode = $debug_mode; zaj.protocol = '{$protocol}'; zaj.trackevents_local = $trackevents_local; zaj.trackevents_analytics = $trackevents_analytics; zaj.locale = '$locale'; var ofw = zaj; }</script>";
+					$baseurl = htmlspecialchars($this->zajlib->baseurl, ENT_QUOTES);
+					$fullrequest = str_ireplace("'", "&#39;", $this->zajlib->fullrequest);
+					$fullurl = htmlspecialchars($this->zajlib->fullurl, ENT_QUOTES);
+					$app = htmlspecialchars($this->zajlib->app, ENT_QUOTES);
+					$mode = htmlspecialchars($this->zajlib->mode, ENT_QUOTES);
+					return <<<EOF
+<script type='text/javascript'>
+    var ofwsettings = {
+        baseurl: '{$protocol}:{$baseurl}',
+        fullrequest: '{$protocol}:{$fullrequest}',
+        fullurl: '{$protocol}:{$fullurl}',
+        app: '{$app}',
+        mode: '{$mode}',
+        debug_mode: $debug_mode,
+        protocol: '{$protocol}',
+        trackeventsLocal: $trackevents_local,
+        trackeventsAnalytics: $trackevents_analytics,
+        locale: '$locale'
+    };
+
+    if(typeof require != 'undefined'){
+        /** require init **/
+        require.config({
+            baseUrl: "{$baseurl}",
+            urlArgs: "cachebuster=" + (new Date()).getTime()    	
+        });
+        if(typeof ofw == 'undefined' || ofw == null){
+            // Backwards compatibility for unready set langs
+            var ofwSetLang = [];
+            // Define ready and jquery is ready
+            var ofw = {
+                ready: function(func){
+                    ofw.readyFunctions.push(func);
+                },
+                setLang: function(keyOrArray, value, section){ ofwSetLang.push([keyOrArray, value, section]); },
+                log: function(m){ console.log(m) },
+                readyFunctions: [],
+                jqueryIsReady: false	
+            };
+            $(document).ready(function(){ ofw.jqueryIsReady = true; });
+            var zaj = ofw;
+            
+            // Now require and create
+            requirejs(["system/js/ofw-jquery"], function(ofwsys){
+                // Set my ready functions and init
+                ofwsettings.readyFunctions = ofw.readyFunctions;
+                ofwsettings.jqueryIsReady = ofw.jqueryIsReady;
+                ofwsys.init(ofwsettings);
+                // Now call each ofw set lang
+                for(var i = 0; i < ofwSetLang.length; i++) ofwsys.setLang(ofwSetLang[i][0], ofwSetLang[i][1], ofwSetLang[i][2]);    
+                // Finally, set variables
+                ofw = zaj = ofwsys;
+            });
+            
+            // Define jquery so that require knows about it
+            define('jquery', [], function() {
+                return jQuery;
+            });
+        }
+    }
+    else{
+        /** legacy init **/
+        if(typeof zaj != 'undefined'){
+            $.extend(zaj, ofwsettings);
+            var ofw = zaj;
+        }
+    }
+</script>
+EOF;
 
 			// By default return nothing.
 				default: return '';

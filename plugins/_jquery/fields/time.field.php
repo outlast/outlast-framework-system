@@ -16,6 +16,7 @@ class zajfield_time extends zajField {
 	const disable_export = false;	// boolean - true if you want this field to be excluded from exports
 	const search_field = false;		// boolean - true if this field is used during search()
 	const edit_template = 'field/time.field.html';	// string - the edit template, false if not used
+	const filter_template = 'field/time.filter.html';	// string - the edit template, false if not used
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 		
 	// Construct
@@ -103,5 +104,6 @@ class zajfield_time extends zajField {
 		if(is_numeric($data) && $data != 0) $data = date("Y.m.d. H:i:s", $data);
 		return $data;
 	}
+
 
 }

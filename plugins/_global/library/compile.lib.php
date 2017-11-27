@@ -9,7 +9,7 @@
  * @todo Add a parameter to disable php tags. Test if php can even be used in templates.
  */
 
-require(zajLib::me()->basepath.'system/class/zajcompile.class.php');
+require(zajLib::me()->basepath.'system/class/zajcompilesession.class.php');
 
 
 /**
@@ -19,15 +19,17 @@ class zajlib_compile extends zajLibExtension{
 	/**
 	 * A {@link zajElementsLoader} object that loads tags and directs the execution to the correct tag processing method.
 	 **/
-		public $tags;
+    public $tags;
+
 	/**
 	 * A {@link zajElementsLoader} object that loads filters and directs the execution to the correct filter processing method.
 	 **/
-		public $filters;
+    public $filters;
+
 	/**
 	 * An array of {@link zajCompileSession} objects. When compiling a hierarchy of files, many sessions are needed to handle template inheritance correctly.
 	 **/
-		public $sessions = array();
+    public $sessions = [];
 	
 	/**
 	 * Creates a new compile session.
@@ -65,7 +67,9 @@ class zajlib_compile extends zajLibExtension{
 	 * @return boolean Returns true if found, false if not.
 	 */
 	public function source_exists($source_path){
-		return zajCompileSource::file_exists($source_path);
+		$result = zajCompileSource::check_app_levels($source_path);
+		if($result === false) return false;
+		else return true;
 	}
 	
 	/**
@@ -76,14 +80,17 @@ class zajlib_compile extends zajLibExtension{
 		// get the latest session
 			$current_session = end($this->sessions);
 		// start compiling this session
+		    $this->zajlib->compile_started = true;
 			$ended = $current_session->compile();
 		// did it end?
-			if(!$ended) return false;
+			if(!$ended){
+			    return false;
+            }
 		// remove it
 			array_pop($this->sessions);
 		// do i still have any compiling to do?
 			if(count($this->sessions) > 0) return $this->go();
-		return false;
+       return false;
 	}
 
 
@@ -185,7 +192,7 @@ class zajElementsLoader{
 					}
 			}
 		// The filter/tag does not exist
-			$this->zajlib->compile->get_source()->warning("$this->element_type name '$name' cannot be found!", $arguments[2]);
+			$this->zajlib->compile->get_current_source()->warning("$this->element_type name '$name' cannot be found!", $arguments[2]);
 		return $arguments[2];		
 	}
 
@@ -208,7 +215,7 @@ class zajElementsLoader{
 					}
 			}
 		// The filter/tag does not exist but no error thrown
-			$this->zajlib->compile->get_source()->warning("$this->element_type getter method for '$name' cannot be found!");
+			return $this->zajlib->compile->get_current_source()->warning("$this->element_type getter method for '$name' cannot be found!");
 	}
 
 }
@@ -217,6 +224,7 @@ class zajElementsLoader{
  * Abstract parent class from which all filter and tag extensions originate.
  **/
 abstract class zajElementCollection{
+	/** @var zajLib $zajlib */
 	protected $zajlib;
 	
 	public function __construct(&$zajlib){

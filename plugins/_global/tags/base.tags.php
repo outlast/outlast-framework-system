@@ -40,7 +40,7 @@ class zajlib_tag_base extends zajElementCollection{
 			$source->remove_level('comment');
 		// write line
 			$this->zajlib->compile->write("*/?>");
-		// return debug_stats
+		// return
 			return true;	
 	}
 	
@@ -111,25 +111,6 @@ EOF;
 			return true;
 	}
 
-
-	/**
-	 * Tag: filter - Applies a filter to all text within tag.
-	 *
-	 *  <b>{% filter lowercase|escapejs %}</b>
-	 *  1. <b>filters</b> - A list of filters to apply to the text.
-	 * @todo Implement this, but this may have to work differently!
-	 **/
-	public function tag_filter($param_array, &$source){
-
-		// TODO: do this with capture output
-		
-		
-		// write to file
-			//$this->zajlib->compile->write($contents);
-		// return true
-			return true;
-	}
-	
 	/**
 	 * Tag: firstof - Prints the first in a list which evaluates to true.
 	 *
@@ -195,7 +176,7 @@ EOF;
 			}
 			else $source->warning('Invalid foreach tag syntax.');
 		// add a level to hierarchy
-			$local_var = '$foreach_item_'.uniqid("");
+			$local_var = '$this->zajlib->variable->ofw->tmp->foreach_item_'.uniqid("");
 			$source->add_level('foreach', array('item'=>$item, 'local'=>$local_var));
 		
 		// generate code
@@ -211,46 +192,46 @@ EOF;
 			if(empty(\$forloop_depth)) \$forloop_depth = 1;
 			else \$forloop_depth++;
 		// does a parent forloop exist?
-			if(is_object(\$current_forloop)) \$parent_forloop = clone \$current_forloop;
-			else \$parent_forloop = false;
+			if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop)) \$this->zajlib->variable->ofw->tmp->parent_forloop = clone \$this->zajlib->variable->ofw->tmp->current_forloop;
+			else \$this->zajlib->variable->ofw->tmp->parent_forloop = false;
 		// create for loop variables
-			\$current_forloop = new stdClass();
-			\$current_forloop->counter0 = -1;
+			\$this->zajlib->variable->ofw->tmp->current_forloop = new stdClass();
+			\$this->zajlib->variable->ofw->tmp->current_forloop->counter0 = -1;
 			// If not countable object, then typecast to array first (todo: can we do this in lib->array_to_object?)
-			if(is_object({$fetcher}) && !is_a({$fetcher}, 'Countable')) \$current_forloop->length = count((array) {$fetcher});
-			else \$current_forloop->length = count({$fetcher});
+			if(is_object({$fetcher}) && !is_a({$fetcher}, 'Countable')) \$this->zajlib->variable->ofw->tmp->current_forloop->length = count((array) {$fetcher});
+			else \$this->zajlib->variable->ofw->tmp->current_forloop->length = count({$fetcher});
 
- 			\$current_forloop->counter = 0;
-			\$current_forloop->revcounter = \$current_forloop->length+1;
-			\$current_forloop->revcounter0 = \$current_forloop->length;
-			\$current_forloop->value = false;
-			if(is_object(\$parent_forloop)){
-				\$current_forloop->parentloop = \$parent_forloop;
-				\$current_forloop->totalcounter = \$parent_forloop->totalcounter;
-				\$current_forloop->totalcounter0 = \$parent_forloop->totalcounter0;
-				\$current_forloop->depth = \$current_forloop->parentloop->depth + 1;
+ 			\$this->zajlib->variable->ofw->tmp->current_forloop->counter = 0;
+			\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter = \$this->zajlib->variable->ofw->tmp->current_forloop->length+1;
+			\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter0 = \$this->zajlib->variable->ofw->tmp->current_forloop->length;
+			\$this->zajlib->variable->ofw->tmp->current_forloop->value = false;
+			if(is_object(\$this->zajlib->variable->ofw->tmp->parent_forloop)){
+				\$this->zajlib->variable->ofw->tmp->current_forloop->parentloop = \$this->zajlib->variable->ofw->tmp->parent_forloop;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter = \$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0 = \$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter0;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->depth = \$this->zajlib->variable->ofw->tmp->current_forloop->parentloop->depth + 1;
 			}
 			else{
-				\$current_forloop->totalcounter = 0;
-				\$current_forloop->totalcounter0 = -1;
-				\$current_forloop->depth = 1;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter = 0;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0 = -1;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->depth = 1;
 			}
 
 			foreach({$fetcher} as \$key=>{$item}){
-				\$current_forloop->counter++;
-				\$current_forloop->counter0++;
-				\$current_forloop->revcounter--;
-				\$current_forloop->revcounter0--;
-				\$current_forloop->totalcounter++;
-				\$current_forloop->totalcounter0++;
-				\$current_forloop->odd = (\$current_forloop->counter % 2);
-				\$current_forloop->even = !(\$current_forloop->odd);
-				\$current_forloop->first = !\$current_forloop->counter0;
-				\$current_forloop->last = !\$current_forloop->revcounter0;
-				\$current_forloop->key = \$key;
-				\$current_forloop->previous = \$current_forloop->value;
-				\$current_forloop->value = {$item};
-				\$this->zajlib->variable->forloop = \$current_forloop;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->counter++;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->counter0++;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter--;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter0--;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter++;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0++;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->odd = (\$this->zajlib->variable->ofw->tmp->current_forloop->counter % 2);
+				\$this->zajlib->variable->ofw->tmp->current_forloop->even = !(\$this->zajlib->variable->ofw->tmp->current_forloop->odd);
+				\$this->zajlib->variable->ofw->tmp->current_forloop->first = !\$this->zajlib->variable->ofw->tmp->current_forloop->counter0;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->last = !\$this->zajlib->variable->ofw->tmp->current_forloop->revcounter0;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->key = \$key;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->previous = \$this->zajlib->variable->ofw->tmp->current_forloop->value;
+				\$this->zajlib->variable->ofw->tmp->current_forloop->value = {$item};
+				\$this->zajlib->variable->forloop = \$this->zajlib->variable->ofw->tmp->current_forloop;
 ?>
 EOF;
 		// write to file
@@ -292,7 +273,7 @@ EOF;
 // end while
 	}
 //only print rest if 0
-	if(\$current_forloop->length == 0){
+	if(\$this->zajlib->variable->ofw->tmp->current_forloop->length == 0){
 ?>
 EOF;
 		// write to file
@@ -328,17 +309,17 @@ EOF;
 		unset(\$foreach_item);
 	}
 	// if I had a parent, set me
-	if(is_object(\$current_forloop->parentloop)){
+	if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop->parentloop)){
 		// Set my total counters
-		\$parent_forloop->totalcounter = \$current_forloop->totalcounter;
-		\$parent_forloop->totalcounter0 = \$current_forloop->totalcounter0;
+		\$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter = \$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter;
+		\$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter0 = \$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0;
 		// Unset me and reset me
-		\$this->zajlib->variable->forloop = \$current_forloop = \$current_forloop->parentloop;
+		\$this->zajlib->variable->forloop = \$this->zajlib->variable->ofw->tmp->current_forloop = \$this->zajlib->variable->ofw->tmp->current_forloop->parentloop;
 	}
 	else{
 		// unset stuff
-			\$parent_forloop = null;
-			\$current_forloop = null;
+			\$this->zajlib->variable->ofw->tmp->parent_forloop = null;
+			\$this->zajlib->variable->ofw->tmp->current_forloop = null;
 			\$this->zajlib->variable->forloop = null;
 	}
 ?>
@@ -399,7 +380,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;	
 	}
 	/**
@@ -418,7 +399,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;	
 	}
 	/**
@@ -454,7 +435,7 @@ EOF;
 
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;	
 	}
 	/**
@@ -540,7 +521,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;		
 	}
 	/**
@@ -561,7 +542,7 @@ EOF;
 EOF;
 		// write to file
 			$this->zajlib->compile->write($contents);
-		// return debug_stats
+		// return
 			return true;		
 	}
 
@@ -645,6 +626,7 @@ EOF;
 	 *  <br><b>{% include '/message/new/' parameter1 'parameter two' %}</b>	 
 	 *  1. <b>request</b> - The request which will be routed as any other such URL request.
 	 *  2. <b>optional parameters</b> - zero, one, or more optional parameters, passed as parameters to the controller method.
+
 	 **/
 	public function tag_include($param_array, &$source){
 		// generate optional parameters
@@ -655,9 +637,8 @@ EOF;
 		// generate content
 			$contents = <<<EOF
 <?php
-// start include
-	\$this->zajlib->load->library('url');
-	\$this->zajlib->url->redirect($var1, array($var2));
+    // start include
+	\$this->zajlib->reroute($var1, array($var2));
 ?>
 EOF;
 		// write to file
@@ -817,7 +798,7 @@ EOF;
 		// Support old {% with business.employees.count as total %} syntax.
 		if($param_array[1]->vartext == 'as'){
 			// add level
-				$temporary_variable = '$before_with_'.uniqid();
+				$temporary_variable = '$this->zajlib->variable->ofw->tmp->before_with_'.uniqid();
 				$source->add_level('with', array([$param_array[2]->variable], [$temporary_variable]));
 			// generate with
 				$contents = <<<EOF
@@ -874,7 +855,6 @@ EOF;
 
 		// write to file
 		$this->zajlib->compile->write($contents);
-
 		// return true
 		return true;
 	}
@@ -893,7 +873,7 @@ EOF;
 			$contents .= <<<EOF
 <?php
 // restore it
-	$localvar = $restorevar;
+	@$localvar = $restorevar;
 ?>
 EOF;
 		}
@@ -910,50 +890,71 @@ EOF;
 	 *
 	 *  <br><b>{% block 'name_of_block' %}Content of block.{% endblock %}</b>	 
 	 *  1. <b>block name</b> - A unique name used to identify this block. Blocks with the same names will override each other according to the rules of {@link http://docs.djangoproject.com/en/1.2/topics/templates/#template-inheritance Template inheritance}
-	 * @todo Either merge or somehow optimize $permanent_name and $file_name
 	 **/
 	private $block_name = "";
 	public function tag_block($param_array, &$source){
 		// Note: the block parameter is special because even if it is a variable it is not
 		//		treated as such. So {% block content %} is same as {% block 'content' %}.
-		
-		// prepare unparsed parameter string
-			$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
-		// validate block name (only a-z) (because the whole stucture is involved, this is a fatal error!)
-			if(preg_match('/[a-z]{2,25}/',$block_name) <= 0) $source->error("invalid block name given!");
 
-		// generate file name for permanent block store
-			$permanent_name = '__block/'.$source->get_requested_path().'-'.$block_name.'.html';
-		// generate file name from block and session id
-			$file_name = "block/".$this->zajlib->compile->get_session_id()."-$block_name.html";
-		
-		// check to see if destinations already paused and hierarchy level is more than one
-			$current_level = $source->get_level();
-			if($this->zajlib->compile->are_destinations_paused() && $current_level > 0){
-				return $source->add_level('block', array($block_name,$file_name,false));
+		/** @var zajCompileSource $source */
+
+		// Prepare unparsed parameter string
+		$block_name = strtolower(trim($param_array[0]->vartext, "'\" "));
+		zajCompileSession::verbose("{% block $block_name %} in <code>$source->file_path</code>.");
+
+		// Add the block to the source
+		$my_block = $source->add_block($block_name);
+
+		// Get the main source for this session
+		$main_source = $source->get_session()->get_main_source();
+
+		// Was this block already processed in a lower level source?
+		if($source->child_source && $source->child_source->has_block($block_name, true)){
+			// Yes.
+
+			// Write lower level block cache to all main source block caches
+			$child_block = $source->child_source->get_block($block_name, true);
+			$child_block->insert();
+
+			// Close all main destinations
+			$source->get_session()->main_dest_paused(true);
+			// @todo I think this is too strong here
+
+			// Close all main source block caches
+			foreach($main_source->get_blocks() as $block){
+			    /** @var zajCompileBlock $block */
+			    //print "<h1>I am $block->name, my child is ".$block->child->name." and my parent is ".$block->parent->name."</h1>";
+			    //$block->pause_destinations(true);
 			}
-		
-		// start writing this block to a file
-			$file_exists = $this->zajlib->compile->add_destination($file_name, true);			
-			$unpause_dest = false;
-		// start writing permanent block file
-			$this->zajlib->compile->add_destination($permanent_name);
-		// if file already exists && main destination not paused (not extended)! so, insert file here to main destination!
-			if($file_exists){ // && !$this->zajlib->compile->is_main_dest_paused()){
-				// insert the file
-					$this->zajlib->compile->insert_file($file_name.".php");
-				// now pause main destination
-					$this->zajlib->compile->pause_destinations();
-					$unpause_dest = true;
+
+			// Close all parent block destinations
+			$my_block->pause_destinations(true);
+
+			// @todo somehow we have to pause all the blocks in the
+
+		}
+		else{
+			// No.
+
+			// Open block cache for main source
+			$my_block->add_destination($main_source);
+
+			// Is the current source not the main source?
+			if(!$source->am_i_the_main_source()){
+				// ...then open a destination for the current source as well
+				$my_block->add_destination($source);
 			}
+		}
 
-		// add the level with block parent as last param
-			$source->add_level('block', array($block_name,$file_name,$unpause_dest,$permanent_name,$this->block_name));
-		// set as current global block (overwriting parent)
-			$this->block_name = $block_name;
+		// Add the level with block parent as last param
+		$source->add_level('block', [$my_block, $this->block_name]);
 
-		// return true
-			return true;
+		// Set as current global block (overwriting parent)
+		$this->block_name = $block_name;
+		zajCompileSession::verbose("Finished starting a new block <code>$block_name</code> in <code>$source->file_path</code>.</li></ul>");
+
+		// Return true
+		return true;
 	}
 	/**
 	 * See block.
@@ -961,24 +962,40 @@ EOF;
 	 * {@link tag_block()}
 	 **/
 	public function tag_endblock($param_array, &$source){
-		// Note: unlike previous versions, the parameter is simply ignored. It ends the 
-		//		last opened block. If none open, then fatal error is issued.
-
+		/** @var zajCompileSource $source */
 		// remove level
-			list($block_name, $file_name, $unpause_dest, $permanent_name, $parent_block) = $source->remove_level('block');
-		// if this is a new block (file was written and needs to be removed)
-			if($file_name) $this->zajlib->compile->remove_destination($file_name);
-		// remove permanent block file (if exists)
-			if($permanent_name) $this->zajlib->compile->remove_destination($permanent_name);
-		// unpause the destination?
-			//print "Resuming $block_name at $pause_level/$current_level\n";
-			if($unpause_dest) $this->zajlib->compile->resume_destinations();
-		// repause the main destination if current source is extended
-			if($source->extended) $this->zajlib->compile->main_dest_paused(true);
-		// reset current block to parent block
-			$this->block_name = $parent_block;
+		list($my_block, $parent_block) = $source->remove_level('block');
+		zajCompileSession::verbose("{% endblock $my_block->name %} in <code>$source->file_path</code>.");
+
+		// end the block
+		$new_current_block = $source->end_block();
+
+		/** @var zajCompileBlock $my_block */
+		// Remove my direct destinations (non-recursively)
+		$my_block->remove_destinations();
+
+        // If the parent is still overriddren, then do not resume
+        if($my_block->parent && !$my_block->parent->is_overridden(true)) $my_block->resume_destinations(true);
+
+        // If this source is the root file (not extended)
+		if(!$source->is_extension){
+            if(
+                // If we are at 0 block level
+                $source->block_level == 0 ||
+                // If the currently ended block is not overridden (and nor are any of its parents)
+                ($new_current_block && !$new_current_block->is_overridden(true))
+            ){
+                zajCompileSession::verbose("We are back at $new_current_block->name in <code>$source->file_path</code>, so unpausing main destination.");
+                $this->zajlib->compile->main_dest_paused(false);
+            }
+
+		}
+
+		// reset current block to parent block @todo use $new_current_block instead
+		$this->block_name = $parent_block;
+
 		// return true
-			return true;
+		return true;
 	}
 
 	/**
@@ -1013,23 +1030,43 @@ EOF;
 			if($source->line_number != 1) $source->error("Extends must be on first line before any other content!");
 		// is the user jailed?
 			if(strpos($source_path, '..') !== false) $source->error("Invalid extends path ($source_path) found during compilation! Path must be give relative to the 'view' folder.");
-				
-		// check if it exists
-			if(!zajCompileSource::file_exists($source_path)) $source->error("Invalid extends path ($source_path) found during compilation! File does not exist.");
-		
+
+		// should we extend ourselves?
+			if($source_path == 'self'){
+				$ignore_app_level = $source->app_level;
+				$source_path = $source->requested_path;
+			}
+			else $ignore_app_level = false;
+
+		// get app level check
+			$result = zajCompileSource::check_app_levels($source_path, $ignore_app_level);
+
+		// check if it exists to provide friendly error message
+			if(!$result){
+				if($ignore_app_level) $source->error("Extends path ($source_path) not suitable for decoration! File does not exist in any app levels lower than $ignore_app_level.");
+				else $source->error("Invalid extends path ($source_path) found during compilation! File does not exist anywhere.");
+			}
+			else{
+				// set my source's parent
+				$source->parent_path = $result[0];
+				$source->parent_level = $result[1];
+				$source->parent_requested = $source_path;
+			}
+
 		// set source to be extended and set actual file path
-			$source->extended = true;
-		
+			$source->is_extension = true;
+
 		// now pause main destination
 			$this->zajlib->compile->main_dest_paused(true);
 
 		// add me to the compile queue
-			$this->zajlib->compile->add_source($source_path);
+			zajCompileSession::verbose("Extend detected with $source_path.");
+			$this->zajlib->compile->add_source($source_path, $ignore_app_level, $source);
 		// return true
 			return true;
 	}
 
-/**
+	/**
 	 * Tag: insert - Inserts another template at this location. The template is treated as if it were inline.
 	 *
 	 *  <b>{% insert '/admin/news_edit.html' 'block_name' %}</b>
@@ -1053,7 +1090,7 @@ EOF;
 		// Check if extends is the same as insert
 			// @todo This will not solve the issue if it is not a direct parent.
 			if($this->tag_get_extend() == trim($param_array[0]->variable, "'\"")){
-				$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
+				//$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
 			}
 		// if it is a single variable, then we need to do it with template->show
 			else{
@@ -1075,7 +1112,7 @@ EOF;
 				// write to file
 					$this->zajlib->compile->write($contents);
 			}
-		// return debug_stats
+		// return
 			return true;
 	}
 
@@ -1092,7 +1129,7 @@ EOF;
 			$tvar = trim($var, "'\"");
 		// Check if extends is the same as insert
 			if($this->tag_get_extend() == trim($param_array[0]->variable, "'\"")){
-				$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
+				//$source->error("Cannot {% insert %} the same file that you used in {% extend %}! You can try to move that content to a seperate template file.");
 			}
 		// if it is a single variable, then we need to do it with template->show
 				if(count($param_array) <= 1) $contents = <<<EOF
@@ -1113,7 +1150,7 @@ EOF;
 				// write to file
 					$this->zajlib->compile->write($contents);
 			//}
-		// return debug_stats
+		// return
 			return true;
 	}
 	public function tag_insertlocal($param_array, &$source){

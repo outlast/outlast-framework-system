@@ -101,6 +101,19 @@ class zajfield_manytomany extends zajField {
 		return zajFetcher::manytomany($this->name, $object);
 	}
 
+    /**
+     * Returns the default value before an object is created and saved to the database.
+	 * @param zajModel $object This parameter is a pointer to the actual object for which the default is being fetched. It is possible that the object does not yet exist.
+     * @return zajFetcher Returns a list of objects.
+     */
+    public function get_default(&$object){
+        if(is_object($this->options['default'])) return $this->options['default'];
+        else{
+            // Return an empty zajfetcher
+            return zajFetcher::manytomany($this->name, $object);
+        }
+    }
+
 	/**
 	 * Preprocess the data before saving to the database.
 	 * @param mixed $data The first parameter is the input data.
@@ -249,7 +262,7 @@ class zajfield_manytomany extends zajField {
 				// prepare my other query (remove limits, sorts)
 					$other_fetcher = $value->limit(false)->sort(false);
 				// generate subquery
-					$query = "SELECT $my_field as id FROM $table_name WHERE $their_field IN (".$other_fetcher->get_query().")";
+					$query = "SELECT $my_field as id FROM $table_name WHERE `field`='{$this->name}' AND $their_field IN (".$other_fetcher->get_query().")";
 			}
 			// if value is an array of ids
 			elseif(is_array($value)){
@@ -258,14 +271,14 @@ class zajfield_manytomany extends zajField {
 					foreach($value as $v) $list .= "'".addslashes($v)."', ";
 					$list = substr($list, 0, -2);
 				// generate subquery
-					$query = "SELECT $my_field as id FROM $table_name WHERE $their_field IN (".$list.")";			
+					$query = "SELECT $my_field as id FROM $table_name WHERE `field`='{$this->name}' AND $their_field IN (".$list.")";
 			}
 			// if value is a single object or single id
 			else{
 				// Possible values: object, string
 					// If object, convert to id string
 						if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
-					$query = "SELECT DISTINCT $my_field AS id FROM $table_name AS conn WHERE conn.$their_field = '".$this->zajlib->db->escape($value)."'";
+					$query = "SELECT DISTINCT $my_field AS id FROM $table_name AS conn WHERE conn.`field`='{$this->name}' AND conn.$their_field = '".$this->zajlib->db->escape($value)."'";
 			}
 		// Create logic and query
 			// figure out how to connect me

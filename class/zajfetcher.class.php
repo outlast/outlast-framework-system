@@ -53,7 +53,8 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		private $ordermode = "DESC";						// default order ASC or DESC (defined by model)
 		private $groupby = "";								// not grouped by default
 		private $filter_deleted = "model.status!='deleted'";	// this does not show deleted items by default
-		private $filters = array();							// an array of filters to be applied
+		private $filters = [];	    						// an array of filters to be applied
+		private $filter_groups = [];                        // an array of filter groups to be applied (useful for OR logic)
 		private $filterstr = "";							// the generated filter query
 		private $wherestr = "";								// where is empty by default
 	// connection related stuff
@@ -221,6 +222,34 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		return $this;
 	}
 
+    /**
+     * Union of two items.
+     * @param zajFetcher $fetcher1
+     * @param zajFetcher $fetcher2
+     * @return zajFetcher
+     */
+    public function union($fetcher1, $fetcher2){
+        // Get my queries
+        $query1 = $fetcher1->add_field_source('*', '', true)->limit(false)->get_query();
+        $query2 = $fetcher2->add_field_source('*', '', true)->limit(false)->get_query();
+
+        // Build and return new fetcher
+        /** @var zajModel $class_name */
+        $class_name = $this->class_name;
+        return $class_name::fetch()->sql("($query1) UNION ($query2)");
+    }
+
+    /**
+     * Set distinct from a method.
+     * @param bool $distinct Set to true or false.
+     * @return zajFetcher This method can be chained.
+     */
+    public function distinct($distinct){
+        $this->distinct = $distinct;
+        $this->reset();
+        return $this;
+    }
+
 	/**
 	 * Set filter deleted to 0, 1, or the default.
 	 * @param string|integer $filter_deleted Takes 0, 1, or 'default'.
@@ -268,7 +297,15 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			$this->reset();
 		return $this;
 	}
-	
+
+    /**
+     * Provide a full custom sql query. Any additional, non-model columns can be referenced as well. See documentation for full information.
+     * @param string $query The full query. Custom SQL queries should query all the columns of the relevant table.
+	 * @return zajFetcher This method can be chained.
+     */
+    public function sql($query){
+        return $this->add_source("($query)", 'model', true);
+    }
 
 	/**
 	 * This method adds a field to be selected from a joined source. This is mostly for internal use.
@@ -357,10 +394,25 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function filter($field, $value, $operator='LIKE', $type='AND'){
-		// add to filters array
-			$this->filters[] = array($field, $value, $operator, $type);
-		// changes query, so reset me
-			$this->reset();
+		// add to filters array and reset
+        $this->filters[] = [$field, $value, $operator, $type];
+		$this->reset();
+		return $this;
+	}
+
+	/**
+	 * Results are filtered according to $field and $value.
+	 * @param string $field The name of the field to be filtered
+	 * @param array $values A group of values by which to filter, usually
+	 * @param string $operator The operator with which to filter. Can be any valid MySQL-compatible operator: LIKE, NOT LIKE, <, >, <=, =, REGEXP etc.
+	 * @param string $type AND or OR depending on how you want this filter to connect. Defaults to AND.
+	 * @param string $group_type AND or OR depending on how you want this filter to connect. Defaults to OR.
+	 * @return zajFetcher This method can be chained.
+	 **/
+	public function filter_group($field, $values, $operator='LIKE', $type='AND', $group_type = 'OR'){
+		// add to filter_groups array
+		$this->filter_groups[] = [$field, $values, $operator, $type, $group_type];
+		$this->reset();
 		return $this;
 	}
 
@@ -370,10 +422,17 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @return zajFetcher This method can be chained.
 	 */
 	public function remove_filters($field = false){
-		if($field === false) $this->filters = [];
+		if($field === false){
+		    $this->filters = [];
+		    $this->filter_groups = [];
+        }
 		else{
+		    // Run through filters and filter groups
 			foreach($this->filters as $key => $filter){
 				if($filter[0] == $field) unset($this->filters[$key]);
+			}
+			foreach($this->filter_groups as $key => $filter_group){
+				if($filter_group[0] == $field) unset($this->filter_groups[$key]);
 			}
 		}
 		return $this;
@@ -525,9 +584,67 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 
 		return $this;
 	}
+
+    /**
+     * Apply a filter query to the list.
+     * @param array|boolean $query The filter query. See documentation for formatting. Defaults to $_GET.
+	 * @param boolean $similarity_search If set to true (false is the default), similar sounding results will be returned as well.
+	 * @param string $logic AND or OR depending on how you want this filter to connect
+	 * @return zajFetcher This method can be chained.
+     */
+    public function filter_query($query = false, $similarity_search = false, $logic = 'AND'){
+		// Default query
+		if($query == false) $query = $_GET;
+
+		/** @var zajModel $class_name */
+		$class_name = $this->class_name;
+        $result = $class_name::__onFilterQueryFetcher($this, $query, $similarity_search, $logic);
+
+        // perform the default if result is false
+        if($result === false){
+
+            // Do we have a regular query
+            if(!empty($query['query'])){
+                $this->search($query['query']);
+            }
+
+            // Now apply field queries
+            if(!empty($query['filter']) && is_array($query['filter'])){
+                foreach($query['filter'] as $field => $values){
+                    if(is_array($values)){
+                        // Empty values mean no filter will be applied
+                        foreach($values as $key=>$value){
+                            if(empty($value)) unset($values[$key]);
+                        }
+
+                        // Run through all filters for the field
+                        // @todo add custom group type param
+
+                        //print_r($values);
+                        //print "$field<br/>";
+
+                        if(is_array($values) && count($values) > 0){
+                            foreach($values as $value){
+                                if(is_array($value) && array_key_exists('value', $value) && array_key_exists('operator', $value) && array_key_exists('logic', $value)){
+                                    if(!empty($value['value'])) $this->filter($field, $value['value'], $value['operator'], $value['logic']);
+                                }
+                                else $this->filter($field, $value, 'LIKE', $logic);
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return $this;
+    }
+
+
 	/**
 	 * Execute a full, customized query. Any query must return a column 'id' with the IDs of corresponding {@link zajModel} objects. Otherwise it will not be a valid {@link zajFetcher} object and related methods will fail. A full query will override any other methods used, except for paginate and limit (the limit is appended to the end, if specified!).
 	 * @param string $full_sql The full, customized query.
+     * @deprecated You should use sql() instead nowadays.
 	 * @return zajFetcher This method can be chained.
 	 **/
 	public function full_query($full_sql){
@@ -554,53 +671,92 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		// distinct?
 			if($this->distinct) $distinct = "DISTINCT";
 			else $distinct = "";
-		// otherwise, generate a query
-			// create filters
-				$filters_sql = '';
-				foreach($this->filters as $key=>$filter){
-					// pre-process input parameters
-						// Explode my filter into a list
-							list($field, $value, $logic, $type) = $filter;
-						// Validate the field name
-							if(!zajLib::me()->db->verify_field($field)) return zajLib::me()->warning("Field '$classname.$field' contains invalid characters and did not pass safety inspection!");
-						// Now process type
-							if($type == "OR" || $type == "||") $type = "||";
-							else $type = "&&";
-						// Verify logic param
-							if($logic != 'IN' && $logic != 'NOT IN' && $logic != "SOUNDS LIKE" && $logic != "LIKE" && $logic != "NOT LIKE" && $logic != "REGEXP" && $logic != "NOT REGEXP" && $logic != "!=" && $logic != "==" && $logic != "=" && $logic != "<=>" && $logic != ">" && $logic != ">=" && $logic != "<" && $logic != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($logic) specified is not valid.");
-						// if $value is a model object, use its id
-							if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
+		// generate filters
+			// apply filters to WHERE clause
+            $filters_sql = '';
+            foreach($this->filters as $key=>$filter){
+                $filters_sql .= $this->filter_to_sql($mymodel, $filter);
+            }
+			// apply group filters to WHERE clause
+            foreach($this->filter_groups as $key=>$filter_group){
+                list($field, $values, $operator, $type, $group_type) = $filter_group;
 
-					// fix name if virtual field
-						if($mymodel->{$field}->virtual){
-							$field = $mymodel->{$field}->virtual;
-							$filter = array($field, $value, $logic, $type);
-						}
-					// if use_filter is true, then not a standard field object
-						if($mymodel->{$field}->use_filter){
-							// create the model
-								$fieldobject = $classname::__field($field);
-							// call my filter generator
-								$filters_sql .= " $type ".$fieldobject->filter($this, $filter);
-						}
-						else{
-							// check if it is a string
-								if(is_object($value)) zajLib::me()->error("Invalid filter/exclude value on fetcher object for $classname/$field! Value cannot be an object since this is not a special field!");
-							// allow subquery
-								if($logic != 'IN' && $logic != 'NOT IN') $filters_sql .= " $type model.`$field` $logic '".$this->db->escape($value)."'";
-								else $filters_sql .= " $type model.`$field` $logic ($value)";
-						}
-				}
-			// generate from and what
-				$from = join(', ', $this->select_from);
-				$what = join(', ', $this->select_what);
-			// save filter query
-				$this->filterstr = $filters_sql;
-			// generate
-				return "SELECT $distinct $what FROM $from WHERE $this->filter_deleted $filters_sql $this->wherestr $this->connection_wherestr $this->groupby $this->orderby $this->ordermode $this->limit";
+                // Now process group type to make sure it is valid (defaults to ||)
+                if(strtoupper($group_type) == "AND" || $group_type == "&&"){
+                    $group_type = "&&";
+                    $group_starter = "1";
+                }
+                else{
+                    $group_type = "||";
+                    $group_starter = "0";
+                }
+
+                // Run through each value item
+                $group_filter_sql = " $type (".$group_starter." ";
+                foreach($values as $value){
+                    $group_filter_sql .= $this->filter_to_sql($mymodel, [$field, $value, $operator, $group_type]);
+                }
+                $group_filter_sql .= ")";
+                $filters_sql .= $group_filter_sql;
+            }
+
+        // generate from and what
+			$from = join(', ', $this->select_from);
+			$what = join(', ', $this->select_what);
+		// save filter query
+			$this->filterstr = $filters_sql;
+		// generate full query
+			return "SELECT $distinct $what FROM $from WHERE $this->filter_deleted $filters_sql $this->wherestr $this->connection_wherestr $this->groupby $this->orderby $this->ordermode $this->limit";
 	}
-	
-	
+
+    /**
+     * Prepare a logical WHERE clause section based on a specific filter.
+	 * @param stdClass $mymodel The model definition.
+     * @param array $filter A filter array.
+     * @return string The generated sql.
+     */
+    private function filter_to_sql($mymodel, $filter){
+
+        // define my vars
+		list($field, $value, $operator, $type) = $filter;
+        $classname = $this->class_name;
+        $filters_sql = "";
+
+        // Validate the field name
+        if(!zajLib::me()->db->verify_field($field)) return zajLib::me()->warning("Field '$classname.$field' contains invalid characters and did not pass safety inspection!");
+
+        // Now process type
+        if(strtoupper($type) == "OR" || $type == "||") $type = "||";
+        else $type = "&&";
+
+        // Verify logic param
+        if($operator != 'IN' && $operator != 'NOT IN' && $operator != "SOUNDS LIKE" && $operator != "LIKE" && $operator != "NOT LIKE" && $operator != "REGEXP" && $operator != "NOT REGEXP" && $operator != "!=" && $operator != "==" && $operator != "=" && $operator != "<=>" && $operator != ">" && $operator != ">=" && $operator != "<" && $operator != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($operator) specified is not valid.");
+        // if $value is a model object, use its id
+        if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
+
+        // fix name if virtual field
+        if($mymodel->{$field}->virtual){
+            $field = $mymodel->{$field}->virtual;
+            $filter = array($field, $value, $operator, $type);
+        }
+
+        // if use_filter is true, then not a standard field object
+        if($mymodel->{$field}->use_filter){
+            // create the model
+            /** @var zajModel $classname */
+            $fieldobject = $classname::__field($field);
+            // call my filter generator
+            $filters_sql .= " $type ".$fieldobject->filter($this, $filter);
+        }
+        else{
+            // check if it is a string
+            if(is_object($value)) zajLib::me()->error("Invalid filter/exclude value on fetcher object for $classname/$field! Value cannot be an object since this is not a special field!");
+            // allow subquery
+            if($operator != 'IN' && $operator != 'NOT IN') $filters_sql .= " $type model.`$field` $operator '".$this->db->escape($value)."'";
+            else $filters_sql .= " $type model.`$field` $operator ($value)";
+        }
+        return $filters_sql;
+    }
 
 	/**
 	 * Executes the fetcher query.
@@ -820,7 +976,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * This method returns the connected fetcher object. This will be a collection of {@link zajModel} objects.
 	 * @param string $field The field name.
 	 * @param zajModel $object The object.
-	 * @return zajModel
+	 * @return zajFetcher Returns a list of objects.
 	 **/
 	public static function manytomany($field, &$object){
 		// Fetch the other model and other field
@@ -870,7 +1026,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * This method returns the connected fetcher object. This will be a collection of {@link zajModel} objects.
 	 * @param string $field The field name.
 	 * @param zajModel $object The object.
-	 * @return zajModel
+	 * @return zajFetcher Returns a list of objects.
 	 **/
 	public static function onetomany($field, &$object){
 		// Fetch the other model and other field		
@@ -882,6 +1038,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			$my_fetcher = new zajFetcher($other_model);
 		// Now filter to only ones where id matches me!
 			$my_fetcher->filter($other_field, $object->id);
+			$my_fetcher->sort($other_model::$fetch_order_field, $other_model::$fetch_order);
 		// Set my parent object
 			$my_fetcher->connection_parent = $object;			
 			$my_fetcher->connection_field = $field;
@@ -903,26 +1060,29 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @param string $class_name The class name.
 	 * @param string $field The field name.
 	 * @param string $id The id.
-	 * @return zajModel
+	 * @return zajModel|boolean Returns the connected object or boolean if no connection.
 	 **/
 	public static function manytoone($class_name, $field, $id){
 		// if not id, then return false
-			if(empty($id)) return false;
-		// if id is already an object
-			if(is_object($id) && is_a($id, 'zajModel')) return $id;
+        if(empty($id)) return false;
+
 		// get the other model
-			$field_model = $class_name::__field($field);
-			$other_model = $field_model->options['model'];
+        /** @var zajModel $class_name */
+        $field_model = $class_name::__field($field);
+        $other_model = $field_model->options['model'];
+
 		// return the one object
-			$fetcher = $other_model::fetch($id);
-			// if it exists, perform additional stuff!
-			if(is_object($fetcher)){
-				// set connection type
-					$fetcher->connection_type = 'manytoone';
-				// if it is deleted then do not return
-					if($fetcher->data->status == 'deleted') $fetcher = false;
-			}
-			return $fetcher;
+        /** @var zajModel $other_model */
+        /** @var zajModel $fetcher */
+        $fetcher = $other_model::fetch($id);
+        // if it exists, perform additional stuff!
+        if(is_object($fetcher)){
+            // set connection type
+                $fetcher->connection_type = 'manytoone';
+            // if it is deleted then do not return
+                if($fetcher->data->status == 'deleted') $fetcher = false;
+        }
+        return $fetcher;
 	}
 
 	/**
@@ -1034,9 +1194,19 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 			if(!is_a($object, 'zajModel')) return zajLib::me()->warning("You tried to check is_connected() status with a parameter that is not a zajModel object.");
 			if(!is_a($this->connection_parent, 'zajModel')) return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
 		// primary connection
-			if($this->connection_other) return (boolean) $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}')");
+			if($this->connection_other) return (boolean) $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}' && `field`='{$this->connection_other}')");
 		// secondary connection
-			else return (boolean) $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}')");
+			else return (boolean) $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}' && `field`='{$this->connection_field}')");
 	}
+
+    /**
+     * Returns true if the object is a fetcher.
+     * @param mixed $object
+     * @return boolean True if yes, false if no.
+     */
+	public static function is_instance_of_me($object){
+	    // for now this is simple! but use this nonetheless...
+        return is_a($object, 'zajFetcher');
+    }
 
 }

@@ -50,17 +50,17 @@ class zajlib_form extends zajLibExtension {
 		 * @param string|array $fields A string or an array of strings with the field name(s).
 		 * @param boolean|array $error_messages This can be an array of error messages in the same order as fields. Also, OFW_VALIDATION_RETURN_ERROR_MESSAGES means that no error messages are shown, only an array of invalid fields is returned. Defaults to OFW_VALIDATION_DEFAULT_ERROR_MESSAGES which displays the default validation error messages.
 		 * @param boolean|array $values A key/value array of values to validate. The key must be the name of the field, the value is whatever you want to test. If not given, the $_REQUEST array is used.
-		 * @return array Returns an array of invalid fields, so an empty array if all is valid. If $return_error_messages is an array or is false, then
+		 * @return boolean|array Returns an array of invalid fields, so an empty array if all is valid. If $error_messages is an array or is false, then json is returned.
 		 **/
 		public function validate($class_name, $fields, $error_messages = OFW_VALIDATION_DEFAULT_ERROR_MESSAGES, $values = false){
 			// Let's make sure the data is consistent
-				if(is_string($fields)) $fields = array($fields);
-				if(is_string($error_messages)) $error_messages = array($error_messages);
+				if(is_string($fields)) $fields = [$fields];
+				if(is_string($error_messages)) $error_messages = [$error_messages];
 			// Get the model for this class
 				/** @var zajModel $class_name */
 				$model = $class_name::__model();
 			// Now time to check all
-				$invalid_fields = array();
+				$invalid_fields = [];
 				foreach($fields as $key=>$field){
 					// If values are given, use that. Otherwise, default to the $_REQUEST array.
 						if($values !== false) $req_value = $values[$field];
@@ -81,13 +81,13 @@ class zajlib_form extends zajLibExtension {
 			// Should we display errors? Or return?
 				if($error_messages !== false){
 					// If no invalid fields found
-						if(count($invalid_fields) == 0) return array();
+						if(count($invalid_fields) == 0) return [];
 					// Display the errors using standardized json data
 						else{
-							return $this->zajlib->json(array(
+							return $this->zajlib->json([
 									'status'=>'error',
 									'errors'=>$invalid_fields
-								)
+								]
 							);
 						}
 				}

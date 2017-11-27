@@ -57,6 +57,11 @@ class zajfield_password extends zajField {
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){
+		// Validate password security
+		if(strlen($input) < 8) return false;
+		// Password needs cap, small, and numbers
+        if(!preg_match('/[A-Z]+[a-z]+[0-9]+/', $input)) return false;
+        // All is ok
 		return true;
 	}
 	

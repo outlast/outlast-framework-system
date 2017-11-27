@@ -172,7 +172,7 @@ class zajlib_text extends zajLibExtension {
 	}
 	
 	/**
-	 * Depricated version
+	 * Deprecated version
 	 * @ignore
 	 **/
 	public function get_auto_link($text, $truncate = false){

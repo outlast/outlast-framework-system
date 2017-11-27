@@ -171,7 +171,14 @@ class zajlib_error extends zajLibExtension {
 				}
 			// Update error text
 				$original_error_text = $errortext;
-				$errortext .= " on line ".$error_details['line']." of ".$error_details['file'];
+
+				if($this->zajlib->compile_started && !empty($this->zajlib->variable->ofw->tmp->compile_source_debug)){
+				    $errortext .= " (error triggered from template line ".$this->zajlib->variable->ofw->tmp->compile_source_debug->line_number." of ".$this->zajlib->variable->ofw->tmp->compile_source_debug->file_path.")";
+				}
+				else{
+				    $errortext .= " (error triggered from ".$error_details['line']." of ".$error_details['file'].")";
+				}
+
 				$error_details['errortext'] = $errortext;
 
 		// remove the first entry
@@ -182,7 +189,7 @@ class zajlib_error extends zajLibExtension {
 				// if call user function
 					if($element['function'] == 'call_user_func_array') $element['args'] = $element['args'][0];
 				//remove objects from argument list
-					if(is_array($element['args'])) $backtrace[$key]['args'] = $this->clean_backtrace($element['args']);
+					if(!empty($element['args']) && is_array($element['args'])) $backtrace[$key]['args'] = $this->clean_backtrace($element['args']);
 			}
 		// now serialize and set full backtrace
 			//$error_details['backtrace'] = @serialize($backtrace);

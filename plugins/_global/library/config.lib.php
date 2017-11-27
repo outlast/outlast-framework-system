@@ -85,13 +85,32 @@ class zajlib_config extends zajLibExtension{
 		 	return $this->$name;
 	 	}
 
+    /**
+     * Set a specific variable in the global scope. You should use this only on rare occasion, for system-specific development!
+     * @param string $key The variable key.
+     * @param mixed $value The value.
+     */
+    public function set_variable($key, $value){
+        $this->variable->$key = $value;
+    }
+
+    /**
+     * Unset a specific variable in the global scope. You should use this only on rare occasion, for system-specific development!
+     * @param string $key The variable key.
+     */
+    public function unset_variable($key){
+        unset($this->variable->$key);
+    }
+
 	/**
 	 * Sets the key/value variable object. Be careful, this overwrites the entire current setting. Because conf and lang are actually the same (just separated by name) lang values will also be overwritten.
 	 * @param stdClass $variables The key/value pairs to use for the new variable.
+	 * @param stdClass $section The multi-dimensional key/value pairs to use for the new section variables.
 	 * @return bool Always returns true.
 	 */
-	public function set_variables($variables){
+	public function set_variables($variables, $section){
 		$this->variable = $variables;
+		$this->section = $section;
 		return true;
 	}
 
@@ -100,8 +119,9 @@ class zajlib_config extends zajLibExtension{
 	 * @return bool Always returns true.
 	 */
 	public function reset_variables(){
-		$this->loaded_files = array();
-		$this->variable = (object) array();
+		$this->loaded_files = [];
+		$this->variable = new stdClass();
+		$this->section = new stdClass();
 		return true;
 	}
 
@@ -309,22 +329,6 @@ class zajlib_config extends zajLibExtension{
 		// send to zajlib error
 			$this->zajlib->error("Fatal ".$this->type_of_file." file compile error: $message (file: $debug_stats[source] / line: $debug_stats[line])");
 		exit;
-	}
-
-
-	/**
-	 * Set the base folder of the configuration files.
-	 * @param $new_folder A new folder relative to the base path.
-	 * @return bool
-	 * @deprecated
-	 * @todo Remove this eventually.
-	 **/
-	public function set_folder($new_folder){
-		// check chroot
-		if(strpos($new_folder, '..') !== false) return $this->zajlib->error($this->type_of_file.' source folder must be relative to base path.');
-		// set it
-		$this->conf_path = $new_folder.'/';
-		return true;
 	}
 
 }

@@ -18,6 +18,6 @@ class zajfield_email extends zajfield_text {
 	 **/
 	public function validation($input){
 		// Check to see if email is good
-			return zajLib::me()->email->valid($input);
+		return zajLib::me()->email->valid($input);
 	}
 }

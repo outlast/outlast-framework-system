@@ -24,54 +24,100 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	 *  3. <b>locale|custom_html</b> - If the fourth parameter is set, this field is the locale and the next is custom_html. If only three are set, this is custom_html. See next parameter for custom_html.
 	 *  4. <b>custom_html</b> - If you want to use a custom HTML to generate your own field editor then you can specify the html relative to any of the view directories.
 	 **/
-	public function tag_input($param_array, &$source){
+	public function tag_input($param_array, &$source, $mode = 'input'){
 		// check for required param
-			if(empty($param_array[0])) $source->error("Tag {%input%} requires at least one parameter.");
+			if(empty($param_array[0])) $source->error("Tag {% input %} requires at least one parameter.");
 		// grab my class and field name
 			/** @var zajModel $classname static */
 			list($classname, $fieldname) = explode('.', $param_array[0]->vartext);
 		// check for required param
-			if(empty($classname) || empty($fieldname)) $source->error("Tag {%input%} parameter one needs to be in 'modelname.fieldname' format.");
+			if(empty($classname) || empty($fieldname)) $source->error("Tag {% input %} parameter one needs to be in 'modelname.fieldname' format.");
 		// id or options
 			$id = $template = '';
 			$value = $param_array[1]->variable;
 		// get field object
 			/** @var zajField $field_object */
 			$field_object = $classname::__field($fieldname);
+
+        // decide on template
+        switch($mode){
+            case 'filter':
+                $default_template = $field_object::filter_template;
+                break;
+            default:
+                $default_template = $field_object::edit_template;
+                break;
+        }
+
 		// are we in locale mode?
 			if(isset($param_array[3])){
 				// update field name with locale data
-					$fieldname = "translation[".$fieldname."][{".$param_array[2]->variable."}]";
-					// if it is a translation variable, then localize it!
-					if(strstr($param_array[1]->variable, '->translation->') !== false) $value = $param_array[1]->variable.'->get_by_locale('.$param_array[2]->variable.')';
+				$fieldname = "translation[".$fieldname."][{".$param_array[2]->variable."}]";
+				// if it is a translation variable, then localize it!
+				if(strstr($param_array[1]->variable, '->translation->') !== false) $value = $param_array[1]->variable.'->get_by_locale('.$param_array[2]->variable.')';
+
 				// generate template based on type unless specified
-					if(!empty($param_array[3])) $template = trim($param_array[3]->variable, "'\"");
-					else $template = $field_object::edit_template;
+				if(!empty($param_array[3])) $template = trim($param_array[3]->variable, "'\"");
+				else $template = $default_template;
+
+				// Set locale
+				$fieldtranslation = $param_array[2]->variable;
 			}
 		// we are in compatibility mode!
 			else{
 				// generate template based on type unless specified
-					if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
-					else $template = $field_object::edit_template;
+				if(!empty($param_array[2])) $template = trim($param_array[2]->variable, "'\"");
+				else $template = $default_template;
+
+				// not in translation mode
+				$fieldtranslation = "false";
 			}
 
 		// generate content					
 			// generate options
-				$options_php = $this->zajlib->array->to_code($field_object->options);
+            $options_php = $this->zajlib->array->to_code($field_object->options);
+            $uniqid = uniqid("");
+
+            // input name
+            switch($mode){
+                case 'filter':
+                    // Define input name
+                    $inputname = 'filter['.$fieldname.'][]';
+                    break;
+                default:
+                    $inputname = $fieldname;
+                    break;
+            }
+
 			// create an empty field object
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field = (object) array(); ?>');
-			// callback
-				$field_object->__onInputGeneration($param_array, $source);			
+            $this->zajlib->compile->write('<?php $previous_field_'.$uniqid.' = $this->zajlib->variable->field; $this->zajlib->variable->field = new stdClass(); ?>');
 			// set stuff
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->name = "'.$fieldname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = uniqid("");  ?>');
-			// add set value
-				if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
+            $this->zajlib->compile->write('<?php $this->zajlib->variable->field->options = (object) '.$options_php.'; $this->zajlib->variable->field->type = "'.$field_object->type.'"; $this->zajlib->variable->field->class_name = "'.$classname.'"; $this->zajlib->variable->field->field_name = "'.$fieldname.'"; $this->zajlib->variable->field->locale = '.$fieldtranslation.'; $this->zajlib->variable->field->name = "'.$inputname.'"; $this->zajlib->variable->field->id = "field['.$fieldname.']"; $this->zajlib->variable->field->uid = "'.$uniqid.'";  ?>');
+			// callback
+            switch($mode){
+                case 'filter':
+                    // set value
+                    $this->zajlib->compile->write('<?php if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$fieldname.'"])){ $this->zajlib->variable->field->value = reset($_REQUEST[\'filter\']["'.$fieldname.'"]); } ?>');
+                    // callback
+                    $field_object->__onFilterGeneration($param_array, $source);
+                    break;
+                default:
+                    // set value
+                    if(!empty($param_array[1])) $this->zajlib->compile->write('<?php $this->zajlib->variable->field->value = '.$value.'; ?>');
+                    // callback
+                    $field_object->__onInputGeneration($param_array, $source);
+                    break;
+            }
+
 			// now create form field
-				// @todo Is this template path checked here?
-				$this->zajlib->compile->compile($template);
-				$this->zajlib->compile->insert_file($template.'.php');
-		// return debug_stats
-			return true;
+            $this->zajlib->compile->compile($template);
+            $this->zajlib->compile->insert_file($template.'.php');
+
+            // Reset field value
+            $this->zajlib->compile->write('<?php $this->zajlib->variable->field = $previous_field_'.$uniqid.'; ?>');
+
+		// Return true
+		return true;
 	}
 	/**
 	 * @ignore
@@ -81,6 +127,26 @@ class zajlib_tag_mozajik extends zajElementCollection{
 		// depricated old name for input
 			return $this->tag_input($param_array, $source);
 	}
+
+	/**
+	 * Tag: inputfilter - Generates a filter input for the given field.
+	 *
+	 *  <b>{% inputfilter contentpage.featured 'custom_filter.html' %}</b>
+	 *  1. <b>model_field</b> - The field name defined in the model. The format is model_name.field_name.
+	 *  2. <b>custom_html</b> - If you want to use a custom HTML to generate your own filter html then you can specify the html relative to any of the view directories.
+	 **/
+	public function tag_inputfilter($param_array, &$source){
+		// check for required param
+        if(empty($param_array[0])) $source->error("Tag {% inputfilter %} requires at least one parameter.");
+
+	    // Rearrange the param array if applicable (custom html is in 3rd place in tag_input)
+	    if(is_array($param_array) && count($param_array) > 1){
+	        $param_array[2] = $param_array[1];
+	        $param_array[1] = "";
+	    }
+		return $this->tag_input($param_array, $source, 'filter');
+	}
+
 
 	/**
 	 * Tag: inputlocale - Generates a locale-enabled input field based on the input defined in the model. This must be supported by the model and field type.
@@ -93,7 +159,7 @@ class zajlib_tag_mozajik extends zajElementCollection{
 	 **/
 	public function tag_inputlocale($param_array, &$source){
 		// check for required param
-			if(empty($param_array[0])) $source->error("Tag {%inputlocale%} requires at least one parameter.");
+        if(empty($param_array[0])) $source->error("Tag {% inputlocale %} requires at least one parameter.");
 		// add defaults
 			if(empty($param_array[1])) $param_array[1] = '';
 			if(empty($param_array[2])) $param_array[2] = '$this->zajlib->lang->get()';

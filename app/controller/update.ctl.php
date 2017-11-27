@@ -8,10 +8,12 @@
 
 	class zajapp_update extends zajController{
 
+		var $update_user_query = "";
+
 		/**
 		 * Authenticate the request if not in debug mode
 		 **/
-		function __load(){
+		function __load($request, $optional_params = []){
 			// is update disabled?
 				if(!$this->zajlib->zajconf['update_enabled']) return exit("Update disabled.");
 
@@ -21,9 +23,16 @@
 			// check for other stuff
 				$this->zajlib->variable->mysql_setting_enabled = $this->zajlib->zajconf['mysql_enabled'];
 
+			// add update user query string
+				if(!empty($_GET['update_user'])){
+					if(!$this->zajlib->security->has_xss($_GET['update_user']) && !$this->zajlib->security->has_xss($_GET['update_password'])){
+						$this->update_user_query = '?update_user='.$_GET['update_user'].'&update_password='.$_GET['update_password'];
+					}
+				}
 
 			// am i not in debug mode?
 				if(!$this->zajlib->debug_mode){
+					$denied_message = "ACCESS DENIED. If regular http pw auth is not working you can use the update_user/update_password query string as well.";
 					// is my password defined?
 						if(!$this->zajlib->zajconf['update_user'] || !$this->zajlib->zajconf['update_password']) return $this->install();
 					// realm
@@ -34,11 +43,11 @@
 							// Verify!
 								if($_REQUEST['update_user'] != $this->zajlib->zajconf['update_user'] || $_REQUEST['update_password'] != $this->zajlib->zajconf['update_password']){
 									header('HTTP/1.0 401 Unauthorized');
-									return exit("Access denied.");
+									return exit($denied_message);
 								}
 								else return true;
 						}
-						else return $this->zajlib->security->protect($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm);
+						else return $this->zajlib->security->protect($this->zajlib->zajconf['update_user'], $this->zajlib->zajconf['update_password'], $realm, $denied_message);
 				}
 			return true;
 		}
@@ -48,7 +57,7 @@
 		 **/
 		function main(){
 			// load menu
-				$this->zajlib->template->show("update/base-update.html");						
+				$this->zajlib->template->show("update/base-update.html");
 		}
 
 		/**
@@ -271,7 +280,6 @@
 				// 5. Check activation
 					if(!is_object($this->zajlib->mozajik) || !MozajikVersion::check()) $status_activate = $todo;
 					else $status_activate = $done;
-			
 			?>
 <head>
 	<meta charset="utf-8">
@@ -295,7 +303,7 @@
 			<div class="span12">
 			<br/><br/>
 			<h1>Outlast Framework Installation</h1>
-			<h3>Welcome to the Outlast Framework installation for version <?php echo MozajikVersion::$major; ?>.<?php echo MozajikVersion::$minor; ?>.<?php echo MozajikVersion::$build; ?> <?php if(MozajikVersion::$beta) echo "beta"; ?></h3>
+			<h3>Welcome to the Outlast Framework installation for version <?php echo MozajikVersion::$major; ?>.<?php echo MozajikVersion::$minor; ?> <?php if(MozajikVersion::$beta) echo "beta"; ?></h3>
 			<?php if($this->zajlib->debug_mode){ ?><h5><span style="color: red;">Attention!</span> This installation will be running in <strong>debug mode</strong>. This is not recommended for production sites!</h5><?php } ?>
 			<hr/>
 			<ul>
@@ -315,19 +323,19 @@
 		</div>
 		<div class="row">
 			<div class="span4 center">
-				<input class="btn" type="button" onclick="zaj.reload();" value="Recheck install status">
+				<input class="btn" type="button" onclick="ofw.reload();" value="Recheck install status">
 			</div>
 			<div class="span4 center">
-				<input class="btn btn-primary" type="button" onclick="zaj.open('<?php echo $this->zajlib->baseurl; ?>update/database/', 1000, 500);" <?php if(!$ready_to_dbupdate){ ?>disabled="disabled"<?php } ?> value="Update the database">
+				<input class="btn btn-primary" type="button" onclick="ofw.open('<?php echo $this->zajlib->baseurl; ?>update/database/<?php echo $this->update_user_query; ?>', 1000, 500);" <?php if(!$ready_to_dbupdate){ ?>disabled="disabled"<?php } ?> value="Update the database">
 			</div>
 			<div class="span4 center">
-				<input class="btn btn-success" type="submit" onclick="window.location = '<?php echo $this->zajlib->baseurl; ?>update/install/go/';" <?php if(!$ready_to_activate || $status_activate == $done){ ?>disabled="disabled"<?php } ?> value="Activate this installation">			
+				<input class="btn btn-success" type="submit" onclick="window.location = '<?php echo $this->zajlib->baseurl; ?>update/install/go/<?php echo $this->update_user_query; ?>';" <?php if(!$ready_to_activate || $status_activate == $done){ ?>disabled="disabled"<?php } ?> value="Activate this installation">
 			</div>
 		</div>
 		<div class="row">
 			<div class="span12 center">
 				<br/>
-				<a href="<?php echo $this->zajlib->baseurl; ?>update/">Back to the update page</a>
+				<a href="<?php echo $this->zajlib->baseurl; ?>update/<?php echo $this->update_user_query; ?>">Back to the update page</a>
 			</div>
 		</div>
 	</div>
@@ -350,7 +358,7 @@
 			// install
 				MozajikVersion::install();
 			// now redirect to check
-				if($redirect_me) return $this->zajlib->redirect("update/install/");
+				if($redirect_me) return $this->zajlib->redirect("update/install/".$this->update_user_query);
 				else return true;
 		}
 
@@ -387,7 +395,7 @@
 			<p>If this message does not go away after a few minutes, please contact the site administrator.</p>
 		</div>
 		<div class="five columns left">
-			<input type="button" onclick="zaj.reload();" value="Reload page now">
+			<input type="button" onclick="ofw.reload();" value="Reload page now">
 		</div>
 		<div class="five columns center">
 

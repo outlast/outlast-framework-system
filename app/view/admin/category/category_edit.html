@@ -1,116 +1,109 @@
 {% extends 'admin/category/category_list.html' %}
 
 {% block submenu %}
-	<ol class="breadcrumb">
-		<li><a href="{{baseurl}}admin/category/">{{#admin_list#}}</a></li>
-		<li class="active">{{#admin_edit#}}</li>
-	</ol>
-	<ul class="nav nav-tabs">
-		<li class="active"><a  href="#category" data-toggle="tab">{{#category_details#}}</a></li>
-		{% if zaj.locale_all|count > 1 %}
-			<li><a href="#locale" data-toggle="tab">{{#category_localize#}}</a></li>
-		{% endif %}
-	</ul>
+	{% insert 'admin/_edit_buttons.html' %}
 {% endblock submenu %}
 
+{% block bottommenu %}
+	{% insert 'admin/_edit_buttons.html' %}
+{% endblock %}
+
+{% block content_header %}{% endblock content_header %}
 
 {% block content %}
-	<form id='saverform' class="form-horizontal label-left tab-content" role="form">
-		<div class="tab-pane active" id="category">
-			<div class="form-group">
-				<label class="col-sm-2 control-label">{{#category_name#}}</label>
-				<div class="col-sm-10">
-					<input class='field text form-control' type='text' id='field[name]' name='name' value='{{object.data.name|escape}}' onkeyup="suggest();" onblur="suggest();"/>
-				</div>
-			</div>
-			<div class="form-group">
-				<label class="col-sm-2 control-label">{{#category_description#}}</label>
-				<div class="col-sm-10">
-					{% input category.description object.data.description %}
-				</div>
-			</div>
-			<div class="form-group">
-				<label class="col-sm-2 control-label">{{#category_url#}}</label>
-				<div class="col-sm-10">
-					{% input category.friendlyurl object.data.friendlyurl %}
-				</div>
-			</div>
-			<script language="javascript">
-				{% if object.data.friendlyurl = '' %}
-				$("[name=name]").keyup(function(){
-					zaj.ajax.get('admin/category/friendly/url/?title='+zaj.urlencode($('[name=name]').val()), function(result){ $("[name=friendlyurl]").val(result); })
-				});
-				{% endif %}
-			</script>
-			<hr/>
-			<div class="form-group">
-				<label class="col-sm-2 control-label">{{#category_parent#}}</label>
-				<div class="col-sm-10">
-					{% input category.parentcategory currentcat %}
-				</div>
-			</div>
-			<div class="form-group">
-				<label class="col-sm-2 control-label">{{#category_featured#}}</label>
-				<div class="col-sm-10">
-					{% input category.featured object.data.featured %}
-				</div>
-			</div>
-			<div class="form-group">
-				<label class="col-sm-2 control-label">{{#category_photo#}}</label>
-				<div class="col-sm-10">
-					{% input category.photo object.data.photo %}
-				</div>
-			</div>
-		</div>
-		<div class="tab-pane fade" id="locale">
+	<div class="tabs-container">
+		<ul class="nav nav-tabs">
+			<li class="active"><a  href="#category" role="tab" data-toggle="tab">{{#category_details#}}</a></li>
 			{% if zaj.locale_all|count > 1 %}
-			<h3>
-				{{#category_localize#}}
-				<small>{{#category_localize_desc#|printf:zaj.locale_default}}</small>
-			</h3>
-			{% foreach zaj.locale_all as locale %}
-				{% if locale != zaj.locale_default %}
-					<div class="well">
-						<h3>{{locale}}</h3>
-						<div class="form-group">
-							<label class="col-sm-2 control-label">{{#category_name#}}</label>
-							<div class="col-sm-10">
-								{% inputlocale category.name object.translation.name locale %}
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-2 control-label">{{#category_description#}}</label>
-							<div class="col-sm-10">
-								{% inputlocale category.description object.translation.description locale %}
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-2 control-label">{{#category_url#}}</label>
-							<div class="col-sm-10">
-								{% inputlocale category.friendlyurl object.translation.friendlyurl locale %}
-							</div>
-						</div>
-						<script>
-							{% if object.translation.friendlyurl|translate:locale = '' %}
-							$("[name=translation\\[name\\]\\[{{locale}}\\]]").keyup(function(){
-								zaj.ajax.get('admin/category/friendly/url/?title='+zaj.urlencode($("[name=translation\\[name\\]\\[{{locale}}\\]]").val()), function(result){ $("[name=translation\\[friendlyurl\\]\\[{{locale}}\\]]").val(result); })
-							});
-							{% endif %}
-						</script>
-					</div>
-				{% endif %}
-			{% endforeach %}
+				<li><a href="#locale" role="tab" data-toggle="tab">{{#category_localize#}}</a></li>
 			{% endif %}
-		</div>
+		</ul>
 
-		<input type='hidden' name='id' value="{{object.id}}">
-	</form>
+		<form id='saverform' class="form-horizontal label-left tab-content" role="form">
+			<div role="tabpanel" class="tab-pane active" id="category">
+				<div class="panel-body">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">{{#category_name#}}</label>
+						<div class="col-sm-10">
+							{% input category.name object.data.name %}
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">{{#category_description#}}</label>
+						<div class="col-sm-10">
+							{% input category.description object.data.description %}
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">{{#category_url#}}</label>
+						<div class="col-sm-10">
+							{% input category.friendlyurl object.data.friendlyurl %}
+						</div>
+					</div>
+					<hr/>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">{{#category_parent#}}</label>
+						<div class="col-sm-10">
+							{% input category.parentcategory currentcat %}
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">{{#category_featured#}}</label>
+						<div class="col-sm-10">
+							{% input category.featured object.data.featured %}
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">{{#category_photo#}}</label>
+						<div class="col-sm-10">
+							{% input category.photo object.data.photo %}
+						</div>
+					</div>
+					
 
-	<br/>
 
-	<a class='btn btn-danger pull-left' href='{{baseurl}}admin/category/'>{{#admin_cancel#}}</a>
-	<a class='btn btn-primary pull-right' onclick="$('#saverform').$zaj().post('admin/category/save/', 'admin/category/?parentcategory='+$('[name=parentcategory]').val());">{{#admin_save#}}</a>
+					{% block content_more_fields %}{% endblock content_more_fields %}
+				</div>
+			</div>
+			<div role="tabpanel" class="tab-pane" id="locale">
+				<div class="panel-body">
+					{% if zaj.locale_all|count > 1 %}
+					<h3>
+						{{#category_localize#}}
+						<small>{{#category_localize_desc#|printf:zaj.locale_default}}</small>
+					</h3>
+					{% foreach zaj.locale_all as locale %}
+						{% if locale != zaj.locale_default %}
+							<div class="well">
+								<h3>{{locale}}</h3>
+								<div class="form-group">
+									<label class="col-sm-2 control-label">{{#category_name#}}</label>
+									<div class="col-sm-10">
+										{% inputlocale category.name object.translation.name locale %}
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label">{{#category_description#}}</label>
+									<div class="col-sm-10">
+										{% inputlocale category.description object.translation.description locale %}
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label">{{#category_url#}}</label>
+									<div class="col-sm-10">
+										{% inputlocale category.friendlyurl object.translation.friendlyurl locale %}
+									</div>
+								</div>
+							</div>
+						{% endif %}
+					{% endforeach %}
+					{% block content_more_localized_fields %}{% endblock content_more_localized_fields %}
+					{% endif %}
+				</div>
+			</div>
 
-	<br/><br class="clearfix"/>
+			<input type='hidden' name='id' value="{{object.id}}">
+		</form>
+	</div>
 
 {% endblock content %} 
