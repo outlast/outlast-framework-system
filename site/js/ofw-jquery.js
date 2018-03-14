@@ -571,16 +571,17 @@ define('system/js/ofw-jquery', [], function() {
 
 				// Cache my jquery selectors
 				var $modal;
+				var defaultButtonText = 'Ok';
 
 				// If a modal markup was set with urlORfunctionORdom, then use that. If none, use #zaj_bootstrap_modal.
-				if(typeof urlORfunctionORdom == 'object') $modal = urlORfunctionORdom;
+				if(typeof urlORfunctionORdom === 'object') $modal = urlORfunctionORdom;
 				else $modal = $('#zaj_bootstrap_modal');
 
 				// Create modal if not yet available
 				if($modal.length <= 0){
 					// Check to see which Bootstrap version and create markup
 						if(api.bootstrap3){
-							$modal = $('<div id="zaj_bootstrap_modal" data-ofw="bootstrapModal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">Ok</a></div></div></div></div>');
+							$modal = $('<div id="zaj_bootstrap_modal" data-ofw="bootstrapModal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">'+defaultButtonText+'</a></div></div></div></div>');
 						}
 						else $modal = $('<div id="zaj_bootstrap_modal" data-ofw="bootstrapModal" class="modal hide fade"><div class="modal-body"></div><div class="modal-footer"><a data-dismiss="modal" class="modal-button btn">Ok</a></div></div>');
 					// Append it!
@@ -609,14 +610,15 @@ define('system/js/ofw-jquery', [], function() {
 				// Set action
 				var $modal_button = $modal.find('a.modal-button');
 				$modal_button.unbind('click');
-				if(typeof urlORfunctionORdom == 'function'){
+				if(typeof urlORfunctionORdom === 'function'){
 					$modal_button.attr('data-dismiss', '');
 					$modal_button.click(function(){ var r = urlORfunctionORdom($modal); if(r !== false){ $modal.modal('hide'); $('.modal-backdrop').remove(); } });
 				}
-				else if(typeof urlORfunctionORdom == 'string') $modal_button.click(function(){ api.redirect(urlORfunctionORdom, top); });
+				else if(typeof urlORfunctionORdom === 'string') $modal_button.click(function(){ api.redirect(urlORfunctionORdom, top); });
 				else $modal_button.click(function(){ $modal.modal('hide'); $('.modal-backdrop').remove(); });
 				// Set text (if needed)
-				if(typeof buttonText == 'string') $modal_button.html(buttonText);
+				if(typeof buttonText === 'string') $modal_button.text(buttonText);
+				else $modal_button.text(defaultButtonText);
 
 				// Backdrop closes on mobile
 				var backdrop = 'static';
@@ -633,8 +635,8 @@ define('system/js/ofw-jquery', [], function() {
 				api.track('OFW', 'Standard Alert', message.substr(0, 50));
 				// Send alert
 				alert(message);
-				if(typeof urlORfunctionORdom == 'function') urlORfunctionORdom();
-				else if(typeof urlORfunctionORdom == 'string') api.redirect(urlORfunctionORdom, top);
+				if(typeof urlORfunctionORdom === 'function') urlORfunctionORdom();
+				else if(typeof urlORfunctionORdom === 'string') api.redirect(urlORfunctionORdom, top);
 			}
 			return $modal;
 		},
