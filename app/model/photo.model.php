@@ -410,7 +410,7 @@ class Photo extends zajModel {
 	 * @param string|boolean $id Use this to override random id generation.
      * @param zajModel|boolean $parent The optional parent object. You can always set this later. If you set this, you must also set the $field parameter.
      * @param string|boolean $field The name of the field. Required if you set the parent object.
-	 * @return Photo Returns a new photo object with all files duplicated.
+	 * @return Photo|bool Returns a new photo object with all files duplicated, unless it fails.
 	 */
 	public function duplicate($id = false, $parent = false, $field = false){
 		// First duplicate my object
@@ -436,6 +436,11 @@ class Photo extends zajModel {
 
 		    $new_object->set('field', $field);
         }
+        else{
+            $new_object->set('parent', '');
+            $new_object->set('class', '');
+            $new_object->set('field', '');
+        }
 
         // Set status
         $new_object->temporary = true;
@@ -446,7 +451,9 @@ class Photo extends zajModel {
         $new_file = $this->zajlib->basepath."cache/upload/".$new_object->id.".tmp";
         $this->zajlib->file->create_path_for($new_file);
         if(file_exists($original_file)) copy($original_file, $new_file);
-        else $this->zajlib->error("You tried to duplicate a photo file ($original_file) where the original file does not exist. Make sure your data folder is up to date!");
+        else{
+            return $this->zajlib->warning("You tried to duplicate a photo file ($original_file) where the original file does not exist. Make sure your data folder is up to date!");
+        }
 
 		// Create my object
         $new_object->upload();
