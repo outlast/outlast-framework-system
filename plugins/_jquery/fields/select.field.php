@@ -55,7 +55,10 @@ class zajfield_select extends zajField {
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){
-		return true;
+		if(in_array($input, $this->options['choices'])){
+		    return true;
+        }
+		else return false;
 	}
 	
 	/**
