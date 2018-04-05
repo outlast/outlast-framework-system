@@ -133,7 +133,7 @@ class zajfield_manytomany extends zajField {
 				$added = array();
 				foreach($data as $otherobject){
 					// check if object or id
-                    if(!is_a($otherobject, 'zajModel') && is_string($otherobject)) $otherobject = $othermodel::fetch($otherobject);
+                    if(!zajModel::is_instance_of_me($otherobject) && is_string($otherobject)) $otherobject = $othermodel::fetch($otherobject);
 					// only save if not connected already (TODO: make this an option!)
                     if($otherobject !== false){
                         if(!$object->data->$field_name->is_connected($otherobject)){
@@ -152,7 +152,7 @@ class zajfield_manytomany extends zajField {
 				}
 			}
 		// is data a model object? if so, add this one
-			elseif(is_object($data) && is_a($data, 'zajModel')){
+			elseif(zajModel::is_instance_of_me($data)){
 				// add me
 					if(!$object->data->$field_name->is_connected($data)){
 						$object->data->$field_name->add($data);
@@ -277,10 +277,10 @@ class zajfield_manytomany extends zajField {
 			}
 			// if value is a single object or single id
 			else{
-				// Possible values: object, string
-					// If object, convert to id string
-						if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
-					$query = "SELECT DISTINCT $my_field AS id FROM $table_name AS conn WHERE conn.`field`='{$this->name}' AND conn.$their_field = '".$this->zajlib->db->escape($value)."'";
+                // If object, convert to id string
+                if(zajModel::is_instance_of_me($value)) $value = $value->id;
+
+				$query = "SELECT DISTINCT $my_field AS id FROM $table_name AS conn WHERE conn.`field`='{$this->name}' AND conn.$their_field = '".$this->zajlib->db->escape($value)."'";
 			}
 		// Create logic and query
 			// figure out how to connect me

@@ -474,7 +474,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		// default operator
 			$operator = '<=';
 		// is $value a zajmodel
-			if(is_a($value, 'zajModel')){
+			if(zajModel::is_instance_of_me($value)){
 				// check error
 					if($value->class_name != $this->class_name) return $this->zajlib->error("Fetcher's before() method only supports using the same model. You tried using '$value->class_name' while this fetcher is a '$this->class_name'.");
 				// check my default sort order
@@ -507,7 +507,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		// default operator
 			$operator = '>=';
 		// is $value a zajmodel
-			if(is_a($value, 'zajModel')){
+			if(zajModel::is_instance_of_me($value)){
 				// check error
 					if($value->class_name != $this->class_name) return $this->zajlib->error("Fetcher's after() method only supports using the same model. You tried using '$value->class_name' while this fetcher is a '$this->class_name'.");
 				// check my default sort order
@@ -732,7 +732,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
         // Verify logic param
         if($operator != 'IN' && $operator != 'NOT IN' && $operator != "SOUNDS LIKE" && $operator != "LIKE" && $operator != "NOT LIKE" && $operator != "REGEXP" && $operator != "NOT REGEXP" && $operator != "!=" && $operator != "==" && $operator != "=" && $operator != "<=>" && $operator != ">" && $operator != ">=" && $operator != "<" && $operator != "<=") return zajLib::me()->warning("Fetcher class could not generate query. The logic parameter ($operator) specified is not valid.");
         // if $value is a model object, use its id
-        if(is_object($value) && is_a($value, 'zajModel')) $value = $value->id;
+        if(zajModel::is_instance_of_me($value)) $value = $value->id;
 
         // fix name if virtual field
         if($mymodel->{$field}->virtual){
@@ -1191,8 +1191,8 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 **/
 	public function is_connected($object){
 		// Check for errors
-			if(!is_a($object, 'zajModel')) return zajLib::me()->warning("You tried to check is_connected() status with a parameter that is not a zajModel object.");
-			if(!is_a($this->connection_parent, 'zajModel')) return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
+			if(!zajModel::is_instance_of_me($object)) return zajLib::me()->warning("You tried to check is_connected() status with a parameter that is not a zajModel object.");
+			if(!zajModel::is_instance_of_me($this->connection_parent)) return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
 		// primary connection
 			if($this->connection_other) return (boolean) $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}' && `field`='{$this->connection_other}')");
 		// secondary connection

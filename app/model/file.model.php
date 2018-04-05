@@ -262,7 +262,7 @@ class File extends zajModel {
 	 */
 	public static function create_with_parent($parent, $field){
 		// Check parent object
-			if(!is_object($parent) || !is_a($parent, 'zajModel')){
+			if(!zajModel::is_instance_of_me($parent)){
 				$class_name = get_called_class();
 				return zajLib::me()->error("You tried to create a new $class_name with an invalid parent. You must pass an object instead of an id.");
 			}

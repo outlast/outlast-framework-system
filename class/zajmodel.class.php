@@ -708,9 +708,12 @@ abstract class zajModel implements JsonSerializable {
 	public static function is_instance_of_me($object){
 		// Get my class name
 		$class_name = get_called_class();
-		return is_a($object, $class_name) || is_a($object, 'zajModelExtender');
+		// @todo need a more sophisticated check than zajModelExtender...this is an error!
+		// Solution: zajModel should also be true if zajModelExtender
+		// ...but for any others it should be limited to me or an extension of me!
+		// Additional: in connections, you should make sure incoming model instance is the same type as defined
+		return is_object($object) && (is_a($object, $class_name) || is_a($object, 'zajModelExtender'));
 	}
-
 
 	/**
 	 * This method looks for methods in extends children and creates "virtual" menthods to events and actions.
@@ -995,7 +998,7 @@ abstract class zajModel implements JsonSerializable {
 
 		// check for objects
 		foreach($this as $varname=>$varval){
-            if(is_a($varval, 'zajModel') || is_a($varval, 'zajFetcher')){
+            if(zajModel::is_instance_of_me($varval) || is_a($varval, 'zajFetcher')){
                 zajLib::me()->warning("You cannot cache an zajModel or zajFetcher object! Stick to simple data types. This will be a fatal error in the future. Found at variable $this->class_name / $varname.");
             }
         }
@@ -1035,7 +1038,7 @@ abstract class zajModel implements JsonSerializable {
 				/** @var zajModel $class_name */
 				$obj = $class_name::fetch($oneid);
 				// if failed to find, issue warning
-				if(!is_object($obj) || !is_a($obj, 'zajModel')) zajLib::me()->warning("Tried to reorder non-existant object!");
+				if(!is_object($obj) || !zajModel::is_instance_of_me($obj)) zajLib::me()->warning("Tried to reorder non-existant object!");
 				// all is okay
 				else{
 					// TODO: fix, but for now explicitly load data class, because autoload won't work in current scope

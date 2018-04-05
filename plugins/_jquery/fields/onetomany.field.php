@@ -93,7 +93,7 @@ class zajfield_onetomany extends zajField {
 				}
 			}
 		// is data a model object? if so, add this one
-			elseif(is_object($data) && is_a($data, 'zajModel')){
+			elseif(zajModel::is_instance_of_me($data)){
 				// add me
 					$data->set($this->options['field'], $object);
 					$data->save();

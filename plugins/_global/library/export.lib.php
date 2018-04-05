@@ -26,13 +26,13 @@ class zajlib_export extends zajLibExtension {
 		public function json($fetcher, $fields = false, $file='export.json'){
 			$array_data = array();
 			// If this is a model
-				if(is_a($fetcher, 'zajModel') || is_a($fetcher, 'zajModelExtender')){
+				if(zajModel::is_instance_of_me($fetcher)){
 					$array_data = $fetcher->to_array();
 				}
 			// If this is a fetcher or array
 				elseif(is_a($fetcher, 'zajFetcher') || is_array($fetcher)){
 					foreach($fetcher as $object){
-						if(is_a($object, 'zajModel') || is_a($object, 'zajModelExtender')){
+						if(zajModel::is_instance_of_me($object)){
 							/** @var zajModel $object */
 							$array_data[] = $object->to_array();
 						}
@@ -264,7 +264,7 @@ class zajlib_export extends zajLibExtension {
 					// Create row data
 						$data = array();
 					// Is this a model or an array?
-						if(is_a($s, 'zajModel')) $model_mode = true;
+						if(zajModel::is_instance_of_me($s)) $model_mode = true;
 						else $model_mode = false;
 					// Add first default value (only if model_mode)
 						if($model_mode){
