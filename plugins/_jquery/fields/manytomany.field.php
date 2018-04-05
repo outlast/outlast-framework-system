@@ -44,16 +44,16 @@ class zajfield_manytomany extends zajField {
 					unset($options[0], $options[1]);
 				}
 		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			return parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
 	}	
 
 	/**
 	 * This method allows you to create a subtable which is associated with this field.
-	 * @return array Return the table definition.
+	 * @return array|bool Return the table definition or false if no table needed.
 	 **/
 	public function table(){
 		// if this is only a reference to another
-			if(!empty($this->options[1])) return false;
+			if(!empty($this->options['field'])) return false;
 
 		////////////////////////////////////
 		// DEFINE TABLE NAME
