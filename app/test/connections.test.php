@@ -23,7 +23,7 @@
 		/**
 		 * Check connections.
 		 */
-		public function system_connections_test(){
+		public function system_connections_is_connected(){
 			// Disabled if mysql not enabled
 			if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 
@@ -49,6 +49,27 @@
 
 			return true;
 		}
+
+		/**
+		 * Check reordering
+		 */
+		public function system_connections_reordering(){
+			// Disabled if mysql not enabled
+			if(!$this->zajlib->zajconf['mysql_enabled']) return false;
+
+            /** @var OfwTest $ofwtest */
+            $ofwtest = OfwTest::create();
+            $db = new zajlib_db_mock();
+            $ofwtest->set_mock_database($db);
+            $ofwtest->data->ofwtestanothers->set_mock_database($db);
+            $ofwtest->data->ofwtestanothers->reorder([3, 2, 1]);
+
+
+            $sql = "SELECT id2 as id, order2 as ordernum FROM connection_ofwtest_ofwtestanother WHERE id1='$ofwtest->id' AND id2 IN ('3', '2', '1') ORDER BY order2 ASC";
+            zajTestAssert::areIdentical($sql, $db->last_query);
+
+            return true;
+        }
 
 		/**
 		 * Reset stuff, cleanup.

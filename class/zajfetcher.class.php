@@ -1233,8 +1233,78 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
             field='{$connection_details->field}'
 EOF;
         $result = $this->db->query($sql);
-        return ($result->c > 0);
+        return ($result->next()->c > 0);
 	}
+
+
+	/**
+	 * Reorder the connected objects' ordernum based on the order of ids in the passed array.
+	 * @param string[] $reorder_array An array of ids.
+	 * @param bool $reverse_order If set to true, the reverse order will be taken into account.
+	 * @return bool Always returns true.
+	 */
+	public function reorder($reorder_array, $reverse_order = false){
+
+	    // If reversed
+	    if($reverse_order){
+    	    $reorder_array = array_reverse($reorder_array);
+	    }
+
+	    // Assemble a list of ids
+	    $sqlIdList = "";
+        foreach($reorder_array as $item){
+            if($sqlIdList) $sqlIdList .= ", ";
+            $sqlIdList .=  "'".addslashes($item)."'";
+        }
+
+        // Fetch all items by current order
+        $connection_details = $this->get_connection_table_details();
+        $sql = <<<EOF
+        SELECT
+          {$connection_details->secondary_id_field} as id, {$connection_details->order_field} as ordernum
+        FROM
+          {$connection_details->table}
+        WHERE
+          {$connection_details->primary_id_field}='{$this->connection_parent->id}' AND
+          {$connection_details->secondary_id_field} IN ($sqlIdList)
+        ORDER BY
+          {$connection_details->order_field} ASC
+EOF;
+        $items = $this->db->query($sql);
+        $current_order = [];
+        foreach($items as $item){
+
+            $current_order[] = $item->ordernum;
+
+        }
+
+        // Now run through ids and apply my ordering
+        $i = 0;
+        foreach($reorder_array as $reorder_item){
+            // If we are past the index, then just break
+            if($i >= count($current_order)) break;
+
+            // Generate update sql
+            $item_sql = addslashes($reorder_item);
+            $update_sql = <<<EOF
+            UPDATE
+              {$connection_details->table}
+            SET
+              {$connection_details->order_field}={$current_order[$i]}
+            WHERE
+              {$connection_details->primary_id_field}='{$this->connection_parent->id}' AND
+              {$connection_details->secondary_id_field}='$item_sql'
+EOF;
+            // Run and incement if any rows affected
+            $this->db->query($update_sql);
+            //if($this->db->affected > 0) @todo fix if an id which does not exist is in array!
+            $i++;
+        }
+
+        return true;
+
+    }
+
 
     /**
      * Gets the connection table details for manytomany connections.
@@ -1252,7 +1322,8 @@ EOF;
 	            'primary_model'=>$this->connection_parent->class_name,
 	            'primary_id_field'=>'id1',
 	            'secondary_model'=>$this->class_name,
-	            'secondary_id_field'=>'id2'
+	            'secondary_id_field'=>'id2',
+	            'order_field'=>'order2'
             ];
 	    }
 	    // Secondary connection
@@ -1263,7 +1334,8 @@ EOF;
 	            'primary_model'=>$this->class_name,
 	            'primary_id_field'=>'id2',
 	            'secondary_model'=>$this->connection_parent->class_name,
-	            'secondary_id_field'=>'id1'
+	            'secondary_id_field'=>'id1',
+	            'order_field'=>'order1'
             ];
 	    }
 	}

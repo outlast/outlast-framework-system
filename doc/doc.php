@@ -142,6 +142,7 @@ class zajTranslationData extends zajData {}
  * @property string $primary_id_field
  * @property string|zajModel $secondary_model
  * @property string $secondary_id_field
+ * @property string $order_field
  */
 class zajFetcherConnectionDetails{}
 
