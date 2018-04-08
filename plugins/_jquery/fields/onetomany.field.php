@@ -85,7 +85,7 @@ class zajfield_onetomany extends zajField {
 		// TODO: known bug: if any unsaved changes are cached, this will save those (perhaps unintended). we need a way to save ONE field without saving everything...
 		
 		// is data a fetcher object? if so, add them
-			if(is_object($data) && is_a($data, 'zajFetcher')){
+			if(zajFetcher::is_instance_of_me($data)){
 				foreach($data as $id=>$otherobject){					
 					// set me in the other object
 						$otherobject->set($this->options['field'], $object);
@@ -172,7 +172,7 @@ class zajfield_onetomany extends zajField {
 		// other fetcher's field
 			$other_field = $this->options['field'];
 		// if value is a fetcher
-			if(is_object($value) && is_a($value, 'zajFetcher')){
+			if(zajFetcher::is_instance_of_me($value)){
 				// get my other query
                 /** @var zajFetcher $other_fetcher */
                 $other_fetcher = $value->limit(false)->sort(false);

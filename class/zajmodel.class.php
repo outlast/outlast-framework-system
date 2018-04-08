@@ -314,6 +314,17 @@ abstract class zajModel implements JsonSerializable {
 	}
 
 	/**
+     * Set a mock database for testing.
+     * @param $db
+     */
+    public function set_mock_database($db){
+        // Only allow during testing
+        if($this->zajlib->test->is_running()){
+            $this->data = new zajData($this, $db);
+        }
+    }
+
+	/**
 	 * Set the value of a field for this object.
 	 * @param string $field_name The name of model field.
 	 * @param mixed $value The new value of the field.
@@ -998,7 +1009,7 @@ abstract class zajModel implements JsonSerializable {
 
 		// check for objects
 		foreach($this as $varname=>$varval){
-            if(zajModel::is_instance_of_me($varval) || is_a($varval, 'zajFetcher')){
+            if(zajModel::is_instance_of_me($varval) || zajFetcher::is_instance_of_me($varval)){
                 zajLib::me()->warning("You cannot cache an zajModel or zajFetcher object! Stick to simple data types. This will be a fatal error in the future. Found at variable $this->class_name / $varname.");
             }
         }
@@ -1028,7 +1039,7 @@ abstract class zajModel implements JsonSerializable {
 	public static function reorder($reorder_array, $reverse_order = false){
 		// get current class
 		$class_name = get_called_class();
-		// this supports JSON input from a Sortables.serialize method of mootools, always returns true
+		// @todo remove this support for JSON input from a Sortables.serialize method of mootools, always returns true
 		if(is_string($reorder_array)) $reorder_data = json_decode($reorder_array);
 		else $reorder_data = $reorder_array;
 		// continue processing the array of ids

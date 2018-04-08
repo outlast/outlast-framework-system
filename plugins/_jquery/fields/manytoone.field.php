@@ -141,13 +141,14 @@ class zajfield_manytoone extends zajField {
 	 * This is called when a filter() or exclude() methods are run on this field. It is actually executed only when the query is being built.
 	 * @param zajFetcher $fetcher A pointer to the "parent" fetcher which is being filtered.
 	 * @param array $filter An array of values specifying what type of filter this is.
+     * @return string Returns the sql filter.
 	 **/
 	public function filter(&$fetcher, $filter){
 		// break up filter
 			list($field, $value, $logic, $type) = $filter;
 		// assemble code
 			// if value is a fetcher
-			if(is_object($value) && is_a($value, 'zajFetcher')){			
+			if(zajFetcher::is_instance_of_me($value)){
 				// get my other query
 					$other_fetcher = $value->limit(false)->sort(false);
 					$query = '('.$other_fetcher->get_query().')';

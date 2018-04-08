@@ -134,6 +134,16 @@ class zajDataCategory extends CategoryData {}
  */
 class zajTranslationData extends zajData {}
 
+/**
+ * Class zajFetcherConnectionDetails
+ * @property string $table
+ * @property string $field
+ * @property string|zajModel $primary_model
+ * @property string $primary_id_field
+ * @property string|zajModel $secondary_model
+ * @property string $secondary_id_field
+ */
+class zajFetcherConnectionDetails{}
 
 /**
  * Class EmailLogData
@@ -161,3 +171,21 @@ class zajlibConfigVariable extends stdClass{}
  * @property zajLib $zajlib
  */
 class zajTestInstance{}
+
+/**
+ * Class OfwTestData
+ * @property string $email
+ * @property zajFetcher $ofwtestanothers
+ */
+class OfwTestData extends zajData{}
+
+/**
+ * Class OfwTestAnotherData
+ * @property zajFetcher $ofwtests
+ */
+class OfwTestAnotherData extends zajData{}
+
+/**
+ * Methods of db can be called on a session.
+ */
+class zajlib_db_session extends zajlib_db{}

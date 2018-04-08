@@ -59,9 +59,13 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		private $wherestr = "";								// where is empty by default
 	// connection related stuff
 		private $connection_wherestr = "";					// part of the where string if there is a connection involved
+		/** @var zajModel */
 		public $connection_parent;							// connections have a parent object - this is a reference to that
+		/** @var string */
 		public $connection_field;							// field name of connection
+		/** @var string */
 		public $connection_other;							// connections sometimes have another field
+		/** @var string */
 		public $connection_type;							// string - manytomany, manytoone, etc.
 	// full sql (utilized by connection-related methods)
 		private $full_sql = false;							// full sql is when something wants to override the query
@@ -1111,6 +1115,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	 * @param bool|array $additional_fields  An assoc array with key/value pairs of additional columns to save to the relationship connection table.
 	 * @param bool $delete_all Remove all connections not just a single one. This only works in 'delete' mode. Defaults to false.
 	 * @return zajFetcher Returns the zajFetcher object, so it can be chained.
+     * @todo This needs a better implementation so that object can accept fetchers and that the table name is not generated based on the param but based on field.
 	 */
 	public function add($object, $mode = 'add', $additional_fields = false, $delete_all = false){
 		// if not an object
@@ -1185,18 +1190,82 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 	
 	/**
 	 * Returns true or false based on whether or not the current fetcher is connected to the object $object.
-	 * @param zajModel $object The object in question.
+	 * @param zajModel|string $objectORid The object in question.
 	 * @return boolean True if connected, false otherwise.
 	 * @todo Change count_only!
 	 **/
-	public function is_connected($object){
+	public function is_connected($objectORid){
 		// Check for errors
-			if(!zajModel::is_instance_of_me($object)) return zajLib::me()->warning("You tried to check is_connected() status with a parameter that is not a zajModel object.");
-			if(!zajModel::is_instance_of_me($this->connection_parent)) return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
-		// primary connection
-			if($this->connection_other) return (boolean) $this->db->count_only("connection_{$object->table_name}_{$this->connection_parent->table_name}","(`id1`='{$object->id}' && `id2`='{$this->connection_parent->id}' && `field`='{$this->connection_other}')");
-		// secondary connection
-			else return (boolean) $this->db->count_only("connection_{$this->connection_parent->table_name}_{$object->table_name}","(`id2`='{$object->id}' && `id1`='{$this->connection_parent->id}' && `field`='{$this->connection_field}')");
+        if(!zajModel::is_instance_of_me($this->connection_parent)){
+            return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
+        }
+
+        // Get details
+        $connection_details = $this->get_connection_table_details();
+        $class_name = $this->class_name;
+
+        // If it is a string
+        if(is_string($objectORid)){
+            $object = $class_name::fetch($objectORid);
+        }
+        else{
+            // It is already an object, check if it is valid
+            $object = $objectORid;
+            if(!$class_name::is_instance_of_me($object)){
+                return zajLib::me()->warning("You tried to check {$connection_details->primary_model}.{$connection_details->field}.is_connected() status with a parameter that is not a $class_name object.");
+            }
+        }
+
+        // Not connected if does not exist or deleted
+        if($object === false || $object->data->status == "deleted"){
+            return false;
+        }
+
+        // Run SQL @todo convert to prepared statement
+        $sql = <<<EOF
+          SELECT
+            COUNT(*) as c
+          FROM
+            {$connection_details->table}
+          WHERE
+            {$connection_details->primary_id_field}='{$this->connection_parent->id}' AND
+            {$connection_details->secondary_id_field}='{$object->id}' AND
+            field='{$connection_details->field}'
+EOF;
+        $result = $this->db->query($sql);
+        return ($result->c > 0);
+	}
+
+    /**
+     * Gets the connection table details for manytomany connections.
+     * @return zajFetcherConnectionDetails|stdClass|boolean
+     */
+	private function get_connection_table_details(){
+	    // Only many to many have connection tables
+	    if($this->connection_type != 'manytomany') return zajLib::me()->error("Tried to get connection table for something other than manytomany.");
+
+        // Primary connection
+	    if(!$this->connection_other){
+	        return (object) [
+	            'table'=>"connection_{$this->connection_parent->table_name}_{$this->table_name}",
+	            'field'=>$this->connection_field,
+	            'primary_model'=>$this->connection_parent->class_name,
+	            'primary_id_field'=>'id1',
+	            'secondary_model'=>$this->class_name,
+	            'secondary_id_field'=>'id2'
+            ];
+	    }
+	    // Secondary connection
+	    else{
+	        return (object) [
+	            'table'=>"connection_{$this->table_name}_{$this->connection_parent->table_name}",
+	            'field'=>$this->connection_other,
+	            'primary_model'=>$this->class_name,
+	            'primary_id_field'=>'id2',
+	            'secondary_model'=>$this->connection_parent->class_name,
+	            'secondary_id_field'=>'id1'
+            ];
+	    }
 	}
 
     /**
@@ -1205,8 +1274,18 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
      * @return boolean True if yes, false if no.
      */
 	public static function is_instance_of_me($object){
-	    // for now this is simple! but use this nonetheless...
-        return is_a($object, 'zajFetcher');
+        return is_object($object) && is_a($object, 'zajFetcher');
+    }
+
+	/**
+     * Set a mock database for testing.
+     * @param $db
+     */
+    public function set_mock_database($db){
+        // Only allow during testing
+        if(zajLib::me()->test->is_running()){
+            $this->db = $db;
+        }
     }
 
 }

@@ -143,7 +143,7 @@ class zajfield_files extends zajField {
         $other_field = 'parent';
 
         // if value is a fetcher
-        if(is_object($value) && is_a($value, 'zajFetcher')){
+        if(zajFetcher::is_instance_of_me($value)){
             // get my other query
             $other_fetcher = $value->limit(false)->sort(false);
             // add field source

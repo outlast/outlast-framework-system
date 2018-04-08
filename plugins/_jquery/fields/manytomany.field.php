@@ -128,7 +128,7 @@ class zajfield_manytomany extends zajField {
 		/** @var zajModel $othermodel */
 	 	$othermodel = $this->options['model'];
 		// is data a fetcher object or an array of objects? if so, add them
-			if(is_array($data) || is_object($data) && is_a($data, 'zajFetcher')){
+			if(is_array($data) || zajFetcher::is_instance_of_me($data)){
 				// Add new data
 				$added = array();
 				foreach($data as $otherobject){
@@ -260,7 +260,7 @@ class zajfield_manytomany extends zajField {
 		
 		// Assemble subquery
 			// if value is a fetcher
-			if(is_object($value) && is_a($value, 'zajFetcher')){
+			if(zajFetcher::is_instance_of_me($value)){
 				// prepare my other query (remove limits, sorts)
 					$other_fetcher = $value->limit(false)->sort(false);
 				// generate subquery

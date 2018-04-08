@@ -68,13 +68,19 @@ class zajData {
 		/**
 		 * Create the zajData object. This should never be used manually, but instead should be accessed through the model via $model_object->data.
 		 **/
-		public function __construct(&$zajobject){
+		public function __construct(&$zajobject, $withMockDb = false){
 			// set my "parent" object
-				$this->zajobject =& $zajobject;
-			// create my db session
-				$this->db = $this->zajobject->zajlib->db->create_session();		// create my own database session
-			// get row data from db
-				return $this->reload();
+            $this->zajobject =& $zajobject;
+            if($withMockDb && $this->zajobject->zajlib->test->is_running()){
+                $this->db = $withMockDb;		// use mock db session
+                return true;
+            }
+            else{
+                // create my db session
+                $this->db = $this->zajobject->zajlib->db->create_session();		// create my own database session
+                // get row data from db
+                return $this->reload();
+            }
 		}
 
 		/**
@@ -248,9 +254,10 @@ class zajData {
 		 **/		
 		public function __set($name, $value){
 			// check for error
-				if(!$this->zajobject->model->$name) return $this->zajobject->zajlib->warning("cannot set value of '$name'. field '$name' does not exist in model '{$this->zajobject->class_name}'!");
+            if(!$this->zajobject->model->$name) return $this->zajobject->zajlib->warning("cannot set value of '$name'. field '$name' does not exist in model '{$this->zajobject->class_name}'!");
+
 			// set the data
-				$this->modified[$name] = $value;
+            $this->modified[$name] = $value;
 			return true;
 		}
 		

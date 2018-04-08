@@ -30,7 +30,7 @@ class zajlib_export extends zajLibExtension {
 					$array_data = $fetcher->to_array();
 				}
 			// If this is a fetcher or array
-				elseif(is_a($fetcher, 'zajFetcher') || is_array($fetcher)){
+				elseif(zajFetcher::is_instance_of_me($fetcher) || is_array($fetcher)){
 					foreach($fetcher as $object){
 						if(zajModel::is_instance_of_me($object)){
 							/** @var zajModel $object */
@@ -230,7 +230,7 @@ class zajlib_export extends zajLibExtension {
 			// Initialize zajdbs
 				$field_objects = [];
 			// Get fields of fetcher class if fields not passed
-				if(is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
+				if(zajFetcher::is_instance_of_me($fetcher) && (!$fields && !is_array($fields))){
 					/** @var zajModel $class_name */
 					$class_name = $fetcher->class_name;
 					$my_fields = $class_name::__model();
@@ -248,7 +248,7 @@ class zajlib_export extends zajLibExtension {
 					}
 				}
 			// Get fields of db object if fields not passed (the property names of the object)
-				if(!is_a($fetcher, 'zajFetcher') && (!$fields && !is_array($fields))){
+				if(!zajFetcher::is_instance_of_me($fetcher) && (!$fields && !is_array($fields))){
 					// Get the first row and create $fields[] array from it
 					// @todo Check to see if 0 rows in result set for each of these!
 						if(is_a($fetcher, 'Iterator')) $my_fields = $fetcher->rewind();

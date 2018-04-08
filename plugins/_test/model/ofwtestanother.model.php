@@ -7,9 +7,9 @@
 
 /**
  * Class OfwTest
- * @property OfwTestData $data
+ * @property OfwTestAnotherData $data
  */
-class OfwTest extends zajModel {
+class OfwTestAnother extends zajModel {
 
 	/**
 	 * __model function. creates the database fields available for objects of this class.
@@ -22,11 +22,8 @@ class OfwTest extends zajModel {
 		// begin custom fields definition:
         if($f === false) $f = new stdClass();
 
-        // Fake email for testing email validation
-        $f->email = zajDb::email();
-
         // Fake manytomany connection
-        $f->ofwtestanothers = zajDb::manytomany('OfwTestAnother');
+        $f->ofwtests = zajDb::manytomany('OfwTest', 'ofwtestanothers');
 
 		// end of custom fields definition
 		/////////////////////////////////////////
@@ -35,31 +32,4 @@ class OfwTest extends zajModel {
         return parent::__model($f);
 	}
 
-	/**
-	 * A test for a standard public method.
-	 **/
-	public function just_a_test(){
-		return "just_a_test";
-	}
-
-	/**
-	 * A test for a standard public static method.
-	 **/
-	public static function just_a_test_static(){
-		return "just_a_test_static";
-	}
-
-	/**
-	 * Test only in parent.
-	 **/
-	public function only_in_parent(){
-		return "only_in_parent";
-	}
-
-	/**
-	 * Test only in parent.
-	 **/
-	public static function only_in_parent_static(){
-		return "only_in_parent_static";
-	}
 }
