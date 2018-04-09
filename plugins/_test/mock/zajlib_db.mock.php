@@ -23,7 +23,7 @@ class zajlib_db_mock {
         // Add to queries, removing whitespace
         $this->last_query = trim(preg_replace('!\s+!', ' ', $query));
         $this->queries[] = $this->last_query;
-        return new stdClass();
+        return new zajlib_db_session_mock();
     }
 
 }
