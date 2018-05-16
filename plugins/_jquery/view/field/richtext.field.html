@@ -1,7 +1,7 @@
 {% lang 'system/fields' 'richtext' %}
 
 <!-- load up medium editor -->
-<link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/medium-editor.css">
+<link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/medium-editor.css?v2">
 <link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/themes/bootstrap.css">
 
 <style>
@@ -18,7 +18,7 @@
 				buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'quote', 'removeFormat']
 			},
 			placeholder: {
-				text: '{{#system_field_richtext_placeholder#}}',
+				text: '{{#system_field_richtext_placeholder#|escapejs}}',
 				hideOnClick: true
 			}
 		});

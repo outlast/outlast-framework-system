@@ -108,7 +108,7 @@ class zajlib_plugin extends zajLibExtension {
 		foreach($requires as $requirement){
 		    if(!$this->zajlib->plugin->is_enabled($requirement) || !$this->zajlib->plugin->is_loaded($requirement)){
 				$result = false;
-				$msg = "The <strong>$plugin</strong> plugin requires the <strong>$requirement</strong> plugin. You also must load $requirement first, and then $plugin in site/index.php. Since this happens in reverse order, use: ['$plugin', '$requirement']";
+				$msg = "The <strong>$plugin</strong> plugin requires the <strong>$requirement</strong> plugin. You must load $requirement first, and then $plugin in site/index.php. Since this happens in reverse order, use: ['$plugin', '$requirement']";
 				if($fatal_error) return $this->zajlib->error($msg, true);
 				else $this->zajlib->warning($msg);
 		    }

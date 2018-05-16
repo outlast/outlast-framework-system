@@ -97,12 +97,11 @@ class zajfield_locales extends zajField {
 	 **/
 	public function filter(&$fetcher, $filter){
 		// break up filter
-			list($field, $value, $logic, $type) = $filter;
-		// escape value
-			
-		// modify value to yes or empty
-			if($value) $value = 'yes';
-			else $value = '';
+        list($field, $value, $logic, $type) = $filter;
+
+		// escape value and allow to search in
+        $value = "%".addslashes($value)."%";
+
 		// filter return
 		return "`$field` $logic '$value'";
 	}

@@ -21,6 +21,7 @@ define('system/js/ofw-jquery', [], function() {
 		config: {},
         plugins: {},
         readyFunctions: [],
+        dataAttributeHandlers: [],
         dataAttributes: [
 			{ name: 'single-click', path: 'system/js/data' },
 			{ name: 'autopagination', path: 'system/js/data' },
@@ -94,6 +95,7 @@ define('system/js/ofw-jquery', [], function() {
 
 		// Now run ready functions
 		setTimeout(runReadyFunctions, 10);
+		setTimeout(runAttributeHandlers, 10);
     };
 
 	/**
@@ -113,7 +115,7 @@ define('system/js/ofw-jquery', [], function() {
 	};
 
 	/**
-	 * Call ready functions in case jquery is alredy ready. If
+	 * Call ready functions in case jquery is alredy ready.
 	 */
 	var runReadyFunctions = function(){
 		var i;
@@ -144,6 +146,19 @@ define('system/js/ofw-jquery', [], function() {
 		originalRequireFunction = null;
 		requireFunctions = [];
 		myOptions.readyFunctions = [];
+	};
+
+	/**
+	 * Call attribute handlers.
+	 */
+	var runAttributeHandlers = function(){
+		// Run all the handlers
+		for(var i = 0;i < myOptions.dataAttributeHandlers.length; i++){
+			var dataAttributeHandler = myOptions.dataAttributeHandlers[i];
+			api.addDataAttributeHandler(dataAttributeHandler[0], dataAttributeHandler[1], dataAttributeHandler[2]);
+		}
+		// Reset
+		myOptions.dataAttributeHandlers = [];
 	};
 
 	/**
@@ -301,7 +316,6 @@ define('system/js/ofw-jquery', [], function() {
 		if(typeof request === 'object'){
 			datarequest = request['data'];
 			request = request['url'];
-			console.log('woo', request, datarequest);
 		}
 		else{
 			if(method === 'post'){
@@ -435,17 +449,17 @@ define('system/js/ofw-jquery', [], function() {
 
 	/**
 	 * Run through the parent (defaults to body) and activate any registered data attribute handlers.
-	 * @param {object} dataAttribute An object with the name and location of the handler. The name of the handler should be the data attribute to look for without data-. So for data-autopagination it is 'autopagination'.
+	 * @param {object} dataAttribute An object with the name and path of handler plus the callback function. The name of the handler should be the data attribute to look for without data-. So for data-autopagination it is 'autopagination'.
 	 * @param {jQuery} [$context=$(document)] The jQuery object in which the handlers are searched for.
-	 * @param {function} [callback=null] The callback function which is called when the data attribute handler object was loaded. The object and context is passed.
 	 **/
-	var activateSingleDataAttributeHandler = function(dataAttribute, $context, callback){
+	var activateSingleDataAttributeHandler = function(dataAttribute, $context){
 		// Default value of context
-		if(typeof $context == 'undefined' || $context == null) $context = $(document);
+		if(typeof $context === 'undefined' || $context == null) $context = $(document);
 
 		// Set name and path (and remove trailing slashes)
 		var handlerName = dataAttribute['name'].replace(/^\/|\/$/g, '');
 		var handlerPath = dataAttribute['path'].replace(/^\/|\/$/g, '');
+		var callback = dataAttribute['callback'];
 
 		// Let's see if we find any in context
 		var $elements = $context.find('[data-'+handlerName+']');
@@ -454,11 +468,10 @@ define('system/js/ofw-jquery', [], function() {
 			requirejs([handlerPath+'/'+handlerName], function(handlerObject) {
 				// Set the handler object
 				dataAttributesObjects[handlerName] = handlerObject;
-
 				// Activate
 				handlerObject.activate($elements, $context);
 				// If callback set
-				if(typeof callback == "function") callback(handlerObject, $context);
+				if(typeof callback === "function") callback(handlerObject, $context);
 			});
 		}
 	};
@@ -1199,9 +1212,9 @@ define('system/js/ofw-jquery', [], function() {
 		 * @param {function} [callback=null] The callback function which is called when the data attribute handler object was loaded. The object is passed.
 		 */
 		addDataAttributeHandler: function(handlerName, handlerPath, callback){
-			var attribute = { name: handlerName, path: handlerPath };
+			var attribute = { name: handlerName, path: handlerPath, callback: callback };
 			dataAttributes.push(attribute);
-			activateSingleDataAttributeHandler(attribute, null, callback);
+			activateSingleDataAttributeHandler(attribute, null);
 		},
 
 		/***** DEPRECATED METHODS ******/

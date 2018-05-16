@@ -463,9 +463,13 @@ class zajlib_template_zajvariables {
                 ready: function(func){
                     ofw.readyFunctions.push(func);
                 },
+                addDataAttributeHandler: function(handlerName, handlerPath, callback){
+                    ofw.dataAttributeHandlers.push([handlerName, handlerPath, callback]);
+                },
                 setLang: function(keyOrArray, value, section){ ofwSetLang.push([keyOrArray, value, section]); },
                 log: function(m){ console.log(m) },
                 readyFunctions: [],
+                dataAttributeHandlers: [],
                 jqueryIsReady: false	
             };
             $(document).ready(function(){ ofw.jqueryIsReady = true; });
@@ -475,6 +479,7 @@ class zajlib_template_zajvariables {
             requirejs(["system/js/ofw-jquery"], function(ofwsys){
                 // Set my ready functions and init
                 ofwsettings.readyFunctions = ofw.readyFunctions;
+                ofwsettings.dataAttributeHandlers = ofw.dataAttributeHandlers;
                 ofwsettings.jqueryIsReady = ofw.jqueryIsReady;
                 ofwsys.init(ofwsettings);
                 // Now call each ofw set lang
