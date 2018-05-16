@@ -534,14 +534,15 @@ abstract class zajModel implements JsonSerializable {
 		return $new;
 	}
 
-	/**
-	 * Convert model data to a standard single-dimensional array format.
-	 * @todo Move these conversions to field definition files.
-	 * @todo Add support for model extensions.
-	 * @param boolean $localized Set to true if you want the localized version.
-	 * @return array Return a single-dimensional array.
-	 */
-	public function to_array($localized = true){
+    /**
+     * Convert model data to a standard single-dimensional array format.
+     * @todo Move these conversions to field definition files.
+     * @todo Add support for model extensions.
+     * @param boolean $localized Set to true if you want the localized version.
+     * @param string[] $only_fields A list of fields to include in the array.
+     * @return array Return a single-dimensional array.
+     */
+	public function to_array($localized = true, $only_fields = []){
 		// Get my class name
 			/* @var zajModel $class_name */
 			$class_name = $this->class_name;
@@ -559,6 +560,12 @@ abstract class zajModel implements JsonSerializable {
 		// Now fetch array data
 			$array_data = array();
 			foreach($mymodel as $field_name => $field_type){
+			    // If not in only fields array
+			    if(count($only_fields) > 0 && !in_array($field_name, $only_fields)){
+			        continue;
+			    }
+
+			    // Otherwise decide by type (@todo this should be based on type declaration file)
 				switch($field_type->type){
 					case 'manytoone':
 						$array_data[$field_name] = $data->$field_name->id;
@@ -579,10 +586,20 @@ abstract class zajModel implements JsonSerializable {
 	}
 
 	/**
-	 * Implement json serialize method.
+	 * Implement default json serialize method.
 	 */
 	public function jsonSerialize(){
 		return $this->to_array();
+	}
+
+    /**
+     * A parameterized version of json conversion.
+     * @param boolean $localized Set to true if you want the localized version.
+     * @param string[] $only_fields A list of fields to include in the array.
+     * @return string Return a json string.
+     */
+	public function to_json($localized = true, $only_fields = []){
+	    return json_encode($this->to_array($localized, $only_fields));
 	}
 
 	/**

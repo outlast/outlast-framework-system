@@ -84,6 +84,8 @@
                 $f2 = File::fetch($f->id);
                 $f2->just_a_test();
 				zajTestAssert::areIdentical('just_a_test', $result);
+				
+
 
 
 			// Now dynamically extend OfwTest and see what happens
@@ -103,7 +105,38 @@
 				zajTestAssert::areIdentical('only_in_parent_static', $result);
 				$result = $ofwtest2->only_in_parent();
 				zajTestAssert::areIdentical('only_in_parent', $result);
+			return true;
 		}
+
+        /**
+         * Check conversion to array / json
+         */
+        public function system_check_model_to_array(){
+            $f = File::create();
+            $f->set('name', 'Test file')->save();
+
+            // Test to array
+            $a1 = $f->to_array();
+            zajTestAssert::areIdentical( 'Test file', $a1['name']->__toString());
+            zajTestAssert::areIdentical( $f->id, $a1['id']->__toString());
+
+            $a2 = $f->to_array(false);
+            zajTestAssert::areIdentical( 'Test file', $a2['name']);
+            zajTestAssert::areIdentical( $f->id, $a2['id']);
+
+            $a2 = $f->to_array(false, ['name']);
+            zajTestAssert::areIdentical( 'Test file', $a2['name']);
+            zajTestAssert::isNull($a2['id']);
+
+            // Test to json
+            $j1 = $f->to_json(false, ['name']);
+            zajTestAssert::areIdentical('{"name":"Test file"}', $j1);
+            $j2 = $f->to_json();
+            $j2decoded = json_decode($j2);
+            zajTestAssert::areIdentical('Test file', $j2decoded->name);
+            zajTestAssert::areIdentical($f->id, $j2decoded->id);
+
+        }
 
 		/**
 		 * Reset stuff, cleanup.

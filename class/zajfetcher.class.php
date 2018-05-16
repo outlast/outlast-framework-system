@@ -103,14 +103,26 @@ class zajFetcher implements Iterator, Countable, JsonSerializable{
 		return $this->to_array();
 	}
 
+    /**
+     * A parameterized version of json conversion.
+     * @param boolean $localized Set to true if you want the localized version.
+     * @param string[] $only_fields A list of fields to include in the array.
+     * @return string Return a json string.
+     */
+	public function to_json($localized = true, $only_fields = []){
+	    return json_encode($this->to_array($localized, $only_fields));
+	}
+
   	/**
      * Return the model data as an array.
+     * @param boolean $localized Set to true if you want the localized version of element fields.
+     * @param string[] $only_fields A list of fields to include in the array elements.
      * @return array The list as an array.
      **/
-	public function to_array(){
+	public function to_array($localized = true, $only_fields = []){
 		$array_data = array();
 		foreach($this as $row){
-			$array_data[] = $row->to_array(true);
+			$array_data[] = $row->to_array($localized, $only_fields);
 		}
 		return $array_data;
 	}

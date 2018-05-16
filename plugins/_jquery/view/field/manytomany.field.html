@@ -10,10 +10,12 @@
 		ofw.addDataAttributeHandler('relationship', 'system/js/data/field/', function(relationship){
 			{% block relationship_selected_values_js %}
 				var fieldValueArray = [];
-				{% foreach field.value as val %}
-					fieldValueArray.push('{{val.id}}');
-				{% endforeach %}
-				relationship.setFieldValue("{{field.uid}}", fieldValueArray);
+				{% if field.value %}
+					{% foreach field.value as val %}
+						fieldValueArray.push('{{val.id}}');
+					{% endforeach %}
+					relationship.setFieldValue("{{field.uid}}", fieldValueArray);
+				{% endif %}
 			{% endblock %}
 		});
 	});

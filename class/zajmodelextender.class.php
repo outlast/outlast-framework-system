@@ -1,5 +1,5 @@
 <?php
-    
+
 /**
  * This is the abstract extender model class from which all extended model classes are derived.
  *

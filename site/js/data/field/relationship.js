@@ -74,8 +74,9 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 	 * @param {boolean} ajaxMode If set to true, the select will initialize as an ajax search box.
 	 * @param {string} [className=null] The class name (zajModel name) for this search field. Only required if ajaxMode is true.
 	 * @param {string} [fieldName=null] The field name (zajModel field name) for this search field. Only required if ajaxMode is true.
+	 * @param {string} [apiEndpoint=null] A custom api endpoint, relative to base url. Defaults to system relation search.
 	 */
-	var selectInit = function(fieldid, ajaxMode, className, fieldName) {
+	var selectInit = function(fieldid, ajaxMode, className, fieldName, apiEndpoint) {
 		var $mySelectElement = getSelectElement(fieldid);
 
 		// Default options
@@ -84,10 +85,15 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 			width: '100%'
 		};
 
+		// Default endpoint
+		if(typeof apiEndpoint === 'undefined' || !apiEndpoint){
+			apiEndpoint = "system/search/relation/";
+		}
+
 		// Set up options if in ajaxMode
 		if(ajaxMode){
 			mySelectOptions['ajax'] = {
-				url: ofw.baseurl+"system/search/relation/",
+				url: ofw.baseurl+apiEndpoint,
 				dataType: 'json',
 				delay: 250,
 				data: function (params) {
@@ -143,7 +149,7 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 		 * Initialize the select.
 		 */
 		select: function(dataset, $el){
-			selectInit(dataset.relationshipFieldId, dataset.relationshipAjaxMode, dataset.relationshipClassName, dataset.relationshipFieldName);
+			selectInit(dataset.relationshipFieldId, dataset.relationshipAjaxMode, dataset.relationshipClassName, dataset.relationshipFieldName, dataset.relationshipApiEndpoint);
 		}
 
 	};
