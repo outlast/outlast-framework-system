@@ -75,6 +75,17 @@
 				$filetest = File::create();
 				$result = $filetest->just_a_test();
 				zajTestAssert::areIdentical('just_a_test', $result);
+
+            // Test db fetching
+                $f = File::create();
+                $f->set('name', 'Test file')->save();
+
+                /** @var File|FileTest $f2 */
+                $f2 = File::fetch($f->id);
+                $f2->just_a_test();
+				zajTestAssert::areIdentical('just_a_test', $result);
+
+
 			// Now dynamically extend OfwTest and see what happens
 				OfwTestExt::extend('OfwTest');
 				$result = OfwTest::only_in_ext_static();
@@ -102,6 +113,7 @@
 				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
 			// Remove all of my tests
 				Category::delete_tests();
+				File::delete_tests();
 			return true;
 		}
 

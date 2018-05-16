@@ -149,7 +149,8 @@
 		// 2. Check if activated
 			if(!is_object($zajlib->mozajik)) $installation_valid = false;
 		// 3. Activate model support and check system file validity (fatal error if not)
-			if (!(include $zajconf['root_folder'].'/system/class/zajmodel.class.php')) exit("<b>Outlast Framework error:</b> missing Outlast Framework system files or incorrect path given! set in site/index.php!");
+			if (!(include $zajconf['root_folder'].'/system/class/zajmodel.class.php') || !(include $zajconf['root_folder'].'/system/class/zajmodelextender.class.php')) exit("<b>Outlast Framework error:</b> missing Outlast Framework system files or incorrect path given! set in site/index.php!");
+			if (!(include $zajconf['root_folder'].'/system/class/zajmodellocalizer.class.php') || !(include $zajconf['root_folder'].'/system/class/zajmodellocalizeritem.class.php')) exit("<b>Outlast Framework error:</b> missing Outlast Framework system files or incorrect path given! set in site/index.php!");
 		// 4. Check database issues (if mysql is enabled) - this does not actually connect but newly installed sites should already run into (2) activation error. Again, fatal errors if missing.
 			if($zajconf['mysql_enabled']){	
 				// include the data and fetcher system class
