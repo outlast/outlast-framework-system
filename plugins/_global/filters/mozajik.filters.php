@@ -472,8 +472,8 @@ EOF;
 	 *
 	 **/
 	public function filter_trim($parameter, &$source){
-		// If parameter is not defined, then the parameter is the current locale
-		if(empty($parameter) && $parameter != 0) $parameter = "' '";
+		// If parameter is not defined, then the parameter is space
+		if(empty($parameter)) $parameter = '" \t\n\r\0\x0B"';
 		// Write to file.
 		$this->zajlib->compile->write('$filter_var=trim($filter_var, '.$parameter.');');
 		return true;
