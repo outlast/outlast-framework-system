@@ -171,7 +171,6 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			_photoFieldUploaderObjects[fieldid].emit("complete", file);
 		},
 
-
 		removeImage: function(fieldid, photoid, file){
 			// Get photo url
 			var $photoElement = getPhotoElement(fieldid, photoid);
@@ -382,6 +381,11 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		 * @return {boolean} Will return true if added, false if not (usually when it already exists).
 		 */
 		add: function(fieldid, photoid, file, preview){
+			// Assuming this photo already exists, just ignore the add
+			if(getPhotoElement(fieldid, photoid).length > 0){
+				return false;
+			}
+
 			// Default for preview
 			if(typeof preview === 'undefined') preview = true;
 
@@ -392,6 +396,7 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 
 			// Create the photo item in ui
 			dropzoneActions.addImage(fieldid, photoid, file, preview);
+			return true;
 		},
 
 		/**

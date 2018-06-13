@@ -380,6 +380,11 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 		 * @return {boolean} Will return true if added, false if not (usually when it already exists).
 		 */
 		add: function(fieldid, fileid, file, preview){
+			// Assuming this file already exists, just ignore the add
+			if(getFileElement(fieldid, fileid).length > 0){
+				return false;
+			}
+
 			// Default for preview
 			if(typeof preview === 'undefined') preview = true;
 
@@ -390,6 +395,7 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 
 			// Create the file item in ui
 			dropzoneActions.addFile(fieldid, fileid, file, preview);
+			return true;
 		},
 
 		/**

@@ -89,8 +89,8 @@ define('system/js/ofw-jquery', [], function() {
 
 		// Set up my data attributes and run activate (it has to be delayed so that init() is finished and I exist)
 		dataAttributes = myOptions.dataAttributes;
-		if(!myOptions.jqueryIsReady) $(document).ready(function(){ setTimeout(activateDataAttributeHandlers, 10); });
-		else setTimeout(activateDataAttributeHandlers, 10);
+		if(!myOptions.jqueryIsReady) $(document).ready(function(){ activateDataAttributeHandlers(); });
+		else activateDataAttributeHandlers();
 		// @todo If we do a proper define() method for OutlastFrameworkSystem then we can probably get rid of the delay
 
 		// Now run ready functions
@@ -534,6 +534,13 @@ define('system/js/ofw-jquery', [], function() {
 
         	// Run now?
         	if(!queueReadyFunctions) runReadyFunctions();
+        },
+
+		/**
+		 * Returns the options.
+		 */
+		getOptions: function(){
+        	return myOptions;
         },
 
 		/**
