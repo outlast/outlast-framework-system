@@ -487,11 +487,11 @@ define('system/js/ofw-jquery', [], function() {
             }
 
             var protocol_regexp = new RegExp("^(http(s)?:)?(\/\/)(www\.)?");
-            var baseurl = ofw.baseurl.replace(/^(http(s)?:)?/g, '');
+            var baseurl = myOptions.baseurl.replace(/^(http(s)?:)?/g, '');
 
             if($el.attr('href').indexOf(baseurl) == -1 && protocol_regexp.test($el.attr('href'))){
                 $el.click(function(){
-                    ofw.track('External link', 'click', $el.attr('href'));
+                    api.track('External link', 'click', $el.attr('href'));
                 });
             }
         })
@@ -917,7 +917,7 @@ define('system/js/ofw-jquery', [], function() {
 			$("<link/>", {
 			   rel: "stylesheet",
 			   type: "text/css",
-			   href: ofw.baseurl+relativeUrl
+			   href: myOptions.baseurl+relativeUrl
 			}).appendTo("head");
 		},
 		loadCssStylesheet: function(relativeUrl){ api.loadCss(relativeUrl) },
