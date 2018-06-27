@@ -95,7 +95,7 @@ class zajlib_db extends zajLibExtension implements Countable, Iterator {
 			// connect to server
             $this->default_connection = @mysqli_connect($server, $user, $pass);
             if($this->default_connection === false){
-                if($fatal_error) return $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the server/user/pass!");
+                if($fatal_error) return $this->zajlib->error("Unable to connect to MySQL server. Disable MySQL or correct the error: ".mysqli_connect_error());
                 else return false;
             }
             $this->current_session->conn = $this->default_connection;

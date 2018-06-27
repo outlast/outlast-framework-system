@@ -43,6 +43,7 @@ define('CACHE_DIR_LEVEL', 4);
  *
  * Properties...
  * @property zajLib $zajlib A pointer to the global object.
+ * @property zajLib $ofw A pointer to the singleton OFW object.
  * @property string $name The name of the object.
  * @property boolean $exists
  * @property stdClass $translation
@@ -319,7 +320,7 @@ abstract class zajModel implements JsonSerializable {
      */
     public function set_mock_database($db){
         // Only allow during testing
-        if($this->zajlib->test->is_running()){
+        if($this->ofw->test->is_running()){
             $this->data = new zajData($this, $db);
         }
     }
@@ -328,13 +329,13 @@ abstract class zajModel implements JsonSerializable {
 	 * Set the value of a field for this object.
 	 * @param string $field_name The name of model field.
 	 * @param mixed $value The new value of the field.
-	 * @return zajModel Returns me to allow chaining.
+	 * @return zajModel|bool Returns me to allow chaining or false if error.
 	 */
 	public function set($field_name, $value){
 		// disable for non-database objects
-			if(!$this::$in_database) return false;
+			if(!$this::$in_database) return $this->ofw->error("Cannot set field when db not active!");
 		// only allow unit_test when tests are running
-			if($field_name == 'unit_test' && !$this->zajlib->test->is_running()) return $this->zajlib->error("Cannot set field unit_test while not running a test!");
+			if($field_name == 'unit_test' && !$this->ofw->test->is_running()) return $this->ofw->error("Cannot set field unit_test while not running a test!");
 		// init the data object if not done already
 			if(!$this->data) $this->data = new zajData($this);
 		// set it in the data object
@@ -373,7 +374,7 @@ abstract class zajModel implements JsonSerializable {
 		// Verify data
         $data = (object) $data;
         if(!is_object($data)){
-            $this->zajlib->warning("Called set_with_data() with invalid data. Must be an object or array.");
+            $this->ofw->warning("Called set_with_data() with invalid data. Must be an object or array.");
             return $this;
         }
 
@@ -406,7 +407,7 @@ abstract class zajModel implements JsonSerializable {
 		// disable for non-database objects
 			if(!$this::$in_database) return false;
 		// if default locale, use set
-			if($locale == $this->zajlib->lang->get_default_locale()) return $this->set($field_name, $value);
+			if($locale == $this->ofw->lang->get_default_locale()) return $this->set($field_name, $value);
 		// init the data object if not done already
 			$tobj = Translation::create_by_properties($this->class_name, $this->id, $field_name, $locale);
 			$tobj->set('value', $value);
@@ -423,7 +424,7 @@ abstract class zajModel implements JsonSerializable {
 	 */
 	public function set_translations(){
         // If only one locale, then return
-        if(count($this->zajlib->lang->get_locales()) <= 1) return $this;
+        if(count($this->ofw->lang->get_locales()) <= 1) return $this;
 
 		// Use _GET or _POST
 		$_POST = array_merge($_GET, $_POST);
@@ -445,7 +446,7 @@ abstract class zajModel implements JsonSerializable {
 	 */
 	public function set_translations_with_data($data, $fields_allowed = [], $fields_ignored = []){
         // If only one locale, then return
-        if(count($this->zajlib->lang->get_locales()) <= 1) return $this;
+        if(count($this->ofw->lang->get_locales()) <= 1) return $this;
 
         // Validate data. Unlike set_with_data this is optional so will not fail if empty
         $data = (object) $data;
@@ -650,17 +651,17 @@ abstract class zajModel implements JsonSerializable {
 		$this->event_child_fired = false;
 		// Add event to stack
 		$stack_size = array_push($this->event_stack, $event);
-		$this->zajlib->event_stack++;
+		$this->ofw->event_stack++;
 		// Check stack size
-		if($stack_size > MAX_EVENT_STACK) $this->zajlib->error("Exceeded maximum event stack size of ".MAX_EVENT_STACK." for object ".$this->class_name.". Possible infinite loop?");
-		if($this->zajlib->event_stack > MAX_GLOBAL_EVENT_STACK) $this->zajlib->error("Exceeded maximum global event stack size of ".MAX_GLOBAL_EVENT_STACK.". Possible infinite loop?");
+		if($stack_size > MAX_EVENT_STACK) $this->ofw->error("Exceeded maximum event stack size of ".MAX_EVENT_STACK." for object ".$this->class_name.". Possible infinite loop?");
+		if($this->ofw->event_stack > MAX_GLOBAL_EVENT_STACK) $this->ofw->error("Exceeded maximum global event stack size of ".MAX_GLOBAL_EVENT_STACK.". Possible infinite loop?");
 		// If no arguments specified
 		if($arguments === false) $arguments = array();
 		// Call event function
 		$return_value = call_user_func_array(array($this, '__'.$event), $arguments);
 		// Remove from stack
 		array_pop($this->event_stack);
-		$this->zajlib->event_stack--;
+		$this->ofw->event_stack--;
 		// Return value
 		return $return_value;
 	}
@@ -775,7 +776,7 @@ abstract class zajModel implements JsonSerializable {
 			$my_extension = $child_class_name::extension();
 		}
 		// Not found anywhere, return error!
-		$this->zajlib->warning("Method $name not found in model '$class_name' or any of it's child models.");
+		$this->ofw->warning("Method $name not found in model '$class_name' or any of it's child models.");
 	}
 
 	/**
@@ -829,6 +830,7 @@ abstract class zajModel implements JsonSerializable {
 		// the zajlib
 		switch($name){
 			case "zajlib": 		return zajLib::me();
+            case "ofw": 		return zajLib::me();
 			case "data":
 				if(!$this::$in_database) return false; 	// disable for non-database objects
 				if(!$this->data) return $this->data = new zajData($this);
@@ -968,7 +970,7 @@ abstract class zajModel implements JsonSerializable {
 		// sanitize id just to be safe
 		if(!zajLib::me()->security->is_valid_id($this->id)) return zajLib::me()->warning("Tried to uncache with invalid id: $this->id");
 		// return the resumed class
-		$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name, $this->id.".cache", false, CACHE_DIR_LEVEL);
+		$filename = $this->ofw->file->get_id_path($this->ofw->basepath."cache/object/".$this->class_name, $this->id.".cache", false, CACHE_DIR_LEVEL);
 		// if remove is successful, call __afterUncache event and return true. false otherwise
 		if(!@unlink($filename)) return false;
 		else{
@@ -989,14 +991,14 @@ abstract class zajModel implements JsonSerializable {
 		// sanitize id just to be safe
 		if(!zajLib::me()->security->is_valid_id($this->id)) return zajLib::me()->warning("Tried to save cache with invalid id: $this->id");
 		// get filename
-		$filename = $this->zajlib->file->get_id_path($this->zajlib->basepath."cache/object/".$this->class_name,$this->id.".cache", true, CACHE_DIR_LEVEL);
+		$filename = $this->ofw->file->get_id_path($this->ofw->basepath."cache/object/".$this->class_name,$this->id.".cache", true, CACHE_DIR_LEVEL);
 
 		// model, data do not need to be saved!
 		$data = $this->data;
 		$model = $this->model;
 		$event_stack = $this->event_stack;
 		$event_child_fired = $this->event_child_fired;
-		unset($this->zajlib, $this->data, $this->model, $this->event_stack, $this->event_child_fired);
+		unset($this->ofw, $this->data, $this->model, $this->event_stack, $this->event_child_fired);
 
 		if($this->fetchdata){
 		    $fetchdata = $this->fetchdata;
@@ -1024,7 +1026,7 @@ abstract class zajModel implements JsonSerializable {
 		$this->event_child_fired = $event_child_fired;
 		if(!empty($translations)) $this->translations = $translations;
 		if(!empty($fetchdata)) $this->fetchdata = $fetchdata;
-		$this->zajlib = zajLib::me();
+		$this->ofw = zajLib::me();
 		// call the callback function
 		$this->fire('afterCache');
 		return $this;
@@ -1291,7 +1293,7 @@ abstract class zajModelExtender {
 		// Add to current event stack
 		zajModelExtender::$event_stack_size++;
 		// Check event stack size
-		if(zajModelExtender::$event_stack_size > MAX_EVENT_STACK) return $this->zajlib->error("Maximum extender event stack size exceeded. You probably have an infinite loop somewhere!");
+		if(zajModelExtender::$event_stack_size > MAX_EVENT_STACK) return $this->ofw->error("Maximum extender event stack size exceeded. You probably have an infinite loop somewhere!");
 		// Check to see if event function exists
 		if(!$arguments) $arguments = array();
 		if(method_exists($this, '__'.$event)) $return_value = call_user_func_array(array($this, '__'.$event), $arguments);

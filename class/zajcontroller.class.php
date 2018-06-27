@@ -18,8 +18,16 @@ abstract class zajController{
 	/**
 	 * A reference to the global zajlib object.
 	 * @var zajLib
+     * @deprecated Use $this->ofw instead!
 	 **/
 	var $zajlib;		// the global zajlib
+
+    /**
+     * A reference to the global zajlib object.
+     * @var zajLib
+     **/
+    var $ofw;		    // the global ofw (alias of zajlib)
+
 	/**
 	 * The name of the current app.
 	 * @var string
@@ -28,11 +36,12 @@ abstract class zajController{
 	
 	/**
 	 * Creates a new controller object.
-	 * @param zajLib $zajlib A reference to the global zajlib object.
+	 * @param zajLib $ofw A reference to the singleton Outlast Framework object.
 	 * @param string $name The name of the app.
 	 **/
-	function __construct(&$zajlib, $name){
-		$this->zajlib = $zajlib;
+	function __construct(&$ofw, $name){
+        $this->ofw = $ofw;
+		$this->zajlib = $this->ofw;
 		$this->name = $name;
 	}
 

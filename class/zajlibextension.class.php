@@ -3,14 +3,22 @@
 /**
  * An abstract class extended by library class files.
  * @package Base
- * @property zajLib $zajlib
  **/
 abstract class zajLibExtension{
+
 	/**
 	 * A reference to the global zajlib object.
+     * @deprecated Use ofw instead!
 	 * @var zajLib
 	 **/
 	protected $zajlib;
+
+    /**
+     * A reference to the singleton OFW object.
+     * @var zajLib
+     **/
+    protected $ofw;
+
 	/**
 	 * A string which stores the name of my system library.
 	 * @var string
@@ -31,7 +39,8 @@ abstract class zajLibExtension{
 		// set my system library
 		$this->system_library = $system_library;
 		// set my parent
-		$this->zajlib =& $zajlib;
+		$this->ofw = $zajlib;
+        $this->zajlib = $this->ofw;
 	}
 
 	/**
@@ -41,7 +50,7 @@ abstract class zajLibExtension{
 	 **/
 	public function __call($method, $args){
 		// throw warning
-		$this->zajlib->warning("The method $method is not available in library {$this->system_library}!");
+		$this->ofw->warning("The method $method is not available in library {$this->system_library}!");
 	}
 }
 
