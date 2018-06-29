@@ -6,24 +6,37 @@
 
 <hr/>
 	{% block testresults %}
-		<span class="badge badge-important">{{test.Errors|count}} tests failed</span><br/><br/>
-		{% foreach test.Errors as Error %}
-			<div class="alert alert-error">
-				{{Error.Message}}
-			</div>
-		{% endforeach %}
+        {% if test.Errors|count > 0 %}
+			<span class="badge badge-important">{{test.Errors|count}} tests failed</span><br/><br/>
+			{% foreach test.Errors as Error %}
+				<div class="alert alert-error">
+					{{Error.message}}
+				</div>
+			{% endforeach %}
+		{% endif %}
 
-        <span class="badge badge-invert" style="cursor: pointer;" onclick="$('.notices').toggleClass('hide');">{{testnotices|count}} notices</span><br/><br/>
-        {% foreach testnotices as notice %}
-        <div class="alert alert-info notices hide">
-            {{notice}}
-        </div>
-        {% endforeach %}
+		{% if test.Warnings|count > 0 %}
+			<span class="badge badge-warning">{{test.Warnings|count}} tests were skipped</span><br/><br/>
+			{% foreach test.Warnings as Result %}
+				<div class="alert alert-warning">
+					{{Result.message}}
+				</div>
+			{% endforeach %}
+		{% endif %}
+
+        {% if testnotices|count > 0 %}
+			<span class="badge badge-invert" style="cursor: pointer;" onclick="$('.notices').toggleClass('hide');">{{testnotices|count}} notices</span><br/><br/>
+			{% foreach testnotices as notice %}
+			<div class="alert alert-info notices hide">
+				{{notice}}
+			</div>
+			{% endforeach %}
+		{% endif %}
 
 		<span class="badge badge-success">{{test.Results|count}} tests succeeded</span><br/><br/>
 		{% foreach test.Results as Result %}
 			<div class="alert alert-success">
-				{{Result.Message}}
+				{{Result.message}}
 			</div>
 		{% endforeach %}
 

@@ -311,6 +311,7 @@ class TextEn
     public $TestPassed = 'Test Passed';
     public $TestFailed = 'Test Failed';
     public $Passed = 'Passed';
+    public $Skipped = 'Skipped';
     public $Failed = 'Failed';
     public $ExpectationFailed = 'Expectation failed';
     public $Expected = 'Expected';
@@ -333,6 +334,7 @@ class EnhanceTestFramework
     private $Text;
     private $Tests = array();
     private $Results = array();
+    private $Warnings = array();
     private $Errors = array();
     private $Duration;
     private $MethodCalls = array();
@@ -456,18 +458,28 @@ class EnhanceTestFramework
         $start = microtime(true);
         foreach($this->Tests as /** @var Test $test */ $test) {
             $result = $test->run();
-            if ($result) {
-                $message = $test->getTestName() . ' - ' . $this->Text->Passed;
-				$this->Duration = microtime(true) - $start;
-				$message .= "<span class='label label-success pull-right'>".number_format($this->Duration, 2)." seconds</span>";
-                $this->Results[] = new TestMessage($message, $test, true);
-            } else {
-                $message = '['. str_replace('{0}', $test->getLine(), str_replace('{1}', $test->getFile(), $this->Text->LineFile)) . '] ' .
-                    $test->getTestName() . ' - ' .
-                    $this->Text->Failed . ' - ' . $test->getMessage();
-				$this->Duration = microtime(true) - $start;
-				$message .= "<span class='label label-important pull-right'>".number_format($this->Duration, 2)." seconds</span>";
-                $this->Errors[] = new TestMessage($message, $test, false);
+            switch($result){
+                case Test::RESULT_SUCCESS:
+                    $message = $test->getTestName() . ' - ' . $this->Text->Passed;
+                    $this->Duration = microtime(true) - $start;
+                    $message .= "<span class='label label-success pull-right'>".number_format($this->Duration, 2)." seconds</span>";
+                    $this->Results[] = new TestMessage($message, $test, Test::RESULT_SUCCESS);
+                    break;
+                case Test::RESULT_SKIPPED:
+                    $message = $test->getTestName() . ' - ' . $this->Text->Skipped;
+                    $this->Duration = microtime(true) - $start;
+                    $message .= "<span class='label label-warning pull-right'>".number_format($this->Duration, 2)." seconds</span>";
+                    $this->Warnings[] = new TestMessage($message, $test, Test::RESULT_SKIPPED);
+                    break;
+                case Test::RESULT_FAILED:
+                default:
+                    $message = '['. str_replace('{0}', $test->getLine(), str_replace('{1}', $test->getFile(), $this->Text->LineFile)) . '] ' .
+                        $test->getTestName() . ' - ' .
+                        $this->Text->Failed . ' - ' . $test->getMessage();
+                    $this->Duration = microtime(true) - $start;
+                    $message .= "<span class='label label-important pull-right'>".number_format($this->Duration, 2)." seconds</span>";
+                    $this->Errors[] = new TestMessage($message, $test, Test::RESULT_FAILED);
+                    break;
             }
         }
     }
@@ -535,15 +547,15 @@ class FileSystem
 
 class TestMessage
 {
-    public $Message;
-    public $Test;
-    public $IsPass;
+    public $message;
+    public $test;
+    public $result;
 
-    public function __construct($message, $test, $isPass)
+    public function __construct($message, $test, $result)
     {
-        $this->Message = $message;
-        $this->Test = $test;
-        $this->IsPass = $isPass;
+        $this->message = $message;
+        $this->test = $test;
+        $this->result = $result;
     }
 }
 
@@ -557,6 +569,11 @@ class Test
     private $Message;
     private $Line;
     private $File;
+
+    const RESULT_SUCCESS = 0;
+    const RESULT_FAILED = 1;
+    const RESULT_SKIPPED = 2;
+
 
     public function __construct($class, $method)
     {
@@ -600,24 +617,37 @@ class Test
 
         /** added by Outlast Framework **/
         $testClass->zajlib = \zajLib::me();
+        $setUpMethodResult = false;
 
         try {
             if (is_callable($this->SetUpMethod)) {
-                $testClass->setUp();
+                $setUpMethodResult = $testClass->setUp();
+            }
+            else{
+                // If no set up method, then we assume success
+                $setUpMethodResult = true;
             }
         } catch (\Exception $e) { }
 
-        try {
-            /** added by Outlast Framework */
-            $testClass->zajlib->error->surpress_errors_during_test(false);
-            // Now run test
-            $testClass->{$this->TestName}();
-            $result = true;
-        } catch (TestException $e) {
-            $this->Message = $e->getMessage();
-            $this->Line = $e->getLine();
-            $this->File = pathinfo($e->getFile(), PATHINFO_BASENAME);
-            $result = false;
+        /** added by Outlast Framework */
+        // Only run these tests if result is not explicitly false
+        if($setUpMethodResult !== false){
+            try {
+                /** added by Outlast Framework */
+                $testClass->zajlib->error->surpress_errors_during_test(false);
+                // Now run test
+                $testClass->{$this->TestName}();
+                $result = self::RESULT_SUCCESS;
+            } catch (TestException $e) {
+                $this->Message = $e->getMessage();
+                $this->Line = $e->getLine();
+                $this->File = pathinfo($e->getFile(), PATHINFO_BASENAME);
+                $result = self::RESULT_FAILED;
+            }
+        }
+        else{
+            // Skipped result
+            $result = self::RESULT_SKIPPED;
         }
 
         try {
