@@ -902,41 +902,31 @@ abstract class zajModel implements JsonSerializable {
 	public static function get_cache($id){
 		// get current class
 		$class_name = get_called_class();
-		$zajlib = zajLib::me();
 		// sanitize id just to be safe
-		if(!$zajlib->security->is_valid_id($id)) return false;
+		if(!zajLib::me()->security->is_valid_id($id)) return false;
 
 		// return the resumed class
 		$filename = zajLib::me()->file->get_id_path(zajLib::me()->basepath."cache/object/".$class_name, $id.".cache", false, CACHE_DIR_LEVEL);
+
 		// try opening the file and unserializing
 		$item_cached = false;
-		if(!file_exists($filename)){
+		if(file_exists($filename)) {
+            $new_object = unserialize(file_get_contents($filename));
+            if (is_object($new_object) && zajModel::is_instance_of_me($new_object)) {
+                $item_cached = true;
+            }
+            else{
+                zajLib::me()->warning("Failed to unserialize $class_name ($id) object from file '$filename'!");
+            }
+        }
+
+        // If failed to uncache
+        if(!$item_cached || empty($new_object)){
 			// create object
 			$new_object = new $class_name($id, $class_name);
 			// get my name (this will grab the db)
 			if($new_object::$in_database) $new_object->__get('name');
 		}
-		else{
-			$new_object = unserialize(file_get_contents($filename));
-			if(is_object($new_object)){
-				$new_object->zajlib = zajLib::me();
-				$item_cached = true;
-			}
-		}
-		if(!method_exists($new_object, 'fire') || $new_object->class_name != $class_name){
-			// @todo Remove this logging once the problem has been solved!
-			//zajLib::me()->warning("Class mismatch for cache ($item_cached): ".$class_name." / ".$new_object->class_name." / $id / ".$new_object->id);
-			copy($filename, zajLib::me()->basepath.'cache/_mismatched/'.$class_name.'-'.$id.'.cache');
-			file_put_contents(zajLib::me()->basepath.'cache/_mismatched/printr_'.$class_name.'-'.$id.'.cache', print_r($new_object, true));
-
-			// Refetch from db
-			// create object
-			$new_object = new $class_name($id, $class_name);
-			// get my name (this will grab the db)
-			if($new_object::$in_database) $new_object->__get('name');
-			$item_cached = false;
-		}
-
 
 		// this is resumed from the db, so load the data
 		if(!$new_object->exists && !$item_cached){
