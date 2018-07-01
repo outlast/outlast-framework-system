@@ -25,6 +25,7 @@ class zajfield_boolean extends zajField {
 			if(!is_array($options)) $options = (object) array('default'=>$options);
 			else{
 				if($options[0]) $options = (object) array('default'=>true);
+                elseif($options['default']) $options = (object) array('default'=>true);
 			}
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
@@ -36,7 +37,9 @@ class zajfield_boolean extends zajField {
 	 **/
 	public function database(){
 		// set my default
-			if($this->options->default) $default = 'yes';
+			if($this->options->default){
+			    $default = 'yes';
+            }
 			else $default = '';
 		// define each field
 			$fields[$this->name] = array(
