@@ -87,13 +87,15 @@ class zajData {
 		 * Reload the entire object data from the database.
 		 **/
 		public function reload(){
+		    // reset everything
+		    $this->reset();
 			// load from db
-				$this->data = $this->db->select("SELECT * FROM `{$this->zajobject->table_name}` WHERE `{$this->zajobject->id_column}`='".addslashes($this->zajobject->id)."' LIMIT 1", true);
+            $this->data = $this->db->select("SELECT * FROM `{$this->zajobject->table_name}` WHERE `{$this->zajobject->id_column}`='".addslashes($this->zajobject->id)."' LIMIT 1", true);
 			// set exists to true (if any rows returned)
-				$this->exists = (boolean) $this->db->get_num_rows();
-				if(!$this->exists) $this->data = [];
+            $this->exists = (boolean) $this->db->get_num_rows();
+            if(!$this->exists) $this->data = [];
 			// set to loaded from db
-				$this->fetched = true;
+            $this->fetched = true;
 			return $this->exists;
 		}
 
@@ -237,7 +239,7 @@ class zajData {
 			// It has been loaded!
             $this->loaded[$name] = true;
 
-			// Turn off autosave
+	        // Turn off autosave
             $autosavemode = $this->__autosave;
 			$this->__autosave = false;
 			// if modified has been requested...
