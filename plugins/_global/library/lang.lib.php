@@ -96,12 +96,12 @@ class zajlib_lang extends zajlib_config {
         }
         else{
             // Warn if non-existent requested
-            if(!empty($new_locale)) $this->zajlib->warning("Requested locale $new_locale not found, using default locale (".$this->default_locale.") instead.");
+            if(!empty($new_locale)) $this->ofw->warning("Requested locale $new_locale not found, using default locale (".$this->default_locale.") instead.");
             $this->current_locale = $this->default_locale;
         }
 
         // Now if Wordpress is enabled, switch to locale
-        if($this->zajlib->plugin->is_enabled('wordpress') && !empty($GLOBALS['sitepress']) && !is_admin()){
+        if($this->ofw->plugin->is_enabled('wordpress') && !empty($GLOBALS['sitepress']) && !is_admin()){
             $GLOBALS['sitepress']->switch_lang(substr($this->current_locale, 0, 2), true);
         }
 
@@ -163,7 +163,7 @@ class zajlib_lang extends zajlib_config {
      * @get disable_lang_cookie If set to a true value, a cookie will not be saved for the current language.
      */
     public function auto(){
-        $cookie_value = $this->zajlib->cookie->get('ofw_locale');
+        $cookie_value = $this->ofw->cookie->get('ofw_locale');
         // Set by query string, subdomain, top level domain, or by cookie
             // If there is a query string, set it to that either by code or by
             if(!empty($_GET['locale'])){
@@ -179,9 +179,9 @@ class zajlib_lang extends zajlib_config {
             // If an Apache variable is set, use that
             elseif(!empty($_SERVER['OFW_LOCALE'])) $this->set($_SERVER['OFW_LOCALE']);
             // If the subdomain is two letters, it will consider it a language code
-            elseif(strlen($this->zajlib->subdomain) == 2) $this->set_by_code($this->zajlib->subdomain);
+            elseif(strlen($this->ofw->subdomain) == 2) $this->set_by_code($this->ofw->subdomain);
             // If the tld is two letters, it will consider it a language code
-            elseif(strlen($this->zajlib->tld) == 2) $this->set_by_code($this->zajlib->tld);
+            elseif(strlen($this->ofw->tld) == 2) $this->set_by_code($this->ofw->tld);
             // Finally, just set to default
             else $this->set();
 
@@ -190,7 +190,7 @@ class zajlib_lang extends zajlib_config {
             $current = $this->get();
             // Set a cookie if not the same as current
             if(empty($cookie_value) || $current != $cookie_value) {
-                if(empty($_GET['disable_locale_cookie']) && $this->zajlib->output_started === false) $this->zajlib->cookie->set('ofw_locale', $current);
+                if(empty($_GET['disable_locale_cookie']) && $this->ofw->output_started === false) $this->ofw->cookie->set('ofw_locale', $current);
             }
         return $current;
     }
@@ -232,7 +232,7 @@ class zajlib_lang extends zajlib_config {
      * @param string|boolean The current locale variation. Can be used for formal vs informal.
      */
     public function set_variation($variation = null){
-        if($variation == null) $variation = $this->zajlib->zajconf['locale_variation'];
+        if($variation == null) $variation = $this->ofw->zajconf['locale_variation'];
         $this->current_variation = $variation;
     }
 
@@ -266,8 +266,8 @@ class zajlib_lang extends zajlib_config {
      * Reload all the available locales and default locale settings.
      */
     public function reload_locale_settings(){
-        $this->default_locale = trim($this->zajlib->zajconf['locale_default']);
-        $this->available_locales = array_map('trim', explode(',', $this->zajlib->zajconf['locale_available']));
+        $this->default_locale = trim($this->ofw->zajconf['locale_default']);
+        $this->available_locales = array_map('trim', explode(',', $this->ofw->zajconf['locale_available']));
     }
 
 	/**
@@ -288,11 +288,11 @@ class zajlib_lang extends zajlib_config {
 				$base_source_path = substr($source_path, 0, -5);
 			// Seach for a local source_path
 				// Search first for current locale
-					if(file_exists($this->zajlib->basepath.'app/view/'.$base_source_path.'.'.$this->current_locale.'.html')) return $this->zajlib->template->show($base_source_path.'.'.$this->current_locale.'.html', $force_recompile, $return_contents, $custom_compile_destination);
+					if(file_exists($this->ofw->basepath.'app/view/'.$base_source_path.'.'.$this->current_locale.'.html')) return $this->ofw->template->show($base_source_path.'.'.$this->current_locale.'.html', $force_recompile, $return_contents, $custom_compile_destination);
 				// Next for default locale
-					if(file_exists($this->zajlib->basepath.'app/view/'.$base_source_path.'.'.$this->default_locale.'.html')) return $this->zajlib->template->show($base_source_path.'.'.$this->default_locale.'.html', $force_recompile, $return_contents, $custom_compile_destination);
+					if(file_exists($this->ofw->basepath.'app/view/'.$base_source_path.'.'.$this->default_locale.'.html')) return $this->ofw->template->show($base_source_path.'.'.$this->default_locale.'.html', $force_recompile, $return_contents, $custom_compile_destination);
 				// All failed, so finally, just include me
-					return $this->zajlib->template->show($source_path, $force_recompile, $return_contents, $custom_compile_destination); 
+					return $this->ofw->template->show($source_path, $force_recompile, $return_contents, $custom_compile_destination);
 		}
 		
 		/**
@@ -309,11 +309,11 @@ class zajlib_lang extends zajlib_config {
 				$base_source_path = substr($source_path, 0, -4);
 			// Seach for a local source_path
 				// Search first for current locale
-					if(file_exists($this->zajlib->basepath.'app/view/'.$base_source_path.'.'.$this->current_locale.'.html')) return $this->zajlib->template->block($base_source_path.'.'.$this->current_locale.'.html', $block_name, $force_recompile, $return_contents);
+					if(file_exists($this->ofw->basepath.'app/view/'.$base_source_path.'.'.$this->current_locale.'.html')) return $this->ofw->template->block($base_source_path.'.'.$this->current_locale.'.html', $block_name, $force_recompile, $return_contents);
 				// Next for default locale
-					if(file_exists($this->zajlib->basepath.'app/view/'.$base_source_path.'.'.$this->default_locale.'.html')) return $this->zajlib->template->block($base_source_path.'.'.$this->default_locale.'.html', $block_name, $force_recompile, $return_contents);
+					if(file_exists($this->ofw->basepath.'app/view/'.$base_source_path.'.'.$this->default_locale.'.html')) return $this->ofw->template->block($base_source_path.'.'.$this->default_locale.'.html', $block_name, $force_recompile, $return_contents);
 				// All failed, so finally, just include me
-					return $this->zajlib->template->block($source_path, $block_name, $force_recompile, $return_contents); 
+					return $this->ofw->template->block($source_path, $block_name, $force_recompile, $return_contents);
 		}
 
 		/**
@@ -341,9 +341,9 @@ class zajlib_lang extends zajlib_config {
 					// Now if load failed, set load to the default locale
 						if(!$result && $load_default_locale_on_error){
 							// throw a warning (if not testing)
-							if(!$this->zajlib->test->is_running()){
-								if($section === false) $this->zajlib->warning("The language file $name_OR_source_path was not found, trying default locale.");
-								else $this->zajlib->warning("The section $section in language file $name_OR_source_path was not found, trying default locale.");
+							if(!$this->ofw->test->is_running()){
+								if($section === false) $this->ofw->warning("The language file $name_OR_source_path was not found, trying default locale.");
+								else $this->ofw->warning("The section $section in language file $name_OR_source_path was not found, trying default locale.");
 							}
 							$name_OR_source_path = $original_source_path.'.'.$this->get_default_locale().'.lang.ini';
 						}
@@ -360,7 +360,7 @@ class zajlib_lang extends zajlib_config {
 		 * @return bool Always returns true.
 		 */
 		public function set_variables($variables, $section){
-			return $this->zajlib->config->set_variables($variables, $section);
+			return $this->ofw->config->set_variables($variables, $section);
 		}
 
 		/**
@@ -368,7 +368,7 @@ class zajlib_lang extends zajlib_config {
 		 * @return bool Always returns true.
 		 */
 		public function reset_variables(){
-			return $this->zajlib->config->reset_variables();
+			return $this->ofw->config->reset_variables();
 		}
 
 	/**
