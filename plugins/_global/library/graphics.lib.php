@@ -35,7 +35,7 @@ class zajlib_graphics extends zajLibExtension {
 	public function resize($oldpath, $newpath, $maxwidth = 0, $maxheight = 0, $jpeg_quality = 85, $delete_original = false, $force_exif_imagetype = 0){
 		// get the new file type
 			$newpathdata = pathinfo($newpath);
-			$newpathdata['extension'] = mb_strtolower($newpathdata[extension]);
+			$newpathdata['extension'] = mb_strtolower($newpathdata['extension']);
 			
 		// create the folders needed
 			@mkdir($newpathdata['dirname'], 0777, true);
@@ -81,8 +81,8 @@ class zajlib_graphics extends zajLibExtension {
 			 }
 		
 	   // Done with resize. Save as an image.	
-			if($force_exif_imagetype == IMAGETYPE_GIF || $newpathdata[extension] == "gif") ImageGif($im, $newpath);
-			elseif($force_exif_imagetype == IMAGETYPE_PNG || $newpathdata[extension] == "png") ImagePng($im, $newpath);
+			if($force_exif_imagetype == IMAGETYPE_GIF || $newpathdata['extension'] == "gif") ImageGif($im, $newpath);
+			elseif($force_exif_imagetype == IMAGETYPE_PNG || $newpathdata['extension'] == "png") ImagePng($im, $newpath);
 			else ImageJpeg($im, $newpath, $jpeg_quality);
 	
 	   // Clean up and return true
@@ -109,7 +109,7 @@ class zajlib_graphics extends zajLibExtension {
 	public function crop($oldpath, $newpath, $x, $y, $w, $h, $jpeg_quality = 85, $delete_original = false){
 		// get the new file type
 			$newpathdata = pathinfo($newpath);
-			$newpathdata['extension'] = mb_strtolower($newpathdata[extension]);
+			$newpathdata['extension'] = mb_strtolower($newpathdata['extension']);
 		// create the folders needed
 			@mkdir($newpathdata['dirname'], 0777, true);
 		// prepare image
@@ -140,11 +140,11 @@ class zajlib_graphics extends zajLibExtension {
 	/**
 	 * Take the old path and create an image object from it.
 	 * @param string $oldpath The path to the original file. Path is a full path (for backwards compatibility).
-	 * @return resource Return the image resource.
+	 * @return resource|boolean Return the image resource or false if failed.
 	 **/
 	private function prepare_image($oldpath){	   
 		// Check for GD library
-		if(!function_exists("imagecreatefromjpeg")) return $this->zajlib->error("PHP GD library not installed! Please contact your system administrator.");
+		if(!function_exists("imagecreatefromjpeg")) return $this->ofw->error("PHP GD library not installed! Please contact your system administrator.");
 
 		// Check for file type
 		$imagedata = getimagesize($oldpath);
