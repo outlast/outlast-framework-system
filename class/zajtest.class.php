@@ -616,7 +616,8 @@ class Test
         $testClass = new $this->ClassName();
 
         /** added by Outlast Framework **/
-        $testClass->zajlib = \zajLib::me();
+        $testClass->ofw = \zajLib::me();
+        $testClass->zajlib = $testClass->ofw;
         $setUpMethodResult = false;
 
         try {
@@ -634,7 +635,7 @@ class Test
         if($setUpMethodResult !== false){
             try {
                 /** added by Outlast Framework */
-                $testClass->zajlib->error->surpress_errors_during_test(false);
+                $testClass->ofw->error->surpress_errors_during_test(false);
                 // Now run test
                 $testClass->{$this->TestName}();
                 $result = self::RESULT_SUCCESS;

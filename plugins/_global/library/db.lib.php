@@ -820,7 +820,7 @@ class zajlib_db_session implements Countable, Iterator {
 	 * Magic method to reroute methods to the {@link zajlib_db} class
 	 **/
 	public function __call($name, $arguments){
-		return $this->zajlib->db->__call_session($name, $arguments, $this->id);
+		return zajLib::me()->db->__call_session($name, $arguments, $this->id);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -831,36 +831,36 @@ class zajlib_db_session implements Countable, Iterator {
 		 * Count method returns the total number of rows returned by the last query. Implements Countable.
 		 * @return integer The total number of rows from last query.
 		 **/
-		public function count(){ return $this->zajlib->db->__call_session('count', array(), $this->id); }
+		public function count(){ return zajLib::me()->db->__call_session('count', array(), $this->id); }
 
 		/**
 		 * Returns the current object in the iteration. Implements Iterator.
 		 * @return object Returns the selected row as an object.
 		 **/
-		public function current(){ return $this->zajlib->db->__call_session('current', array(), $this->id); }
+		public function current(){ return zajLib::me()->db->__call_session('current', array(), $this->id); }
 
 		/**
 		 * Returns the current key in the iteration.
 		 * @return integer Returns the row pointer of the current row.
 		 **/
-		public function key(){ return $this->zajlib->db->__call_session('key', array(), $this->id); }
+		public function key(){ return zajLib::me()->db->__call_session('key', array(), $this->id); }
 
 		/**
 		 * Returns the next object in the iteration.
 		 * @return object Returns the selected row as an object.
 		 **/
-		public function next(){ return $this->zajlib->db->__call_session('next', array(), $this->id); }
+		public function next(){ return zajLib::me()->db->__call_session('next', array(), $this->id); }
 
 		/**
 		 * Rewinds the iterator.
 		 * @return boolean Always returns true
 		 **/
-		public function rewind(){ return $this->zajlib->db->__call_session('rewind', array(), $this->id); }
+		public function rewind(){ return zajLib::me()->db->__call_session('rewind', array(), $this->id); }
 
 		/**
 		 * Returns true if the current object of the iterator is a valid object.
 		 * @return boolean Returns true or false depending on whether the currently select row is valid.
 		 **/
-		public function valid(){ return $this->zajlib->db->__call_session('valid', array(), $this->id); }
+		public function valid(){ return zajLib::me()->db->__call_session('valid', array(), $this->id); }
 
 }

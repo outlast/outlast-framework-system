@@ -15,13 +15,13 @@
 		 **/
 		function __load($request, $optional_params = []){
 			// is update disabled?
-				if(!$this->ofw->zajconf['update_enabled']) return exit("Update disabled.");
+				if(!$this->ofw->ofwconf['update_enabled']) return exit("Update disabled.");
 
 			// check for recommended updates
-				if(defined('MOZAJIK_RECOMMENDED_HTACCESS_VERSION') && MOZAJIK_RECOMMENDED_HTACCESS_VERSION > $this->ofw->htver) $this->ofw->variable->htver_upgrade = MOZAJIK_RECOMMENDED_HTACCESS_VERSION;
-				if(defined('MOZAJIK_RECOMMENDED_CONFIG_VERSION') && MOZAJIK_RECOMMENDED_CONFIG_VERSION > $this->ofw->zajconf['config_file_version']) $this->ofw->variable->conf_upgrade = MOZAJIK_RECOMMENDED_CONFIG_VERSION;
+				if(defined('OFW_RECOMMENDED_HTACCESS_VERSION') && OFW_RECOMMENDED_HTACCESS_VERSION > $this->ofw->htver) $this->ofw->variable->htver_upgrade = OFW_RECOMMENDED_HTACCESS_VERSION;
+				if(defined('OFW_RECOMMENDED_CONFIG_VERSION') && OFW_RECOMMENDED_CONFIG_VERSION > $this->ofw->ofwconf['config_file_version']) $this->ofw->variable->conf_upgrade = OFW_RECOMMENDED_CONFIG_VERSION;
 			// check for other stuff
-				$this->ofw->variable->mysql_setting_enabled = $this->ofw->zajconf['mysql_enabled'];
+				$this->ofw->variable->mysql_setting_enabled = $this->ofw->ofwconf['mysql_enabled'];
 
 			// add update user query string
 				if(!empty($_GET['update_user'])){
@@ -34,20 +34,20 @@
 				if(!$this->ofw->debug_mode){
 					$denied_message = "ACCESS DENIED. If regular http pw auth is not working you can use the update_user/update_password query string as well.";
 					// is my password defined?
-						if(!$this->ofw->zajconf['update_user'] || !$this->ofw->zajconf['update_password']) return $this->install();
+						if(!$this->ofw->ofwconf['update_user'] || !$this->ofw->ofwconf['update_password']) return $this->install();
 					// realm
-						if(!empty($this->ofw->zajconf['update_realm'])) $realm = $this->ofw->zajconf['update_realm'];
+						if(!empty($this->ofw->ofwconf['update_realm'])) $realm = $this->ofw->ofwconf['update_realm'];
 						else $realm = "Outlast Framework Update";
 					// all is good, so authenticate. you can authenticate with http pass or via get request
 						if(!empty($_REQUEST['update_user'])){
 							// Verify!
-								if($_REQUEST['update_user'] != $this->ofw->zajconf['update_user'] || $_REQUEST['update_password'] != $this->ofw->zajconf['update_password']){
+								if($_REQUEST['update_user'] != $this->ofw->ofwconf['update_user'] || $_REQUEST['update_password'] != $this->ofw->ofwconf['update_password']){
 									header('HTTP/1.0 401 Unauthorized');
 									return exit($denied_message);
 								}
 								else return true;
 						}
-						else return $this->ofw->security->protect($this->ofw->zajconf['update_user'], $this->ofw->zajconf['update_password'], $realm, $denied_message);
+						else return $this->ofw->security->protect($this->ofw->ofwconf['update_user'], $this->ofw->ofwconf['update_password'], $realm, $denied_message);
 				}
 			return true;
 		}
@@ -72,10 +72,10 @@
 			// Get test results
 				$this->ofw->variable->testresults = $this->ofw->template->block("update/update-test.html", "testresults", false, false, true);
 
-				$this->ofw->variable->db_enabled = $this->ofw->zajconf['mysql_enabled'];
+				$this->ofw->variable->db_enabled = $this->ofw->ofwconf['mysql_enabled'];
 
 			// Run dry run and throw 500 error if changes needed
-			if ($this->ofw->zajconf['mysql_enabled']) {
+			if ($this->ofw->ofwconf['mysql_enabled']) {
 				$this->ofw->variable->dbresults = (object)$this->ofw->model->update(true);
 				if ($this->ofw->variable->dbresults->num_of_changes > 0) header('HTTP/1.1 500 Internal Server Error');
 			}
@@ -241,7 +241,7 @@
 				// 1. Calls __install() method on each plugin
 				// 2. Checks return value: if it is ZAJ_INSTALL_DONTCHECK, then the installation check is not continued (USE ONLY WHEN OTHER INSTALL PROCEDURES NEEDED. Ex: Wordpress).
 				// 3. Checks return value: if it is a string, then it is an error and it is displayed.
-				foreach(array_reverse($this->ofw->zajconf['plugin_apps']) as $plugin){
+				foreach(array_reverse($this->ofw->ofwconf['plugin_apps']) as $plugin){
 					// first load up the plugin without __plugin execution
 						$this->ofw->plugin->load($plugin, false);
 					// only do this if either default controller exists in the plugin folder
@@ -260,22 +260,22 @@
 					if(!is_writable($this->ofw->basepath."cache/") || !is_writable($this->ofw->basepath."data/")){ $status_write  = $todo; $ready_to_dbupdate = false; $ready_to_activate = false; }
 					else $status_write  = $done;
 				// 2. Check database permissions
-					if(!$this->ofw->zajconf['mysql_enabled']){ $status_db  = $na; $ready_to_dbupdate = false; }
+					if(!$this->ofw->ofwconf['mysql_enabled']){ $status_db  = $na; $ready_to_dbupdate = false; }
 					else{
-						if($this->ofw->db->connect($this->ofw->zajconf['mysql_server'], $this->ofw->zajconf['mysql_user'], $this->ofw->zajconf['mysql_password'], $this->ofw->zajconf['mysql_db'], false)) $status_db = $done;
+						if($this->ofw->db->connect($this->ofw->ofwconf['mysql_server'], $this->ofw->ofwconf['mysql_user'], $this->ofw->ofwconf['mysql_password'], $this->ofw->ofwconf['mysql_db'], false)) $status_db = $done;
 						else{ $status_db  = $todo; $ready_to_dbupdate = false; $ready_to_activate = false; }
 					}
 				// 3. Check user/pass for update
-					if(empty($this->ofw->zajconf['update_user']) || empty($this->ofw->zajconf['update_password'])){
+					if(empty($this->ofw->ofwconf['update_user']) || empty($this->ofw->ofwconf['update_password'])){
 						if($this->ofw->debug_mode) $status_updatepass = $optional;
 						else{ $status_updatepass = $todo; $ready_to_activate = false; }
 					}
 					else $status_updatepass = $done;
 				// 4. Check database update (photo table should always exist)
-					if(!$this->ofw->zajconf['mysql_enabled']) $status_dbupdate  = $na;
+					if(!$this->ofw->ofwconf['mysql_enabled']) $status_dbupdate  = $na;
 					elseif($status_db == $todo){ $status_dbupdate  = $todo; $ready_to_activate = false; }
 					else{				
-						$result = $this->ofw->db->query("SELECT count(*) as c FROM information_schema.tables WHERE table_schema = '".addslashes($this->ofw->zajconf['mysql_db'])."' AND table_name = 'photo'")->next();
+						$result = $this->ofw->db->query("SELECT count(*) as c FROM information_schema.tables WHERE table_schema = '".addslashes($this->ofw->ofwconf['mysql_db'])."' AND table_name = 'photo'")->next();
 						if($result->c <= 0){ $status_dbupdate = $todo; $ready_to_activate = false; }
 						else $status_dbupdate = $done;
 					}

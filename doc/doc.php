@@ -169,7 +169,7 @@ class zajlibConfigVariable extends stdClass{}
 
 /**
  * Class zajTestInstance
- * @property zajLib $zajlib
+ * @property zajLib $ofw
  */
 class zajTestInstance{}
 

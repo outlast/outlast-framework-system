@@ -31,7 +31,7 @@ define('MAX_GLOBAL_EVENT_STACK', 50);
  * @property zajlib_memcache $memcache
  * @property zajlib_mobile $mobile
  * @property zajlib_model $model
- * @property zajlib_plugin $plugin
+ * @property ofw_plugin $plugin
  * @property zajlib_request $request
  * @property zajlib_sandbox $sandbox
  * @property zajlib_security $security
@@ -149,7 +149,12 @@ class zajLib {
 			 * An array which stores the configuration values set in site/index.php.
 			 * @var array
 			 **/
-			public $zajconf;
+			public $ofwconf;
+			
+            /**
+             * @deprecated
+             */
+			private $zajconf;
 			 
 			
 		// my settings
@@ -216,15 +221,15 @@ class zajLib {
 
 	/**
 	 * Creates a the zajlib object.
-	 * @param string $zaj_root_folder The root from which basepath and others are calculated.
-	 * @param array|string $zajconf The configuration array. This can be blank for backwards-compatible reasons.
+	 * @param string $root_folder The root from which basepath and others are calculated.
+	 * @param array|string $ofwconf The configuration array. This can be blank for backwards-compatible reasons.
 	 */
-	public function __construct($zaj_root_folder, $zajconf = ''){
+	public function __construct($root_folder, $ofwconf = ''){
 		// autodetect my path
-			if($zaj_root_folder) $this->basepath = realpath($zaj_root_folder)."/"; 
+			if($root_folder) $this->basepath = realpath($root_folder)."/";
 			else $this->basepath = realpath(dirname(__FILE__)."/../../")."/";
 		// store configuration
-			$this->zajconf = $zajconf;
+			$this->ofwconf = $ofwconf;
 		// parse query string
 			if(isset($_GET['zajapp'])){
 			// autodetect my app
@@ -244,8 +249,8 @@ class zajLib {
 			}
 		// default app & mode
 			if(empty($this->app)){
-				$this->app = $this->zajconf['default_app'];
-				$this->mode = $this->zajconf['default_mode'];
+				$this->app = $this->ofwconf['default_app'];
+				$this->mode = $this->ofwconf['default_mode'];
 			}
 		// autodetect https protocol, if set
 			if(
@@ -453,7 +458,7 @@ class zajLib {
 	/**
 	 * Custom error handler to override the PHP defaults.
 	 **/
-	public function error_handler($errno, $errstr, $errfile, $errline){
+	public function error_handler($errno, $errstr, $errfile, $errline, $errcontext){
 		// get current error_reporting value
 			$errrep = error_reporting();
 		
@@ -565,6 +570,8 @@ class zajLib {
 	public function __get($name){
 	    // load smart properties or libraries
 	    switch($name){
+            case 'zajconf':
+                return $this->ofwconf;
             case 'requestpath':
                 if(is_null($this->requestpath)) $this->requestpath = $this->url->get_requestpath($this->fullurl);
                 return $this->requestpath;
@@ -586,10 +593,11 @@ class zajLib {
 
 	/**
 	 * Get the global object and return it statically.
+     * @todo Fix so that this is a static, not global.
 	 * @return zajLib Return me.
 	 **/
 	public static function me(){
-		return $GLOBALS['zajlib'];
+		return $GLOBALS['ofw'];
 	}
 
 	/**
@@ -599,7 +607,7 @@ class zajLib {
         // If autoloading enabled or not (required to work with legacy codes such as Wordpress)
         if(!zajLib::me()->model_autoloading) return;
         // check if models enabled
-        if(!zajLib::me()->zajconf['mysql_enabled']) zajLib::me()->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
+        if(!zajLib::me()->ofwconf['mysql_enabled']) zajLib::me()->error("Mysql support not enabled for this installation, so model $class_name could not be loaded!");
         // load the model
         return zajLib::me()->load->model($class_name);
     }
