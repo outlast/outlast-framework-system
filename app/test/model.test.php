@@ -22,6 +22,7 @@
             $this->category->set('name', 'mock!');
             $this->category->set('description', 'mymockdesc');
             $this->category->save();
+
             return true;
         }
 
