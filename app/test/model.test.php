@@ -22,27 +22,25 @@
             $this->category->set('name', 'mock!');
             $this->category->set('description', 'mymockdesc');
             $this->category->save();
+            return true;
         }
 
         /**
          * Make sure data is properly set/get in models.
          */
         public function system_verify_data_setter_getter() {
-/**
             // Create with email
-            $otm = OfwTestModel::create();
-            //$otm->set('email', 'a@b.com');
-            ofwTestAssert::areIdentical('a@b.com', $otm->data->get_modified('email'));
+            $c2 = Category::create();
+            $c2->set('name', 'let us try!');
 
-            // Access data
-            //$otm->data->reset();
-            exit("sdf");
-            ofwTestAssert::areIdentical($otm->id, $otm->data->id);
+            // Modified data should be available after reload
+            ofwTestAssert::areIdentical('let us try!', $c2->data->get_modified('name'));
+            $c2->data->reload();
+            ofwTestAssert::areIdentical('let us try!', $c2->data->get_modified('name'));
 
-            ofwTestAssert::areIdentical('a@b.com', $otm->data->get_modified('email'));
-
-**/
-
+            // ...but not after save
+            $c2->save();
+            ofwTestAssert::isNull($c2->data->get_modified('name'));
         }
 
 
@@ -50,10 +48,6 @@
          * Verify that I could indeed save stuff
          */
         public function system_verify_if_save_was_successful() {
-            // Disabled if mysql not enabled
-            if (!$this->ofw->ofwconf['mysql_enabled']) {
-                return false;
-            }
             // Fetch and test!
             $cat = Category::fetch('mockid');
             ofwTestAssert::areIdentical('mock!', $cat->name);
@@ -65,10 +59,6 @@
          * Check the duplication feature
          */
         public function system_check_duplication_feature() {
-            // Disabled if mysql not enabled
-            if (!$this->ofw->ofwconf['mysql_enabled']) {
-                return false;
-            }
             // Let's try to duplicate the Category object
             $cat = $this->category->duplicate('mock2');
             $cat->save();
@@ -85,10 +75,6 @@
          * Let's test model extensions (and dynamic plugin loading)
          */
         public function system_check_model_extending() {
-            // Disabled if mysql not enabled
-            if (!$this->ofw->ofwconf['mysql_enabled']) {
-                return false;
-            }
             // Load up my _test plugin (if not already done)
             $load_test = $this->ofw->plugin->load('_test', true, true);
             ofwTestAssert::areIdentical('__plugin working!', $load_test);
@@ -129,10 +115,6 @@
          * Reset stuff, cleanup.
          **/
         public function tearDown() {
-            // Disabled if mysql not enabled
-            if (!$this->ofw->ofwconf['mysql_enabled']) {
-                return false;
-            }
             // Remove all of my tests
             Category::delete_tests();
 

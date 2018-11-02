@@ -153,23 +153,29 @@
             $this->db->edit($this->zajobject->table_name, $this->zajobject->id_column, $this->zajobject->id, $dbupdate);
             // merge $data with $objudpate and reset
             $this->reset();
-
+            $this->reset_modified();
             return true;
         }
 
         /**
-         * Reset the modified array to empty.
+         * Reset the loaded.
          **/
         public function reset() {
-            // reset modified array
-            $this->modified = [];
             // reset loaded array
             $this->loaded = [];
             // reset data
             $this->data = [];
             // reset fetched status
             $this->fetched = false;
+            return true;
+        }
 
+        /**
+         * Reset modified.
+         */
+        public function reset_modified() {
+            // reset modified array
+            $this->modified = [];
             return true;
         }
 
