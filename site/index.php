@@ -6,52 +6,29 @@
     define('OFW_RECOMMENDED_HTACCESS_VERSION', 305);
     define('OFW_RECOMMENDED_CONFIG_VERSION', 305);
 
-    // Set locale but only if new config version
-    global $ofwconf, $zajconf;
-
     // Backwards compatibility
     if (!empty($zajconf) && is_array($zajconf)) {
         $ofwconf = $zajconf;
     }
 
-    if (is_array($ofwconf)) {
-        // Set my locale and numeric to US for compatibility
-        setlocale(LC_ALL, $ofwconf['locale_default']);
-        setlocale(LC_NUMERIC, $ofwconf['locale_numeric']);
+    // Auto-detect root folder if not set already
+    if (empty($ofwconf['root_folder'])) {
+        $ofwconf['root_folder'] = realpath(dirname(__FILE__).'/../../');
     }
-    // Set variables for backwards compatibility with old config version
-    if (!is_array($ofwconf)) {
-        $ofwconf['default_app'] = $GLOBALS['zaj_default_app'];
-        $ofwconf['default_mode'] = $GLOBALS['zaj_default_mode'];
-        $ofwconf['plugin_apps'] = $GLOBALS['zaj_plugin_apps'];
-        $ofwconf['system_apps'] = $GLOBALS['zaj_system_apps'];
 
-        $ofwconf['debug_mode'] = $GLOBALS['debug_mode'];
-        $ofwconf['debug_mode_domains'] = $GLOBALS['debug_mode_domains'];
-        $ofwconf['root_folder'] = $GLOBALS['zaj_root_folder'];
-        $ofwconf['site_folder'] = $GLOBALS['zaj_site_folder'];
-
-        $ofwconf['update_enabled'] = $GLOBALS['zaj_update_enabled'];
-        $ofwconf['update_appname'] = $GLOBALS['zaj_update_appname'];
-        $ofwconf['update_user'] = $GLOBALS['zaj_update_user'];
-        $ofwconf['update_password'] = $GLOBALS['zaj_update_password'];
-
-        $ofwconf['mysql_enabled'] = $GLOBALS['zaj_mysql_enabled'];
-        $ofwconf['mysql_server'] = $GLOBALS['zaj_mysql_server'];
-        $ofwconf['mysql_user'] = $GLOBALS['zaj_mysql_user'];
-        $ofwconf['mysql_password'] = $GLOBALS['zaj_mysql_password'];
-        $ofwconf['mysql_db'] = $GLOBALS['zaj_mysql_db'];
-        $ofwconf['mysql_ignore_tables'] = $GLOBALS['zaj_mysql_ignore_tables'];
-
-        $ofwconf['error_log_enabled'] = $GLOBALS['zaj_error_log_enabled'];
-        $ofwconf['error_log_notices'] = $GLOBALS['zaj_error_log_notices'];
-        $ofwconf['error_log_backtrace'] = $GLOBALS['zaj_error_log_backtrace'];
-        $ofwconf['error_log_file'] = $GLOBALS['zaj_error_log_file'];
-        $ofwconf['jserror_log_enabled'] = $GLOBALS['zaj_jserror_log_enabled'];
-        $ofwconf['jserror_log_file'] = $GLOBALS['zaj_jserror_log_file'];
-
-        $ofwconf['config_file_version'] = $GLOBALS['zaj_config_file_version'];
+    // Include the zajlib system class
+    if (!(include $ofwconf['root_folder'].'/system/class/ofwconf.class.php')) {
+        exit("<b>Outlast Framework error:</b> missing Outlast Framework system files or incorrect path given! set in site/index.php!");
     }
+
+    /**
+     * @var OfwConf
+     */
+    $ofwconf = new OfwConf($ofwconf);
+
+    // Set my locale and numeric to US for compatibility
+    setlocale(LC_ALL, $ofwconf['locale_default']);
+    setlocale(LC_NUMERIC, $ofwconf['locale_numeric']);
 
     // Set timezone default
     if (!empty($ofwconf['timezone'])) {
@@ -95,11 +72,6 @@
     // Figure out my relative path
     if (!empty($ofwconf['site_folder']) && empty($ofwconf['root_folder'])) {
         exit("OUTLAST FRAMEWORK CONFIG ERROR: If you set the site_folder parameter, you must also set the root_folder!");
-    }
-
-    // Auto-detect root folder if not set already
-    if (empty($ofwconf['root_folder'])) {
-        $ofwconf['root_folder'] = realpath(dirname(__FILE__).'/../../');
     }
 
     // Include the zajlib system class

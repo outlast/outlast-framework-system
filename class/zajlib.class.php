@@ -146,16 +146,16 @@ class zajLib {
 			 **/
 			public $model_autoloading = true;
 			/**
-			 * An array which stores the configuration values set in site/index.php.
-			 * @var array
+			 * An object which stores the configuration values set in site/index.php.
+			 * @var OfwConf
 			 **/
 			public $ofwconf;
 			
             /**
              * @deprecated
              */
-			private $zajconf;
-			 
+			public $zajconf;
+
 			
 		// my settings
 
@@ -222,14 +222,15 @@ class zajLib {
 	/**
 	 * Creates a the zajlib object.
 	 * @param string $root_folder The root from which basepath and others are calculated.
-	 * @param array|string $ofwconf The configuration array. This can be blank for backwards-compatible reasons.
+	 * @param OfwConf $ofwconf The configuration array.
 	 */
-	public function __construct($root_folder, $ofwconf = ''){
+	public function __construct($root_folder, $ofwconf){
 		// autodetect my path
 			if($root_folder) $this->basepath = realpath($root_folder)."/";
 			else $this->basepath = realpath(dirname(__FILE__)."/../../")."/";
 		// store configuration
 			$this->ofwconf = $ofwconf;
+			$this->zajconf = $this->ofwconf;
 		// parse query string
 			if(isset($_GET['zajapp'])){
 			// autodetect my app
@@ -570,8 +571,6 @@ class zajLib {
 	public function __get($name){
 	    // load smart properties or libraries
 	    switch($name){
-            case 'zajconf':
-                return $this->ofwconf;
             case 'requestpath':
                 if(is_null($this->requestpath)) $this->requestpath = $this->url->get_requestpath($this->fullurl);
                 return $this->requestpath;
