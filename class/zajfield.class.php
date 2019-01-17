@@ -5,6 +5,11 @@
  * @package Base
  **/
 class zajField {
+
+	/** @var zajLib  */
+	protected $ofw;					// object - a reference to the singleton ofw object
+
+	/** @deprecated  */
 	protected $zajlib;					// object - a reference to the global zajlib object
 	protected $class_name;				// string - class name of the parent class
 	public $name;						// string - name of this field
@@ -30,6 +35,7 @@ class zajField {
 	 **/
 	public function __construct($field_class, $name, $options, $class_name, &$zajlib){
 		$this->zajlib =& $zajlib;
+		$this->ofw =& $zajlib;
 		$this->name = $name;
 		$this->options = $options;
 		$this->class_name = $class_name;
@@ -114,6 +120,7 @@ class zajField {
     /**
      * Returns the default value before an object is created and saved to the database.
 	 * @param zajModel $object This parameter is a pointer to the actual object for which the default is being fetched. It is possible that the object does not yet exist.
+     * @return mixed Returns the default value.
      */
     public function get_default(&$object){
         if(is_object($this->options)) return $this->options->default;   // Old method
