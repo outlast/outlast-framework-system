@@ -42,9 +42,9 @@ class zajlib_compile extends zajLibExtension{
 			$this->filters = new zajElementsLoader($zajlib, 'filter');
 		// register base tags & filters
 			$this->register_tags('base');
-			$this->register_tags('mozajik');
+			$this->register_tags('ofw');
 			$this->register_filters('base');
-			$this->register_filters('mozajik');
+			$this->register_filters('ofw');
 	}
 
 	/**

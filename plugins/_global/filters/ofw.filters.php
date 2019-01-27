@@ -1,6 +1,6 @@
 <?php
 /**
- * Mozajik filter collection includes filters which are not in Django by default, but are part of the Mozajik system.  
+ * OFW filter collection includes filters which are not in Django by default, but are part of the Outlast Framework.
  * @package Template
  * @subpackage Filters
  **/
@@ -14,10 +14,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Mozajik filter collection includes filters which are not in Django by default, but are part of the Mozajik system.  
+ * OFW filter collection includes filters which are not in Django by default, but are part of the Outlast Framework.
  * @todo Make sure that filters correctly support the use of variables as filter parameters.
  **/
-class zajlib_filter_mozajik extends zajElementCollection{	
+class zajlib_filter_ofw extends zajElementCollection{
 	
 	/**
 	 * Filter: photo - Returns the url of the photo object. If it is a fetcher (many photos), then the first one will be returned.
