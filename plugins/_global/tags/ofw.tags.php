@@ -1,6 +1,6 @@
 <?php
 /**
- * Mozajik tag collection includes tags which are not in Django by default, but are part of the Mozajik system.  
+ * OFW tag collection includes tags which are not in Django by default, but are part of the Outlast Framework system.
  * @package Template
  * @subpackage Tags
  **/
@@ -12,7 +12,7 @@
 //		- $source - the source file object {@link zajCompileSource}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class zajlib_tag_mozajik extends zajElementCollection{
+class zajlib_tag_ofw extends zajElementCollection{
 
 	/**
 	 * Tag: input - Generates an input field based on the input defined in the model. So, a field of type photo will generate a photo upload box.

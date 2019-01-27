@@ -23,7 +23,7 @@ class OfwTestAnother extends zajModel {
         if($f === false) $f = new stdClass();
 
         // Fake manytomany connection
-        $f->ofwtests = zajDb::manytomany('OfwTest', 'ofwtestanothers');
+        $f->ofwtests = zajDb::manytomany('OfwTestModel', 'ofwtestanothers');
 
 		// end of custom fields definition
 		/////////////////////////////////////////
