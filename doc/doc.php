@@ -8,6 +8,8 @@ die("This file is for documentation.");
  * @method static zajDb boolean(boolean $default=false)
  * @method static zajDb category
  * @method static zajDb categories
+ * @method static zajDbConfiguration configuration
+ * @method static zajDbConfiguration configurations
  * @method static zajDb color
  * @method static zajDB custom
  * @method static zajDb date
@@ -48,6 +50,15 @@ die("This file is for documentation.");
  * @method static zajDb year
  **/
 class zajDb{}
+
+
+/**
+ * Class zajDbConfiguration
+ * @method zajDbConfiguration file(string $name)
+ * @method zajDbConfiguration section(string $name)
+ * @method zajDbConfiguration key(string $name)
+ */
+class zajDbConfiguration{}
 
 
 /**

@@ -1,0 +1,6 @@
+<!-- Display markup -->
+<select class='ofw-field-select form-control' id='{{field.uid}}' name='{{field.name}}' data-model='{{field.class_name}}'>
+	{% foreach field.choices as choice %}
+		<option value='{{choice}}' {% if field.value eq choice %}selected{%endif%}>{{choice}}</option>
+	{% endfor %}
+</select>
