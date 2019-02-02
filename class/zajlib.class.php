@@ -139,7 +139,7 @@
          * An object which stores version information.
          * @var MozajikVersion
          **/
-        public $mozajik;
+        public $version;
         /**
          * A boolean value which if set to false turns off autoloading of model files. This can be useful when integrating in other systems.
          * @var boolean
@@ -361,7 +361,7 @@
 
             // check and load installation version (only for database format tracking)
             $installation = @file_get_contents($this->basepath.'cache/install.dat');
-            $this->mozajik = @unserialize($installation);
+            $this->version = @unserialize($installation);
 
             return true;
         }

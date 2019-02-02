@@ -280,7 +280,7 @@
 						else $status_dbupdate = $done;
 					}
 				// 5. Check activation
-					if(!is_object($this->ofw->mozajik) || !MozajikVersion::check()) $status_activate = $todo;
+					if(!is_object($this->ofw->version) || !MozajikVersion::check()) $status_activate = $todo;
 					else $status_activate = $done;
 			?>
 <head>
