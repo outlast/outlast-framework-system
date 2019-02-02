@@ -93,16 +93,33 @@
          * Performs the actual display or return of the contents.
          * @param string $include_file The full path to the file which is to be included.
          * @param boolean $return_contents If set to true, the compiled contents will be returned by the function and not sent to the browser (as is the default).
+         * @param integer $retry_if_file_is_locked Retry this many times if the file is locked.
          * @return string If requested by the $return_contents parameter, it returns the entire generated contents.
          **/
-        private function display($include_file, $return_contents = false) {
+        private function display($include_file, $return_contents = false, $retry_if_file_is_locked = 3) {
+
+            // wait for the file to be ready
+            if(file_exists($include_file.".lock")) {
+                if($retry_if_file_is_locked > 0) {
+                    // wait a bit and try again
+                    usleep(500);
+                    return $this->display($include_file, $return_contents, $retry_if_file_is_locked - 1);
+                } else {
+                    // the lock may be stuck; just unlock it
+                    @unlink($include_file.".lock");
+                }
+            }
+
             // now include the file
             // but should i return the contents?
             if ($return_contents) {
                 ob_start();
             }    // start output buffer
+
+
             // now include the file
             include($include_file);
+
             // verify validity
             if ($return_contents) {                // end output buffer
                 $contents = ob_get_contents();

@@ -52,13 +52,13 @@
             @mkdir(dirname($this->file_path), 0777, true);
             $this->file = fopen($this->file_path, 'w');
 
-            // lock the file
-            flock($this->file, LOCK_EX);
-
             // did it fail?
             if (!$this->file) {
                 return $this->zajlib->error("could not open ($dest_file) for writing. does cache folder have write permissions?");
             }
+
+            // create a lock file to notify all other processes that this is being written to
+            touch($this->file_path.".lock");
 
             return true;
         }
@@ -99,6 +99,9 @@
             zajCompileSession::verbose("Stopping <code>$this->file_path</code> compile destination.");
             // unlock and close the file
             if ($this->file) {
+                // Remove the lock file
+                @unlink($this->file_path.".lock");
+                // Close the file
                 fclose($this->file);
             }
             // if this is temporary, delete

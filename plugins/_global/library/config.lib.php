@@ -39,7 +39,7 @@
             $this->section = new stdClass();
             $this->variable->section = &$this->section;
         }
-	
+
         /**
          * Loads a configuration or language file at runtime.
          * @param string $source_path The source of the configuration file relative to the conf folder.
@@ -77,6 +77,21 @@
             if ($force_compile || $this->ofw->debug_mode || !file_exists($file_name)) {
                 $result = $this->compile($source_path, $fail_on_error);
             }
+
+            // If the write is in progress, wait for the file to be ready
+            $retry_if_file_is_locked = 3;
+            while (file_exists($file_name.".lock")) {
+                if($retry_if_file_is_locked > 0) {
+                    // wait a bit and try again
+                    usleep(500);
+                    $retry_if_file_is_locked--;
+                    print("Waiting for $file_name to finish<br/>");
+                } else {
+                    // the lock may be stuck; just unlock it
+                    @unlink($file_name.".lock");
+                }
+            }
+
             // If compile failed or if include fails
             if (!$result || !(@include($file_name))) {
                 if ($fail_on_error) {
@@ -177,6 +192,7 @@
             // start debug stats
             $this->debug_stats['source'] = $full_path;
             $this->debug_stats['line'] = 1;
+
             // now open and run through all the lines
             $fsource = fopen($full_path, 'r');
             while (!feof($fsource)) {
@@ -314,6 +330,9 @@
          * @return resource Returns the file pointer to the destination file.
          **/
         private function add_file($file_name, $global_scope = '') {
+            // create a lock file to notify all other processes that this is being written to
+            touch($file_name.".lock", time());
+
             $this->destination_files[$file_name] = fopen($file_name, 'w');
             fputs($this->destination_files[$file_name], "<?php\n".$global_scope);
 
@@ -326,6 +345,10 @@
          * @return boolean Returns true.
          **/
         private function remove_file($file_name) {
+            // Remove the lock file
+            @unlink($file_name.".lock");
+
+            // Close and unset
             fclose($this->destination_files[$file_name]);
             unset($this->destination_files[$file_name]);
 
