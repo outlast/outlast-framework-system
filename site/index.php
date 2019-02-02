@@ -180,7 +180,7 @@
         $installation_valid = false;
     }
     // 2. Check if activated
-    if (!is_object($ofw->version)) {
+    if (!is_object($ofw->mozajik)) {
         $installation_valid = false;
     }
     // 3. Activate model support and check system file validity (fatal error if not)
