@@ -1072,6 +1072,53 @@
             return $this->current_object;
         }
 
+        /****************************************************************************************
+         *    !Functional programming methods
+         ***************************************************************************************/
+
+        /**
+         * Use an anonymous function passed as a parameter to map all results into a new array.
+         * This should be used with care for large data sets.
+         * @param callable $function A function that takes a single parameter (the value) and returns any desired type.
+         * @return array Returns an array of items, each item being what is returned by the passed function. Keys will be preserved.
+         */
+        function map($function) {
+            $newarray = [];
+            foreach($this as $key => $item) {
+                $newarray[$key] = $function($item);
+            }
+            return $newarray;
+        }
+
+        /**
+         * Similar to map() except that items evaluating to false (or null) will be removed.
+         * As with map(), should be used with care for large data sets.
+         * @param callable $function A function that takes a single parameter (the value) and returns any desired type.
+         * @return array Returns an array of items, each item being what is returned by the passed function. Keys will be preserved, false or null items will be removed.
+         */
+        function compactMap($function) {
+            $newarray = [];
+            foreach($this as $key => $item) {
+                $result = $function($item);
+                if($result != false) {
+                    $newarray[$key] = $result;
+                }
+            }
+            return $newarray;
+        }
+
+        /**
+         * Maps each element using a mapping function (like map()), then flattens the result into a new array on 1 level.
+         * @param callable $function A function that takes a single parameter (the value) and returns any desired type.
+         * @return array Returns an array of items, each item being what is returned by the passed function. Flattenned by one level. Keys will be preserved, false or null items will be removed.
+         */
+        function flatMap($function) {
+            $newarray = [];
+            foreach($this as $key => $item) {
+                array_merge($newarray, $function($item));
+            }
+            return $newarray;
+        }
 
         /****************************************************************************************
          *    !Countable methods
