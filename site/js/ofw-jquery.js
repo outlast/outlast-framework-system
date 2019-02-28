@@ -82,7 +82,6 @@ define('system/js/ofw-jquery', [], function () {
 		publishPublicProperties();
 
 		// Backwards compatiblity
-		if (typeof options.trackevents_local != 'undefined') myOptions.trackEventsLocal = options.trackevents_local;
 		if (typeof options.trackevents_analytics != 'undefined') myOptions.trackEventsAnalytics = options.trackevents_analytics;
 
 		// Set calculated properties (and again when jquery is ready)

@@ -20,7 +20,6 @@
 		jslib:'jquery',
 		jslibver:1.10,
 		trackevents_analytics:true,
-		trackevents_local:false,
 		fields: {},
 		lang: {},
 		config: {}
@@ -293,18 +292,10 @@
 		zaj.track = function(category, action, label, value){
             if(zaj.debug_mode) zaj.log("Event sent: "+category+", "+action+", "+label+", "+value);
 			// Track via Google Analytics (ga.js or analytics.js)
-				if(zaj.trackevents_analytics){
-					if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
-					if(typeof ga != 'undefined') ga('send', 'event', category, action, label, value);
-				}
-			// Track to local database
-				if(zaj.trackevents_local){
-					// Don't use zaj.ajax.get because that tracks events, so we'd get into loop
-					$.ajax(zaj.baseurl+'system/track/?category='+zaj.urlencode(category)+'&action='+zaj.urlencode(action)+'&label='+zaj.urlencode(label)+'&value='+zaj.urlencode(value), {
-						dataType: 'html',
-						type: 'GET'
-					});
-				}
+			if(zaj.trackevents_analytics){
+				if(typeof _gaq != 'undefined') _gaq.push(['_trackEvent', category, action, label, value]);
+				if(typeof ga != 'undefined') ga('send', 'event', category, action, label, value);
+			}
 		};
 
 	/**

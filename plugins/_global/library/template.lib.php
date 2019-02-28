@@ -556,11 +556,6 @@
                     } else {
                         $trackevents_analytics = 'true';
                     }
-                    if ($this->ofw->zajconf['trackevents_local'] === true) {
-                        $trackevents_local = 'true';
-                    } else {
-                        $trackevents_local = 'false';
-                    }
                     // Locale
                     $locale = $this->ofw->lang->get();
                     // Disable
@@ -580,7 +575,6 @@
         mode: '{$mode}',
         debug_mode: $debug_mode,
         protocol: '{$protocol}',
-        trackeventsLocal: $trackevents_local,
         trackeventsAnalytics: $trackevents_analytics,
         locale: '$locale'
     };
