@@ -202,7 +202,7 @@ class zajlib_browser extends zajLibExtension {
 	private function get_browser_local($user_agent=null,$return_array=false,$db='./browscap.ini',$cache=false){
 		//http://alexandre.alapetite.fr/doc-alex/php-local-browscap/
 		//Get php_browscap.ini on http://browsers.garykeith.com/downloads.asp
-		if (($user_agent==null)&&isset($_SERVER['HTTP_USER_AGENT'])) $user_agent=$_SERVER['HTTP_USER_AGENT'];
+		if (($user_agent==null) && !empty($this->ofw->request->client_agent())) $user_agent=$this->ofw->request->client_agent();
 		if ((!isset($this->browscapIni))||(!$cache)||($this->browscapPath!==$db))
 		{
 			$this->browscapIni=defined('INI_SCANNER_RAW') ? parse_ini_file($db,true,INI_SCANNER_RAW) : parse_ini_file($db,true);

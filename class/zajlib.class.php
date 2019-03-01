@@ -255,28 +255,29 @@
                 $this->app = $this->ofwconf['default_app'];
                 $this->mode = $this->ofwconf['default_mode'];
             }
-            // autodetect https protocol, if set
-            if (
+
+            // Determine https
+            $is_https =
                 // Apache normal mode
                 (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "off") ||
                 // Apache in proxy mode
                 (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == "https") ||
                 // Nginx and certain Apache configs
-                (!empty($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] != "off")
-            ) {
+                (!empty($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] != "off");
+            // autodetect https protocol, if set
+            if ($is_https) {
                 $this->https = true;
                 $this->protocol = 'https:';
             }
 
-            // disable empty hosts
-            if (empty($_SERVER['HTTP_HOST'])) {
+            // Get host (and port number)
+            $this->host = self::server_host();
+            if (empty($this->host)) {
                 print "Invalid request. Please contact site administrator.";
                 $this->error("Empty host detected. Request denied. If you experience this error from a legitimate browser please notify us!",
                     true);
-            } // save host
-            else {
-                $this->host = $_SERVER['HTTP_HOST'];
             }
+
             // base url detection
             $this->fullurl = "//".preg_replace('(/{2,})', '/', preg_replace("([?&].*|/{1,}$)", "",
                         addslashes($this->host).addslashes($_SERVER['REQUEST_URI'])).'/');
@@ -364,6 +365,33 @@
             $this->mozajik = @unserialize($installation);
 
             return true;
+        }
+
+        /**
+         * Get the server host. Because of forwarding or clusters, this may actually be different from REMOTE_ADDR.
+         */
+        private static function server_host() {
+            $possible_host_sources = ['HTTP_X_FORWARDED_HOST', 'HTTP_HOST', 'SERVER_NAME', 'SERVER_ADDR'];
+            $source_transformations = [
+                "HTTP_X_FORWARDED_HOST" => function ($value) {
+                    $elements = explode(',', $value);
+                    return trim(end($elements));
+                },
+            ];
+            $host = '';
+            foreach ($possible_host_sources as $source) {
+                if (!empty($host)) {
+                    break;
+                }
+                if (empty($_SERVER[$source])) {
+                    continue;
+                }
+                $host = $_SERVER[$source];
+                if (array_key_exists($source, $source_transformations)) {
+                    $host = $source_transformations[$source]($host);
+                }
+            }
+            return trim($host);
         }
 
         /**

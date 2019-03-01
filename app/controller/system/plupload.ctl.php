@@ -225,7 +225,7 @@
             // Check if file uploaded
             if (empty($_FILES['file']['tmp_name'])) {
                 $error = $this->ofw->lang->variable->system_field_file_upload_error;
-                $this->ofw->warning("File could not be uploaded due to unknown error on a ".$_SERVER['HTTP_USER_AGENT']);
+                $this->ofw->warning("File could not be uploaded due to unknown error on a ".$this->ofw->request->client_agent());
             } else {
                 // If process as image, then also return size
                 $width = $height = 0;

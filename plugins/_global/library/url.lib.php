@@ -154,7 +154,7 @@ class zajlib_url extends zajLibExtension {
 	 * @ignore
 	 **/
 	function redirect_from_subdomain_to_url($from,$to){
-		$subdomaindata = explode(".",$_SERVER['HTTP_HOST']);
+		$subdomaindata = explode(".", $this->ofw->request->server_host());
 		if($subdomaindata[0]==$from || $subdomaindata[1]==$from){
 			// redirect me!
 			header("Location: $to");

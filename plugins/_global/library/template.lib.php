@@ -74,9 +74,7 @@
             $this->ofw->variable->post = (object)$_POST;
             $this->ofw->variable->cookie = (object)$_COOKIE;
             $this->ofw->variable->request = (object)$_REQUEST;
-            if (!empty($_SERVER['HTTP_REFERER'])) {
-                $this->ofw->variable->referer = $_SERVER['HTTP_REFERER'];
-            }
+            $this->ofw->variable->referer = $this->ofw->request->client_referer();
 
             return $include_file;
         }
@@ -521,18 +519,10 @@
                     return time();
                 // Referer
                 case 'referer':
-                    if (!empty($_SERVER['HTTP_REFERER'])) {
-                        return $_SERVER['HTTP_REFERER'];
-                    } else {
-                        return '';
-                    }
+                    return $this->ofw->request->client_referer();
                 // User-agent
                 case 'useragent':
-                    if (!empty($_SERVER['HTTP_USER_AGENT'])) {
-                        return $_SERVER['HTTP_USER_AGENT'];
-                    } else {
-                        return '';
-                    }
+                    return $this->ofw->request->client_agent();
                 // Return which plugins are loaded
                 case 'plugin':
                     $array = $this->ofw->plugin->get_plugins();
