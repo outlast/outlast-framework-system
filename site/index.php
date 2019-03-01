@@ -144,7 +144,7 @@
         }
         // Redirect to authentication
         if (!$whitelisted && $_SERVER['MOZAJIK_LOGIN_AUTH'] != $_COOKIE['MOZAJIK_LOGIN_AUTH']) {
-            $host = $ofw->request->server_host();
+            $host = zajLib::me()::server_host();
             header("Location: ".$_SERVER['MOZAJIK_LOGIN_URL'].'?from='.urlencode('http://'.$host.$_SERVER['REQUEST_URI']));
             exit;
         }

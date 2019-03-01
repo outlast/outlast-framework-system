@@ -368,13 +368,14 @@
         }
 
         /**
-         * Get the server host. Because of forwarding or clusters, this may actually be different from REMOTE_ADDR.
+         * Get the server host. Because of forwarding or clusters, this may actually be different from HTTP_HOST.
          */
-        private static function server_host() {
-            $possible_host_sources = ['HTTP_X_FORWARDED_HOST', 'HTTP_HOST', 'SERVER_NAME', 'SERVER_ADDR'];
+        public static function server_host($remove_port = false) {
+            $possible_host_sources = ['HTTP_X_FORWARDED_HOST', 'HTTP_HOST'];
             $source_transformations = [
                 "HTTP_X_FORWARDED_HOST" => function ($value) {
                     $elements = explode(',', $value);
+
                     return trim(end($elements));
                 },
             ];
@@ -391,6 +392,12 @@
                     $host = $source_transformations[$source]($host);
                 }
             }
+
+            // Remove port number from host
+            if ($remove_port) {
+                $host = preg_replace('/:\d+$/', '', $host);
+            }
+
             return trim($host);
         }
 
