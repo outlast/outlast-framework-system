@@ -36,7 +36,7 @@
      * @property zajlib_sandbox $sandbox
      * @property zajlib_security $security
      * @property zajlib_template $template
-     * @property zajlib_test $test
+     * @property ofw_test $test
      * @property zajlib_text $text
      * @property zajlib_url $url
      * @property string $requestpath This is read-only public.
