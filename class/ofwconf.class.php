@@ -112,4 +112,13 @@
             $this->values[$offset] = $value;
         }
 
+        /**
+         * Wrapper to make sure isset/empty works properly.
+         * @param $name
+         * @return bool Returns true if the item is set.
+         */
+        public function __isset($name) {
+            return array_key_exists($name, $this->values);
+        }
+
     }
