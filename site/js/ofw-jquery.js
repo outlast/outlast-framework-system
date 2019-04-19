@@ -316,7 +316,7 @@ define('system/js/ofw-jquery', [], function () {
 	 * @param {function|string|object} callback The item which should process the results. Can be function (first param will be result), a string (considered a url to redirect to), or a DOM element object (results will be filled in here).
 	 * @param {string|object|boolean} [pushstate=false] If it is just a string, it will be the url for the pushState. If it is a boolean true, the current request will be used. If it is an object, you can specify all three params of pushState: data, title, url. If boolean false (the default), pushstate will not be used.
 	 * @param {boolean} set_submitting If set to true, it will set ajaxIsSubmitting when the request returns with a response.
-	 * @param {jQuery} [$eventContext=null] The event context is the jQuery object on which ajax success events are fired. Events are always fired on document.
+	 * @param {jQuery} [$eventContext=$(document)] The event context is the jQuery object on which ajax success events are fired. When no context, events are fired on document.
 	 * @return {string} Returns the request url as sent.
 	 */
 	var ajaxRequest = function (method, request, callback, pushstate, set_submitting, $eventContext) {
@@ -327,6 +327,11 @@ define('system/js/ofw-jquery', [], function () {
 
 		// Method to lower case
 		method = method.toLowerCase();
+
+		// Default to document event context
+		if($eventContext == null) {
+			$eventContext = $(document);
+		}
 
 		// Figure out query string or request data
 		var datarequest = '';
@@ -406,6 +411,12 @@ define('system/js/ofw-jquery', [], function () {
 						ajaxIsSubmitting = false;
 						var el = $('[data-submit-toggle-class]');
 						if (el.length > 0) el.toggleClass(el.attr('data-submit-toggle-class'));
+					}
+
+					// Trigger events
+					if ($eventContext) {
+						$eventContext.trigger('ofw-ajax-response', [jqXHR.responseText, null]);
+						$eventContext.trigger('ofw-ajax-error', [jqXHR.responseText, null]);
 					}
 
 					// If we are in debug mode popup
@@ -711,8 +722,8 @@ define('system/js/ofw-jquery', [], function () {
 		/**
 		 * A function which opens up a new window with the specified properties
 		 * @param {string} url The url of the window
-		 * @param {integer} width The width in pixels.
-		 * @param {integer} height The height in pixels
+		 * @param {Number} width The width in pixels.
+		 * @param {Number} height The height in pixels
 		 * @param {string} options All other options as an object.
 		 * @return {window} Returns the window object.
 		 **/
