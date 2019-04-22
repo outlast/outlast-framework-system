@@ -499,7 +499,7 @@ abstract class zajModel implements JsonSerializable {
 		$this->data->save();
 		// i now exist
 		$this->exists = true;
-		// call afterSave events 
+		// call afterSave events
 		if($events_and_cache && !$exists_before_save) $this->fire('afterCreateSave');
 		if($events_and_cache) $this->fire('afterSave');
 		if($events_and_cache) $this->fire('afterFetch');
@@ -532,6 +532,9 @@ abstract class zajModel implements JsonSerializable {
 					$new->set($name, $data);
 				}
 			}
+        // time create and edit should be now
+        $new->set('time_create', time())->set('time_edit', time());
+
 		return $new;
 	}
 
