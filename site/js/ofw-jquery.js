@@ -721,7 +721,7 @@ define('system/js/ofw-jquery', [], function () {
 
 		/**
 		 * A function which opens up a new window with the specified properties
-		 * @param {string} url The url of the window
+		 * @param {string} url The url of the window (full url).
 		 * @param {Number} width The width in pixels.
 		 * @param {Number} height The height in pixels
 		 * @param {string} options All other options as an object.
