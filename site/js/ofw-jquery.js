@@ -377,8 +377,11 @@ define('system/js/ofw-jquery', [], function () {
 						if (jsondata.status === 'ok' || jsondata.status === 'success') {
 							$eventContext.trigger('ofw-ajax-success', [data, jsondata]);
 						}
-						if (jsondata.status === 'error') {
+						else if (jsondata.status === 'error') {
 							$eventContext.trigger('ofw-ajax-error', [data, jsondata]);
+						}
+						else {
+							$eventContext.trigger('ofw-ajax-unknown', [data, jsondata]);
 						}
 					}
 				}
