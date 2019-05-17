@@ -51,6 +51,9 @@ class zajlib_lang extends zajlib_config {
 	public function __construct(&$zajlib, $system_library) {
 		parent::__construct($zajlib, $system_library);
 
+        // load config
+        $this->ofw->config->load('lang', 'warnings');
+
 		// set default locale and available locales
         $this->reload_locale_settings();
 
@@ -59,6 +62,7 @@ class zajlib_lang extends zajlib_config {
 
         // set my default variation
         $this->set_variation();
+
 	}
 
 	/**
@@ -96,7 +100,7 @@ class zajlib_lang extends zajlib_config {
         }
         else{
             // Warn if non-existent requested
-            if(!empty($new_locale)) $this->ofw->warning("Requested locale $new_locale not found, using default locale (".$this->default_locale.") instead.");
+            if(!empty($new_locale) && $this->ofw->config->variable->lang_warn_locale_set_not_found) $this->ofw->warning("Requested locale $new_locale not found, using default locale (".$this->default_locale.") instead.");
             $this->current_locale = $this->default_locale;
         }
 
@@ -341,7 +345,7 @@ class zajlib_lang extends zajlib_config {
 					// Now if load failed, set load to the default locale
 						if(!$result && $load_default_locale_on_error){
 							// throw a warning (if not testing)
-							if(!$this->ofw->test->is_running()){
+							if(!$this->ofw->test->is_running() && $this->ofw->config->variable->lang_show_warning_when_cant_load_in_current_locale){
 								if($section === false) $this->ofw->warning("The language file $name_OR_source_path was not found, trying default locale.");
 								else $this->ofw->warning("The section $section in language file $name_OR_source_path was not found, trying default locale.");
 							}
