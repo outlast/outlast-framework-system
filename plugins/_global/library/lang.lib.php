@@ -343,6 +343,7 @@ class zajlib_lang extends zajlib_config {
             }
 
             // First always load default locale
+            $original_path = $name_OR_source_path;
             $name_OR_source_path = $name_OR_source_path.'.'.$this->get_default_locale().'.lang.ini';
             $result = parent::load($name_OR_source_path, $section, $force_set, false);
             if(!$result){
@@ -352,7 +353,7 @@ class zajlib_lang extends zajlib_config {
 
             // Now load the current locale (if current is not the default)
             if(!$this->is_default_locale()) {
-                $name_OR_source_path = $name_OR_source_path.'.'.$this->get().'.lang.ini';
+                $name_OR_source_path = $original_path.'.'.$this->get().'.lang.ini';
                 $result = parent::load($name_OR_source_path, $section, $force_set, false);
                 if(!$result && !$this->ofw->test->is_running() && $this->ofw->config->variable->lang_show_warning_when_cant_load_in_current_locale) {
                     if($section === false) $this->ofw->warning("The language file $name_OR_source_path was not found, trying default locale.");

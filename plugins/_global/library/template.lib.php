@@ -199,10 +199,10 @@
         /**
          * Modify the template source path based on device mode and locale.
          * @param string $source_path The source path to check for.
-         * @todo A html extension should not be required for this!
+         * @return string Return a new source path for the current device if available or the same if not.
          * @todo The device and locale source paths should be combinable!
          * @todo This should be cached somehow so that we dont need so many checks
-         * @return string Return a new source path for the current device if available or the same if not.
+         * @todo A html extension should not be required for this!
          */
         private function get_source_path($source_path) {
             $source_path = $this->get_device_source_path($source_path);
@@ -249,8 +249,8 @@
         /**
          * Modify the template source path of any .html files if we have a locale-specific template available.
          * @param string $source_path The source path to check for.
-         * @todo Add support for {% extends %} and {% insert %}
          * @return string Return a new source path for the current locale if available or the same if not.
+         * @todo Add support for {% extends %} and {% insert %}
          */
         private function get_locale_source_path($source_path) {
             // Get the locale
@@ -445,8 +445,7 @@
                 case 'requestpath':
                     return $this->ofw->requestpath;
                 case 'self':
-                    $this->ofw->deprecated("ofw.self is deprecated, use ofw.requestpath instead.");
-
+                    zajLib::me()->deprecated("ofw.self is deprecated, use ofw.requestpath instead.");
                     return $this->ofw->requestpath;
                 // The GET request
                 case 'get':
@@ -489,11 +488,6 @@
                 case 'lang':
                     return $this->ofw->lang->get_code();
                 // Outlast Framework version info and other stuff
-                case 'ofw':
-                case 'mozajik':
-                    $this->ofw->warning("{{ofw.ofw}} and {{ofw.mozajik}} are deprecated. Use {{ofw.version}} instead.");
-
-                    return $this->ofw->mozajik;
                 case 'version':
                     return $this->ofw->mozajik;
                 // Mobile and tablet detection (uses server-side detection)

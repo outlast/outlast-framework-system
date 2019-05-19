@@ -3,7 +3,7 @@
     /**
      * A standard unit test for Outlast Framework system libraries.
      **/
-    class OfwLibraryTest extends zajTest {
+    class OfwLibraryTest extends ofwTest {
 
         private $hardcoded_locale;
         private $hardcoded_locale_available;
@@ -427,7 +427,7 @@
             $this->ofw->error->surpress_errors_during_test(true);
             // Run
             $this->ofw->lang->set('xx_XX');
-            $this->ofw->lang->load('system/update');
+            $this->ofw->lang->load('system/update', false, true);
             ofwTestAssert::areIdentical('english', $this->ofw->lang->variable->system_update_lang);
             // Enable errors
             $this->ofw->error->surpress_errors_during_test(false);
