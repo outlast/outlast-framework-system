@@ -186,7 +186,7 @@ class zajElementsLoader{
 						// call the method in the apprpriate tags.php/filters.php file
 							// must use & here on second arg, because otherwise argument is not passed by reference!
 							if(empty($arguments[2])) $arguments[2] = 1;
-							$return = call_user_func_array(array($element_object, $element_method), array($arguments[0], &$arguments[1], $arguments[2]));
+							$return = call_user_func_array([$element_object, $element_method], [$arguments[0], &$arguments[1], $arguments[2], $arguments[3]]);
 						// check if return value is valid, if not just return the unmodified $debug_stats
 							return $return;
 					}

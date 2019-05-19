@@ -49,29 +49,40 @@ class zajCompileVariable extends zajCompileElement {
 			preg_match_all('/'.regexp_zaj_onefilter.'/', $element_name, $filter_matches, PREG_SET_ORDER);//PREG_PATTERN_ORDER
 		// now run through all the filters
 			$trim_from_end = 0;
+			$same_filter_counter = [];
 			foreach($filter_matches as $filter){
 				if(!empty($filter[0])){
 					// if this is safe, then disable check xss
 					if($filter[2] == 'safe'){
 						$check_xss = false;
 					}
+                    // count same filter type
+                    if(!key_exists($filter[2], $same_filter_counter)) {
+                        $same_filter_counter[$filter[2]] = 1;
+                    } else {
+                        $same_filter_counter[$filter[2]]++;
+                    }
 					// pass: full filter text, filter value, file pointer, debug stats
-					if(!empty($filter[5])) $filter[5] = $this->convert_variable($filter[5]);
+					if(!empty($filter[5])) $filter[5] = $this->convert_variable($filter[5], $check_xss);
 					$this->filters[$this->filter_count++] = array(
 						'filter'=>$filter[2],
 						'parameter'=>$filter[5],
+						'total_count'=>$this->filter_count,
+						'same_filter_count'=>$same_filter_counter[$filter[2]],
 					);
 					$trim_from_end -= strlen($filter[0]);
 				}
 			}
-		// temporarily allow ofw.js and zaj.js, error out in debug mode @todo Remove this eventually!
-			if($check_xss && ($element_name == 'ofw.js' || $element_name == 'zaj.js')){
-				if($this->parent->zajlib->debug_mode) $this->parent->zajlib->error("Deprecated: {{ofw.js}} or {{zaj.js}} is missing the |safe filter!");
-				$check_xss = false;
-			}
 		// trim filters from me
 			if($trim_from_end < 0) $element_name = substr($element_name, 0, $trim_from_end);
-		// original text
+
+		// If variable is empty
+		    if($element_name == "" || $element_name == "##") {
+		        $this->parent->error("Empty variable name found.");
+    			return false;
+            }
+
+            // all is well...continue.
 			$this->vartext = $element_name;
 		// convert me
 			$this->variable = $this->convert_variable($element_name, $check_xss);
@@ -87,13 +98,11 @@ class zajCompileVariable extends zajCompileElement {
 		// start the filter var
 			$this->parent->write("<?php \$filter_var = $this->variable; ");
 		// now execute all the filters
-			$count = 1;
 			foreach($this->filters as $filter){
 				// get filter
-					list($filter, $parameter) = array_values($filter);
+					list($filter, $parameter, $total_count, $same_filter_count) = array_values($filter);
 				// now call the filter
-					$this->parent->zajlib->compile->filters->$filter($parameter, $this->parent, $count);
-					$count++;
+					$this->parent->zajlib->compile->filters->$filter($parameter, $this->parent, $total_count, $same_filter_count);
 			}
 			//$this->parent->write("\$filter_var = \$filter_var;");
 		// now end it

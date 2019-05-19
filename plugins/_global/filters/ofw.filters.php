@@ -10,7 +10,8 @@
 //	using the write method.
 //		- parameter - the parsed parameter variable/string
 //		- source - the source file object
-//		- counter (optional) - a 1-based counter specifying which filter is currently running (1st, 2nd, or 3rd, etcetc.)
+//		- $counter_for_all_filters (optional) - a 1-based counter specifying which filter is currently processing (among all)
+//		- $counter_for_same_filter (optional) - a 1-based counter specifying which filter is currently processing (among the filters of the same name)
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -378,9 +379,9 @@ EOF;
 	 *  <b>{{#translated_string#|printf:'16'}}</b> Assuming translated_string is 'There are %s registered' it will return 'There are 16 registered users'. Of course, '16' can be replaced with a variable as such: {{#translated_string#|printf:users.total}}
 	 **/
 	
-	public function filter_printf($parameter, &$source, $counter){
+	public function filter_printf($parameter, &$source, $counter_for_all_filters, $counter_for_same_filter){
 		// write to file
-			$this->zajlib->compile->write('$filter_var = str_ireplace(\'%'.$counter.'\', '.$parameter.', $filter_var);');
+			$this->zajlib->compile->write('$filter_var = str_ireplace(\'%'.$counter_for_same_filter.'\', '.$parameter.', $filter_var);');
 		return true;
 	}
 
@@ -390,7 +391,7 @@ EOF;
 	 *  <b>{{myvar|is_dict}}</b> Returns true if myvar is an array or object.
 	 **/
 
-	public function filter_is_dict($parameter, &$source, $counter){
+	public function filter_is_dict($parameter, &$source, $counter_for_all_filters, $counter_for_same_filter){
 		// write to file
 			$this->zajlib->compile->write('$filter_var = (is_object($filter_var) || is_array($filter_var));');
 		return true;
@@ -405,7 +406,7 @@ EOF;
 	 * <b>{{product.translation.name|translate:'sk_SK'}}</b> Will return the localized version of the product name. Without the filter, the current locale's value is shown.
 	 *
 	 **/
-	public function filter_translate($parameter, &$source, $counter){
+	public function filter_translate($parameter, &$source, $counter_for_all_filters, $counter_for_same_filter){
 		// If parameter is not defined, then the parameter is the current locale
 			if(empty($parameter)) return $source->warning('You must specify which locale you want to translate to for filter "translate".');
 		// write to file
@@ -419,7 +420,7 @@ EOF;
 	 * <b>{{'comma,separated,value'|explode:','}}</b> Returns a list separated by comma.
 	 *
 	 **/
-	public function filter_explode($parameter, &$source, $counter){
+	public function filter_explode($parameter, &$source, $counter_for_all_filters, $counter_for_same_filter){
 		// If parameter is not defined, then the parameter is the current locale
 		if(empty($parameter)) return $source->warning('You must specify a split character for filter "explode".');
 		// write to file
@@ -519,7 +520,7 @@ EOF;
 	 * <b>{{'something'|in:'A sentence about something.'}}</b> Will return true if the string is located within the string.
 	 *
 	 **/
-	public function filter_in($parameter, &$source, $counter){
+	public function filter_in($parameter, &$source, $counter_for_all_filters, $counter_for_same_filter){
 		// If parameter is not defined, then the parameter is the current locale
 			if(empty($parameter)) return $source->warning('You must specify which variable you want to search in.');
 		// Generate some code

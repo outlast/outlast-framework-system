@@ -379,7 +379,7 @@
          */
         public function strip_xss($string, $context = "") {
             if ($this->ofw->security->has_xss($string)) {
-                $this->ofw->warning("XSS attempt found and has been stripped. ".$context);
+                $this->ofw->warning("XSS attempt found and has been stripped. Use the |safe filter if the content is safely stripped of user input. ".$context);
 
                 return '';
             }
