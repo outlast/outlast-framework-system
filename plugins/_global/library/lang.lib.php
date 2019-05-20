@@ -330,32 +330,29 @@ class zajlib_lang extends zajlib_config {
 		 * @param string $name_OR_source_path The name of the file (without locale or ini extension) or the specific ini file to load.
 		 * @param bool|string $section The section to compile.
 		 * @param boolean $force_set This will force setting of variables even if the same file / section was previously loaded.
-		 * deprecated $fail_on_error If set to true (the default), it will fail with error. (deprecated)
+		 * @param boolean $warn_on_error If set to true (the default), it will fail with error.
+         * @param boolean $autoload_default
          * @todo Instead of loading default first, this should happen during compile to improve performance.
 		 * @return bool
 		 */
-		public function load($name_OR_source_path, $section=false, $force_set=false, $fail_on_error=true){
-
-            // Backwards compatibility for specific file load
-		    if(strstr($name_OR_source_path, '.') !== false){
-		        // Just load without any checks
-				return parent::load($name_OR_source_path, $section, $force_set, $fail_on_error);
-            }
+		public function load($name_OR_source_path, $section=false, $force_set=false, $warn_on_error=true, $autoload_default=true){
 
             // First always load default locale
             $original_path = $name_OR_source_path;
-            $name_OR_source_path = $name_OR_source_path.'.'.$this->get_default_locale().'.lang.ini';
-            $result = parent::load($name_OR_source_path, $section, $force_set, false);
-            if(!$result){
-                if($section === false) $this->ofw->warning("The language file $name_OR_source_path was not found for the default locale. It needs to exist!");
-                else $this->ofw->warning("The section $section in language file $name_OR_source_path was not found for the default locale. It needs to exist!");
+            if ($autoload_default || $this->is_default_locale()) {
+                $name_OR_source_path = $name_OR_source_path.'.'.$this->get_default_locale().'.lang.ini';
+                $result = parent::load($name_OR_source_path, $section, $force_set, false);
+                if(!$result && $warn_on_error){
+                    if($section === false) $this->ofw->warning("The language file $name_OR_source_path was not found for the default locale. It needs to exist!");
+                    else $this->ofw->warning("The section $section in language file $name_OR_source_path was not found for the default locale. It needs to exist!");
+                }
             }
 
             // Now load the current locale (if current is not the default)
             if(!$this->is_default_locale()) {
                 $name_OR_source_path = $original_path.'.'.$this->get().'.lang.ini';
                 $result = parent::load($name_OR_source_path, $section, $force_set, false);
-                if(!$result && !$this->ofw->test->is_running() && $this->ofw->config->variable->lang_show_warning_when_cant_load_in_current_locale) {
+                if(!$result && !$this->ofw->test->is_running() && $this->ofw->config->variable->lang_show_warning_when_cant_load_in_current_locale && $warn_on_error) {
                     if($section === false) $this->ofw->warning("The language file $name_OR_source_path was not found, trying default locale.");
                     else $this->ofw->warning("The section $section in language file $name_OR_source_path was not found, trying default locale.");
                 }
