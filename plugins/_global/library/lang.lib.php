@@ -335,30 +335,32 @@ class zajlib_lang extends zajlib_config {
          * @todo Instead of loading default first, this should happen during compile to improve performance.
 		 * @return bool
 		 */
-		public function load($name_OR_source_path, $section=false, $force_set=false, $warn_on_error=true, $autoload_default=true){
+		public function load($name, $section=false, $force_set=false, $warn_on_error=true, $autoload_default=true){
+
+            // Results fail by default
+            $current_result = $default_result = false;
 
             // First always load default locale
-            $original_path = $name_OR_source_path;
             if ($autoload_default || $this->is_default_locale()) {
-                $name_OR_source_path = $name_OR_source_path.'.'.$this->get_default_locale().'.lang.ini';
-                $result = parent::load($name_OR_source_path, $section, $force_set, false);
-                if(!$result && $warn_on_error){
-                    if($section === false) $this->ofw->warning("The language file $name_OR_source_path was not found for the default locale. It needs to exist!");
-                    else $this->ofw->warning("The section $section in language file $name_OR_source_path was not found for the default locale. It needs to exist!");
+                $source_path = $name.'.'.$this->get_default_locale().'.lang.ini';
+                $default_result = parent::load($source_path, $section, $force_set, false);
+                if(!$default_result && $warn_on_error){
+                    if($section === false) $this->ofw->warning("The language file $source_path was not found for the default locale. It needs to exist!");
+                    else $this->ofw->warning("The section $section in language file $source_path was not found for the default locale. It needs to exist!");
                 }
             }
 
             // Now load the current locale (if current is not the default)
             if(!$this->is_default_locale()) {
-                $name_OR_source_path = $original_path.'.'.$this->get().'.lang.ini';
-                $result = parent::load($name_OR_source_path, $section, $force_set, false);
-                if(!$result && !$this->ofw->test->is_running() && $this->ofw->config->variable->lang_show_warning_when_cant_load_in_current_locale && $warn_on_error) {
-                    if($section === false) $this->ofw->warning("The language file $name_OR_source_path was not found, trying default locale.");
-                    else $this->ofw->warning("The section $section in language file $name_OR_source_path was not found, trying default locale.");
+                $current_source_path = $name.'.'.$this->get().'.lang.ini';
+                $current_result = parent::load($current_source_path, $section, $force_set, false);
+                if(!$current_result && !$this->ofw->test->is_running() && $this->ofw->config->variable->lang_show_warning_when_cant_load_in_current_locale && $warn_on_error) {
+                    if($section === false) $this->ofw->warning("The language file $current_source_path was not found, trying default locale.");
+                    else $this->ofw->warning("The section $section in language file $current_source_path was not found, trying default locale.");
                 }
             }
 
-            return $result;
+            return $current_result || $default_result;
 		}
 
 		/**
