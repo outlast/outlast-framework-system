@@ -456,16 +456,16 @@
 
         /**
          * Results are filtered according to $field and $value.
-         * @param string $field The name of the field to be filtered
+         * @param string|array $fields The name of the field or fields to be filtered. If it is multiple fields then each field will be associated with the corresponding value.
          * @param array $values A group of values by which to filter, usually
          * @param string $operator The operator with which to filter. Can be any valid MySQL-compatible operator: LIKE, NOT LIKE, <, >, <=, =, REGEXP etc.
          * @param string $type AND or OR depending on how you want this filter to connect. Defaults to AND.
          * @param string $group_type AND or OR depending on how you want this filter to connect. Defaults to OR.
          * @return zajFetcher This method can be chained.
          **/
-        public function filter_group($field, $values, $operator = 'LIKE', $type = 'AND', $group_type = 'OR') {
+        public function filter_group($fields, $values, $operator = 'LIKE', $type = 'AND', $group_type = 'OR') {
             // add to filter_groups array
-            $this->filter_groups[] = [$field, $values, $operator, $type, $group_type];
+            $this->filter_groups[] = [$fields, $values, $operator, $type, $group_type];
             $this->reset();
 
             return $this;
@@ -644,9 +644,9 @@
          * @param string $query The text to search for.
          * @param boolean $similarity_search If set to true (false is the default), similar sounding results will be returned as well.
          * @param string $type AND or OR depending on how you want this filter to connect
-         * @todo Add the option to specify fields.
          * @return zajFetcher This method can be chained.
-         **/
+         **@todo Add the option to specify fields.
+         */
         public function search($query, $similarity_search = false, $type = 'AND') {
             /** @var zajModel $class_name */
             $class_name = $this->class_name;
@@ -760,9 +760,9 @@
         /**
          * Execute a full, customized query. Any query must return a column 'id' with the IDs of corresponding {@link zajModel} objects. Otherwise it will not be a valid {@link zajFetcher} object and related methods will fail. A full query will override any other methods used, except for paginate and limit (the limit is appended to the end, if specified!).
          * @param string $full_sql The full, customized query.
-         * @deprecated You should use sql() instead nowadays.
          * @return zajFetcher This method can be chained.
-         **/
+         **@deprecated You should use sql() instead nowadays.
+         */
         public function full_query($full_sql) {
             // set the full_sql parameter
             $this->full_sql = $full_sql;
@@ -802,7 +802,7 @@
             }
             // apply group filters to WHERE clause
             foreach ($this->filter_groups as $key => $filter_group) {
-                list($field, $values, $operator, $type, $group_type) = $filter_group;
+                list($fields, $values, $operator, $type, $group_type) = $filter_group;
 
                 // Now process group type to make sure it is valid (defaults to ||)
                 if (strtoupper($group_type) == "AND" || $group_type == "&&") {
@@ -815,7 +815,12 @@
 
                 // Run through each value item
                 $group_filter_sql = " $type (".$group_starter." ";
-                foreach ($values as $value) {
+                foreach ($values as $field_key => $value) {
+                    if (is_array($fields)) {
+                        $field = $fields[$field_key];
+                    } else {
+                        $field = $fields;
+                    }
                     $group_filter_sql .= $this->filter_to_sql($mymodel, [$field, $value, $operator, $group_type]);
                 }
                 $group_filter_sql .= ")";
@@ -1084,9 +1089,10 @@
          */
         function map($function) {
             $newarray = [];
-            foreach($this as $key => $item) {
+            foreach ($this as $key => $item) {
                 $newarray[$key] = $function($item);
             }
+
             return $newarray;
         }
 
@@ -1098,12 +1104,13 @@
          */
         function compactMap($function) {
             $newarray = [];
-            foreach($this as $key => $item) {
+            foreach ($this as $key => $item) {
                 $result = $function($item);
-                if($result != false) {
+                if ($result != false) {
                     $newarray[$key] = $result;
                 }
             }
+
             return $newarray;
         }
 
@@ -1114,9 +1121,10 @@
          */
         function flatMap($function) {
             $newarray = [];
-            foreach($this as $key => $item) {
+            foreach ($this as $key => $item) {
                 array_merge($newarray, $function($item));
             }
+
             return $newarray;
         }
 
