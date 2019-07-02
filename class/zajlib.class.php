@@ -550,13 +550,15 @@
         /**
          * Send an ajax response to the browser or return if test.
          * @param string $message The content to send to the browser.
+         * @param boolean $return If set to true, the result will be returned instead of sent to the browser.
          * @return bool Does not return anything.
          **/
-        public function ajax($message) {
-            // If test
-            if ($this->test->is_running()) {
+        public function ajax($message, $return = false) {
+            // If test or return requested
+            if ($return || $this->test->is_running()) {
                 return $message;
             }
+
             // If actual
             header("Content-Type: application/x-javascript; charset=UTF-8");
             print $message;
@@ -566,17 +568,25 @@
         /**
          * Send json data to the browser or return if test.
          * @param string|array|object $data This can be a json-encoded string or any other data (in this latter case it would be converted to json data).
-         * @return bool Does not yet return anything.
+         * @param boolean $return If set to true, the result will be returned instead of sent to the browser.
+         * @return bool If return is true, the json data is returned. Otherwise it is sent to the browser.
          **/
-        public function json($data) {
+        public function json($data, $return = false) {
+            // If return requested, then just return
+            if ($return) {
+                return $data;
+            }
+
             // If the data is not already a string, convert it with json_encode()
             if (!is_string($data)) {
                 $data = json_encode($data);
             }
-            // If test
+
+            // If test running
             if ($this->test->is_running()) {
                 return $data;
             }
+
             // If real, output and exit!
             header("Content-Type: application/json; charset=UTF-8");
             print $data;
@@ -680,9 +690,9 @@
 
         /**
          * Get the global object and return it statically.
-         * @todo Fix so that this is a static, not global.
          * @return zajLib Return me.
-         **/
+         **@todo Fix so that this is a static, not global.
+         */
         public static function me() {
             return $GLOBALS['ofw'];
         }
