@@ -210,6 +210,8 @@
             $this->orderby = "ORDER BY ".$orderby;
             $this->ordermode = '';
             $this->reset();
+
+            return $this;
         }
 
         /**
