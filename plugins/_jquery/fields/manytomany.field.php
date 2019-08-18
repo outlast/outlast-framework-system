@@ -165,7 +165,7 @@ class zajfield_manytomany extends zajField {
 		 		if(!empty($data->add)) $data->new = $data->add;
 		 		if(!empty($data->remove)) $data->delete = $data->remove;
 		 		// if it is null, warn!
-		 		if(empty($data)) $this->zajlib->error('Tried to save a string to manytomany field which is not json data!'." ($field_name / $data)");
+		 		if(empty($data)) $this->ofw->error('Tried to save a string to manytomany field which is not json data!'." ($field_name / $data)");
 		 		// else, continue
 		 		if(!empty($data->create)){
 		 			foreach($data->create as $id=>$name){

@@ -43,6 +43,14 @@ class zajField {
 	}
 
 	/**
+	 * Check to see if the field settings are valid. Run during database update.
+	 * @return boolean|string Returns false if all is well, returns an error string if something is up.
+	 **/
+	public function get_settings_validation_errors(){
+		return false;
+	}
+
+	/**
 	 * Check to see if input data is valid.
 	 * @param $input mixed The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.

@@ -1338,13 +1338,42 @@
          * @param string $class_name The class name.
          * @param string $field The field name.
          * @param string $id The id.
-         * @return zajModel
+         * @param zajModel $object The object.
+         * @return zajModel|boolean Returns the connected object or boolean if no connection.
          */
-        public static function onetoone($class_name, $field, $id) {
-            // return the one object
-            $fetcher = zajFetcher::manytoone($class_name, $field, $id);
+        public static function onetoone($class_name, $field, $id, &$object) {
+
+            // get the other model
+            /** @var zajModel $class_name */
+            $field_model = $class_name::__field($field);
+            /** @var zajModel $other_model */
+            $other_model = $field_model->options['model'];
+            $other_field = $field_model->options['field'];
+
+            // is it on my side?
+            if(empty($other_field)) {
+
+                // if not id, then return false
+                if (empty($id)) {
+                    return false;
+                }
+
+                // otherwise, continue
+                $fetcher = $other_model::fetch($id);
+            } else {
+
+                // get the other model
+                $fetcher = $other_model::fetch()->filter($other_field, $object)->next();
+
+            }
+
+            // If the fetcher is successful, make sure it is not a deleted one
             if (is_object($fetcher)) {
                 $fetcher->connection_type = 'onetoone';
+                // if it is deleted then do not return
+                if ($fetcher->data->status == 'deleted') {
+                    $fetcher = false;
+                }
             }
 
             return $fetcher;

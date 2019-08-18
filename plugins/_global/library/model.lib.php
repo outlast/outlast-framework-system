@@ -39,6 +39,12 @@ class zajlib_model extends zajLibExtension {
 
 	/**
 	 * @var integer
+	 * Number of errors found.
+	 **/
+	public $num_of_errors= 0;
+
+	/**
+	 * @var integer
 	 * Number of queries performed during this update.
 	 **/
 	public $num_of_queries = 0;
@@ -248,7 +254,7 @@ class zajlib_model extends zajLibExtension {
 				}
 
 			// return num and log
-				return array('num_of_changes'=>$this->num_of_changes, 'num_of_todo'=>$this->num_of_todo, 'log'=>$this->log);
+				return array('num_of_changes'=>$this->num_of_changes, 'num_of_errors'=>$this->num_of_errors, 'num_of_todo'=>$this->num_of_todo, 'log'=>$this->log);
 	}
 
 	/**
@@ -270,6 +276,14 @@ class zajlib_model extends zajLibExtension {
 					// save this field if it is meant to be in database
 						if($field_object::in_database){
 							$my_db = array();
+
+							// check to see if the field is valid
+							if($validation_error = $field_object->get_settings_validation_errors()) {
+					            $this->log('<strong>VALIDATION ERROR in '.$model_name.'.'.$field_name.':</strong> '.$validation_error, true);
+                    			$this->num_of_changes++;
+                    			$this->num_of_errors++;
+							}
+
 							// run through all my fields
 							foreach($field_object->database() as $field_name=>$db){
 								// merge my new fields into the current table

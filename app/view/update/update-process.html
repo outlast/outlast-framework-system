@@ -9,16 +9,18 @@
 	function checkIfSuccess(){
 			var result = 0;
 			var todo = 0;
+			var errors = 0;
 		// decide what the result was
 			if($('#updateframe').contents().find('input').length == 0) result = -1;
 			else{
 				result = $('#updateframe').contents().find('#update_result').val();
+				errors = $('#updateframe').contents().find('#update_errors').val();
 				todo =  $('#updateframe').contents().find('#update_todo').val();
 			}
 		// hide the progress
 			$('#updateprogress').addClass('hidden');
 		// show error or success
-			if(result < 0){
+			if(result < 0 || errors > 0){
 				$('#updateerror').removeClass('hidden');
 			}
 			else{

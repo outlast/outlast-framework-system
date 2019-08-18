@@ -40,7 +40,7 @@ class zajfield_onetomany extends zajField {
 		
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
-	}	
+	}
 
 	/**
 	 * Check to see if input data is valid.

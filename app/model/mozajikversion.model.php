@@ -39,6 +39,9 @@ class MozajikVersion extends zajModel {
         $f->beta = zajDb::boolean();
         $f->installed = zajDb::boolean();
 
+        // Just for testing
+        $f->log = zajDb::onetoone('EmailLog', 'version');
+
 		// do not modify the line below!
         return parent::__model($f);
 	}

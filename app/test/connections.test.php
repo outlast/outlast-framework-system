@@ -50,6 +50,42 @@
 			return true;
 		}
 
+        /**
+         * Check saving one to ones
+         */
+        public function system_connections_onetoone() {
+			// Disabled if mysql not enabled
+			if(!$this->ofw->ofwconf['mysql_enabled']) return false;
+
+			// Create two test items
+			$log = EmailLog::create();
+			$log->set('subject', 'Test 1')->save();
+			$version = MozajikVersion::create();
+			$version->set('major', 20)->save();
+
+			// Try to set from parent side
+			$log->set('version', $version)->save();
+			ofwTestAssert::areIdentical($version->id, $log->data->version->id);
+			ofwTestAssert::areIdentical($log->id, $version->data->log->id);
+			$log->set('version', false)->save();
+			ofwTestAssert::isFalse($log->data->version);
+			$version->data->unload('log');
+			ofwTestAssert::isFalse($version->data->log);
+
+			// Now try to set from child side
+			$version->set('log', $log)->save();
+			ofwTestAssert::areIdentical($version->id, $log->data->version->id);
+			ofwTestAssert::areIdentical($log->id, $version->data->log->id);
+			$version->set('log', false)->save();
+			ofwTestAssert::isFalse($version->data->log);
+			$log->data->reload();
+			ofwTestAssert::isFalse($log->data->version);
+
+			return true;
+
+        }
+
+
 		/**
 		 * Check reordering
 		 */
