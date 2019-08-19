@@ -178,7 +178,8 @@
                 /** @var zajModel $other_class_name */
                 $other_class_name = $this->options['model'];
                 $other_fields = $this->get_other_fields();
-                $other_field_name = array_key_first($other_fields);
+                // @todo Replace with array_key_first() in 7.3+
+                $other_field_name = reset(array_keys($other_fields));
                 $other_field = $other_fields[$other_field_name];
 
                 // Resume as object if id
