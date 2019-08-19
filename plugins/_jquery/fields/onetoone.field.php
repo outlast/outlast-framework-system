@@ -164,35 +164,52 @@
          **/
         public function save($data, &$object) {
 
+            // Validate data
+            if (!is_string($data) && !zajModel::is_instance_of_me($data) && !is_bool($data)) {
+                $this->ofw->warning("Unknown data value set for onetoone field {$this->class_name}.{$this->name}.");
+                return [false, $data];
+            }
+
             // Decide which side this is
             if (empty($this->options['field'])) {
                 // Primary side
 
-                // Resume as object if id
-                $class_name = $this->options['model'];
-                if (is_string($data)) {
-                    /** @var zajModel $data */
-                    $data = $class_name::fetch($data);
-                }
-
-                // Get the other field to unload it
+                // Get the other field data
+                /** @var zajModel $other_class_name */
+                $other_class_name = $this->options['model'];
                 $other_fields = $this->get_other_fields();
                 $other_field_name = array_key_first($other_fields);
                 $other_field = $other_fields[$other_field_name];
 
-                // False value sets to empty
-                if ($data === false) {
-                    $old_other_object = $object->data->{$this->name};
-                    if($other_field && $old_other_object) {
-                        $old_other_object->data->unload($other_field_name);
+                // Resume as object if id
+                if (!is_bool($data)) {
+                    /** @var zajModel $data */
+                    $newdata = $other_class_name::fetch($data);
+                    if(!$newdata) {
+                        $this->ofw->warning("Unknown id set for object of type {$other_class_name} for onetoone field {$this->class_name}.{$this->name}.");
+                    } else {
+                        $data = $newdata;
                     }
-                    return ['', false];
                 } else {
-                    if($other_field) {
-                        $data->data->unload($other_field_name);
+                    // False value sets to empty
+                    if ($data === false) {
+                        $old_other_object = $object->data->{$this->name};
+                        if($other_field && $old_other_object) {
+                            $old_other_object->data->unload($other_field_name);
+                        }
+                        return ['', false];
+                    } else {
+                        $this->ofw->warning("Invalid data set for object of type {$other_class_name} for onetoone field {$this->class_name}.{$this->name}: $data");
+                        return ['', false];
                     }
-                    return [$data->id, $data];
                 }
+
+                // Regular old data
+                if($other_field) {
+                    $data->data->unload($other_field_name);
+                }
+                return [$data->id, $data];
+
             } else {
                 // Secondary side
 
