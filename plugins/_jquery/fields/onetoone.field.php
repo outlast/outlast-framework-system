@@ -12,7 +12,7 @@
         const use_get = true;            // boolean - true if preprocessing required before getting data
         const use_save = true;            // boolean - true if preprocessing required before saving data
         const use_duplicate = false;    // boolean - true if data should be duplicated when duplicate() is called
-        const use_filter = false;        // boolean - true if fetcher needs to be modified
+        const use_filter = true;        // boolean - true if fetcher needs to be modified
         const use_export = true;        // boolean - true if preprocessing required before exporting data
         const disable_export = false;    // boolean - true if you want this field to be excluded from exports
         const search_field = false;        // boolean - true if this field is used during search()
@@ -68,6 +68,7 @@
             } else {
                 $class_name = $this->options['model'];
                 $field_name = $this->options['field'];
+
                 return [$field_name => $class_name::__field($field_name)];
             }
 
@@ -101,7 +102,7 @@
                 $field_name = $this->options['field'];
                 $field_models = $this->get_other_fields();
                 $field_model = $field_models[$field_name];
-                if($field_model->class_name != $class_name || $field_model->type != 'onetoone' || !empty($field_model->options[1]) || !empty($field_model->options['field'])) {
+                if ($field_model->class_name != $class_name || $field_model->type != 'onetoone' || !empty($field_model->options[1]) || !empty($field_model->options['field'])) {
                     return 'The other side of a secondary onetoone needs to be a primary onetoone. Check this field or the '.$class_name.' model for misconfiguration!';
                 }
             }
@@ -167,6 +168,7 @@
             // Validate data
             if (!is_string($data) && !zajModel::is_instance_of_me($data) && !is_bool($data)) {
                 $this->ofw->warning("Unknown data value set for onetoone field {$this->class_name}.{$this->name}.");
+
                 return [false, $data];
             }
 
@@ -186,7 +188,7 @@
                 if (!is_bool($data)) {
                     /** @var zajModel $data */
                     $newdata = $other_class_name::fetch($data);
-                    if(!$newdata) {
+                    if (!$newdata) {
                         $this->ofw->warning("Unknown id set for object of type {$other_class_name} for onetoone field {$this->class_name}.{$this->name}.");
                     } else {
                         $data = $newdata;
@@ -195,20 +197,23 @@
                     // False value sets to empty
                     if ($data === false) {
                         $old_other_object = $object->data->{$this->name};
-                        if($other_field && $old_other_object) {
+                        if ($other_field && $old_other_object) {
                             $old_other_object->data->unload($other_field_name);
                         }
+
                         return ['', false];
                     } else {
                         $this->ofw->warning("Invalid data set for object of type {$other_class_name} for onetoone field {$this->class_name}.{$this->name}: $data");
+
                         return ['', false];
                     }
                 }
 
                 // Regular old data
-                if($other_field) {
+                if ($other_field) {
                     $data->data->unload($other_field_name);
                 }
+
                 return [$data->id, $data];
 
             } else {
@@ -217,7 +222,7 @@
                 $class_name = $this->options['model'];
                 $field_name = $this->options['field'];
 
-                if($data === false) {
+                if ($data === false) {
                     $old_other_object = $object->data->{$this->name};
                     if ($old_other_object) {
                         $old_other_object->set($field_name, false)->save();
@@ -236,6 +241,52 @@
             }
 
         }
+
+        /**
+         * This is called when a filter() or exclude() methods are run on this field. It is actually executed only when the query is being built.
+         * @param zajFetcher $fetcher A pointer to the "parent" fetcher which is being filtered.
+         * @param array $filter An array of values specifying what type of filter this is.
+         * @return bool|string Returns false by default; this will use the default filter. Otherwise it can return the filter SQL string.
+         */
+        public function filter(&$fetcher, $filter) {
+
+            // break up filter
+            list($field, $value, $logic, $type) = $filter;
+
+            // other fetcher's field
+            $other_field = $this->options['field'];
+
+            // If we are on the primary side, just use the default
+            if (empty($other_field)) {
+                return false;   // Will revert to the default implementation
+            }
+
+            // Otherwise we are on the secondary side...
+
+            // if value is a fetcher
+            if (zajFetcher::is_instance_of_me($value)) {
+                // get my other query
+                /** @var zajFetcher $other_fetcher */
+                $other_fetcher = $value->limit(false)->sort(false);
+                // add field source
+                $other_fetcher->add_field_source('model.'.$other_field, 'other_field', true);
+            } // else value is an id
+            else {
+                $model = $this->options['model'];
+                $other_fetcher = $model::fetch();
+                // filter the other fetcher
+                $other_fetcher->filter('id', $value)->limit(false)->sort(false);
+                $other_fetcher->add_field_source('model.'.$other_field, 'other_field', true);
+            }
+            // add source
+            $as_name = strtolower('sub_'.$this->class_name.'_'.$this->options['model'].'_'.$this->name);
+            $fetcher->add_source('('.$other_fetcher->get_query().')', $as_name);
+            $fetcher->group('id');
+
+            // create local query
+            return "$as_name.other_field = model.id";
+        }
+
 
         /**
          * Preprocess the data and convert it to a string before exporting.

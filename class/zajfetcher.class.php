@@ -879,25 +879,32 @@
                 $filter = [$field, $value, $operator, $type];
             }
 
-            // if use_filter is true, then not a standard field object
+            // Try a custom filter if use_filter is true
+            $field_filter_sql = false;
             if ($mymodel->{$field}->use_filter) {
                 // create the model
                 /** @var zajModel $classname */
                 $fieldobject = $classname::__field($field);
                 // call my filter generator
-                $filters_sql .= " $type ".$fieldobject->filter($this, $filter);
-            } else {
+                $field_filter_sql = $fieldobject->filter($this, $filter);
+            }
+
+            // Generate the default filter for the field
+            if ($field_filter_sql === false) {
                 // check if it is a string
                 if (is_object($value)) {
                     zajLib::me()->error("Invalid filter/exclude value on fetcher object for $classname/$field! Value cannot be an object since this is not a special field!");
                 }
                 // allow subquery
                 if ($operator != 'IN' && $operator != 'NOT IN') {
-                    $filters_sql .= " $type model.`$field` $operator '".$this->db->escape($value)."'";
+                    $field_filter_sql = " model.`$field` $operator '".$this->db->escape($value)."'";
                 } else {
-                    $filters_sql .= " $type model.`$field` $operator ($value)";
+                    $field_filter_sql = " model.`$field` $operator ($value)";
                 }
             }
+
+            // Apply type
+            $filters_sql .= " $type $field_filter_sql";
 
             return $filters_sql;
         }

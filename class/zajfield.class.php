@@ -93,7 +93,7 @@ class zajField {
 	 * This is called when a filter() or exclude() methods are run on this field. It is actually executed only when the query is being built.
 	 * @param zajFetcher $fetcher A pointer to the "parent" fetcher which is being filtered.
 	 * @param array $filter An array of values specifying what type of filter this is.
-	 * @return bool|string Returns false by default. Otherwise it can return the filter SQL.
+	 * @return bool|string Returns false by default; this will use the default filter. Otherwise it can return the filter SQL string.
 	 */
 	public function filter(&$fetcher, $filter){
 		return false;
