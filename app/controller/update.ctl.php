@@ -154,7 +154,7 @@
                 exit("<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['num_of_changes']."'><br>error: stopping update</div></body></html>");
             }
             // now print the update_result
-            print "<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['num_of_changes']."'><input class='mozajik-update' type='hidden' id='update_todo' value='".$db_update_result['num_of_todo']."'></div></body></html>";
+            print "<input class='mozajik-update' type='hidden' id='update_result' value='".$db_update_result['num_of_changes']."'><input class='mozajik-update' type='hidden' id='update_todo' value='".$db_update_result['num_of_todo']."'><input class='mozajik-update' type='hidden' id='update_errors' value='".$db_update_result['num_of_errors']."'></div></body></html>";
             exit;
         }
 

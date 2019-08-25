@@ -43,6 +43,14 @@ class zajField {
 	}
 
 	/**
+	 * Check to see if the field settings are valid. Run during database update.
+	 * @return boolean|string Returns false if all is well, returns an error string if something is up.
+	 **/
+	public function get_settings_validation_errors(){
+		return false;
+	}
+
+	/**
 	 * Check to see if input data is valid.
 	 * @param $input mixed The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
@@ -85,7 +93,7 @@ class zajField {
 	 * This is called when a filter() or exclude() methods are run on this field. It is actually executed only when the query is being built.
 	 * @param zajFetcher $fetcher A pointer to the "parent" fetcher which is being filtered.
 	 * @param array $filter An array of values specifying what type of filter this is.
-	 * @return bool|string Returns false by default. Otherwise it can return the filter SQL.
+	 * @return bool|string Returns false by default; this will use the default filter. Otherwise it can return the filter SQL string.
 	 */
 	public function filter(&$fetcher, $filter){
 		return false;

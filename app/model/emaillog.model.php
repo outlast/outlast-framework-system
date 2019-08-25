@@ -32,6 +32,10 @@ class EmailLog extends zajModel {
 
 		$f->bounceto = zajDb::text();
 
+		// just for testing
+		$f->version = zajDb::onetoone('MozajikVersion');
+
+
 		// do not modify the line below!
         return parent::__model($f);
 	}

@@ -879,25 +879,32 @@
                 $filter = [$field, $value, $operator, $type];
             }
 
-            // if use_filter is true, then not a standard field object
+            // Try a custom filter if use_filter is true
+            $field_filter_sql = false;
             if ($mymodel->{$field}->use_filter) {
                 // create the model
                 /** @var zajModel $classname */
                 $fieldobject = $classname::__field($field);
                 // call my filter generator
-                $filters_sql .= " $type ".$fieldobject->filter($this, $filter);
-            } else {
+                $field_filter_sql = $fieldobject->filter($this, $filter);
+            }
+
+            // Generate the default filter for the field
+            if ($field_filter_sql === false) {
                 // check if it is a string
                 if (is_object($value)) {
                     zajLib::me()->error("Invalid filter/exclude value on fetcher object for $classname/$field! Value cannot be an object since this is not a special field!");
                 }
                 // allow subquery
                 if ($operator != 'IN' && $operator != 'NOT IN') {
-                    $filters_sql .= " $type model.`$field` $operator '".$this->db->escape($value)."'";
+                    $field_filter_sql = " model.`$field` $operator '".$this->db->escape($value)."'";
                 } else {
-                    $filters_sql .= " $type model.`$field` $operator ($value)";
+                    $field_filter_sql = " model.`$field` $operator ($value)";
                 }
             }
+
+            // Apply type
+            $filters_sql .= " $type $field_filter_sql";
 
             return $filters_sql;
         }
@@ -1338,13 +1345,42 @@
          * @param string $class_name The class name.
          * @param string $field The field name.
          * @param string $id The id.
-         * @return zajModel
+         * @param zajModel $object The object.
+         * @return zajModel|boolean Returns the connected object or boolean if no connection.
          */
-        public static function onetoone($class_name, $field, $id) {
-            // return the one object
-            $fetcher = zajFetcher::manytoone($class_name, $field, $id);
+        public static function onetoone($class_name, $field, $id, &$object) {
+
+            // get the other model
+            /** @var zajModel $class_name */
+            $field_model = $class_name::__field($field);
+            /** @var zajModel $other_model */
+            $other_model = $field_model->options['model'];
+            $other_field = $field_model->options['field'];
+
+            // is it on my side?
+            if(empty($other_field)) {
+
+                // if not id, then return false
+                if (empty($id)) {
+                    return false;
+                }
+
+                // otherwise, continue
+                $fetcher = $other_model::fetch($id);
+            } else {
+
+                // get the other model
+                $fetcher = $other_model::fetch()->filter($other_field, $object)->next();
+
+            }
+
+            // If the fetcher is successful, make sure it is not a deleted one
             if (is_object($fetcher)) {
                 $fetcher->connection_type = 'onetoone';
+                // if it is deleted then do not return
+                if ($fetcher->data->status == 'deleted') {
+                    $fetcher = false;
+                }
             }
 
             return $fetcher;

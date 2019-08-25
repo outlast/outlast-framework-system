@@ -29,8 +29,8 @@ die("This file is for documentation.");
  * @method static zajDb manytoone($other_object)
  * @method static zajDbMap map
  * @method static zajDb name(integer $length=255)
- * @method static zajDb onetoone($other_object, $other_field='')
- * @method static zajDb onetomany($other_object, $other_field='')
+ * @method static zajDb onetoone(string $other_object, string $other_field='')
+ * @method static zajDb onetomany(string $other_object, string $other_field)
  * @method static zajDb ordernum
  * @method static zajDb password
  * @method static zajDbPhoto photo

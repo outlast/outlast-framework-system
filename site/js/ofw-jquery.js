@@ -619,9 +619,6 @@ define('system/js/ofw-jquery', [], function () {
 		alert: function (message, urlORfunctionORdom, buttonText, top, callback) {
 			if (api.bootstrap) {
 
-				// Alert sent via bootstrap
-				api.track('OFW', 'Bootstrap Alert', message.substr(0, 50));
-
 				// Cache my jquery selectors
 				var $modal;
 				var defaultButtonText = 'Ok';
@@ -822,9 +819,10 @@ define('system/js/ofw-jquery', [], function () {
 			/**
 			 * Perform validation with returned json data.
 			 * @param {string} data This can be a json string or a non-json string.
+			 * @param {boolean} [showAlerts=false] Show the alerts.
 			 * @return {boolean} Will return true if validation was successful, false if not.
 			 */
-			validate: function (data) {
+			validate: function (data, showAlerts) {
 				/** @type {{status: String, message: String, highlight: Array, errors: <string, string>}|boolean} dataJson */
 				var dataJson;
 
@@ -837,17 +835,17 @@ define('system/js/ofw-jquery', [], function () {
 
 				// If data json is not false, then it is json
 				if (dataJson !== false) {
-					if (dataJson.status == 'ok') return true;
+					if (dataJson.status === 'ok') return true;
 					else {
 						// Define vars
 						var input, inputGroup, inputCleanup;
 						/** @type {boolean|Number} scrollTo */
 						var scrollTo = false;
 						// Display a message (if set)
-						if (dataJson.message != null) api.alert(dataJson.message);
+						if (dataJson.message != null && showAlerts) api.alert(dataJson.message);
 						// Highlight the fields (if set)
 						// @todo Make sure that fields are only selected if they are part of the request to begin with! But how?
-						if (typeof dataJson.highlight == 'object') {
+						if (typeof dataJson.highlight === 'object') {
 							$.each(dataJson.highlight, function (key, val) {
 								// Add the error class and remove on change
 								input = $('[name="' + val + '"]');
@@ -889,7 +887,9 @@ define('system/js/ofw-jquery', [], function () {
 									/** @type {Number|Window} inputOffset */
 									var inputOffset = input.offset().top - input.next('.tooltip').height() - 10;
 									if (scrollTo === false || inputOffset < scrollTo) scrollTo = inputOffset;
-								} else api.alert(msg);
+								} else {
+									if (showAlerts) api.alert(msg);
+								}
 							});
 						}
 						// Scroll to top-most
@@ -899,7 +899,9 @@ define('system/js/ofw-jquery', [], function () {
 				// not json, so parse as string
 				else {
 					if (data == 'ok') return true;
-					else api.alert(data);
+					else {
+						if(showAlerts) api.alert(data);
+					}
 				}
 				// all other cases return false
 				return false;
