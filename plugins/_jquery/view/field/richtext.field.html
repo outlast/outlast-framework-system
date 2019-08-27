@@ -5,17 +5,23 @@
 <link rel="stylesheet" href="{{baseurl}}system/css/ext/medium-editor/themes/bootstrap.css">
 
 <style>
-	.medium-editor-toolbar { z-index: 2002; }
+	.medium-editor-toolbar {
+		z-index: 2002;
+	}
 </style>
 
-<div style="height: auto;" class="ofw-field-textarea form-control" id="medium-editor-{{field.uid}}">{{field.value|strip_attribute:'style'|safe}}</div>
+<div style="height: auto;" class="ofw-field-textarea form-control"
+	 id="medium-editor-{{field.uid}}">{{field.value|strip_attribute:'style'|safe}}</div>
 <script>
 	var mediumEditors;
-	if(typeof mediumEditors == 'undefined') mediumEditors = {};
-	requirejs(["system/js/ext/medium-editor/medium-editor.min"], function(MediumEditor){
+	if (typeof mediumEditors == 'undefined') mediumEditors = {};
+	requirejs(["system/js/ext/medium-editor/medium-editor.min", "system/js/ext/medium-editor/medium-custom-buttons"], function (MediumEditor, MediumButton) {
+
+		console.log("WOO");
+		//console.log(MediumButton);
 		mediumEditors['{{field.uid}}'] = new MediumEditor('#medium-editor-{{field.uid}}', {
 			toolbar: {
-				buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'quote', 'removeFormat']
+				buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'quote', 'inlinecode', 'removeFormat']
 			},
 			placeholder: {
 				text: '{{field.placeholder|escapejs}}',
@@ -28,14 +34,21 @@
 				cleanAttrs: ['class', 'style', 'dir', 'script', 'onclick', 'onload'],
 				cleanTags: ['meta', 'script'],
 				unwrapTags: []
-    		},
+			},
 			extensions: {
-				'imageDragging': {}
+				'imageDragging': {},
+				'inlinecode': new MediumButton({
+					label: '<i class="fa fa-code">', // Button Label: HTML and Font-Awesome is possible
+					start: '<code>', // Beginning of the selection
+					end: '</code>' // End of the selection
+				})
 			}
 		});
-		mediumEditors['{{field.uid}}'].subscribe('editableInput', function(){
+		mediumEditors['{{field.uid}}'].subscribe('editableInput', function () {
 			$('#textarea-{{field.uid}}').html($('#medium-editor-{{field.uid}}').html());
 		});
+
 	});
 </script>
-<textarea class='ofw-field-text form-control hide' id='textarea-{{field.uid}}' name='{{field.name}}'>{{field.value|safe|escape:'htmlall'}}</textarea>
+<textarea class='ofw-field-text form-control hide' id='textarea-{{field.uid}}'
+		  name='{{field.name}}'>{{field.value|safe|escape:'htmlall'}}</textarea>

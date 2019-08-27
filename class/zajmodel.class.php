@@ -42,7 +42,7 @@ define('CACHE_DIR_LEVEL', 4);
  * @method static boolean __onFilterQueryFetcher() __onFilterQueryFetcher(zajFetcher &$fetcher, string $query, boolean $similarity_search = false, string $type = 'AND') EVENT. Executed when filter_query() is run on the model's zajFetcher object. If it returns boolean false (default) it is ignored and the default filter query is applied.
  *
  * Properties...
- * @property zajLib $zajlib A pointer to the global object.
+ * zajLib $zajlib A pointer to the global object. - deprecated
  * @property zajLib $ofw A pointer to the singleton OFW object.
  * @property string $name The name of the object.
  * @property boolean $exists
