@@ -36,12 +36,14 @@
             // define each field
             $fields[$this->name] = [
                 'field'   => $this->name,
-                'type'    => 'text',
-                'option'  => [],
-                'key'     => '',
-                'default' => false,
+                'type'    => 'varchar',
+                'option'  => [
+                    0 => 255,
+                ],
+                'key'     => 'MUL',
+                'default' => $this->options['default'],
                 'extra'   => '',
-                'comment' => 'configuration',
+                'comment' => 'text',
             ];
 
             return $fields;

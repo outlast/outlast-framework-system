@@ -113,7 +113,9 @@
             list($field, $value, $logic, $type) = $filter;
 
             // escape value and allow to search in
-            $value = "%".addslashes($value)."%";
+            if($value != "") {
+                $value = "%".addslashes($value)."%";
+            }
 
             // filter return
             return "`$field` $logic '$value'";
