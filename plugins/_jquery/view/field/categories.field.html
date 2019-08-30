@@ -1,14 +1,14 @@
-<div class="dd nestable category" id="nestable-{{field.uid}}" data-field-uid="{{field.uid}}">
+<div data-category="nestable" class="dd nestable category" id="nestable-{{field.uid}}" data-field-uid="{{field.uid}}">
 	<input class='field categories' type='hidden' id='{{category.id}}' name='{{field.name}}[]' value=''>
 {% with field.choices_toplevel as categories %}
 	{% block ddlist %}
 	<ol class="dd-list">
 		{% foreach categories as category %}
-			<li class="dd-item" data-id="{{category.id}}" style="cursor: pointer;" onclick="toggleCategoryCheckbox(event, this)">
+			<li class="dd-item" data-category="toggleCategory" data-category-id="{{category.id}}">
 				<div class="dd-handle">
 					{{category.name}}
 					<div class="pull-right" style="position: relative; top: -2px;">
-						<input class='field boolean categories iCheck' type='checkbox' id='{{category.id}}' name='{{field.name}}[]' value='{{category.id}}'>
+						<input data-category="categoryCheckbox" class='field boolean' type='checkbox' name='{{field.name}}[]' value='{{category.id}}'>
 					</div>
 				</div>
 				{% if category.data.subcategories.total > 0 %}
@@ -29,45 +29,130 @@
 {% endwith %}
 </div>
 
-<script src="{{baseurl}}plugins/outlast/js/jquery.nestable.js?v2"></script>
 <script>
-	// Nestable without drag and drop
 	ofw.ready(function(){
-		$('#nestable-{{field.uid}}').nestable({enableDragAndDrop: false});
-		$('#nestable-{{field.uid}}').nestable('collapseAll');
-		$('input.categories').on('ifClicked', function(ev){
-			ev.stopPropagation();
-			toggleCategoryCheckbox(ev, this);
+		ofw.addDataAttributeHandler('category', 'system/js/data/', function(){
+			{% if field.value %}
+				{% foreach field.value as selcat %}
+					ofw.plugins.category.addSelected('{{selcat.id}}');
+				{% endforeach %}
+			{% endif %}
 		});
 	});
-	function toggleCategoryCheckbox(ev, el){
-		var $me = $(el),
-			$myinput,
-			isInput = false;
-		// Check what type of target
-			if(ev.target.type == 'button') return true;
-		// Check if checkbox helper was clicked or simply the horizontal bar
-			if($me.hasClass('iCheck-helper')) {
-					$myinput = $me;
-					isInput = true;
-				}
-				else {
-					$myinput = $me.find('input').first();
-				}
-		// Toggle me, plus stop propagation
-			$myinput.iCheck('toggle');
-			ev.stopPropagation();
-		// If I was just turned on, turn on my parents
-			if((!isInput && typeof($myinput[0]) != 'undefined' && $myinput[0].checked) || (isInput && $myinput.parent().hasClass('checked'))) $me.parents('.dd-item').each(function() {
-				$(this).find('input').first().iCheck('check');
-			});
-		// If I was just turned off, turn off my children
-			if((!isInput && !$myinput[0].checked) || (isInput && !$myinput.parent().hasClass('checked'))) $me.find('.dd-item').find('input').iCheck('uncheck');
-	}
-
-	{% if field.value %}
-		{% foreach field.value as selcat %}
-			$('#{{selcat.id}}').iCheck('toggle');
-		{% endforeach %}
-	{% endif %}
 </script>
+
+<!-- Move style to separate file -->
+<style>
+	.dd {
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: 0;
+  max-width: 600px;
+  list-style: none;
+  font-size: 13px;
+  line-height: 20px; }
+
+.dd-list {
+  display: block;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none; }
+  .dd-list .dd-list {
+    padding-left: 30px; }
+
+.dd-item,
+.dd-empty,
+.dd-placeholder {
+  display: block;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  min-height: 20px;
+  font-size: 13px;
+  line-height: 20px; }
+
+.dd-handle {
+  display: block;
+  height: 30px;
+  margin: 5px 0;
+  padding: 5px 10px;
+  color: #333;
+  text-decoration: none;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  border-radius: 3px;
+  box-sizing: border-box; }
+  .dd-handle:hover {
+    color: #2ea8e5;
+    background: #fff; }
+
+.dd-item > button {
+  position: relative;
+  cursor: pointer;
+  float: left;
+  width: 25px;
+  height: 20px;
+  margin: 5px 0;
+  padding: 0;
+  text-indent: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+  font-weight: bold; }
+  .dd-item > button:before {
+    display: block;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    text-indent: 0; }
+  .dd-item > button[data-action='expand']:before {
+    content: '+'; }
+  .dd-item > button[data-action='collapse']:before {
+    content: '-'; }
+
+.dd-expand {
+  display: none; }
+
+.dd-collapsed .dd-list,
+.dd-collapsed .dd-collapse {
+  display: none; }
+
+.dd-collapsed .dd-expand {
+  display: block; }
+
+.dd-empty,
+.dd-placeholder {
+  margin: 5px 0;
+  padding: 0;
+  min-height: 30px;
+  background: #f2fbff;
+  border: 1px dashed #b6bcbf;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box; }
+
+.dd-empty {
+  border: 1px dashed #bbb;
+  min-height: 100px;
+  background-color: #e5e5e5;
+  background-size: 60px 60px;
+  background-position: 0 0, 30px 30px; }
+
+.dd-dragel {
+  position: absolute;
+  pointer-events: none;
+  z-index: 9999; }
+  .dd-dragel > .dd-item .dd-handle {
+    margin-top: 0; }
+  .dd-dragel .dd-handle {
+    box-shadow: 2px 4px 6px 0 rgba(0, 0, 0, 0.1); }
+
+.dd-nochildren .dd-placeholder {
+  display: none; }
+</style>
