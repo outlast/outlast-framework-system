@@ -239,11 +239,11 @@ abstract class zajModel implements JsonSerializable {
 			/* @var string|zajModel $class_name */
 			$class_name = get_called_class();
 		// make sure $field is chrooted
-			if(strpos($field_name, '.')) return zajLib::me()->error('Invalid field name "'.$field_name.'" used in model "'.$class_name.'".');
+			if(strpos($field_name, '.')) return zajLib::me()->warning('Invalid field name "'.$field_name.'" used in model "'.$class_name.'".');
 		// TODO: can I create a version where $this is set?
 		// get model
 			$field_def = $class_name::__model()->$field_name;
-			if(empty($field_def)) return zajLib::me()->error('Undefined field name "'.$field_name.'" used in model "'.$class_name.'".');
+			if(empty($field_def)) return zajLib::me()->warning('Undefined field name "'.$field_name.'" used in model "'.$class_name.'".');
 		// create my field object
 			$field_object = zajField::create($field_name, $field_def, $class_name);
 		return $field_object;
