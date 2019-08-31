@@ -49,6 +49,12 @@
             // Resume as object if id
             /** @var zajModel $class_name */
             $class_name = $this->options['model'];
+
+            // See if class exists
+            if(!class_exists($class_name, false) && !$this->ofw->load->model($class_name, false, false)){
+                return "The model '$class_name' does not exist.";
+            }
+
             $other_model = $class_name::__model();
             /**  @var zajField $field */
             $other_side_fields = 0;

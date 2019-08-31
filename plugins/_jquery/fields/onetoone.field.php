@@ -86,6 +86,12 @@
                 // Resume as object if id
                 /** @var zajModel $class_name */
                 $class_name = $this->options['model'];
+
+                // See if class exists
+                if(!class_exists($class_name, false) && !$this->ofw->load->model($class_name, false, false)){
+                    return "The model '$class_name' does not exist.";
+                }
+
                 /**  @var zajField $field */
                 $field_models = $this->get_other_fields();
                 if (count($field_models) < 1) {
@@ -99,9 +105,18 @@
                 // If I am the secondary, the other side needs to be primary
                 /** @var zajModel $class_name */
                 $class_name = $this->options['model'];
+
+                // See if class exists
+                if(!class_exists($class_name, false) && !$this->ofw->load->model($class_name, false, false)){
+                    return "The model '$class_name' does not exist.";
+                }
+
                 $field_name = $this->options['field'];
                 $field_models = $this->get_other_fields();
                 $field_model = $field_models[$field_name];
+                if(!$field_model) {
+                    return "There is no field named '$class_name.$field_name'.";
+                }
                 if ($field_model->class_name != $class_name || $field_model->type != 'onetoone' || !empty($field_model->options[1]) || !empty($field_model->options['field'])) {
                     return 'The other side of a secondary onetoone needs to be a primary onetoone. Check this field or the '.$class_name.' model for misconfiguration!';
                 }

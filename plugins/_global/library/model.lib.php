@@ -273,17 +273,17 @@ class zajlib_model extends zajLibExtension {
 				// by going through each field we will create an array which is equivalent to $tables in structure
 				$model_tables[$model_name] = array();
 				foreach($model as $field_name=>$field_object){
+
+                    // check to see if the field is valid
+                    if($validation_error = $field_object->get_settings_validation_errors()) {
+                        $this->log('<strong>VALIDATION ERROR in '.$model_name.'.'.$field_name.':</strong> '.$validation_error, true);
+                        $this->num_of_changes++;
+                        $this->num_of_errors++;
+                    }
+
 					// save this field if it is meant to be in database
 						if($field_object::in_database){
-							$my_db = array();
-
-							// check to see if the field is valid
-							if($validation_error = $field_object->get_settings_validation_errors()) {
-					            $this->log('<strong>VALIDATION ERROR in '.$model_name.'.'.$field_name.':</strong> '.$validation_error, true);
-                    			$this->num_of_changes++;
-                    			$this->num_of_errors++;
-							}
-
+							$my_db = [];
 							// run through all my fields
 							foreach($field_object->database() as $field_name=>$db){
 								// merge my new fields into the current table
