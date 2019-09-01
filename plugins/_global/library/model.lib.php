@@ -285,9 +285,9 @@ class zajlib_model extends zajLibExtension {
 						if($field_object::in_database){
 							$my_db = [];
 							// run through all my fields
-							foreach($field_object->database() as $field_name=>$db){
+							foreach($field_object->database() as $db_field_name=>$db){
 								// merge my new fields into the current table
-									$my_db[$field_name] = $db;
+									$my_db[$db_field_name] = $db;
 									$model_tables[$model_name] = array_merge($model_tables[$model_name], $my_db);
 							}
 						}
