@@ -50,13 +50,16 @@ define('system/js/data/category', ["../ofw-jquery", "../../../plugins/outlast/js
 			}
 		} else {
 			// If I am not checked, then also uncheck my child categories
-			let $myChildCategory = $myCategory.find('[data-category="toggleCategory"]').first();
-			let childCategoryId = $myChildCategory.attr('data-category-id');
-			let $myChildCategoryInput = $myChildCategory.find('input[value="'+childCategoryId+'"]').first();
-			if($myChildCategoryInput.length > 0) {
-				$myChildCategoryInput[0].checked = false;
-				_toggleRelated(childCategoryId);
-			}
+			let $myChildCategories = $myCategory.find('[data-category="toggleCategory"]');
+			$myChildCategories.each(function() {
+				let $myChildCategory =  $(this);
+				let childCategoryId = $myChildCategory.attr('data-category-id');
+				let $myChildCategoryInput = $myChildCategory.find('input[value="'+childCategoryId+'"]').first();
+				if($myChildCategoryInput.length > 0) {
+					$myChildCategoryInput[0].checked = false;
+					_toggleRelated(childCategoryId);
+				}
+			});
 		}
 	};
 
