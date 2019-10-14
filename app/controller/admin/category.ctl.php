@@ -91,12 +91,20 @@
             $obj = Category::fetch($_POST['id']);
 
             // Check for existing friendly url
-            if (Category::fetch()->filter('friendlyurl', $_POST['friendlyurl'])->filter('id', $obj->id,
-                    'NOT LIKE')->next() !== false) {
-                return $this->ofw->ajax($this->ofw->config->variable->category_friendlyurl_error);
+            if (!empty($_POST['friendlyurl'])) {
+                if (Category::fetch()->filter('friendlyurl', $_POST['friendlyurl'])->filter('id', $obj->id,
+                        'NOT LIKE')->next() !== false) {
+                    return $this->ofw->json([
+                        'status'  => 'error',
+                        'message' => $this->ofw->config->variable->category_friendlyurl_error,
+                    ]);
+                }
             }
             if ($_POST['parentcategory'] == $obj->id) {
-                return $this->ofw->ajax($this->ofw->config->variable->category_parent_error);
+                return $this->ofw->json([
+                    'status'  => 'error',
+                    'message' => $this->ofw->config->variable->category_parent_error,
+                ]);
             }
 
             // Update the object
