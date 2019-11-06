@@ -628,7 +628,7 @@ define('system/js/ofw-jquery', [], function () {
 				else $modal = $('#zaj_bootstrap_modal');
 
 				// Create modal if not yet available
-				if ($modal.length <= 0) {
+				if (typeof $modal == 'undefined' || $modal == null || $modal.length <= 0) {
 					// Check to see which Bootstrap version and create markup
 					if (api.bootstrap3) {
 						$modal = $('<div id="zaj_bootstrap_modal" data-ofw="bootstrapModal" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-body"></div><div class="modal-footer"><a type="button" class="btn modal-button btn-default" data-dismiss="modal">' + defaultButtonText + '</a></div></div></div></div>');
