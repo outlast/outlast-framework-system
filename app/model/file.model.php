@@ -173,7 +173,8 @@ class File extends zajModel {
 			$mime = $this->data->mime;
 			if(empty($mime)) $mime = $this->zajlib->file->get_mime_type($download_as, $file_relative_path);
 			if(!file_exists($file_full_path)){
-			    return $this->zajlib->reroute('__error', [false, false]);
+			    $this->ofw->warning("File $file_full_path was requested for download but is missing.");
+			    exit("The requested file is missing.");
             }
 		// pass file thru to user
 			header('Content-Type: '.$mime);
