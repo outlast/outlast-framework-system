@@ -148,7 +148,6 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		});
 		dropzoneActions.onInit(fieldid);
 
-
 		// Finally, set
 		_photoFieldUploaderObjects[fieldid] = myDropzone;
 	};
@@ -179,8 +178,6 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			file['previewElement'] = $photoElement[0];
 			// Emit events
 			_photoFieldUploaderObjects[fieldid].emit("removedfile", file);
-			//_photoFieldUploaderObjects[fieldid].emit("thumbnail", file, photoUrl);
-			//_photoFieldUploaderObjects[fieldid].emit("complete", file);
 		},
 
 
@@ -557,6 +554,15 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		getFieldOption: function(fieldid, key){
 			if(typeof _photoFieldOptions[fieldid] === 'undefined') return null;
 			return _photoFieldOptions[fieldid][key];
+		},
+
+		/**
+		 * Reset values and options for field id.
+		 * @param {string} fieldid The field unique id.
+		 */
+		resetValuesAndOptions: function(fieldid) {
+			_photoFieldOptions[fieldid] = {};
+			_photoFieldValues[fieldid] = {};
 		}
 	};
 
