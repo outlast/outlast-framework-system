@@ -76,7 +76,7 @@ class zajCompileElement{
 						else $new_var .= '->'.$element;
 				}
 				// Add xss protection
-					if($check_xss && !empty(zajLib::me()->ofwconf->feature_xss_protection_enabled)) $new_var = '$this->zajlib->template->strip_xss('.$new_var.', "Found in {{'.$variable.'}} for '.$this->parent->get_requested_path().' / '.$this->parent->line_number.'. For filter parameters just use the |safe filter anywhere <i>before</i> in the filter chain.")';
+					if($check_xss && !empty(zajLib::me()->ofwconf->feature_xss_protection_enabled)) $new_var = '$this->ofw->security->purify('.$new_var.')';
 				return $new_var;
 			}
 	}

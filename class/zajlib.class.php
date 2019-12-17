@@ -34,7 +34,7 @@
      * @property ofw_plugin $plugin
      * @property zajlib_request $request
      * @property zajlib_sandbox $sandbox
-     * @property zajlib_security $security
+     * @property ofw_security $security
      * @property zajlib_template $template
      * @property ofw_test $test
      * @property zajlib_text $text

@@ -371,21 +371,6 @@
                 $save_log);
         }
 
-        /**
-         * Strip XSS and throw a warning if such code is found.
-         * @param string $string The incoming string.
-         * @param string $context An optional string to specify context when warning message sent.
-         * @return string Returns the string if safe and empty string (with warning()) if an error is found.
-         */
-        public function strip_xss($string, $context = "") {
-            if ($this->ofw->security->has_xss($string)) {
-                $this->ofw->warning("XSS attempt found and has been stripped. Use the |safe filter if the content is safely stripped of user input. ".$context);
-
-                return '';
-            }
-
-            return $string;
-        }
     }
 
     /**
