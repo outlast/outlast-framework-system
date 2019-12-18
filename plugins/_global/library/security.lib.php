@@ -23,6 +23,11 @@
             }
             require_once(zajLib::me()->basepath."system/ext/htmlpurifier/HTMLPurifier.standalone.php");
             $config = HTMLPurifier_Config::createDefault();
+            $cache_path = $this->ofw->basepath.'cache/htmlpurifier';
+            if (!file_exists($cache_path)) {
+                mkdir($cache_path);
+            }
+            $config->set('Cache.SerializerPath', $cache_path);
             $this->_purifier = new HTMLPurifier($config);
 
             return $this->_purifier;
@@ -103,6 +108,7 @@
             if (is_null($dirty) || !is_string($dirty) || empty($this->ofw->ofwconf->feature_xss_protection_enabled)) {
                 return $dirty;
             }
+
             return $this->get_purifier()->purify($dirty);
         }
 
