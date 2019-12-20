@@ -1,7 +1,7 @@
 /**
  * Define this data attribute.
  **/
-define('system/js/data/category', ["../ofw-jquery", "../../../plugins/outlast/js/jquery.nestable"], function () {
+define('system/js/data/category', ["../ofw-jquery", "../ext/nestable/jquery.nestable"], function () {
 
 	/** Private properties **/
 	let _dataAttributeName = 'category';
@@ -10,6 +10,12 @@ define('system/js/data/category', ["../ofw-jquery", "../../../plugins/outlast/js
 
 	/** Object init */
 	let init = function () {
+		// Add jQuery case-insensitive contains
+		$.expr[":"].icontains = $.expr.createPseudo(function(arg) {
+			return function( elem ) {
+				return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+			};
+		});
 	};
 
 	/**
@@ -70,7 +76,6 @@ define('system/js/data/category', ["../ofw-jquery", "../../../plugins/outlast/js
 
 	/** Actions **/
 	let actions = {
-
 	};
 
 	/** Activations **/
@@ -80,12 +85,21 @@ define('system/js/data/category', ["../ofw-jquery", "../../../plugins/outlast/js
 		 * Init nestable.
 		 */
 		nestable: function (dataset, $el) {
-			$el.nestable({enableDragAndDrop: false});
+			$el.nestable({handleClass: null});
 			$el.nestable('collapseAll');
 		},
 
 		/**
-		 * Stop propogation on the checkbox.
+		 * Search box for a nestable.
+		 */
+		search: function(dataset, $el) {
+			$el.on('keyup', function() {
+				api.search($el.val(), $el.parents('.dd').first());
+			});
+		},
+
+		/**
+		 * Stop propagation on the checkbox.
 		 */
 		toggleCategory: function (dataset, $el) {
 			let categoryId = dataset.categoryId;
@@ -111,13 +125,46 @@ define('system/js/data/category', ["../ofw-jquery", "../../../plugins/outlast/js
 		},
 
 		/**
+		 * Search through the list.
+		 * @param {String} query The search query.
+		 * @param {jQuery} $el The element of the root nestable object.
+		 */
+		search: function(query, $el) {
+			if(query === "") {
+				return api.clearSearch($el);
+			}
+			let $matchingElements = $el.find('.dd-item:icontains("'+query+'")');
+			let $unmatchingElements = $el.find('.dd-item:not(:icontains("'+query+'"))');
+			$unmatchingElements.addClass('hide');
+			$unmatchingElements.each(function() {
+				$el.nestable('collapseItem', $(this));
+			});
+			$matchingElements.removeClass('hide');
+			$matchingElements.each(function() {
+				$el.nestable('expandItem', $(this));
+			});
+		},
+
+		/**
+		 * Clear the search.
+		 * @param {jQuery} $el The element of the root nestable object.
+		 */
+		clearSearch: function($el) {
+			let $allElements = $el.find('.dd-item');
+			$allElements.removeClass('hide');
+			$el.nestable('collapseAll');
+		},
+
+		/**
 		 * Add the selected categories.
 		 */
 		addSelected: function(categoryId) {
 			let $myCategory = $('[data-category="toggleCategory"][data-category-id="'+categoryId+'"]');
 			let $myInput = $myCategory.find('input');
 			$myInput[0].checked = true;
-			_toggleRelated(categoryId);
+			console.log("here:");
+			console.log($myInput[0]);
+			//_toggleRelated(categoryId);
 		},
 
 	};

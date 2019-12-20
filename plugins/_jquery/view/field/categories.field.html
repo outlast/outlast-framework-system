@@ -1,4 +1,5 @@
 <div data-category="nestable" class="dd nestable category" id="nestable-{{field.uid}}" data-field-uid="{{field.uid}}">
+	<input data-category="search" class='field' type="text" placeholder="Find categories...">
 	<input class='field categories' type='hidden' id='{{category.id}}' name='{{field.name}}[]' value=''>
 {% with field.choices_toplevel as categories %}
 	{% block ddlist %}
