@@ -932,14 +932,14 @@
                     $this->pagination->next = '';
                 }
                 // Set autopagination data
-                $this->pagination->autopagination = htmlspecialchars(
+                $this->pagination->autopagination = OfwSafeString::set(htmlspecialchars(
                     json_encode([
                         'model'     => $this->class_name,
                         'url'       => zajLib::me()->protocol.$this->pagination->pageurl,
                         'startPage' => $this->pagination->page,
                         'pageCount' => $this->pagination->pagecount,
-                    ])
-                );
+                    ]),ENT_QUOTES, 'UTF-8'
+                ));
             }
             // query is done
             $this->query_done = true;

@@ -722,6 +722,7 @@
     require('zajlibextension.class.php');
     require('zajlibloader.class.php');
     require('zajvariable.class.php');
+    require('ofwsafestring.class.php');
 
 // Register autoloading mechanism
     spl_autoload_register('zajLib::autoload');

@@ -104,10 +104,17 @@
          * @return string Returns clean HTML.
          */
         public function purify($dirty) {
+            // Returns value for safe strings
+            if (is_a($dirty, "OfwSafeString")) {
+                /** @var OfwSafeString $dirty */
+                return $dirty->value;
+            }
+
             // Skip any null or non string values or if xss protection is disabled
             if (is_null($dirty) || !is_string($dirty) || empty($this->ofw->ofwconf->feature_xss_protection_enabled)) {
                 return $dirty;
             }
+
 
             return $this->get_purifier()->purify($dirty);
         }
