@@ -14,9 +14,10 @@
          * @param string|array|bool $params This is optional if parameters are specified via query string in the $url. It can be an array or a query string.
          * @param string $method The method in which to send the request (GET/POST/PUT/DELETE/etc.).
          * @param array|bool $additional_options An associative array of additional curl options. {@link http://www.php.net/manual/en/function.curl-setopt.php} Example: array(CURLOPT_URL => 'http://www.example.com/')
-         * @return string Returns a string with the content received.
+         * @param bool $return_header If set to true an array will be returned ['header'=>'', 'body'=>'']
+         * @return string|array Returns a string with the content received or an array of $return_header is true.
          **/
-        public function curl($url, $params = false, $method = "GET", $additional_options = false) {
+        public function curl($url, $params = false, $method = "GET", $additional_options = false, $return_header = false) {
             // Check for curl support
             if (!function_exists('curl_init')) {
                 return $this->ofw->error("Curl support not installed.");
@@ -63,17 +64,30 @@
                     curl_setopt($curl, $key, $value);
                 }
             }
+
+            // Return header
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_VERBOSE, 1);
+            curl_setopt($curl, CURLOPT_HEADER, 1);
+
             // Send and close
-            $ret = curl_exec($curl);
+            $response = curl_exec($curl);
 
             // Check to see if an error occurred
-            if ($ret === false) {
+            if ($response === false) {
                 $this->ofw->warning("Curl error (".curl_errno($curl)."): ".curl_error($curl));
             }
             // Close and return
+            $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
             curl_close($curl);
 
-            return $ret;
+            $header = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+            if($return_header) {
+                return ['header'=>$header, 'body'=>$body];
+            } else {
+                return $body;
+            }
         }
 
         /**
@@ -167,41 +181,18 @@
             if (empty($customheaders['Content-type']) && empty($customheaders['content-type']) && empty($customheaders['Content-Type'])) {
                 $customheaders['Content-type'] = "text/html";
             }
-            // open remote host
-            $fp = fsockopen($prefix.$urldata['host'], $port);
-            if ($fp === false) {
-                return false;
-            }
-            // send GET or POST request
-            fputs($fp, "$method $path HTTP/1.1\r\n");
-            fputs($fp, "Host: ".$urldata['host']."\r\n");
+
             // Send custom headers
+            $curl_headers = [];
             foreach ($customheaders as $key => $value) {
-                fputs($fp, "$key: $value\r\n");
+                $curl_headers[] = "$key: $value";
             }
-            // send the content
-            fputs($fp, "Content-length: ".strlen($content)."\r\n");
-            fputs($fp, "Connection: close\r\n\r\n");
-            fputs($fp, $content."\r\n\r\n");
-            // get response
-            $buf = '';
-            while (!feof($fp)) {
-                $buf .= fgets($fp, 102);
-            }
-            // close connection
-            fclose($fp);
 
-            // now split into header and content
-            $bufdata = explode("\r\n\r\n", $buf);
-            //$headers = $bufdata[0];
-            $content = $bufdata[1];
-
-            // now return what was requested
-            if ($returnheaders) {
-                return $buf;
-            } else {
-                return $content;
-            }
+            // Set up curl request
+            return $this->curl($url, $content, "POST", [
+                CURLOPT_PORT => $port,
+                CURLOPT_HTTPHEADER => $curl_headers,
+            ]);
         }
 
         /**
