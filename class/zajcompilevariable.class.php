@@ -53,7 +53,7 @@ class zajCompileVariable extends zajCompileElement {
 			foreach($filter_matches as $filter){
 				if(!empty($filter[0])){
 					// if this is safe, then disable check xss
-					if($filter[2] == 'safe'){
+					if($filter[2] == 'safe' || $filter[2] == 'escape' || $filter[2] == 'escapejs'){
 						$check_xss = false;
 					}
                     // count same filter type

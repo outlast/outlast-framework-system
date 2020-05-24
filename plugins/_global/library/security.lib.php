@@ -115,7 +115,6 @@
                 return $dirty;
             }
 
-
             return $this->get_purifier()->purify($dirty);
         }
 
