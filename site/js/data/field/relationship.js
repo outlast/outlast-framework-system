@@ -71,11 +71,12 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 	/**
 	 * Init the select javascript.
 	 * @param {string} fieldid The field unique id.
+	 * @param {boolean} tagMode If set to true, free-text will be allowed (to create new items).
 	 * @param {boolean} ajaxMode If set to true, the select will initialize as an ajax search box.
 	 * @param {string} [className=null] The class name (zajModel name) for this search field. Only required if ajaxMode is true.
 	 * @param {string} [fieldName=null] The field name (zajModel field name) for this search field. Only required if ajaxMode is true.
 	 */
-	var selectInit = function(fieldid, ajaxMode, className, fieldName) {
+	var selectInit = function(fieldid, tagMode, ajaxMode, className, fieldName) {
 		var $mySelectElement = getSelectElement(fieldid);
 
 		// Default options
@@ -83,6 +84,11 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 			allowClear: true,
 			width: '100%'
 		};
+
+		// Tagging mode?
+		if (tagMode) {
+			mySelectOptions['tags'] = true;
+		}
 
 		// Set up options if in ajaxMode
 		if(ajaxMode){
@@ -143,7 +149,7 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 		 * Initialize the select.
 		 */
 		select: function(dataset, $el){
-			selectInit(dataset.relationshipFieldId, dataset.relationshipAjaxMode, dataset.relationshipClassName, dataset.relationshipFieldName);
+			selectInit(dataset.relationshipFieldId, dataset.relationshipFieldAllowNew === "true", dataset.relationshipAjaxMode, dataset.relationshipClassName, dataset.relationshipFieldName);
 		}
 
 	};
