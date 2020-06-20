@@ -13,7 +13,7 @@
 				{% foreach field.value as val %}
 					fieldValueArray.push('{{val.id}}');
 				{% endforeach %}
-				relationship.setFieldValue("{{field.uid}}", fieldValueArray);
+				relationship.setFieldValue("{{field.uid}}", fieldValueArray, false);
 			{% endblock %}
 		});
 	});
@@ -38,6 +38,7 @@
 <i data-relationship="loader" data-relationship-field-id="{{field.uid}}" class="fa fa-circle-o-notch fa-spin fa-fw"></i>
 
 <select
+    data-event="trigger" data-event-trigger-major="change"
 	data-relationship="select"
 	data-relationship-field-id="{{field.uid}}"
 	{% block relationship_data_attributes %}data-relationship-field-type="manytomany"{% endblock %}

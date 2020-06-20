@@ -21,7 +21,7 @@
 <script>
 {% block relationship_selected_values_js %}
 	{% if field.value %}
-		relationship.setFieldValue("{{field.uid}}", "{{field.value.id}}");
+		relationship.setFieldValue("{{field.uid}}", "{{field.value.id}}", false);
 	{% endif %}
 {% endblock relationship_selected_values_js %}
 </script>

@@ -45,9 +45,14 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 	 * Set the input field value.
 	 * @param {string} fieldid The field identifier.
 	 * @param {Array|values} values An array of ids or a single id. Depending on the type of relationship.
+	 * @param {bool} [triggerOnChangeEvent=true] If set to true (the default), onChange will be triggered.
 	 */
-	var setFieldValues = function(fieldid, values) {
-		getSelectElement(fieldid).val(values).trigger('change');
+	var setFieldValues = function(fieldid, values, triggerOnChangeEvent) {
+		let $field = getSelectElement(fieldid)
+		$field.val(values)
+		if (typeof triggerOnChangeEvent === 'undefined' || triggerOnChangeEvent) {
+			$field.trigger('change');
+		}
 	};
 
 	/**
@@ -172,12 +177,13 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 		 * Set field value and then set the input value.
 		 * @param {string} fieldid The field unique id.
 		 * @param {Array|string} values An array of ids.
+		 * @param {bool} [triggerOnChangeEvent=true] If set to true (the default), onChange will be triggered.
 		 */
-		setFieldValues: function(fieldid, values){
+		setFieldValues: function(fieldid, values, triggerOnChangeEvent){
 			// Set input
-			setFieldValues(fieldid, values);
+			setFieldValues(fieldid, values, triggerOnChangeEvent);
         },
-		setFieldValue: function(fieldid, values){ api.setFieldValues(fieldid, values); },
+		setFieldValue: function(fieldid, values, triggerOnChangeEvent){ api.setFieldValues(fieldid, values, triggerOnChangeEvent); },
 
 		/**
 		 * Get field value for a specific field and type.

@@ -15,7 +15,10 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	var _photoFieldValues = {};
 	var _photoFieldUploaderObjects = {};
 
-    /** Private API **/
+	/** The timeout variable **/
+	var _setFieldInputTriggerEventTimeout;
+
+	/** Private API **/
 
     /**
      * Object init
@@ -53,10 +56,16 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	var setFieldInput = function(fieldid) {
 		if(typeof _photoFieldValues[fieldid] !== 'undefined'){
 			// Set stringified array to input
-			$('#'+fieldid).val(JSON.stringify(_photoFieldValues[fieldid]));
+			let $field = $('#'+fieldid);
+			$field.val(JSON.stringify(_photoFieldValues[fieldid]));
+
+			// Trigger change with a bit of delay to filter out duplicate events
+			clearTimeout(_setFieldInputTriggerEventTimeout)
+			_setFieldInputTriggerEventTimeout = setTimeout(function(){
+				$field.trigger('change');
+			}, 500);
 		}
 	};
-
 
 	/**
 	 * Get my list element
