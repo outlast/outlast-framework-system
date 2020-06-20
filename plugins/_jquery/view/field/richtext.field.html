@@ -9,16 +9,12 @@
 		z-index: 2002;
 	}
 </style>
-
 <div style="height: auto;" class="ofw-field-textarea form-control"
 	 id="medium-editor-{{field.uid}}">{{field.value|strip_attribute:'style'|safe}}</div>
 <script>
 	var mediumEditors;
 	if (typeof mediumEditors == 'undefined') mediumEditors = {};
 	requirejs(["system/js/ext/medium-editor/medium-editor.min", "system/js/ext/medium-editor/medium-custom-buttons"], function (MediumEditor, MediumButton) {
-
-		console.log("WOO");
-		//console.log(MediumButton);
 		mediumEditors['{{field.uid}}'] = new MediumEditor('#medium-editor-{{field.uid}}', {
 			toolbar: {
 				buttons: ['bold', 'italic', 'underline', 'anchor', 'orderedlist', 'unorderedlist', 'h2', 'h3', 'quote', 'inlinecode', 'removeFormat']
@@ -46,9 +42,12 @@
 		});
 		mediumEditors['{{field.uid}}'].subscribe('editableInput', function () {
 			$('#textarea-{{field.uid}}').html($('#medium-editor-{{field.uid}}').html());
+			$('#textarea-{{field.uid}}').trigger('keyup')
 		});
-
+		mediumEditors['{{field.uid}}'].subscribe('blur', function () {
+			$('#textarea-{{field.uid}}').trigger('blur')
+		});
 	});
 </script>
-<textarea class='ofw-field-text form-control hide' id='textarea-{{field.uid}}'
+<textarea data-event="trigger" data-event-trigger-minor="keyup" data-event-trigger-major="blur" class='ofw-field-text form-control hide' id='textarea-{{field.uid}}'
 		  name='{{field.name}}'>{{field.value|safe|escape:'htmlall'}}</textarea>

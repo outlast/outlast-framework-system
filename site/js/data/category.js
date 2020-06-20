@@ -162,9 +162,6 @@ define('system/js/data/category', ["../ofw-jquery", "../ext/nestable/jquery.nest
 			let $myCategory = $('[data-category="toggleCategory"][data-category-id="'+categoryId+'"]');
 			let $myInput = $myCategory.find('input');
 			$myInput[0].checked = true;
-			console.log("here:");
-			console.log($myInput[0]);
-			//_toggleRelated(categoryId);
 		},
 
 	};

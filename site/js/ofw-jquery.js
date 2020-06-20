@@ -1,6 +1,9 @@
 /**
  * The basic Outlast Framework javascript object.
  **/
+
+var OfwType = {}
+
 define('system/js/ofw-jquery', [], function () {
 
 	/** Init options **/
@@ -22,6 +25,7 @@ define('system/js/ofw-jquery', [], function () {
 		plugins: {},
 		readyFunctions: [],
 		dataAttributeHandlers: [],
+		dataAttributeReadyFunctions: {},
 		dataAttributes: [
 			{name: 'single-click', path: 'system/js/data'},
 			{name: 'autopagination', path: 'system/js/data'},
@@ -29,7 +33,8 @@ define('system/js/ofw-jquery', [], function () {
 			{name: 'action-value', path: 'system/js/data'},
 			{name: 'track', path: 'system/js/data'},
 			{name: 'block', path: 'system/js/data'},
-			{name: 'featured', path: 'system/js/data'}
+			{name: 'featured', path: 'system/js/data'},
+			{name: 'event', path: 'system/js/data'},
 		],
 		jqueryIsReady: false
 	};
@@ -57,6 +62,7 @@ define('system/js/ofw-jquery', [], function () {
 	var ajaxIsSubmitting = false;			// True if ajax is currently submitting
 	var dataAttributes = [];				// The registered data attributes to look for
 	var dataAttributesObjects = {};			// A key/value pair where key is attr name and value is the loaded data attribute object
+	var dataAttributeReadyFunctions = {};	// A key/value pair where key is the plugin name and value is an array of ready functions to call
 
 	var queueReadyFunctions = false;		// True if the ready and require functions are being queued
 	var originalRequireFunction;			// The original requirejs() function
@@ -495,15 +501,30 @@ define('system/js/ofw-jquery', [], function () {
 		var handlerPath = dataAttribute['path'].replace(/^\/|\/$/g, '');
 		var callback = dataAttribute['callback'];
 
+		// Add ready function if the object is not yet initialized
+		if (dataAttributesObjects[handlerName] == null) {
+			dataAttributeReadyFunctions[handlerName] = []
+			dataAttributesObjects[handlerName] = {
+				ready: function(f){
+					dataAttributeReadyFunctions[handlerName].push(f)
+				}
+			};
+		}
+
 		// Let's see if we find any in context
 		var $elements = $context.find('[data-' + handlerName + ']');
 		if ($elements.length > 0) {
 			// Load and init
 			requirejs([handlerPath + '/' + handlerName], function (handlerObject) {
+				// Add ready function which calls immediately
+				handlerObject.ready = function(f) { f() }
 				// Set the handler object
 				dataAttributesObjects[handlerName] = handlerObject;
 				// Activate
 				handlerObject.activate($elements, $context);
+				// Call ready function for data attribute
+				dataAttributeReadyFunctions[handlerName].forEach(function(f){ f() })
+				dataAttributeReadyFunctions[handlerName] = []
 				// If callback set
 				if (typeof callback === "function") callback(handlerObject, $context);
 			});
