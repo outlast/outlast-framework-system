@@ -34,8 +34,8 @@ class zajfield_json extends zajField {
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name,
-					'type' => 'text',
-					'option' => array(),
+					'type' => 'mediumtext',
+					'option' => [],
  					'key' => '',
 					'default' => false,
 					'extra' => '',
