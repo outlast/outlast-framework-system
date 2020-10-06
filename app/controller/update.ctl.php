@@ -380,8 +380,8 @@
 					  href="<?php echo $this->ofw->baseurl; ?>system/css/bootstrap/css/bootstrap.min.css">
 
 				<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300" rel="stylesheet" type="text/css">
-				<link rel="shortcut icon" type="image/png" href="//localhost/wlp/system/img/outlast-favicon.png">
-				<link rel="stylesheet" type="text/css" href="//localhost/wlp/system/css/outlast-update.css?v3"
+				<link rel="shortcut icon" type="image/png" href="<?php echo $this->ofw->baseurl; ?>system/img/outlast-favicon.png">
+				<link rel="stylesheet" type="text/css" href="<?php echo $this->ofw->baseurl; ?>system/css/outlast-update.css?v3"
 					  media="all">
 
 				<script language="JavaScript"
