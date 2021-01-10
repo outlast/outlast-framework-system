@@ -51,7 +51,10 @@
 	data-placeholder="{{#system_field_relationships_search#|escape}}"
 	id="{{field.uid}}"
 	name="{% block relationship_name %}{{field.name}}[]{% endblock %}"
-	{% block relationship_multiple %}multiple{% endblock %}>
+	{% if field.options.maximum_selection_length %}
+		data-relationship-maximum-selection-length="{{field.options.maximum_selection_length}}"
+	{% endif %}
+	{% block relationship_multiple %}multiple {% endblock %}>
 
 	{% block relationship_empty %}{% endblock relationship_empty %}
 	{% if field.choices.total <= 50 %}
