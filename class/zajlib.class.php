@@ -520,7 +520,7 @@
         /**
          * Custom error handler to override the PHP defaults.
          **/
-        public function error_handler($errno, $errstr, $errfile, $errline, $errcontext = null) {
+        public function error_handler($errno, $errstr, $errfile, $errline) {
             // get current error_reporting value
             $errrep = error_reporting();
 

@@ -83,11 +83,11 @@
     $ofw = new zajLib($ofwconf['root_folder'], $ofwconf);
 
     // Set internal error handler
-    set_error_handler(function ($errno, $errstr, $errfile, $errline, $errcontext) {
+    set_error_handler(function ($errno, $errstr, $errfile, $errline) {
         if (!is_object(zajLib::me())) {
             print "FATAL ERROR: Check error log.";
         } else {
-            zajLib::me()->error_handler($errno, $errstr, $errfile, $errline, $errcontext);
+            zajLib::me()->error_handler($errno, $errstr, $errfile, $errline);
         }
     });
 
