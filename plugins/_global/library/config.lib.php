@@ -13,7 +13,7 @@
      * @property zajlibConfigVariable $variable The config variables.
      * @property stdClass $section The config variables broken into sections.
      */
-    class zajlib_config extends zajLibExtension {
+    class  zajlib_config extends zajLibExtension {
         protected $dest_path = 'cache/conf/';        // string - subfolder where compiled conf files are stored (cannot be changed)
         protected $conf_path = 'conf/';            // string - default subfolder where uncompiled conf files are stored
         protected $type_of_file = 'configuration';// string - the name of the file type this is (either configuration or language)
@@ -200,6 +200,8 @@
                         $current_section = $section;
                         $section_file = $this->ofw->basepath.$this->dest_path.$source_path.'.'.$section.'.php';
                         $this->add_file($section_file, $global_scope);
+                        $current_line = 'if (!is_object($this->ofw->config->section->'.$section.')) $this->ofw->config->section->'.$section.' = new stdClass();';
+                        $this->write_line($current_line."\n");
                         break;
                     default:        // it's a variable line
                         // let's first process the data
