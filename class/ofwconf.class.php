@@ -74,7 +74,11 @@
          * @return mixed
          */
         public function offsetGet($offset) {
-            return $this->values[$offset];
+            if (array_key_exists($offset, $this->values)) {
+                return $this->values[$offset];
+            } else {
+                return null;
+            }
         }
 
         /**

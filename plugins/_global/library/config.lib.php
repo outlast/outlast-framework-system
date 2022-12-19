@@ -200,7 +200,7 @@
                         $current_section = $section;
                         $section_file = $this->ofw->basepath.$this->dest_path.$source_path.'.'.$section.'.php';
                         $this->add_file($section_file, $global_scope);
-                        $current_line = 'if (!is_object($this->ofw->config->section->'.$section.')) $this->ofw->config->section->'.$section.' = new stdClass();';
+                        $current_line = 'if (!property_exists($this->ofw->config->section, "'.$section.'")) $this->ofw->config->section->'.$section.' = new stdClass();';
                         $this->write_line($current_line."\n");
                         break;
                     default:        // it's a variable line

@@ -23,7 +23,7 @@ class zajlib_tag_base extends zajElementCollection{
 	 **/
 	public function tag_comment($param_array, &$source){
 		// convert to php comment
-			if($param_array[0]) $this->zajlib->compile->write("<?php\n// $param_array[0]\n?>");
+			if(array_key_exists(0, $param_array)) $this->zajlib->compile->write("<?php\n// $param_array[0]\n?>");
 			else{
 				// nested mode!
 				$this->zajlib->compile->write("<?php\n/*");
@@ -985,7 +985,11 @@ EOF;
                 // If the currently ended block is not overridden (and nor are any of its parents)
                 ($new_current_block && !$new_current_block->is_overridden(true))
             ){
-                zajCompileSession::verbose("We are back at $new_current_block->name in <code>$source->file_path</code>, so unpausing main destination.");
+                if ($new_current_block != null) {
+                    zajCompileSession::verbose("We are back at $new_current_block->name in <code>$source->file_path</code>, so unpausing main destination.");
+                } else {
+                    zajCompileSession::verbose("We are back at root in <code>$source->file_path</code>, so unpausing main destination.");
+                }
                 $this->zajlib->compile->main_dest_paused(false);
             }
 

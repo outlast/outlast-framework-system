@@ -201,7 +201,12 @@
                         $arguments[2] = 1;
                     }
                     $return = call_user_func_array([$element_object, $element_method],
-                        [$arguments[0], &$arguments[1], $arguments[2], $arguments[3]]);
+                        [
+                            $arguments[0],
+                            &$arguments[1],
+                            $arguments[2],
+                            array_key_exists(3, $arguments) ? $arguments[3] : null
+                        ]);
 
                     // check if return value is valid, if not just return the unmodified $debug_stats
                     return $return;
