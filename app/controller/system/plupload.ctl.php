@@ -176,7 +176,9 @@
          **/
         private function upload_process($orig_name, $temp_name, $process_as_image = false) {
             // Create upload cache
-            @mkdir($this->ofw->basepath.'cache/upload/', 0777, true);
+            if (!file_exists($this->ofw->basepath.'cache/upload/')) {
+                mkdir($this->ofw->basepath . 'cache/upload/', 0777, true);
+            }
             // Verify file
             if (!is_uploaded_file($temp_name)) {
                 return false;

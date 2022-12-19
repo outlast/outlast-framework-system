@@ -712,7 +712,9 @@
 			$folder = zajLib::me()->basepath.'/cache/upload/';
 			$filename = $pobj->id.'.tmp';
 			// make temporary folder
-			@mkdir($folder, 0777, true);
+            if (!file_exists($folder)) {
+                mkdir($folder, 0777, true);
+            }
 			@file_put_contents($folder.$filename, $raw_data);
 			// is photo an image
 			$image_data = getimagesize($folder.$filename);
@@ -763,7 +765,9 @@
 				$pobj = Photo::create();
 			}
 			// Move uploaded file to tmp
-			@mkdir(zajLib::me()->basepath.'cache/upload/');
+            if (!file_exists(zajLib::me()->basepath.'cache/upload/')) {
+                mkdir(zajLib::me()->basepath . 'cache/upload/', 0777, true);
+            }
 			$new_name = zajLib::me()->basepath.'cache/upload/'.$pobj->id.'.tmp';
 			// Verify new name is jailed
 			zajLib::me()->file->file_check($new_name);

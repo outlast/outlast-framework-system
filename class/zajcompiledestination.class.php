@@ -46,7 +46,10 @@ class zajCompileDestination {
 		}
 
 		// open the cache file, create folders (if needed)
-		@mkdir(dirname($this->file_path), 0777, true);
+        $directory = dirname($this->file_path);
+        if(!file_exists($directory)){
+            mkdir($directory, 0777, true);
+        }
 		$this->file = fopen($this->file_path, 'w');
 
 		// did it fail?

@@ -36,9 +36,11 @@ class zajlib_graphics extends zajLibExtension {
 		// get the new file type
 			$newpathdata = pathinfo($newpath);
 			$newpathdata['extension'] = mb_strtolower($newpathdata['extension']);
-			
+
 		// create the folders needed
-			@mkdir($newpathdata['dirname'], 0777, true);
+            if (!file_exists($newpathdata['dirname'])) {
+			    mkdir($newpathdata['dirname'], 0777, true);
+            }
 		// prepare image
 			$im = $this->prepare_image($oldpath);
 			if(!$im) return false;
@@ -111,7 +113,9 @@ class zajlib_graphics extends zajLibExtension {
 			$newpathdata = pathinfo($newpath);
 			$newpathdata['extension'] = mb_strtolower($newpathdata['extension']);
 		// create the folders needed
-			@mkdir($newpathdata['dirname'], 0777, true);
+            if (!file_exists($newpathdata['dirname'])) {
+                mkdir($newpathdata['dirname'], 0777, true);
+            }
 		// prepare image
 			$im = $this->prepare_image($oldpath);
 			if(!$im) return false;
