@@ -372,7 +372,7 @@
             if ($parentClassName === 'Enhance\TestFixture') {
                 $instance = new $className();
                 $this->addFixture($instance);
-            } else {
+            } elseif ($parentClassName) {
                 $ancestorClassName = get_parent_class($parentClassName);
                 if ($ancestorClassName === 'Enhance\TestFixture') {
                     $instance = new $className();
@@ -559,7 +559,7 @@
             $setUpMethodResult = false;
 
             try {
-                if (is_callable($this->SetUpMethod)) {
+                if (is_callable($this->SetUpMethod, true) && method_exists($testClass, 'setUp')) {
                     $setUpMethodResult = $testClass->setUp();
                 } else {
                     // If no set up method, then we assume success
@@ -589,7 +589,7 @@
             }
 
             try {
-                if (is_callable($this->TearDownMethod)) {
+                if (is_callable($this->TearDownMethod, true) && method_exists($testClass, 'tearDown')) {
                     $testClass->tearDown();
                 }
             } catch (\Exception $e) {

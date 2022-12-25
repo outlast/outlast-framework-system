@@ -895,6 +895,9 @@ EOF;
 	public function tag_block($param_array, &$source){
 		// Note: the block parameter is special because even if it is a variable it is not
 		//		treated as such. So {% block content %} is same as {% block 'content' %}.
+        if(is_string($source)) {
+            exit("Woo: $source");
+        }
 
 		/** @var zajCompileSource $source */
 
@@ -913,6 +916,9 @@ EOF;
 			// Yes.
 
 			// Write lower level block cache to all main source block caches
+            if(is_string($source)) {
+                exit("ooppaa: $source");
+            }
 			$child_block = $source->child_source->get_block($block_name, true);
 			$child_block->insert();
 

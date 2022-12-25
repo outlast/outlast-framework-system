@@ -361,8 +361,10 @@
 
 
             // check and load installation version (only for database format tracking)
-            $installation = @file_get_contents($this->basepath.'cache/install.dat');
-            $this->mozajik = @unserialize($installation);
+            if (file_exists($this->basepath.'cache/install.dat')) {
+                $installation = file_get_contents($this->basepath.'cache/install.dat');
+                $this->mozajik = @unserialize($installation);
+            }
 
             return true;
         }

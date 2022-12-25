@@ -275,8 +275,12 @@ class zajCompileSource {
 		// If name set, get by name or return false if not exists
 		if(!$this->has_block($name, true)) return false;
 		else{
-			// Set block object
-			$block = $this->blocks[$name];
+			// Set the root block object (if exists)
+            if (array_key_exists($name, $this->blocks)) {
+                $block = $this->blocks[$name];
+            } else {
+                $block = false;
+            }
 
 			// Recursively get (if needed)
 			if($recursive && $this->child_source){

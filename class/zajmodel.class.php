@@ -883,7 +883,7 @@ abstract class zajModel implements JsonSerializable {
 		$class_name = get_called_class();
 		// Am I extended?
 		$ext = $class_name::extension();
-		if(method_exists($ext, '__get')){
+		if($ext && method_exists($ext, '__get')){
 			$extobj = $ext::create($this->id, $this);
 			return $extobj->__get($name);
 		}

@@ -154,7 +154,7 @@
     include_once($ofwconf['root_folder'].'/system/class/zajcontroller.class.php');
 
     // All init is completed, after this it's only checks and plugin loads, etcetc. @todo remove?
-    if (!empty($GLOBALS['ZAJ_HOOK_INIT']) && is_callable($GLOBALS['ZAJ_HOOK_INIT'])) {
+    if (!empty($GLOBALS['ZAJ_HOOK_INIT']) && is_callable($GLOBALS['ZAJ_HOOK_INIT'], true)) {
         $GLOBALS['ZAJ_HOOK_INIT']();
     }
 

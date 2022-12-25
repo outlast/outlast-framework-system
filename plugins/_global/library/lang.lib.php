@@ -250,7 +250,7 @@
          */
         public function set_variation($variation = null) {
             if ($variation == null) {
-                $variation = $this->ofw->zajconf['locale_variation'];
+                $variation = $this->ofw->ofwconf['locale_variation'];
             }
             $this->current_variation = $variation;
         }
@@ -286,8 +286,8 @@
          * Reload all the available locales and default locale settings.
          */
         public function reload_locale_settings() {
-            $this->default_locale = trim($this->ofw->zajconf['locale_default']);
-            $this->available_locales = array_map('trim', explode(',', $this->ofw->zajconf['locale_available']));
+            $this->default_locale = trim($this->ofw->ofwconf['locale_default']);
+            $this->available_locales = array_map('trim', explode(',', $this->ofw->ofwconf['locale_available']));
         }
 
         /**

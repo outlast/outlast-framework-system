@@ -49,7 +49,7 @@
             // Log my error
             $this->log($message, 'error', $display_to_users);
             // If tests are running and errors surpessed, let it pass
-            if ($this->errors_disabled_during_test && $this->zajlib->test->is_running()) {
+            if ($this->errors_disabled_during_test && $this->ofw->test->is_running()) {
                 return true;
             }
             // Fatal error, so exit
@@ -156,7 +156,7 @@
                     break;
             }
             // If errors are disabled
-            if ($this->errors_disabled_during_test && $this->zajlib->test->is_running()) {
+            if ($this->errors_disabled_during_test && $this->ofw->test->is_running()) {
                 return true;
             }
 
@@ -182,8 +182,8 @@
             // Update error text
             $original_error_text = $errortext;
 
-            if ($this->zajlib->compile_started && !empty($this->zajlib->variable->ofw->tmp->compile_source_debug)) {
-                $errortext .= " (error triggered from template line ".$this->zajlib->variable->ofw->tmp->compile_source_debug->line_number." of ".$this->zajlib->variable->ofw->tmp->compile_source_debug->file_path.")";
+            if ($this->ofw->compile_started && is_object($this->ofw->variable->ofw->tmp->compile_source_debug) && !empty($this->ofw->variable->ofw->tmp->compile_source_debug->line_number)) {
+                $errortext .= " (error triggered from template line ".$this->ofw->variable->ofw->tmp->compile_source_debug->line_number." of ".$this->ofw->variable->ofw->tmp->compile_source_debug->file_path.")";
             } else {
                 $errortext .= " (error triggered from ".$error_details['line']." of ".$error_details['file'].")";
             }
@@ -239,7 +239,7 @@
             $this->file_log("[".$this->client_ip()."] [".$protocol.zajLib::me()->fullrequest."] $post_data [Outlast Framework $errorlevel - ".$errortext."]".$referer.$debug_mode);
 
             // log the backtrace?
-            if (zajLib::me()->zajconf['error_log_backtrace']) {
+            if (zajLib::me()->ofwconf['error_log_backtrace']) {
                 $this->file_log("Backtrace:\n".print_r($backtrace, true));
             }
 

@@ -31,10 +31,12 @@
             // Disable errors
             $this->ofw->error->surpress_errors_during_test(true);
             /** Try to get master file path without any init **/
-            $this->photo->get_master_file_path();
-            $err_txt = $this->ofw->error->get_last('error');
-            $res = substr($err_txt, 0, strlen("Could not get photo file path."));
-            ofwTestAssert::areIdentical("Could not get photo file path.", $res);
+            if ($this->photo) {
+                $this->photo->get_master_file_path();
+                $err_txt = $this->ofw->error->get_last('error');
+                $res = substr($err_txt, 0, strlen("Could not get photo file path."));
+                ofwTestAssert::areIdentical("Could not get photo file path.", $res);
+            }
 
             return true;
         }

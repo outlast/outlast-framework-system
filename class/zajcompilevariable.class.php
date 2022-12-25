@@ -27,7 +27,7 @@ class zajCompileVariable extends zajCompileElement {
 	private $filters = [];
 
     /**
-     * @var bool Whether or not this is a parameter. If false, it means it is a stand-alone {{variable}}. If true, it is a param of a tag.
+     * @var bool Whether this is a parameter. If false, it means it is a stand-alone {{variable}}. If true, it is a param of a tag.
      */
 	private $parameter_mode = false;
 
