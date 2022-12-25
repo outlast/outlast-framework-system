@@ -128,9 +128,13 @@
                 if ($this->zajobject->model->{$name}->use_save || $this->zajobject->model->{$name}->virtual) {
                     // load my field object
                     $field_object = zajField::create($name, $this->zajobject->model->$name);
+                    $save_value = $field_object->save($value, $this->zajobject);
                     // process save
-                    list($dbupdate[$field_object->name], $objupdate[$field_object->name], $additional_updates) = $field_object->save($value,
-                        $this->zajobject);
+                    $dbupdate[$field_object->name] = $save_value[0];
+                    $objupdate[$field_object->name] = $save_value[1];
+                    if (array_key_exists(2, $save_value)) {
+                        $additional_updates = $save_value[2];
+                    }
                     // any additional fields for db update?
                     if (!empty($additional_updates) && is_array($additional_updates)) {
                         foreach ($additional_updates as $k => $v) {

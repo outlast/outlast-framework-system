@@ -78,15 +78,17 @@
 		 **/
 		public function save($data, &$object) {
 			// First let's check if this is a special array
-			if (is_array($data) && !empty($data['mozajik_field'])) {
+			if (is_array($data) && array_key_exists('mozajik_field', $data) && !empty($data['mozajik_field'])) {
 				$sdata = [];
-				foreach ($data['mozajik_field']['key'] as $key => $value) {
-					$sdata[$value] = $data['mozajik_field']['value'][$key];
-				}
+                if (array_key_exists('key', $data['mozajik_field']) && array_key_exists('value', $data['mozajik_field'])) {
+                    foreach ($data['mozajik_field']['key'] as $key => $value) {
+                        $sdata[$value] = $data['mozajik_field']['value'][$key];
+                    }
+                }
 				$data = $sdata;
 			}
 			// Now let's check if this is a special array coming from a key/value form
-			if (is_array($data) && is_array($data['key']) && is_array($data['value'])) {
+			if (is_array($data) && array_key_exists('key', $data) && array_key_exists('value', $data) && is_array($data['key']) && is_array($data['value'])) {
 				$sdata = [];
 				foreach ($data['key'] as $key => $value) {
 					$sdata[$value] = $data['value'][$key];

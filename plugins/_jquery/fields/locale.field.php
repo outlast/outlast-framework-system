@@ -22,8 +22,8 @@ class zajfield_locale extends zajField {
 	public function __construct($name, $options, $class_name, &$zajlib){
 		// set default options
 			// is choices not an array?
-				if(!is_array($options['choices'])) $options['choices'] = array_merge(array(''), $zajlib->lang->get_locales());
-				if(empty($options['default'])) $options['default'] = $zajlib->zajconf['locale_default'];
+				if(array_key_exists('choices', $options) && !is_array($options['choices'])) $options['choices'] = array_merge(array(''), $zajlib->lang->get_locales());
+				if(!array_key_exists('default', $options) || empty($options['default'])) $options['default'] = $zajlib->zajconf['locale_default'];
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
 	}	

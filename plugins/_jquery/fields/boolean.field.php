@@ -24,8 +24,8 @@ class zajfield_boolean extends zajField {
 			// A single option is interpreted as the default field value (backwards-compatibility)
 			if(!is_array($options)) $options = (object) array('default'=>$options);
 			else{
-				if($options[0]) $options = (object) array('default'=>true);
-                elseif($options['default']) $options = (object) array('default'=>true);
+				if(array_key_exists(0, $options) && $options[0]) $options = (object) array('default'=>true);
+                elseif(array_key_exists('default', $options) && $options['default']) $options = (object) array('default'=>true);
 			}
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
@@ -37,7 +37,7 @@ class zajfield_boolean extends zajField {
 	 **/
 	public function database(){
 		// set my default
-			if($this->options->default){
+			if(is_object($this->options) && property_exists($this->options, 'default') && $this->options->default){
 			    $default = 'yes';
             }
 			else $default = '';
@@ -71,7 +71,7 @@ class zajfield_boolean extends zajField {
 	 **/
 	public function get($data, &$object){
 		// If the object does not exist yet, then use the default value
-			if(!$object->exists) $data = $this->options->default;
+			if(is_object($this->options) && !$object->exists) $data = property_exists($this->options, 'default') ? $this->options->default : false;
 		return $data;
 	}
 	

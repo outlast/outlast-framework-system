@@ -37,7 +37,7 @@
             $result = (boolean)$fieldobj->get('', $fieldobj);
             ofwTestAssert::isFalse($result);
             // Create a field object with true as default
-            $fieldobj = $this->system_fields_create("boolean", true);
+            $fieldobj = $this->system_fields_create("boolean", ['default'=>true]);
             $result = (boolean)$fieldobj->get('', $fieldobj);
             ofwTestAssert::isTrue($result);
         }
@@ -90,7 +90,7 @@
             if ($options === false) {
                 $options = [];
             }
-            // Create the feeld
+            // Create the field
             $fieldobj = zajField::create($type.'_test_field',
                 (object)['type' => $type, 'options' => $options, 'OfwTestModel']);
             // Database

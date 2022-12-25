@@ -15,6 +15,7 @@ class zajField {
 	public $name;						// string - name of this field
 	public $options;					// array - this is an array of the options set in the model definition
 	public $type;						// string - type of the field (Outlast Framework type, not mysql)
+    public $exists;                     // boolean - true if the field value exists in the database
 
 	// Default values for fields
 	const in_database = true;		// boolean - true if this field is stored in database
@@ -153,7 +154,7 @@ class zajField {
 		// get options and type
 			$options = $field_def->options;
 			$type = $field_def->type;
-		// load field object file
+        // load field object file
 			zajLib::me()->load->file('/fields/'.$type.'.field.php');
 			$field_class = 'zajfield_'.$type;
 		// name will be different for virtual fields

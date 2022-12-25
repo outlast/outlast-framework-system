@@ -22,12 +22,12 @@
         public function __construct($name, $options, $class_name, &$zajlib) {
             // set default options
             // for backwards compatibility (deprecated)
-            if (!empty($options[0])) {
+            if (array_key_exists('length', $options) && !empty($options[0])) {
                 $options['length'] = $options[0];
                 unset($options[0]);
             }
             // default length
-            if (empty($options['length'])) {
+            if (!array_key_exists('length', $options) || empty($options['length'])) {
                 $options['length'] = 255;
             }
 
@@ -48,7 +48,7 @@
                     0 => $this->options['length'],
                 ],
                 'key'     => 'MUL',
-                'default' => $this->options['default'],
+                'default' => array_key_exists('default', $this->options) ? $this->options['default'] : '',
                 'extra'   => '',
                 'comment' => 'text',
             ];
