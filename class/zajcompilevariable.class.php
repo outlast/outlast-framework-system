@@ -11,7 +11,8 @@
  *
  * A list of read-only properties.
  * @property string $vartext
- * @property string $variable
+ * @property string $variable A compiled, php-ready version of the variable; but should be used for reading the values.
+ * @property string $variable_write A compiled, php-ready version of the variable; can be used for writing, less safe for reading.
  */
 class zajCompileVariable extends zajCompileElement {
 
@@ -20,8 +21,15 @@ class zajCompileVariable extends zajCompileElement {
      */
 	private $vartext;
 
-    /** @var string The compiled, php-ready version of the variable */
+    /**
+     * @var string The compiled, php-ready version of the variable used for consuming the variable.
+     */
 	private $variable;
+
+    /**
+     * @var string The compiled, php-ready version of the variable used for writing to the variable.
+     */
+    private $variable_write;
 
 	/** @var array A list of filters to be applied */
 	private $filters = [];
@@ -86,6 +94,7 @@ class zajCompileVariable extends zajCompileElement {
 			$this->vartext = $element_name;
 		// convert me
 			$this->variable = $this->convert_variable($element_name, $check_xss);
+            $this->variable_write = $this->convert_variable($element_name, $check_xss, false);
 			$this->element_name = $element_name;
 		return true;
 	}
@@ -116,10 +125,10 @@ class zajCompileVariable extends zajCompileElement {
 				// prepare the filter var
 					$this->prepare();
 				// now echo the filter var
-					$this->parent->write("<?php echo \$filter_var; ?>");
+					$this->parent->write("<?php echo \$filter_var ?? ''; ?>");
 			}
 		// no filter, just the var
-			else $this->parent->write("<?php echo $this->variable; ?>");
+			else $this->parent->write("<?php echo $this->variable ?? ''; ?>");
 		return true;
 	}
 
@@ -139,6 +148,7 @@ class zajCompileVariable extends zajCompileElement {
 		switch($name){
 			case 'vartext': return $this->vartext;
 			case 'variable': return $this->variable;
+            case 'variable_write': return $this->variable_write;
 			default: return $this->parent->zajlib->warning("Tried to access inaccessible parameter $name of zajCompileVariable.");
 		}
 	}

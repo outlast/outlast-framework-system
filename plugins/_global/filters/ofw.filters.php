@@ -135,21 +135,27 @@ EOF;
 		return true;
 	}
 
-	/**
-	 * Filter: sort - Same as {@link zajlib_filter_base->filter_dictsort()
-	 **/
+    /**
+     * Filter: sort - Same as {@link zajlib_filter_base->filter_dictsort()
+     * @param $parameter
+     * @param $source
+     * @return true
+     **/
 	public function filter_sort($parameter, &$source){
         // param required
-        if(!$parameter) return $source->warning('sort filter parameter required!');
-		// write to file
-        $this->zajlib->compile->write('if(is_object($filter_var) && is_a($filter_var, "zajFetcher")) $filter_var->sort('.$parameter.', "ASC");');
-		return true;
-	}
+        if (!$parameter) return $source->warning('sort filter parameter required!');
+        // write to file
+        $this->zajlib->compile->write('if(is_object($filter_var) && is_a($filter_var, "zajFetcher")) $filter_var->sort(' . $parameter . ', "ASC");');
+        return true;
+    }
 
 	/**
 	 * Filter: rsort - Same as {@link zajlib_filter_base->filter_dictsortreversed()
+     * @param $parameter
+     * @param $source
+     * @return true
 	 **/
-	public function filter_rsort($parameter, &$source){
+   public function filter_rsort($parameter, &$source){
 		// param required!
         if(!$parameter) return $source->warning('dictsort filter parameter required!');
 		// write to file
@@ -240,7 +246,7 @@ EOF;
 	public function filter_subtract($parameter, &$source){
 		// validate parameter
 			$parameter = (trim($parameter,"'\""));
-			if(substr($parameter, 0, 1) != '$' && !is_numeric($parameter)) return $source->warning('subtract filter parameter not a variable or an integer!');
+			if(!str_starts_with($parameter, '($') && !is_numeric($parameter)) return $source->warning('subtract filter parameter not a variable or an integer!');
 		// write to file
 			$this->zajlib->compile->write('$filter_var=$filter_var-'.$parameter.';');
 		return true;
@@ -254,7 +260,7 @@ EOF;
 	public function filter_multiply($parameter, &$source){
 		// validate parameter
 			$parameter = (trim($parameter,"'\""));
-			if(substr($parameter, 0, 1) != '$' && !is_numeric($parameter)) return $source->warning('multiply filter parameter not a variable or an integer!');
+			if(!str_starts_with($parameter, '($') && !is_numeric($parameter)) return $source->warning('multiply filter parameter not a variable or an integer!');
 		// write to file
 			$this->zajlib->compile->write('$filter_var=$filter_var*'.$parameter.';');
 		return true;
@@ -268,7 +274,7 @@ EOF;
 	public function filter_divide($parameter, &$source){
 		// validate parameter
 			$parameter = (trim($parameter,"'\""));
-			if(substr($parameter, 0, 1) != '$' && !is_numeric($parameter)) return $source->warning('divide filter parameter not a variable or an integer!');
+			if(!str_starts_with($parameter, '($') && !is_numeric($parameter)) return $source->warning('divide filter parameter not a variable or an integer!');
 		// write to file
 			$this->zajlib->compile->write('$filter_var=$filter_var/'.$parameter.';');
 		return true;

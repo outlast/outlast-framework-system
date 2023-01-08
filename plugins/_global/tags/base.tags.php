@@ -163,16 +163,16 @@ EOF;
 	public function tag_foreach($param_array, &$source){
 		// which parameter goes where?
 			// django compatible
-			if($param_array[1]->variable == '$this->zajlib->variable->in'){
+			if($param_array[1]->vartext == 'in'){
 				$fetcher = $param_array[2]->variable;
 				$fetchervar = $param_array[2]->vartext;
-				$item = $param_array[0]->variable;
+				$item = $param_array[0]->variable_write;
 			}
 			// php compatible
-			elseif($param_array[1]->variable == '$this->zajlib->variable->as'){
+			elseif($param_array[1]->vartext == 'as'){
 				$fetcher = $param_array[0]->variable;
 				$fetchervar = $param_array[0]->vartext;
-				$item = $param_array[2]->variable;
+				$item = $param_array[2]->variable_write;
 			}
 			else $source->warning('Invalid foreach tag syntax.');
 		// add a level to hierarchy
@@ -304,12 +304,12 @@ EOF;
 	}}
 	
 // reset foreach item
-	if(@defined($data[local])){
+	if(isset($data[local])){
 		$data[item] = $data[local];
 		unset(\$foreach_item);
 	}
 	// if I had a parent, set me
-	if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop->parentloop)){
+	if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop->parentloop ?? null)){
 		// Set my total counters
 		\$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter = \$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter;
 		\$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter0 = \$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0;
@@ -555,27 +555,28 @@ EOF;
 	private function generate_conditional_string($param_array, $source){
 			$param_ok = true;	// needed to track that param cannot follow param
 			$string = '';
-			foreach($param_array as $param){
-				switch($param->variable){
-					case '$this->zajlib->variable->not':	$string .= "!";
+            /** @var zajCompileVariable $param */
+            foreach($param_array as $param){
+				switch($param->vartext){
+					case 'not':	                            $string .= "!";
 															break;
-					case '$this->zajlib->variable->and':	$string .= "&& ";
+					case 'and':	                            $string .= "&& ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->or':		$string .= "|| ";
+					case 'or':		                        $string .= "|| ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->gt':
+					case 'gt':
 					case '>':
 															$string .= "> ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->lt':
+					case 'lt':
 					case '<':
 															$string .= "< ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->eq':
+					case 'eq':
 					case '=':
 					case '==':
 
@@ -587,17 +588,17 @@ EOF;
 															$string .= "=== ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->lteq':
+					case 'lteq':
 					case '<=':
 															$string .= "<= ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->gteq':
+					case 'gteq':
 					case '>=':
 															$string .= ">= ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->neq':
+					case 'neq':
 					case '!=':
 															$string .= "!= ";
 															$param_ok = true;
@@ -606,7 +607,7 @@ EOF;
 															$string .= "!== ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->in':
+					case 'in':
 															$source->error("Use the |in filter instead!"); // fatal error
 															$param_ok = false;
 															break;
@@ -728,36 +729,36 @@ EOF;
 	 **/
 	public function tag_templatetag($param_array, &$source){
 		// write to file
-			switch($param_array[0]->variable){
-				case '$this->zajlib->variable->openblock':
+			switch($param_array[0]->vartext){
+				case 'openblock':
 				case "'openblock'":
 																$this->zajlib->compile->write('{%');
 																break;
-				case '$this->zajlib->variable->closeblock':
+				case 'closeblock':
 				case "'closeblock'":
 																$this->zajlib->compile->write('%}');
 																break;
-				case '$this->zajlib->variable->openvariable':
+				case 'openvariable':
 				case "'openvariable'":
 																$this->zajlib->compile->write('{{');
 																break;
-				case '$this->zajlib->variable->closevariable':
+				case 'closevariable':
 				case "'closevariable'":
 																$this->zajlib->compile->write('}}');
 																break;
-				case '$this->zajlib->variable->openbrace':
+				case 'openbrace':
 				case "'openbrace'":
 																$this->zajlib->compile->write('{');
 																break;
-				case '$this->zajlib->variable->closebrace':
+				case 'closebrace':
 				case "'closebrace'":
 																$this->zajlib->compile->write('}');
 																break;
-				case '$this->zajlib->variable->opencomment':
+				case 'opencomment':
 				case "'opencomment'":
 																$this->zajlib->compile->write('{#');
 																break;
-				case '$this->zajlib->variable->closecomment':
+				case 'closecomment':
 				case "'closecomment'":
 																$this->zajlib->compile->write('#}');
 																break;
