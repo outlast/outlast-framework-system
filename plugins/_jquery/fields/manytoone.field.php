@@ -59,7 +59,9 @@
             /**  @var zajField $field */
             $other_side_fields = 0;
             foreach ($other_model as $field_name => $field) {
-                if ($field->type == 'onetomany' && ($field->options['model'] ?? null == $this->class_name || $field->options[0] ?? null == $this->class_name) && ($field->options['field'] ?? null == $this->name || $field->options[1] ?? null == $this->name)) {
+                $other_model_name = $field->options['model'] ?? $field->options[0];
+                $other_field_name = $field->options['field'] ?? $field->options[1];
+                if ($field->type == 'onetomany' && $other_model_name == $this->class_name && $other_field_name == $this->name) {
                     $other_side_fields++;
                 }
             }

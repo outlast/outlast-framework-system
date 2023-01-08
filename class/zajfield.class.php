@@ -133,7 +133,7 @@ class zajField {
      */
     public function get_default(&$object){
         if(is_object($this->options)) return $this->options->default;   // Old method
-        else return $this->options['default'];
+        else return $this->options['default'] ?? null;
     }
 
 	/**

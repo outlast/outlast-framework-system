@@ -25,7 +25,7 @@ class zajfield_select extends zajField {
 				if(!empty($options[1])) $options['default'] = $options[1];
 				unset($options[0], $options[1]);
 			// is choices not an array?
-				if(!is_array($options['choices'])) return exit("You must specify an array of choices for the field $name of type select in $class_name.");
+				if(!is_array($options['choices'] ?? null)) return exit("You must specify an array of choices for the field $name of type select in $class_name.");
 				if(empty($options['default'])) $options['default'] = reset($options['choices']);
 		// call parent constructor
 			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
@@ -55,7 +55,7 @@ class zajfield_select extends zajField {
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
 	public function validation($input){
-		if(is_array($this->options['choices']) && in_array($input, $this->options['choices'])){
+		if(is_array($this->options['choices'] ?? null) && in_array($input, $this->options['choices'])){
 		    return true;
         }
 		else return false;

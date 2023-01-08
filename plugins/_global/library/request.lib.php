@@ -368,7 +368,7 @@
          * @return string The host name of the client; can be empty.
          */
         public function client_host() {
-            return $_SERVER['REMOTE_HOST'];
+            return $_SERVER['REMOTE_HOST'] ?? null;
         }
 
         /**

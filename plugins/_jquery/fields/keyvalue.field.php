@@ -74,7 +74,7 @@ class zajfield_keyvalue extends zajField {
 	 **/
 	public function save($data, &$object){
 		// First let's check if this is a special array coming from a key/value form
-		if(is_array($data) && is_array($data['key']) && is_array($data['value'])){
+		if(is_array($data) && is_array($data['key'] ?? null) && is_array($data['value'] ?? null)){
 			$sdata = array();
 			foreach($data['key'] as $key=>$value){
 				$sdata[$value] = $data['value'][$key];

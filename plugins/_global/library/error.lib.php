@@ -182,7 +182,7 @@
             // Update error text
             $original_error_text = $errortext;
 
-            if ($this->ofw->compile_started && is_object($this->ofw->variable->ofw->tmp->compile_source_debug) && !empty($this->ofw->variable->ofw->tmp->compile_source_debug->line_number)) {
+            if ($this->ofw->compile_started && isset($this->ofw->variable->ofw->tmp) && is_object($this->ofw->variable->ofw->tmp->compile_source_debug ?? null) && !empty($this->ofw->variable->ofw->tmp->compile_source_debug->line_number)) {
                 $errortext .= " (error triggered from template line ".$this->ofw->variable->ofw->tmp->compile_source_debug->line_number." of ".$this->ofw->variable->ofw->tmp->compile_source_debug->file_path.")";
             } else {
                 $errortext .= " (error triggered from ".$error_details['line']." of ".$error_details['file'].")";

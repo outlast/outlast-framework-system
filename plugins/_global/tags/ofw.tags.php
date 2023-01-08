@@ -206,12 +206,12 @@ class zajlib_tag_ofw extends zajElementCollection{
 	 **/
 	public function tag_select($param_array, &$source){
 		// generate random id
-			if(!$param_array[1]) $p1="'".uniqid('')."'";
+			if(!($param_array[1] ?? null)) $p1="'".uniqid('')."'";
 			else $p1 = $param_array[1]->variable;
 		// optional params
-			if($param_array[2]) $param_array[2] = ', '.$param_array[2]->variable;
-			if($param_array[3]) $param_array[3] = ', '.$param_array[3]->variable;
-			if($param_array[4]) $param_array[4] = ', '.$param_array[4]->variable;
+			if($param_array[2] ?? null) $param_array[2] = ', '.$param_array[2]->variable;
+			if($param_array[3] ?? null) $param_array[3] = ', '.$param_array[3]->variable;
+			if($param_array[4] ?? null) $param_array[4] = ', '.$param_array[4]->variable;
 		// generate content
 			$contents = <<<EOF
 <?php
@@ -283,7 +283,7 @@ EOF;
 				\$count_to{$uid} = {$param_array[1]->variable};
 				\$count_reverse{$uid} = false;
 			}
-			\$count_var{$uid} =& {$param_array[3]->variable};
+			\$count_var{$uid} =& {$param_array[3]->variable_write};
 EOF;
 			}
 			elseif($param_array[4]->vartext == 'as'){
@@ -299,7 +299,7 @@ EOF;
 				\$count_to{$uid} = {$param_array[3]->variable};
 				\$count_reverse{$uid} = false;
 			}
-			\$count_var{$uid} =& {$param_array[5]->variable};
+			\$count_var{$uid} =& {$param_array[5]->variable_write};
 EOF;
 			}
 			else $source->error("Incorrect syntax for tag {%count%}.");
@@ -309,8 +309,8 @@ EOF;
 				if(!\$count_reverse{$uid}) \$count_var{$uid} = \$count_var_real{$uid};
 				else \$count_var{$uid} = \$count_to{$uid} - \$count_var_real{$uid} + \$count_from{$uid};
 EOF;
-			if($param_array[2]->vartext == 'as') $contents .= "{$param_array[3]->variable} = \$count_var{$uid};?>";
-			else $contents .= "{$param_array[5]->variable} = \$count_var{$uid};?>";
+			if($param_array[2]->vartext == 'as') $contents .= "{$param_array[3]->variable_write} = \$count_var{$uid};?>";
+			else $contents .= "{$param_array[5]->variable_write} = \$count_var{$uid};?>";
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats
@@ -448,7 +448,7 @@ EOF;
 	public function tag_unique($param_array, &$source){
 		// figure out content
 			if(empty($param_array[1])) $contents = "<?php echo uniqid(''); ?>";
-			else $contents = "<?php {$param_array[1]->variable} = uniqid(''); ?>";
+			else $contents = "<?php {$param_array[1]->variable_write} = uniqid(''); ?>";
 		// write to file
 			$this->zajlib->compile->write($contents);
 		// return debug_stats
@@ -466,8 +466,8 @@ EOF;
 		// figure out content
 			$contents = <<<EOF
 <?php
-// start with
-	{$param_array[2]->variable} = {$param_array[0]->variable};
+// start applyfilter
+	{$param_array[2]->variable_write} = {$param_array[0]->variable};
 ?>
 EOF;
 		// write to file

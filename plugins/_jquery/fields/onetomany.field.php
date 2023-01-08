@@ -28,7 +28,7 @@
             }
 
             // array parameters
-            if (is_array($options[0])) {
+            if (is_array($options[0] ?? null)) {
                 $options = $options[0];
                 if (empty($options['model'])) {
                     return zajLib::me()->error("Required parameter 'model' missing for field $name!");

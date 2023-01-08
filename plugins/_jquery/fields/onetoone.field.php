@@ -27,7 +27,7 @@
                 return zajLib::me()->error("Required parameter 1 missing for field $name!");
             }
             // array parameters
-            if (is_array($options[0])) {
+            if (is_array($options[0] ?? null)) {
                 $options = $options[0];
             } else {    // deprecated
                 $model = $options[0];

@@ -455,7 +455,7 @@ EOF;
         elseif(is_array(\$filter_var) || is_object(\$filter_var)){
             // Note: we need to use ArrayObject because \$obj->{0} notation not working always.
             if(is_object(\$filter_var)){ \$filter_var = new ArrayObject(\$filter_var); }
-            \$filter_var = \$filter_var[$parameter];
+            \$filter_var = \$filter_var[$parameter] ?? null;
         }
         else \$this->zajlib->warning("You tried to use the keyvalue filter on something other than an object or an array. A common mistake is to use {{zaj.lang}} instead of {{zaj.config}} for variable variables. <a href='http://framework.outlast.hu/advanced/internationalization/using-language-files/#docs-using-variable-language-variables'>See docs</a>.");
 EOF;

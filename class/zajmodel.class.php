@@ -355,7 +355,7 @@ abstract class zajModel implements JsonSerializable {
 		$_POST = array_merge($_GET, $_POST);
 		// Run through each argument
 		foreach(func_get_args() as $field_name){
-			$this->set($field_name, $_POST[$field_name]);
+			$this->set($field_name, $_POST[$field_name] ?? null);
 		}
 		return $this;
 	}
@@ -430,7 +430,7 @@ abstract class zajModel implements JsonSerializable {
 		$_POST = array_merge($_GET, $_POST);
 		// Run through each argument
 		foreach(func_get_args() as $field_name){
-			foreach($_POST['translation'][$field_name] as $locale=>$value){
+			foreach(($_POST['translation'][$field_name] ?? []) as $locale=>$value){
 				$this->set_translation($field_name, $value, $locale);
 			}
 		}

@@ -161,7 +161,10 @@ EOF;
 	 * {@link tag_for()}
 	 **/
 	public function tag_foreach($param_array, &$source){
-		// which parameter goes where?
+        if (count($param_array) < 3) {
+            $source->error("Invalid for tag syntax!");
+        }
+        // which parameter goes where?
 			// django compatible
 			if($param_array[1]->vartext == 'in'){
 				$fetcher = $param_array[2]->variable;
@@ -192,7 +195,7 @@ EOF;
 			if(empty(\$forloop_depth)) \$forloop_depth = 1;
 			else \$forloop_depth++;
 		// does a parent forloop exist?
-			if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop)) \$this->zajlib->variable->ofw->tmp->parent_forloop = clone \$this->zajlib->variable->ofw->tmp->current_forloop;
+			if(isset(\$this->zajlib->variable->ofw->tmp->current_forloop)) \$this->zajlib->variable->ofw->tmp->parent_forloop = clone \$this->zajlib->variable->ofw->tmp->current_forloop;
 			else \$this->zajlib->variable->ofw->tmp->parent_forloop = false;
 		// create for loop variables
 			\$this->zajlib->variable->ofw->tmp->current_forloop = new stdClass();
@@ -800,14 +803,14 @@ EOF;
 		if($param_array[1]->vartext == 'as'){
 			// add level
 				$temporary_variable = '$this->zajlib->variable->ofw->tmp->before_with_'.uniqid();
-				$source->add_level('with', array([$param_array[2]->variable], [$temporary_variable]));
+				$source->add_level('with', array([$param_array[2]->variable_write], [$temporary_variable]));
 			// generate with
 				$contents = <<<EOF
 <?php
 // save previous value for restore
 	{$temporary_variable} = {$param_array[2]->variable};
 // start with
-	{$param_array[2]->variable} = {$param_array[0]->variable};
+	{$param_array[2]->variable_write} = {$param_array[0]->variable};
 ?>
 EOF;
 		}
@@ -824,7 +827,8 @@ EOF;
 				// The first element is the left side of the equals. It must be a variable.
 				$set_me_param = $param_array[$i];
 				if(is_numeric($set_me_param->vartext) || $set_me_param->vartext[0] == '"' || $set_me_param->vartext[0] == "'") return $source->error("You cannot set a string or number to a value in your {% with %} tag! Make sure to have a variable on the left of your x=y syntax.");
-				$set_me = $set_me_param->variable;
+                $set_me = $set_me_param->variable;
+				$set_me_write = $set_me_param->variable_write;
 
 				// The second item should be an = sign
 				$equal_param = $param_array[$i+1];
@@ -837,7 +841,7 @@ EOF;
 				// Store old value in temporary variable and store var name for endwith reference
 				$temporary_variable = '$before_with_'.uniqid();
 				$temporary_variables[] = $temporary_variable;
-				$set_variables[] = $set_me;
+				$set_variables[] = $set_me_write;
 
 				// Generate php
 				$contents .= <<<EOF
@@ -845,7 +849,7 @@ EOF;
 // save previous value for restore
 	{$temporary_variable} = {$set_me};
 // start with
-	{$set_me} = {$to_this_value};
+	{$set_me_write} = {$to_this_value};
 ?>
 EOF;
 			}

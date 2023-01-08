@@ -94,16 +94,16 @@
 			// Calculate photo orientation
 			$this->landscape = $this->portrait = $this->square = false;
 			if (is_object($this->data->dimensions)) {
-				if ($this->data->dimensions->small->w >= $this->data->dimensions->small->h) {
-					$this->orientation = 'landscape';
-					$this->landscape = true;
-				} else {
-					$this->orientation = 'portrait';
-					$this->portrait = true;
-				}
-				if ($this->data->dimensions->small->w == $this->data->dimensions->small->h) {
-					$this->square = true;
-				}
+                $this->orientation = 'portrait';
+                $this->portrait = true;
+                if (is_object($this->data->dimensions->small ?? null)) {
+                    if ($this->data->dimensions->small->w >= $this->data->dimensions->small?->h) {
+                        $this->orientation = 'landscape';
+                        $this->landscape = true;
+                    } elseif ($this->data->dimensions->small?->w == $this->data->dimensions->small?->h) {
+                        $this->square = true;
+                    }
+                }
 			}
 		}
 
