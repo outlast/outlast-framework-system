@@ -86,7 +86,7 @@
          * @param string $offset
          * @param mixed $value
          */
-        public function offsetSet($offset, $value) {
+        public function offsetSet(mixed $offset, mixed $value): void {
             $this->values[$offset] = $value;
         }
 
