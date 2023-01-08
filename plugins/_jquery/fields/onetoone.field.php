@@ -22,20 +22,23 @@
         // Construct
         public function __construct($name, $options, $class_name, &$zajlib) {
             // set default options
-            // relation fields dont really have options, they're parameters
+            // relation fields don't really have options, they're parameters
             if (empty($options[0])) {
                 return zajLib::me()->error("Required parameter 1 missing for field $name!");
             }
             // array parameters
             if (is_array($options[0])) {
                 $options = $options[0];
-            } else {    // depricated
-                $options['model'] = $options[0];
-                if (!empty($options[1])) {
-                    $options['field'] = $options[1];
-                    unset($options[1]);
+            } else {    // deprecated
+                $model = $options[0];
+                $field = array_key_exists(1, $options) ? $options[1] : null;
+                unset($options);
+
+                $options = [];
+                $options['model'] = $model;
+                if (!empty($field)) {
+                    $options['field'] = $field;
                 }
-                unset($options[0]);
             }
 
             // call parent constructor
@@ -58,11 +61,14 @@
                 /**  @var zajField $field */
                 $other_side_fields = 0;
                 foreach ($other_model as $field_name => $field) {
-                    if ($field->type == 'onetoone' && ($field->options['model'] == $this->class_name || $field->options[0] == $this->class_name) && ($field->options['field'] == $this->name || $field->options[1] == $this->name)) {
+                    if ($field->type == 'onetoone' && array_key_exists('model', $field->options) && $field->options['model'] == $this->class_name && array_key_exists('field', $field->options) && $field->options['field'] == $this->name) {
+                        $fields[$field_name] = $field;
+                    }
+                    // Support for old-style keys
+                    if ($field->type == 'onetoone' && $field->options[0] == $this->class_name &&  $field->options[1] == $this->name) {
                         $fields[$field_name] = $field;
                     }
                 }
-
                 return $fields;
 
             } else {
@@ -195,9 +201,8 @@
                 /** @var zajModel $other_class_name */
                 $other_class_name = $this->options['model'];
                 $other_fields = $this->get_other_fields();
-                // @todo Replace with array_key_first() in 7.3+
-                $other_field_name = reset(array_keys($other_fields));
-                $other_field = $other_fields[$other_field_name];
+                $other_field_name = array_key_first($other_fields);
+                $other_field = array_key_exists($other_field_name, $other_fields) ? $other_fields[$other_field_name] : null;
 
                 // Resume as object if id
                 if (!is_bool($data)) {
@@ -269,7 +274,7 @@
             list($field, $value, $logic, $type) = $filter;
 
             // other fetcher's field
-            $other_field = $this->options['field'];
+            $other_field = array_key_exists('field', $this->options) ? $this->options['field'] : null;
 
             // If we are on the primary side, just use the default
             if (empty($other_field)) {

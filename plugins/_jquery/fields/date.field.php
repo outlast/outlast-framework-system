@@ -46,7 +46,7 @@ class zajfield_date extends zajfield_time {
 	public function save($data, &$object){
 		if(is_array($data)){
 			// date[format] and date[display] (backwards compatible
-			if(!empty($data['format'])){
+			if(!empty($data['format']) && !empty($data['display'])){
 				$dt = date_create_from_format($data['format'], $data['display']);
 				if(is_object($dt)){
 					$tz = date_default_timezone_get();
@@ -57,7 +57,7 @@ class zajfield_date extends zajfield_time {
 				else $data = '';
 			}
 			else{
-				$data = $data['value'];
+				$data = array_key_exists('value', $data) ? $data['value'] : "";
 			}
 		}
 		return array($data, $data);

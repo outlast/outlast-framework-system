@@ -1355,7 +1355,7 @@
             $field_model = $class_name::__field($field);
             /** @var zajModel $other_model */
             $other_model = $field_model->options['model'];
-            $other_field = $field_model->options['field'];
+            $other_field = array_key_exists('field', $field_model->options) ? $field_model->options['field'] : null;
 
             // is it on my side?
             if(empty($other_field)) {
@@ -1523,9 +1523,13 @@
 EOF;
             $result = $this->db->query($sql);
 
-            return ($result->next()->c > 0);
+            $next = $result->next();
+            if (is_object($next) && property_exists($next, 'c')) {
+                return ($next->c > 0);
+            } else {
+                return false;
+            }
         }
-
 
         /**
          * Reorder the connected objects' ordernum based on the order of ids in the passed array.

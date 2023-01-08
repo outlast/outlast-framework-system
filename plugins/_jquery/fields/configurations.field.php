@@ -76,7 +76,7 @@
          * @return mixed Returns an empty list.
          */
         public function get_default(&$object) {
-            if (is_object($this->options['default'])) {
+            if (is_array($this->options) && array_key_exists('default', $this->options) && is_object($this->options['default'])) {
                 return $this->options['default'];
             } else {
                 return (object)[];

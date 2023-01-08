@@ -122,7 +122,7 @@ abstract class zajModelExtender {
 	 **/
 	public static function extension(){
 		$class_name = get_called_class();
-		return zajModel::${'extensions'}[$class_name];
+		return is_array(zajModel::${'extensions'}) && array_key_exists($class_name, zajModel::${'extensions'}) ? zajModel::${'extensions'}[$class_name] : null;
 	}
 
 	/**

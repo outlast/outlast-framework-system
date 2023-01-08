@@ -283,7 +283,11 @@
                 return $this->modified[$name];
             } // else return the data
             else {
-                return $this->data[$name];
+                if (is_array($this->data) && array_key_exists($name, $this->data)) {
+                    return $this->data[$name];
+                } else {
+                    return null;
+                }
             }
         }
 
@@ -324,7 +328,7 @@
                 return $this->modified;
             } // return specific key
             else {
-                return $this->modified[$specific_field];
+                return array_key_exists($specific_field, $this->modified) ? $this->modified[$specific_field] : null;
             }
         }
 

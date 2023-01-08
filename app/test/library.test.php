@@ -276,7 +276,7 @@
             $r = $this->ofw->request->is_ajax();
             ofwTestAssert::isFalse($r);
             // Now try when it is true
-            $s = $_SERVER['HTTP_X_REQUESTED_WITH'];
+            $s = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? null;
             $_SERVER['HTTP_X_REQUESTED_WITH'] = 'xmlhttprequest';
             $r = $this->ofw->request->is_ajax();
             ofwTestAssert::isTrue($r);
