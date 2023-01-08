@@ -399,7 +399,7 @@
             if (!$this->is_default_locale()) {
                 $current_source_path = $name.'.'.$this->get().'.lang.ini';
                 $current_result = parent::load($current_source_path, $section, $force_set, false);
-                if (!$current_result && !$this->ofw->test->is_running() && $this->ofw->config->variable->lang_show_warning_when_cant_load_in_current_locale && $warn_on_error) {
+                if (!$current_result && !$this->ofw->test->is_running() && property_exists($this->ofw->config->variable, 'lang_show_warning_when_cant_load_in_current_locale') && $warn_on_error) {
                     if ($section === false) {
                         $this->ofw->warning("The language file $current_source_path was not found, trying default locale.");
                     } else {
@@ -414,7 +414,7 @@
         /**
          * Sets the key/value variable object. Be careful, this overwrites the entire current setting. Because conf and lang are actually the same both values will also be overwritten.
          * @param stdClass $variables The key/value pairs to use for the new variable.
-         * @param stdClass $section The multi-dimensional key/value pairs to use for the new section variables.
+         * @param stdClass $section The multi-dimentional key/value pairs to use for the new section variables.
          * @return bool Always returns true.
          */
         public function set_variables($variables, $section) {

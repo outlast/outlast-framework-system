@@ -34,7 +34,7 @@ class zajlib_tag_ofw extends zajElementCollection{
 			if(empty($classname) || empty($fieldname)) $source->error("Tag {% input %} parameter one needs to be in 'modelname.fieldname' format.");
 		// id or options
 			$id = $template = '';
-			$value = $param_array[1]->variable;
+            $value = !empty($param_array[1] ?? null) ? $param_array[1]->variable : null;
 		// get field object
 			/** @var zajField $field_object */
 			$field_object = $classname::__field($fieldname);

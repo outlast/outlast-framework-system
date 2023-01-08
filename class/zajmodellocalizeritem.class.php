@@ -77,9 +77,9 @@ class zajModelLocalizerItem implements JsonSerializable {
 	public function __toString(){
 		$value = $this->get();
 		$fieldname = $this->fieldname;
-		if($value !== '') return $value;
-		else return $this->parent->data->$fieldname;
-	}
+        if(is_string($value) && $value !== '') return $value;
+        else return $this->parent->data->$fieldname ?? '';
+    }
 
 	/**
 	 * Implement json serialize method.
