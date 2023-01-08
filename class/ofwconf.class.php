@@ -64,7 +64,7 @@
          * @param string $offset
          * @return bool
          */
-        public function offsetExists($offset) {
+        public function offsetExists(mixed $offset): bool {
             return key_exists($offset, $this->values);
         }
 
@@ -73,7 +73,7 @@
          * @param string $offset
          * @return mixed
          */
-        public function offsetGet($offset) {
+        public function offsetGet(mixed $offset): mixed {
             if (array_key_exists($offset, $this->values)) {
                 return $this->values[$offset];
             } else {
@@ -94,7 +94,7 @@
          * ArrayAccess implementation to unset offset.
          * @param string $offset
          */
-        public function offsetUnset($offset) {
+        public function offsetUnset(mixed $offset): void {
             unset($this->values[$offset]);
         }
 
