@@ -56,7 +56,7 @@ class zajfield_photos extends zajField {
      * @return zajFetcher Returns a list of objects.
      */
     public function get_default(&$object){
-        if(is_object($this->options['default'])) return $this->options['default'];
+        if(array_key_exists('default', $this->options) && is_object($this->options['default'])) return $this->options['default'];
         else{
             // Return an empty zajfetcher
             return Photo::fetch()->exclude_all();

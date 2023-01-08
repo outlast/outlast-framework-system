@@ -30,7 +30,7 @@ class zajfield_id extends zajField {
 	 * @return array Returns in array with the database definition.
 	 **/
 	public function database(){
-		if($this->options[0] == AUTO_INCREMENT){
+		if($this->options[0] ?? null == AUTO_INCREMENT){
 			$type = 'int';
 			$options = array(0 => 11);
 			$extra = AUTO_INCREMENT;

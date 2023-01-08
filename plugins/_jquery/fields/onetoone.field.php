@@ -148,7 +148,7 @@
                         0 => 50,
                     ],
                     'key'     => 'MUL',
-                    'default' => $this->options['default'],
+                    'default' => $this->options['default'] ?? null,
                     'extra'   => '',
                     'comment' => 'onetoone',
                 ];
