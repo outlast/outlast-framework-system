@@ -456,7 +456,7 @@ abstract class zajModel implements JsonSerializable {
 	    $fields_ignored = array_merge($fields_ignored, ['unit_test', 'id', 'time_create', 'time_edit', 'ordernum', 'translation']);
 
         // Check to see if this is the root data or the translations data
-        if(is_object($data->translation) || is_array($data->translation)){
+        if(is_object($data->translation ?? null) || is_array($data->translation ?? null)){
             $data = (object) $data->translation;
         }
         else return $this;

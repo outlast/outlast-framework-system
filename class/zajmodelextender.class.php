@@ -194,7 +194,7 @@ abstract class zajModelExtender {
 	 * Redirect inaccessible property getters to my parent.
 	 **/
 	public function __get($name){
-		return $this->parent->$name;
+        return $this->parent->$name ?? null;
 	}
 
 	/**
