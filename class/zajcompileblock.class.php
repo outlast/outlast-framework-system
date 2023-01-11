@@ -13,50 +13,50 @@
  * @property zajCompileSource $source
  * @property boolean $overridden
  */
-class zajCompileBlock{
+class zajCompileBlock {
 
 	/**
 	 * @var string The name of the block.
 	 */
-	private $name;
+	private string $name;
 
 	/**
 	 * @var zajCompileSource The source file that contains this block. This is a pointer.
 	 */
-	private $source;
+	private zajCompileSource $source;
 
 	/**
-	 * @var zajCompileBlock The parent is the block that contains me.
+	 * @var ?zajCompileBlock The parent is the block that contains me.
 	 */
-	private $parent;
+	private ?zajCompileBlock $parent;
 
 	/**
 	 * @var array Array of zajCompileBlock items with all my child blocks.
 	 */
-	private $children;
+	private array $children = [];
 
 	/**
 	 * @var integer The block level where 0 means top-level block.
 	 */
-	private $level = 0;
+	private int $level = 0;
 
 	/**
 	 * @var array All the destinations.
 	 */
-	private $destinations = [];
+	private array $destinations = [];
 
 	/**
 	 * @var boolean This is true if this block is overridden by another.
 	 */
-	private $overridden = false;
+	private bool $overridden = false;
 	/**
 	 * zajCompileBlock constructor.
 	 * @param string $name The name of the block.
 	 * @param zajCompileSource $source
-	 * @param zajCompileBlock $parent A parent block.
+	 * @param ?zajCompileBlock $parent A parent block.
 	 * @param integer $level The block level where 0 means top-level block.
 	 */
-	public function __construct($name, &$source, &$parent, $level){
+	public function __construct(string $name, zajCompileSource &$source, ?zajCompileBlock &$parent, int $level){
 
 		// Validate block name (only a-z) (because the whole stucture is involved, this is a fatal error!)
 		if(preg_match('/[a-z]{2,25}/', $name) <= 0) $source->error("Invalid block name given!");
@@ -66,8 +66,8 @@ class zajCompileBlock{
 
 		// Set source and parent block
 		$this->source = $source;
+        $this->parent = $parent;
 		if($parent){
-			$this->parent = $parent;
 			$parent->add_child($this);
 			if($level == 0) $source->error("Tried to open block $name with a parent ({$this->parent->name}) at top level. This is a system error and should never happen.");
 		}
@@ -87,7 +87,7 @@ class zajCompileBlock{
 	 * @param zajCompileSource|boolean $source The source object to use to generate the file name. Defaults to my own source.
 	 * @return string The file name of the block cache.
      */
-    public function get_cache_file_path($source = false){
+    public function get_cache_file_path(zajCompileSource|bool $source = false): string {
 
 		// Defaults to current source
 		if($source === false) $source = $this->source;
@@ -102,7 +102,7 @@ class zajCompileBlock{
 	 * @param zajCompileSource|boolean $source The source object to use to generate the file name. Defaults to my own source.
 	 * @return zajCompileDestination Return the destination object.
 	 */
-	public function add_destination($source = false){
+	public function add_destination(zajCompileSource|bool $source = false): zajCompileDestination {
 
 		// Defaults to current source
 		if($source === false) $source = $this->source;
@@ -123,7 +123,7 @@ class zajCompileBlock{
 	 * Pause all block cache destinations.
 	 * @param boolean $recursive If set to true, pause will be peformed for parents.
 	 */
-	public function pause_destinations($recursive = false){
+	public function pause_destinations(bool $recursive = false): void {
 		zajCompileSession::verbose("Pausing block cache destinations for <code>{$this->name}</code>.</li></ul>");
 
         // Pause each
@@ -133,14 +133,14 @@ class zajCompileBlock{
 		}
 
 		// Recursive?
-        if($recursive && $this->parent) $this->parent->pause_destinations(true);
+        if($recursive) $this->parent?->pause_destinations(true);
 	}
 
 	/**
 	 * Resume all block cache destinations.
 	 * @param boolean $recursive If set to true, resume will be peformed for parents.
 	 */
-	public function resume_destinations($recursive = false){
+	public function resume_destinations(bool $recursive = false): void {
 		zajCompileSession::verbose("Resuming block cache destinations for <code>{$this->name}</code>.</li></ul>");
 
 		foreach($this->destinations as $file_name=>$dest){
@@ -149,13 +149,13 @@ class zajCompileBlock{
 		}
 
 		// Recursive?
-        if($recursive && $this->parent) $this->parent->resume_destinations(true);
+        if($recursive) $this->parent?->resume_destinations(true);
 	}
 
 	/**
 	 * Remove destination. If destinations were added recursively, it will remove them recursively.
 	 */
-	public function remove_destinations(){
+	public function remove_destinations() : void {
 		zajCompileSession::verbose("Removing block cache for <code>{$this->name}</code>.</li></ul>");
 
 		// Remove all (will only exist if added recursively)
@@ -170,7 +170,7 @@ class zajCompileBlock{
 	 * @param boolean $recursive If set to true, it will also be marked as overridden if any of my parents are overridden.
 	 * @return boolean Returns true if overridden, false if not.
 	 */
-	public function is_overridden($recursive = false){
+	public function is_overridden(bool $recursive = false) : bool {
 		// If overridden is true at any point, then it is true recursively
 		if($this->overridden) return true;
 
@@ -178,15 +178,14 @@ class zajCompileBlock{
 		if(!$recursive) return $this->overridden;
 		else{
 			// If no more parents, then we are top-level, return
-			if(!$this->parent) return $this->overridden;
-			else return $this->parent->is_overridden(true);
+			return $this->parent?->is_overridden(true) ?? $this->overridden;
 		}
 	}
 
 	/**
 	 * Insert the block file in currently active destinations.
 	 */
-	public function insert(){
+	public function insert() : void {
 
 		// Generate file name for permanent block store
 		$file_name = $this->get_cache_file_path($this->source);
@@ -200,7 +199,7 @@ class zajCompileBlock{
 	 * Set the child.
 	 * @param zajCompileBlock $child
 	 */
-	public function add_child($child){
+	public function add_child(zajCompileBlock $child) : void {
 		$this->children[] = $child;
 	}
 
@@ -209,8 +208,8 @@ class zajCompileBlock{
 	 * @param string $name The name of the property.
 	 * @return mixed Returns the value of the property.
 	 */
-	public function __get($name){
-		return $this->$name;
+	public function __get(string $name) : mixed {
+        return $this->$name;
 	}
 
 }

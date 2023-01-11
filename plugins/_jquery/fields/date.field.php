@@ -21,7 +21,7 @@ class zajfield_date extends zajfield_time {
 	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
-	public function validation($input){
+	public function validation(mixed $input) : bool {
 		return true;
 	}
 	
@@ -31,7 +31,7 @@ class zajfield_date extends zajfield_time {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return mixed Return the data that should be in the variable.
 	 **/
-	public function get($data, &$object){
+	public function get(mixed $data, zajModel &$object) : mixed {
 		return $data;
 	}
 	
@@ -43,7 +43,7 @@ class zajfield_date extends zajfield_time {
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 * @todo Remove display/format version
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		if(is_array($data)){
 			// date[format] and date[display] (backwards compatible
 			if(!empty($data['format']) && !empty($data['display'])){
@@ -69,7 +69,7 @@ class zajfield_date extends zajfield_time {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
 	 */
-	public function export($data, &$object){
+    public function export(mixed $data, zajModel &$object) : string|array {
 		if(is_numeric($data) && $data != 0) $data = date("Y.m.d. H:i:s", $data);
 		return $data;
 	}

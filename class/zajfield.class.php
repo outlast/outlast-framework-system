@@ -6,16 +6,11 @@
  **/
 class zajField {
 
-	/** @var zajLib  */
-	protected $ofw;					// object - a reference to the singleton ofw object
-
-	/** @deprecated  */
-	protected $zajlib;					// object - a reference to the global zajlib object
-	protected $class_name;				// string - class name of the parent class
-	public $name;						// string - name of this field
-	public $options;					// array - this is an array of the options set in the model definition
-	public $type;						// string - type of the field (Outlast Framework type, not mysql)
-    public $exists;                     // boolean - true if the field value exists in the database
+	protected string $class_name;				// string - class name of the parent class
+	public string $name;						// string - name of this field
+	public array|stdClass $options;					// array - this is an array of the options set in the model definition
+	public string $type;						// string - type of the field (Outlast Framework type, not mysql)
+    public bool $exists;                     // boolean - true if the field value exists in the database
 
 	// Default values for fields
 	const in_database = true;		// boolean - true if this field is stored in database
@@ -34,9 +29,7 @@ class zajField {
 	/**
 	 * Creates a field definition object
 	 **/
-	public function __construct($field_class, $name, $options, $class_name, &$zajlib){
-		$this->zajlib =& $zajlib;
-		$this->ofw =& $zajlib;
+	public function __construct(string $field_class, string $name, array|stdClass $options, string $class_name){
 		$this->name = $name;
 		$this->options = $options;
 		$this->class_name = $class_name;
@@ -47,7 +40,7 @@ class zajField {
 	 * Check to see if the field settings are valid. Run during database update.
 	 * @return boolean|string Returns false if all is well, returns an error string if something is up.
 	 **/
-	public function get_settings_validation_errors(){
+	public function get_settings_validation_errors() : bool|string {
 		return false;
 	}
 
@@ -56,17 +49,17 @@ class zajField {
 	 * @param $input mixed The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
-	public function validation($input){
+	public function validation(mixed $input) : bool {
 		return true;
 	}
 
 	/**
 	 * Preprocess the data before returning the data from the database.
-	 * @param $data mixed The first parameter is the input data.
+	 * @param mixed $data The first parameter is the input data.
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being retrieved.
 	 * @return mixed Return the data that should be in the variable.
 	 **/
-	public function get($data, &$object){
+	public function get(mixed $data, zajModel &$object) : mixed {
 		return $data;
 	}
 
@@ -76,7 +69,7 @@ class zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		return $data;
 	}
 
@@ -86,7 +79,7 @@ class zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
 	 */
-	public function export($data, &$object){
+	public function export(mixed $data, zajModel &$object) : string|array {
 		return $data;
 	}
 
@@ -96,15 +89,15 @@ class zajField {
 	 * @param array $filter An array of values specifying what type of filter this is.
 	 * @return bool|string Returns false by default; this will use the default filter. Otherwise it can return the filter SQL string.
 	 */
-	public function filter(&$fetcher, $filter){
+	public function filter(zajFetcher &$fetcher, array $filter) : bool|string {
 		return false;
 	}
 
 	/**
 	 * This method allows you to create a subtable which is associated with this field.
-	 * @return bool Return the table definition. False if no table.
+	 * @return array|bool Return the table definition. False if no table.
 	 **/
-	public function table(){
+	public function table() : array|bool {
 		return false;
 	}
 
@@ -112,17 +105,17 @@ class zajField {
 	 * Defines the structure and type of this field in the mysql database.
 	 * @return array Returns in array with the database definition.
 	 **/
-	public function database(){
+	public function database() : array {
 		return array();
 	}
 
 	/**
 	 * Duplicates the data when duplicate() is called on a model object. This method can be overridden to add extra processing before duplication. See built-in ordernum as an override example.
-	 * @param $data mixed The first parameter is the input data.
+	 * @param mixed $data The first parameter is the input data.
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being duplicated.
 	 * @return mixed Returns the duplicated value.
 	 **/
-	public function duplicate($data, &$object){
+	public function duplicate(mixed $data, zajModel &$object) : mixed {
 		return $data;
 	}
 
@@ -131,7 +124,7 @@ class zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object for which the default is being fetched. It is possible that the object does not yet exist.
      * @return mixed Returns the default value.
      */
-    public function get_default(&$object){
+    public function get_default(zajModel &$object) : mixed {
         if(is_object($this->options)) return $this->options->default;   // Old method
         else return $this->options['default'] ?? null;
     }
@@ -139,18 +132,18 @@ class zajField {
 	/**
 	 * Returns an error message, but is this still needed?
 	 **/
-	public function form(){
+	public function form() : string {
 		return "[undefined form field for $this->name. this is a bug in the system or in a plugin.]";
 	}
 
 	/**
 	 * A static create method used to initialize this object.
 	 * @param string $name The name of this field.
-	 * @param zajDb $field_def An object definition of this field as defined by {@link zajDb}
+	 * @param zajDb|stdClass $field_def An object definition of this field as defined by {@link zajDb}
 	 * @param string $class_name The class name of the model.
 	 * @return zajField A zajField-descendant.
 	 **/
-	public static function create($name, $field_def, $class_name=''){
+	public static function create(string $name, zajDb|stdClass $field_def, string $class_name='') : zajField {
 		// get options and type
 			$options = $field_def->options;
 			$type = $field_def->type;
@@ -169,7 +162,7 @@ class zajField {
 	 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
 	 * @return bool Returns true by default.
 	 **/
-	public function __onInputGeneration($param_array, &$source){
+	public function __onInputGeneration(array $param_array, zajCompileSource &$source) : bool {
 		// does not do anything by default
 		return true;
 	}
@@ -180,7 +173,7 @@ class zajField {
 	 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
 	 * @return bool Returns true by default.
 	 **/
-	public function __onFilterGeneration($param_array, &$source){
+	public function __onFilterGeneration(array $param_array, zajCompileSource &$source) : bool {
 
         // Generate input related stuff
         $this->__onInputGeneration($param_array, $source);

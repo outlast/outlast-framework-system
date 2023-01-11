@@ -1,5 +1,7 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
 /**
  * Handles the compilation of single source file.
  *
@@ -16,55 +18,75 @@
  * @property integer $block_level
   */
 class zajCompileSource {
-	/** @var zajLib */
-	public $zajlib;				// object - pointer to global zajlib object
 
-	// instance variables
-		private $file;					// file pointer - source file
-		private $current_line = '';		// string - contains the current line's string (or part of it)
-		private $current_tag = '';		// string - contains the current tag being processed
-		private $line_number = 0;		// int - number of the current line in this file
-		private $file_path;				// string - full path to the source file
-		private $requested_path;		// string - the relative path to the source file
+    /**
+     * @var mixed The file pointer for the source file
+     */
+    private mixed $file;
+
+    /**
+     * @var string Contains the current line's string (or part of it)
+     */
+    private string $current_line = '';
+
+    /**
+     * @var string Contains the current tag being processed
+     */
+    private string $current_tag = '';
+
+    /**
+     * @var int Number of the current line in this file
+     */
+    private int $line_number = 0;
+
+    /**
+     * @var string Full path to the source file
+     */
+    private string $file_path;
+
+    /**
+     * @var string The relative path to the source file
+     */
+    private string $requested_path;
 
 	/**
 	 * @var array An array of all zajCompileBlock objects in this source.
 	 */
-	private $blocks = [];			// array - an array of all zajCompileBlock objects in this source
+	private array $blocks = [];
 
 	/**
 	 * @var int The current block level.
 	 */
-	private $block_level = 0;		// int - current level of block hierarchy
+	private int $block_level = 0;
 
 	/**
-	 * @var zajCompileBlock The current block
+	 * @var ?zajCompileBlock The current block
 	 */
-	private $current_block;			// zajCompileBlock - the current block
+	private ?zajCompileBlock $current_block;
 
 	/**
 	 * @var zajCompileSession
 	 */
-	private $compile_session;
+	private zajCompileSession $compile_session;
 
 
-		private $hierarchy = [];		// array - stores info about open/close tags
-		private $level = 0;				// int - current level of tag hierarchy
-		private $app_level;				// string - the app level (plugin) at which this source is located
-		private $child_source = false;	// zajCompileSource|boolean - child source object
+    private array $hierarchy = [];		// array - stores info about open/close tags
+    private int $level = 0;				// int - current level of tag hierarchy
+    private string $app_level;				// string - the app level (plugin) at which this source is located
+    private zajCompileSource|bool $child_source = false;	// zajCompileSource|boolean - child source object
 
 	// these are set by the template tags @todo move to methods!
-		public $is_extension = false;	// boolean - true if this source has an extends tag and thus is an extension of something else in this session
-		public $extended = false;		// boolean - true if this source is extended in this session
-		public $parent_requested = false;// string|boolean - relative path of my parent source. false if none.
-		public $parent_path = false;	// string|boolean - full path of my parent template. false if none.
-		public $parent_level = false;	// string|boolean - plugin level of my parent template. false if none.
+		public bool $is_extension = false;	// boolean - true if this source has an extends tag and thus is an extension of something else in this session
+		public bool $extended = false;		// boolean - true if this source is extended in this session
+		public bool $parent_requested = false;// string|boolean - relative path of my parent source. false if none.
+		public bool $parent_path = false;	// string|boolean - full path of my parent template. false if none.
+		public bool $parent_level = false;	// string|boolean - plugin level of my parent template. false if none.
 
 	// settings
-		private $paused = false;		// boolean - if paused, reading from this file will not occur
-		private $parse = true;			// boolean - if parse is true, the line will be parsed before writing
-		private $resume_at = '';		// string - when parse is turned off, you can set to resume at a certain tag
-		private static $paths = array(			// array - array of paths to search, in order of preference
+		private bool $paused = false;		// boolean - if paused, reading from this file will not occur
+		private bool $parse = true;			// boolean - if parse is true, the line will be parsed before writing
+		private string $resume_at = '';		// string - when parse is turned off, you can set to resume at a certain tag
+		private static array $paths = array(			// array - array of paths to search, in order of preference
 			'local'=>'app/view/',
 			'plugin_apps'=>true,				// boolean - set this to false if you don't want to check for app plugin views
 			'system'=>'system/app/view/',
@@ -79,23 +101,22 @@ class zajCompileSource {
 	 * @param string|bool $ignore_app_level The name of app up to which all path levels should be ignored. Setting this to false will ignore nothing.
 	 * @param zajCompileSource|bool $child_source The zajCompileSource object of a child template, if one exists.
 	 */
-	public function __construct($source_file, &$session, $ignore_app_level = false, $child_source = false){
+	public function __construct(string $source_file, zajCompileSession &$session, string|bool $ignore_app_level = false, zajCompileSource|bool $child_source = false){
 		// set zajlib & debug stats
 		$this->compile_session = $session;
-		$this->zajlib =& zajLib::me();
 
 		// jail the source path
 		$source_file = trim($source_file, '/');
-		$this->zajlib->file->file_check($source_file);
+		zajLib::me()->file->file_check($source_file);
 
 		// does it exist?
 		$app_level_and_path = $this->check_app_levels($source_file, $ignore_app_level);
 		if($app_level_and_path === false){
-			if($ignore_app_level === false) return $this->zajlib->error("Template file $source_file could not be found anywhere.");
-			else return $this->zajlib->error("Template file $source_file could not be found in app hierarchy levels below $ignore_app_level.");
+			if($ignore_app_level === false) return zajLib::me()->error("Template file $source_file could not be found anywhere.");
+			else return zajLib::me()->error("Template file $source_file could not be found in app hierarchy levels below $ignore_app_level.");
 		}
 
-		// set my child. also if i have one, then I am extended.
+		// set my child. also if I have one, then I am extended.
 		$this->child_source = $child_source;
 		if($child_source !== false) $this->extended = true;
 
@@ -113,9 +134,9 @@ class zajCompileSource {
 	/**
 	 * Read and parse
 	 **/
-	public function compile(){
+	public function compile(): bool|string {
 		// while not end of file
-			if($this->eof()) return $this->zajlib->error("tried reading at eof. please use eof method!");
+			if($this->eof()) return zajLib::me()->error("tried reading at eof. please use eof method!");
 		// pause
 			if($this->paused) return '';
 		// read a line from the file if current_line is empty
@@ -123,15 +144,15 @@ class zajCompileSource {
 				$this->current_line = fgets($this->file);
 				$this->line_number++;
                 // write debug info in debug mode
-                if($this->zajlib->debug_mode && $this->parse){
-                    $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug = (object) [ 'file_path'=>'".addslashes($this->requested_path)."', 'line_number'=>$this->line_number ]; ?>");
+                if(zajLib::me()->debug_mode && $this->parse){
+                    $this->write("<?php \zajLib::me()->variable->ofw->tmp->compile_source_debug = (object) [ 'file_path'=>'".addslashes($this->requested_path)."', 'line_number'=>$this->line_number ]; ?>");
                 }
 			}
 
 		// check for php related stuff (but only if parsing is on)
 			if($this->parse){
 				// disable PHP tags
-					if(preg_match("/<[\?%](php| |\\n)+/", $this->current_line) > 0) return $this->zajlib->error("cannot use PHP or ASP tags in template file ($this->file_path): &lt;?, &lt;?php, or &lt;% are all forbidden.");
+					if(preg_match("/<[\?%](php| |\\n)+/", $this->current_line) > 0) return zajLib::me()->error("cannot use PHP or ASP tags in template file ($this->file_path): &lt;?, &lt;?php, or &lt;% are all forbidden.");
 				// now replace any other codes in line (<?xml for example)
 					$this->current_line = preg_replace("/(<[\?%][A-z]*)/", '<?php print "${1}"; ?>', $this->current_line);
 			}
@@ -178,33 +199,33 @@ class zajCompileSource {
 	 * @param string $content The content to be written to each file.
 	 * @return boolean Always returns true.
 	 **/
-	public function write($content){
-		return $this->zajlib->compile->write($content);
+	public function write(string $content): bool {
+		return zajLib::me()->compile->write($content);
 	}
 
 	////////////////////////////////////////////////////////
 	// Settings and parameters
 	////////////////////////////////////////////////////////
-	public function eof(){
+	public function eof(): bool {
 		return (!$this->current_line && feof($this->file));
 	}
-	public function close(){
-        if($this->zajlib->debug_mode && $this->parse){
-            $this->write("<?php \$this->zajlib->variable->ofw->tmp->compile_source_debug = new stdClass(); ?>");
+	public function close() : void{
+        if(zajLib::me()->debug_mode && $this->parse){
+            $this->write("<?php \zajLib::me()->variable->ofw->tmp->compile_source_debug = new stdClass(); ?>");
         }
 	    fclose($this->file);
 	}
-	public function pause(){
+	public function pause() : bool {
 		zajCompileSession::verbose("Pausing <code>$this->file_path</code> compile source.");
 		$this->paused = true;
 		return true;
 	}
-	public function resume(){
+	public function resume() : bool {
 		zajCompileSession::verbose("Resuming <code>$this->file_path</code> compile source.");
 		$this->paused = false;
 		return true;
 	}
-	public function set_parse($new_setting, $resume_at=''){
+	public function set_parse($new_setting, $resume_at='') : void {
 		$this->parse = $new_setting;
 		$this->resume_at = $resume_at;
 	}
@@ -221,11 +242,9 @@ class zajCompileSource {
 	/**
 	 * Add a block to this source.
 	 * @param string $block_name The name of the block.
-	 * @param zajCompileBlock $parent The parent block.
-	 * @todo Convert warning to error instead of warning. Non-fatal for now because of backwards compatibility.
 	 * @return zajCompileBlock The new block object.
 	 */
-	public function add_block($block_name){
+	public function add_block(string $block_name) : zajCompileBlock {
 		if($this->has_block($block_name)) $this->error("The block $block_name was found more than once.");
 
 		// Increment block level
@@ -241,7 +260,7 @@ class zajCompileSource {
 	 * @param boolean $recursive Check all children recursively.
 	 * @return boolean Returns true if the block exists for this source.
 	 */
-	public function has_block($block_name, $recursive = false){
+	public function has_block(string $block_name, bool $recursive = false) : bool {
 		// Check me
 		$i_have_block = array_key_exists($block_name, $this->blocks);
 		if($i_have_block) return true;
@@ -258,7 +277,7 @@ class zajCompileSource {
 	 * Returns an array of blocks used in this source.
 	 * @return array An array of blocks used in this source.
 	 */
-	public function get_blocks(){
+	public function get_blocks() : array {
 		return $this->blocks;
 	}
 
@@ -268,7 +287,7 @@ class zajCompileSource {
 	 * @param boolean $recursive If set to true, it will get the lowest-level block it can find. Defaults to false, in which case it returns the block object for the current source.
 	 * @return zajCompileBlock|false The current block.
 	 */
-	public function get_block($name = "", $recursive = false){
+	public function get_block(string $name = "", bool $recursive = false) : zajCompileBlock|bool {
 		// If no name set, return current
 		if(empty($name)) return $this->current_block;
 
@@ -295,9 +314,9 @@ class zajCompileSource {
 
 	/**
 	 * End a block in this source.
-	 * @return zajCompileBlock The new current block (so the ended block's parent).
+	 * @return ?zajCompileBlock The new current block (so the ended block's parent) or null if at top level.
 	 */
-	public function end_block(){
+	public function end_block() : ?zajCompileBlock {
 		// Add the processed block
 		$this->compile_session->add_processed_block($this->current_block);
 
@@ -312,7 +331,7 @@ class zajCompileSource {
 	 * Get session of current source.
 	 * @return zajCompileSession Returns the current source's session.
 	 */
-	public function get_session(){
+	public function get_session() : zajCompileSession {
 		return $this->compile_session;
 	}
 
@@ -320,7 +339,7 @@ class zajCompileSource {
 	 * Am I the main source?
 	 * @return boolean Returns true if I am the main source, false otherwise.
 	 */
-	public function am_i_the_main_source(){
+	public function am_i_the_main_source() : bool {
 		if(!$this->child_source) return true;
 		else return false;
 	}
@@ -329,7 +348,7 @@ class zajCompileSource {
 	////////////////////////////////////////////////////////
 	// Levels of hierarchy
 	////////////////////////////////////////////////////////
-	public function add_level($tag, $data){
+	public function add_level(string $tag, mixed $data) : bool {
 		// add a level of hierarchy
 			array_push($this->hierarchy, array(
 				'tag'=>$tag,
@@ -339,7 +358,7 @@ class zajCompileSource {
 			$this->level++;
 		return true;
 	}
-	public function remove_level($tag){
+	public function remove_level(string $tag) : mixed {
 		// remove a level of hierarchy
 			list($start_tag, $data) = array_values(array_pop($this->hierarchy));
 		// if tag mismatch
@@ -348,38 +367,38 @@ class zajCompileSource {
 			$this->level--;
 		return $data;
 	}
-	public function get_level_data($tag){
+	public function get_level_data(string $tag) : mixed {
 		// get the last level of hierarchy
 			list($start_tag, $data) = array_values(end($this->hierarchy));
 		// if tag mismatch
 			if($tag != $start_tag) $this->error("The tag $tag has to be nested within $start_tag tags.");
 		return $data;
 	}
-	public function get_level_tag(){
+	public function get_level_tag() : string {
 		// get the last level of hierarchy
 			list($start_tag, $data) = array_values(end($this->hierarchy));
 		return $start_tag;
 	}
-	public function get_level(){
+	public function get_level() : int {
 		return $this->level;
 	}
-	public function get_current_tag(){
+	public function get_current_tag() : string {
 		// returns the current tag being processed
 		return $this->current_tag;
 	}
 
 	// Read-only access to variables!
-	public function __get($name){
+	public function __get(string $name) : mixed {
 		return $this->$name;
 	}
 
 	////////////////////////////////////////////////////////
 	// Error methods
 	////////////////////////////////////////////////////////
-	public function warning($message){
-		$this->zajlib->warning("Template compile warning: $message (file: $this->file_path / line: $this->line_number)");
+	public function warning(string $message) : void {
+		zajLib::me()->warning("Template compile warning: $message (file: $this->file_path / line: $this->line_number)");
 	}
-	public function error($message){
+	#[NoReturn] public function error(string $message): void {
 	    // Remove all my destination files
 	    foreach($this->compile_session->get_destinations() as $destination){
 	        /** @var zajCompileDestination $destination */
@@ -388,7 +407,7 @@ class zajCompileSource {
 
         // Show the error
         $this->close();
-		$this->zajlib->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)");
+		zajLib::me()->error("Template compile error: $message (file: $this->file_path / line: $this->line_number)");
 		exit;
 	}
 
@@ -399,7 +418,7 @@ class zajCompileSource {
 	 * @return array|boolean Returns an array with full path and app level or false if it does not exist.
      * @todo Use load->get_app_folder_paths();
 	 **/
-	public static function check_app_levels($source_file, $ignore_app_level = false){
+	public static function check_app_levels(string $source_file, string|bool $ignore_app_level = false) : array|bool {
 		// run through all the paths
 		foreach(zajCompileSource::$paths as $level=>$path){
 			// if type is plugin_apps, then it is special!

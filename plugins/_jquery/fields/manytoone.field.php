@@ -21,7 +21,7 @@
         const show_template = false;    // string - used on displaying the data via the appropriate tag (n/a)
 
         // Construct
-        public function __construct($name, $options, $class_name, &$zajlib) {
+        public function __construct($name, $options, $class_name) {
             // set default options
             // relation fields dont really have options, they're parameters
             if (empty($options[0])) {
@@ -31,27 +31,27 @@
             // array parameters
             if (is_array($options[0])) {
                 $options = $options[0];
-            } else {    // depricated
+            } else {    // deprecated
                 $options['model'] = $options[0];
                 unset($options[0]);
             }
 
 
             // call parent constructor
-            return parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+            return parent::__construct(__CLASS__, $name, $options, $class_name);
         }
 
         /**
          * Check to see if the field settings are valid. Run during database update.
          * @return boolean|string Returns false if all is well, returns an error string if something is up.
          **/
-        public function get_settings_validation_errors() {
+        public function get_settings_validation_errors() : bool|string {
             // Resume as object if id
             /** @var zajModel $class_name */
             $class_name = $this->options['model'];
 
             // See if class exists
-            if(!class_exists($class_name, false) && !$this->ofw->load->model($class_name, false, false)){
+            if(!class_exists($class_name, false) && !zajLib::me()->load->model($class_name, false, false)){
                 return "The model '$class_name' does not exist.";
             }
 
@@ -59,8 +59,8 @@
             /**  @var zajField $field */
             $other_side_fields = 0;
             foreach ($other_model as $field_name => $field) {
-                $other_model_name = $field->options['model'] ?? $field->options[0];
-                $other_field_name = $field->options['field'] ?? $field->options[1];
+                $other_model_name = $field->options['model'] ?? $field->options[0] ?? null;
+                $other_field_name = $field->options['field'] ?? $field->options[1] ?? null;
                 if ($field->type == 'onetomany' && $other_model_name == $this->class_name && $other_field_name == $this->name) {
                     $other_side_fields++;
                 }
@@ -82,7 +82,7 @@
          * Defines the structure and type of this field in the mysql database.
          * @return array Returns in array with the database definition.
          **/
-        public function database() {
+        public function database() : array {
             // define each field
             $fields[$this->name] = [
                 'field'   => $this->name,
@@ -104,7 +104,7 @@
          * @param mixed $input The input data.
          * @return boolean Returns true if validation was successful, false otherwise.
          **/
-        public function validation($input) {
+        public function validation(mixed $input) : bool  {
             if (empty($input)) {
                 return false;
             }
@@ -118,7 +118,7 @@
          * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
          * @return mixed Return the data that should be in the variable.
          **/
-        public function get($data, &$object) {
+        public function get(mixed $data, zajModel &$object) : mixed {
             return zajFetcher::manytoone($object->class_name, $this->name, $data);
         }
 
@@ -129,7 +129,7 @@
          * @return array Returns an array where the first parameter is the database update, the second is the object update
          * @todo Fix where second parameter is actually taken into account! Or just remove it...
          **/
-        public function save($data, &$object) {
+        public function save(mixed $data, zajModel &$object) : mixed {
             // accept as object
             if (is_object($data)) {
                 // check to see if zajModel
@@ -179,7 +179,7 @@
          * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
          * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
          */
-        public function export($data, &$object) {
+        public function export(mixed $data, zajModel &$object) : string|array {
             // Decide how to format it
             if (!empty($data->name)) {
                 $data = $data->name.' ('.$data->id.')';
@@ -196,7 +196,7 @@
          * @param array $filter An array of values specifying what type of filter this is.
          * @return string Returns the sql filter.
          **/
-        public function filter(&$fetcher, $filter) {
+        public function filter(zajFetcher &$fetcher, array $filter) : bool|string {
             // break up filter
             list($field, $value, $logic, $type) = $filter;
             // assemble code
@@ -234,11 +234,11 @@
                     return "0";
                 } // Return no filter if boolean false
                 else if (!is_string($value) && !is_integer($value)) {
-                    return $this->zajlib->error("Invalid value given for filter/exclude of fetcher object for $this->class_name/$field! Must be a string, a model object, or a fetcher object!");
+                    return zajLib::me()->error("Invalid value given for filter/exclude of fetcher object for $this->class_name/$field! Must be a string, a model object, or a fetcher object!");
                 }
 
                 // All is ok, now simply return
-                return "model.`$field` $logic '".$this->zajlib->db->escape($value)."'";
+                return "model.`$field` $logic '".zajLib::me()->db->escape($value)."'";
             }
         }
 
@@ -248,10 +248,10 @@
          * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
          * @return bool
          **/
-        public function __onInputGeneration($param_array, &$source) {
+        public function __onInputGeneration(array $param_array, zajCompileSource &$source) : bool {
             // Generate available choices
             $class_name = $this->options['model'];
-            $this->zajlib->compile->write('<?php $this->zajlib->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); if($this->zajlib->variable->field->choices === false) $this->zajlib->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
+            zajLib::me()->compile->write('<?php zajLib::me()->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); if(zajLib::me()->variable->field->choices === false) zajLib::me()->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
 
             return true;
         }
@@ -262,13 +262,12 @@
          * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
          * @return bool
          **/
-        public function __onFilterGeneration($param_array, &$source) {
-            // Generate input
+        public function __onFilterGeneration(array $param_array, zajCompileSource &$source) : bool {            // Generate input
             $this->__onInputGeneration($param_array, $source);
 
             // Generate value setting
             $class_name = $this->options['model'];
-            $this->zajlib->compile->write('<?php if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$this->name.'"])){ $this->zajlib->variable->field->value = '.$class_name.'::fetch($_REQUEST[\'filter\']["'.$this->name.'"][0]); } ?>');
+            zajLib::me()->compile->write('<?php if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$this->name.'"])){ zajLib::me()->variable->field->value = '.$class_name.'::fetch($_REQUEST[\'filter\']["'.$this->name.'"][0]); } ?>');
 
             return true;
         }

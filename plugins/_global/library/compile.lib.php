@@ -54,7 +54,7 @@
          */
         public function compile($source_path, $destination_path = false) {
             // start a new compile session
-            $new_session = new zajCompileSession($source_path, $this->zajlib, $destination_path);
+            $new_session = new zajCompileSession($source_path, $destination_path);
             array_push($this->sessions, $new_session);
 
             // now go!

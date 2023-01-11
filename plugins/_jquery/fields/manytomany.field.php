@@ -22,7 +22,7 @@
 		const show_template = false;    // string - used on displaying the data via the appropriate tag (n/a)
 
 		// Construct
-		public function __construct($name, $options, $class_name, &$zajlib) {
+		public function __construct($name, $options, $class_name) {
 			// set default options
 			if (empty($options[0])) {
 				return zajLib::me()->error("Required parameter 1 missing for field $name!");
@@ -59,15 +59,14 @@
 			}
 
 			// call parent constructor
-			return parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			return parent::__construct(__CLASS__, $name, $options, $class_name);
 		}
 
 		/**
 		 * This method allows you to create a subtable which is associated with this field.
 		 * @return array|bool Return the table definition or false if no table needed.
 		 **/
-		public function table() {
-			// if this is only a reference to another
+        public function table() : array|bool {			// if this is only a reference to another
 			if (!empty($this->options['field'])) {
 				return false;
 			}
@@ -105,7 +104,7 @@
 		 * @param mixed $input The input data.
 		 * @return boolean Returns true if validation was successful, false otherwise.
 		 **/
-		public function validation($input) {
+		public function validation(mixed $input) : bool  {
 			return true;
 		}
 
@@ -115,7 +114,7 @@
 		 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 		 * @return mixed Return the data that should be in the variable.
 		 **/
-		public function get($data, &$object) {
+		public function get(mixed $data, zajModel &$object) : mixed {
 			return zajFetcher::manytomany($this->name, $object);
 		}
 
@@ -124,7 +123,7 @@
 		 * @param zajModel $object This parameter is a pointer to the actual object for which the default is being fetched. It is possible that the object does not yet exist.
 		 * @return zajFetcher Returns a list of objects.
 		 */
-		public function get_default(&$object) {
+        public function get_default(zajModel &$object) : mixed {
 			if (is_object($this->options['default'])) {
 				return $this->options['default'];
 			} else {
@@ -141,8 +140,8 @@
 		 * @return array Returns an array where the first parameter is the database update, the second is the object update
 		 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 		 */
-		public function save($data, &$object, $additional_fields = false) {
-			$field_name = $this->name;
+        public function save(mixed $data, zajModel &$object, $additional_fields = false) : mixed {
+            $field_name = $this->name;
 			/** @var zajModel $othermodel */
 			$othermodel = $this->options['model'];
 			// is data a fetcher object or an array of objects? if so, add them
@@ -188,7 +187,7 @@
 				}
 				// if it is null, warn!
 				if (empty($data)) {
-					$this->ofw->error('Tried to save a string to manytomany field which is not json data!'." ($field_name / $data)");
+					zajLib::me()->error('Tried to save a string to manytomany field which is not json data!'." ($field_name / $data)");
 				}
 				// else, continue
 				if (!empty($data->create)) {
@@ -247,7 +246,7 @@
 		 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 		 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
 		 */
-		public function export($data, &$object) {
+		public function export(mixed $data, zajModel &$object) : string|array {
 			// Decide how to format it
 			if ($data->total == 0 || $data->total > 3) {
 				$data = $data->total.' items';
@@ -273,7 +272,7 @@
 		 * @param array $filter An array of values specifying what type of filter this is.
 		 * @return bool|string
 		 */
-		public function filter(&$fetcher, $filter) {
+        public function filter(zajFetcher &$fetcher, array $filter) : bool|string {
 			// break up filter
 			[$field, $value, $logic, $type] = $filter;
 			// First get my connection table
@@ -311,7 +310,7 @@
 					$value = $value->id;
 				}
 
-				$query = "SELECT DISTINCT $my_field AS id FROM $table_name AS conn WHERE conn.`field`='{$this->name}' AND conn.$their_field = '".$this->zajlib->db->escape($value)."'";
+				$query = "SELECT DISTINCT $my_field AS id FROM $table_name AS conn WHERE conn.`field`='{$this->name}' AND conn.$their_field = '".zajLib::me()->db->escape($value)."'";
 			}
 			// Create logic and query
 			// figure out how to connect me
@@ -332,12 +331,12 @@
 		 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
 		 * @return bool
 		 */
-		public function __onInputGeneration($param_array, &$source) {
+        public function __onInputGeneration(array $param_array, zajCompileSource &$source) : bool {
 			// override to print all choices
 			// use search method with all			
 			$class_name = $this->options['model'];
 			// write to compile destination
-			$this->zajlib->compile->write('<?php $this->zajlib->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); if($this->zajlib->variable->field->choices === false) $this->zajlib->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
+			zajLib::me()->compile->write('<?php zajLib::me()->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); if(zajLib::me()->variable->field->choices === false) zajLib::me()->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
 
 			return true;
 		}
@@ -348,13 +347,13 @@
 		 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
 		 * @return bool
 		 **/
-		public function __onFilterGeneration($param_array, &$source) {
+        public function __onFilterGeneration(array $param_array, zajCompileSource &$source) : bool {
 			// Generate input
 			$this->__onInputGeneration($param_array, $source);
 
 			// Generate value setting
 			$class_name = $this->options['model'];
-			$this->zajlib->compile->write('<?php $this->zajlib->variable->field->name = "filter['.$this->name.']"; if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$this->name.'"])){ $this->zajlib->variable->field->value = '.$class_name.'::fetch()->filter(\'id\', $_REQUEST[\'filter\']["'.$this->name.'"]); } else { $this->zajlib->variable->field->value = '.$class_name.'::fetch()->exclude_all(); } ?>');
+			zajLib::me()->compile->write('<?php zajLib::me()->variable->field->name = "filter['.$this->name.']"; if(!empty($_REQUEST[\'filter\']) && !empty($_REQUEST[\'filter\']["'.$this->name.'"])){ zajLib::me()->variable->field->value = '.$class_name.'::fetch()->filter(\'id\', $_REQUEST[\'filter\']["'.$this->name.'"]); } else { zajLib::me()->variable->field->value = '.$class_name.'::fetch()->exclude_all(); } ?>');
 
 			return true;
 		}

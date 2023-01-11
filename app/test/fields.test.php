@@ -19,54 +19,58 @@
         public function system_fields_serialized() {
             // Create a field object
             $fieldobj = $this->system_fields_create("serialized");
+            $ofwtest = OfwTestNotInDb::create();
             // Save
             $data = ["hu_HU", "sk_SK"];
-            $result = $fieldobj->save($data, $fieldobj);
+            $result = $fieldobj->save($data, $ofwtest);
             ofwTestAssert::isString($result[0]);
             ofwTestAssert::areIdentical($data, $result[1]);
             // Get
             $data = 'O:8:"stdClass":2:{i:0;s:5:"hu_HU";i:1;s:5:"sk_SK";}';
-            $result = $fieldobj->get($data, $fieldobj);
+            $result = $fieldobj->get($data, $ofwtest);
             ofwTestAssert::isObject($result);
         }
 
         public function system_fields_boolean() {
             // Create a field object
+            $ofwtest = OfwTestNotInDb::create();
             $fieldobj = $this->system_fields_create("boolean");
             // Get data by default
-            $result = (boolean)$fieldobj->get('', $fieldobj);
+            $result = (boolean)$fieldobj->get('', $ofwtest);
             ofwTestAssert::isFalse($result);
             // Create a field object with true as default
             $fieldobj = $this->system_fields_create("boolean", ['default'=>true]);
-            $result = (boolean)$fieldobj->get('', $fieldobj);
+            $result = (boolean)$fieldobj->get('', $ofwtest);
             ofwTestAssert::isTrue($result);
         }
 
         public function system_fields_locale() {
             // Create a field object
+            $ofwtest = OfwTestNotInDb::create();
             $fieldobj = $this->system_fields_create("locale");
             // Save
             $data = "hu_HU";
-            $result = $fieldobj->save($data, $fieldobj);
+            $result = $fieldobj->save($data, $ofwtest);
             ofwTestAssert::isString($result[0]);
             ofwTestAssert::areIdentical($data, $result[1]);
             // Get
-            $result = $fieldobj->get($data, $fieldobj);
+            $result = $fieldobj->get($data, $ofwtest);
             ofwTestAssert::isString($result);
         }
 
         public function system_fields_locales() {
             $type = "locales";
             // Create a field object
+            $ofwtest = OfwTestNotInDb::create();
             $fieldobj = $this->system_fields_create($type);
             // Save
             $data = ["hu_HU", "sk_SK"];
-            $result = $fieldobj->save($data, $fieldobj);
+            $result = $fieldobj->save($data, $ofwtest);
             ofwTestAssert::isString($result[0]);
             ofwTestAssert::areIdentical($data, $result[1]);
             // Get
             $data = 'O:8:"stdClass":2:{i:0;s:5:"hu_HU";i:1;s:5:"sk_SK";}';
-            $result = $fieldobj->get($data, $fieldobj);
+            $result = $fieldobj->get($data, $ofwtest);
             ofwTestAssert::isObject($result);
             // Display!
             $this->system_field_view($fieldobj);

@@ -19,18 +19,18 @@
 		const show_template = false;    // string - used on displaying the data via the appropriate tag (n/a)
 
 		// Construct
-		public function __construct($name, $options, $class_name, &$zajlib) {
+		public function __construct($name, $options, $class_name) {
 			// set default options
 			// no default options
 			// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			parent::__construct(__CLASS__, $name, $options, $class_name);
 		}
 
 		/**
 		 * Defines the structure and type of this field in the mysql database.
 		 * @return array Returns in array with the database definition.
 		 **/
-		public function database() {
+        public function database() : array {
 			// define each field
 			$fields[$this->name] = [
 				'field'   => $this->name,
@@ -50,7 +50,7 @@
 		 * @param mixed $input The input data.
 		 * @return boolean Returns true if validation was successful, false otherwise.
 		 **/
-		public function validation($input) {
+		public function validation(mixed $input) : bool  {
 			return true;
 		}
 
@@ -60,7 +60,7 @@
 		 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 		 * @return mixed Return the data that should be in the variable.
 		 **/
-		public function get($data, &$object) {
+		public function get(mixed $data, zajModel &$object) : mixed {
 			$result = unserialize($data);
 			if (!$result) {
 				$result = (object)[];
@@ -76,7 +76,7 @@
 		 * @return array Returns an array where the first parameter is the database update, the second is the object update
 		 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 		 **/
-		public function save($data, &$object) {
+		public function save(mixed $data, zajModel &$object) : mixed {
 			// First let's check if this is a special array
 			if (is_array($data) && array_key_exists('mozajik_field', $data) && !empty($data['mozajik_field'])) {
 				$sdata = [];
@@ -97,7 +97,7 @@
 			}
 			// Standard array, so serialize
 			if (is_array($data)) {
-				$newdata = serialize($this->ofw->array->to_object($data));
+				$newdata = serialize(zajLib::me()->array->to_object($data));
 			} else if (is_object($data)) {
 				$newdata = serialize($data);
 			} else {

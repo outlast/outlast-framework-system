@@ -9,22 +9,22 @@
          * The underlying string value
          * @var string
          */
-	    public $value = "";
+	    public string $value = "";
 
         /**
          * OfwSafeString constructor.
          * @param string $value
          */
-	    public function __construct($value) {
+	    public function __construct(string $value) {
 	        $this->value = $value;
         }
 
         /**
          * Alternative to constructor.
-         * @param $value
+         * @param string $value
          * @return OfwSafeString
          */
-        static function set($value) {
+        static function set(string $value): OfwSafeString {
 	        return new OfwSafeString($value);
         }
 

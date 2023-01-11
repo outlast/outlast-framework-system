@@ -16,8 +16,8 @@ class zajfield_unittest extends zajfield_boolean {
 	const use_duplicate = false;    // boolean - true if data should be duplicated when duplicate() is called
 
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name){
 		$options = array(false);
-		return parent::__construct($name, $options, $class_name, $zajlib);
+		return parent::__construct($name, $options, $class_name);
 	}
 }

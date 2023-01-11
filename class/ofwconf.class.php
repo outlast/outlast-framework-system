@@ -49,13 +49,13 @@
         /**
          * @var array A key/value array of configuration values.
          */
-        private $values;
+        private array $values;
 
         /**
          * Creates a new ofw conf instance from an existing array.
          * @param array $values
          */
-        public function __construct($values) {
+        public function __construct(array $values) {
             $this->values = $values;
         }
 
@@ -103,7 +103,7 @@
          * @param string $offset
          * @return mixed
          */
-        public function __get($offset) {
+        public function __get(mixed $offset): mixed {
             return $this->values[$offset];
         }
 
@@ -112,7 +112,7 @@
          * @param string $offset
          * @param mixed $value
          */
-        public function __set($offset, $value) {
+        public function __set(mixed $offset, mixed $value) {
             $this->values[$offset] = $value;
         }
 
@@ -121,7 +121,7 @@
          * @param $name
          * @return bool Returns true if the item is set.
          */
-        public function __isset($name) {
+        public function __isset($name): bool {
             return array_key_exists($name, $this->values);
         }
 

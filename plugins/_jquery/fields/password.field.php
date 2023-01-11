@@ -19,7 +19,7 @@
         const show_template = false;    // string - used on displaying the data via the appropriate tag (n/a)
 
         // Construct
-        public function __construct($name, $options, $class_name, &$zajlib) {
+        public function __construct($name, $options, $class_name) {
             // set default options
             // for backwards compatibility (deprecated)
             if (!empty($options[0])) {
@@ -31,23 +31,23 @@
                 $options['length'] = 255;
             }
             // call parent constructor
-            parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+            parent::__construct(__CLASS__, $name, $options, $class_name);
         }
 
         /**
          * Defines the structure and type of this field in the mysql database.
          * @return array Returns in array with the database definition.
          **/
-        public function database() {
+        public function database() : array {
             // define each field
             $fields[$this->name] = [
                 'field'   => $this->name,
                 'type'    => 'varchar',
                 'option'  => [
-                    0 => $this->options['length'],
+                    0 => $this->options['length'] ?? 255,
                 ],
                 'key'     => 'MUL',
-                'default' => $this->options['default'],
+                'default' => $this->options['default'] ?? null,
                 'extra'   => '',
                 'comment' => 'password',
             ];
@@ -60,7 +60,7 @@
          * @param mixed $input The input data.
          * @return boolean Returns true if validation was successful, false otherwise.
          **/
-        public function validation($input) {
+        public function validation(mixed $input) : bool  {
             // Validate password security
             if (strlen($input) < 8) {
                 return false;
@@ -83,7 +83,7 @@
          * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
          * @return mixed Return the data that should be in the variable.
          **/
-        public function get($data, &$object) {
+        public function get(mixed $data, zajModel &$object) : mixed {
             return $data;
         }
 
@@ -94,7 +94,7 @@
          * @return array Returns an array where the first parameter is the database update, the second is the object update
          * @todo Fix where second parameter is actually taken into account! Or just remove it...
          **/
-        public function save($data, &$object) {
+        public function save(mixed $data, zajModel &$object) : mixed {
             // encode
             $data = password_hash($data, PASSWORD_DEFAULT);
             // return

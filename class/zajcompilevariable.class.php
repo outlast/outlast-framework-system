@@ -19,30 +19,30 @@ class zajCompileVariable extends zajCompileElement {
     /**
      * @var string The original variable text as in template source.
      */
-	private $vartext;
+	private string $vartext;
 
     /**
      * @var string The compiled, php-ready version of the variable used for consuming the variable.
      */
-	private $variable;
+	private string $variable;
 
     /**
      * @var string The compiled, php-ready version of the variable used for writing to the variable.
      */
-    private $variable_write;
+    private string $variable_write;
 
 	/** @var array A list of filters to be applied */
-	private $filters = [];
+	private array $filters = [];
 
     /**
      * @var bool Whether this is a parameter. If false, it means it is a stand-alone {{variable}}. If true, it is a param of a tag.
      */
-	private $parameter_mode = false;
+	private bool $parameter_mode = false;
 
     /**
      * @var int Total number of filters
      */
-	public $filter_count = 0;
+	public int $filter_count = 0;
 
     /**
      * zajCompileVariable constructor.
@@ -50,7 +50,7 @@ class zajCompileVariable extends zajCompileElement {
      * @param zajCompileSource $parent
      * @param bool $check_xss
      */
-	public function __construct($element_name, &$parent, $check_xss = true){
+	public function __construct(string $element_name, zajCompileSource &$parent, bool $check_xss = true){
 		// call parent
 			parent::__construct($element_name, $parent);
 		// now match all the filters
@@ -87,7 +87,7 @@ class zajCompileVariable extends zajCompileElement {
 		// If variable is empty
 		    if($element_name == "" || $element_name == "##") {
 		        $this->parent->error("Empty variable name found.");
-    			return false;
+                // exits
             }
 
             // all is well...continue.
@@ -99,11 +99,11 @@ class zajCompileVariable extends zajCompileElement {
 		return true;
 	}
 
-	public function set_parameter_mode($parameter_mode){
+	public function set_parameter_mode(bool $parameter_mode){
 		$this->parameter_mode = $parameter_mode;
 	}
 
-	public function prepare(){
+	public function prepare() : bool {
 		// start the filter var
 			$this->parent->write("<?php \$filter_var = $this->variable; ");
 		// now execute all the filters
@@ -111,7 +111,7 @@ class zajCompileVariable extends zajCompileElement {
 				// get filter
 					list($filter, $parameter, $total_count, $same_filter_count) = array_values($filter);
 				// now call the filter
-					$this->parent->zajlib->compile->filters->$filter($parameter, $this->parent, $total_count, $same_filter_count);
+					zajLib::me()->compile->filters->$filter($parameter, $this->parent, $total_count, $same_filter_count);
 			}
 			//$this->parent->write("\$filter_var = \$filter_var;");
 		// now end it
@@ -119,7 +119,7 @@ class zajCompileVariable extends zajCompileElement {
 		return true;
 	}
 
-	public function write(){
+	public function write() : bool {
 		// if filter count
 			if($this->filter_count){
 				// prepare the filter var
@@ -149,7 +149,7 @@ class zajCompileVariable extends zajCompileElement {
 			case 'vartext': return $this->vartext;
 			case 'variable': return $this->variable;
             case 'variable_write': return $this->variable_write;
-			default: return $this->parent->zajlib->warning("Tried to access inaccessible parameter $name of zajCompileVariable.");
+			default: return zajLib::me()->warning("Tried to access inaccessible parameter $name of zajCompileVariable.");
 		}
 	}
 

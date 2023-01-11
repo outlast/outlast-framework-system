@@ -19,18 +19,18 @@ class zajfield_polymorphic extends zajField {
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name){
 		// set default options
 			// no default options
 		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			parent::__construct(__CLASS__, $name, $options, $class_name);
 	}
 
 	/**
 	 * Defines the structure and type of this field in the mysql database.
 	 * @return array Returns in array with the database definition.
 	 **/
-	public function database(){
+	public function database() : array {
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name.'_class',
@@ -73,7 +73,7 @@ class zajfield_polymorphic extends zajField {
 	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
-	public function validation($input){
+	public function validation(mixed $input) : bool {
 		if(empty($input)) return false;
 		return true;
 	}
@@ -84,7 +84,7 @@ class zajfield_polymorphic extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return mixed Return the data that should be in the variable.
 	 **/
-	public function get($data, &$object){
+	public function get(mixed $data, zajModel &$object) : mixed {
 		// Get unprocessed data fields (since data does not contain anything)
 			/** @var zajModel $class_name */
 			$class_name = $object->data->get_unprocessed($this->name."_class");
@@ -98,10 +98,10 @@ class zajfield_polymorphic extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update, third is key/value pair of any other fields that need to be updated
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		// Only accepts zajModel objects
 		if(!zajModel::is_instance_of_me($data)){
-			return $this->zajlib->error('Problem found on '.$object->table_name.'.'.$this->name.': Polymorphic connections only accept single model objects!');
+			return zajLib::me()->error('Problem found on '.$object->table_name.'.'.$this->name.': Polymorphic connections only accept single model objects!');
 		}
 		else{
 			/** @var zajModel $data */
@@ -121,7 +121,7 @@ class zajfield_polymorphic extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
 	 */
-	public function export($data, &$object){
+    public function export(mixed $data, zajModel &$object) : string|array {
 		// Decide how to format it
 			if(!empty($data->name)) $data = $data->name.' ('.$data->class_name.' - '.$data->id.')';
 			else $data = $data->id;
@@ -134,11 +134,13 @@ class zajfield_polymorphic extends zajField {
 	 * @param array $filter An array of values specifying what type of filter this is.
 	 * @return string Returns a filter SQL string.
 	 **/
-	public function filter(&$fetcher, $filter){
+	public function filter(zajFetcher &$fetcher, array $filter) : bool|string {
 		// break up filter
 			list($field, $value, $logic, $type) = $filter;
 		// assemble code
 			// @todo IMPLEMENT FILTER!
+
+        return false;
         /**
 			// if value is a fetcher
 			if(zajFetcher::is_instance_of_me($value)){
@@ -164,9 +166,9 @@ class zajfield_polymorphic extends zajField {
 				// Possible values: object, string, boolean false
 					if(zajModel::is_instance_of_me($value)) $value = $value->id;
 					elseif($value === false) return "0"; // Return no filter if boolean false
-					elseif(!is_string($value) && !is_integer($value)) return $this->zajlib->error("Invalid value given for filter/exclude of fetcher object for $this->class_name/$field! Must be a string, a model object, or a fetcher object!");
+					elseif(!is_string($value) && !is_integer($value)) return zajLib::me()->error("Invalid value given for filter/exclude of fetcher object for $this->class_name/$field! Must be a string, a model object, or a fetcher object!");
 				// All is ok, now simply return
-					return "model.`$field` $logic '".$this->zajlib->db->escape($value)."'";
+					return "model.`$field` $logic '".zajLib::me()->db->escape($value)."'";
 			}
 		 **/
 	}

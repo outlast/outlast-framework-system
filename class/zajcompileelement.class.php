@@ -13,19 +13,19 @@ class zajCompileElement{
     /**
      * @var string The name of the variable or tag.
      */
-	protected $element_name;
+	protected string $element_name;
 	
     /**
      * @var zajCompileSource The parent source.
      */
-	protected $parent;
+	protected zajCompileSource $parent;
 
     /**
      * zajCompileElement constructor.
      * @param string $element_name
      * @param zajCompileSource $parent
      */
-	protected function __construct($element_name, &$parent){
+	protected function __construct(string $element_name, zajCompileSource &$parent){
 		// set parent and element
 			/** @var zajCompileSource $parent */
 			$this->parent =& $parent;
@@ -40,7 +40,7 @@ class zajCompileElement{
      * @param bool $add_null_protection If set to true, the variable will be null-protected. This is only supported when *reading* the variable. Defaults to true.
      * @return string Returns the valid PHP format, ready for writing.
      */
-	protected function convert_variable($variable, $check_xss = true, $add_null_protection = true){
+	protected function convert_variable(string $variable, bool $check_xss = true, bool $add_null_protection = true) : string {
 		// leaves 'asdf' as is but converts asdf.qwer to $this->zajlib->variable->asdf->qwer
 		// config variables #asdf# now supported!
 		// and so are filters...

@@ -19,18 +19,18 @@ class zajfield_locales extends zajField {
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 		
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name){
 		// set default options
 			// no default options
 		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			parent::__construct(__CLASS__, $name, $options, $class_name);
 	}	
 	
 	/**
 	 * Defines the structure and type of this field in the mysql database.
 	 * @return array Returns in array with the database definition.
 	 **/
-	public function database(){
+	public function database() : array {
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name,
@@ -49,7 +49,7 @@ class zajfield_locales extends zajField {
 	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
-	public function validation($input){
+	public function validation(mixed $input) : bool {
 		return true;
 	}
 	
@@ -59,7 +59,7 @@ class zajfield_locales extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return mixed Return the data that should be in the variable.
 	 **/
-	public function get($data, &$object){
+	public function get(mixed $data, zajModel &$object) : mixed {
 		$result = unserialize($data);
 		if(!$result) $result = (object) array();
 		return $result;
@@ -70,7 +70,7 @@ class zajfield_locales extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object for which the default is being fetched. It is possible that the object does not yet exist.
      * @return mixed Returns an empty list.
      */
-    public function get_default(&$object){
+    public function get_default(zajModel &$object) : mixed {
         if(is_object($this->options['default'])) return $this->options['default'];
         else return (object) [];
     }
@@ -82,9 +82,9 @@ class zajfield_locales extends zajField {
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		// Standard array, so serialize
-			if($data && is_array($data)) $newdata = serialize($this->zajlib->array->array_to_object($data));
+			if($data && is_array($data)) $newdata = serialize(zajLib::me()->array->array_to_object($data));
 			elseif($data && is_object($data)) $newdata = serialize($data);
 			else $newdata = $data;
 		return array($newdata, $data);
@@ -95,7 +95,7 @@ class zajfield_locales extends zajField {
 	 * @param zajFetcher $fetcher A pointer to the "parent" fetcher which is being filtered.
 	 * @param array $filter An array of values specifying what type of filter this is.
 	 **/
-	public function filter(&$fetcher, $filter){
+	public function filter(zajFetcher &$fetcher, array $filter) : bool|string {
 		// break up filter
         list($field, $value, $logic, $type) = $filter;
 
@@ -113,10 +113,10 @@ class zajfield_locales extends zajField {
 	 * @param array $param_array The array of parameters passed by the input field tag. This is the same as for tag definitions.
 	 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
 	 **/
-	public function __onInputGeneration($param_array, &$source){
+    public function __onInputGeneration(array $param_array, zajCompileSource &$source) : bool {
 		// override to print all choices
 			// write to compile destination
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->choices = $this->zajlib->lang->get_locales(); ?>');
+				zajLib::me()->compile->write('<?php zajLib::me()->variable->field->choices = zajLib::me()->lang->get_locales(); ?>');
 		return true;
 	}
 

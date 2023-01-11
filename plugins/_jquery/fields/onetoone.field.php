@@ -20,7 +20,7 @@
         const show_template = false;    // string - used on displaying the data via the appropriate tag (n/a)
 
         // Construct
-        public function __construct($name, $options, $class_name, &$zajlib) {
+        public function __construct($name, $options, $class_name) {
             // set default options
             // relation fields don't really have options, they're parameters
             if (empty($options[0])) {
@@ -42,7 +42,7 @@
             }
 
             // call parent constructor
-            return parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+            return parent::__construct(__CLASS__, $name, $options, $class_name);
         }
 
         /**
@@ -85,7 +85,7 @@
          * Check to see if the field settings are valid. Run during database update.
          * @return boolean|string Returns false if all is well, returns an error string if something is up.
          **/
-        public function get_settings_validation_errors() {
+        public function get_settings_validation_errors() : bool|string {
 
             // If I am the primary, then the other side needs to be secondary (and only one)
             if (empty($this->options['field'])) {
@@ -94,7 +94,7 @@
                 $class_name = $this->options['model'];
 
                 // See if class exists
-                if(!class_exists($class_name, false) && !$this->ofw->load->model($class_name, false, false)){
+                if(!class_exists($class_name, false) && !zajLib::me()->load->model($class_name, false, false)){
                     return "The model '$class_name' does not exist.";
                 }
 
@@ -113,7 +113,7 @@
                 $class_name = $this->options['model'];
 
                 // See if class exists
-                if(!class_exists($class_name, false) && !$this->ofw->load->model($class_name, false, false)){
+                if(!class_exists($class_name, false) && !zajLib::me()->load->model($class_name, false, false)){
                     return "The model '$class_name' does not exist.";
                 }
 
@@ -136,7 +136,7 @@
          * Defines the structure and type of this field in the mysql database.
          * @return array Returns in array with the database definition.
          **/
-        public function database() {
+        public function database() : array {
 
             // define each field
             $fields = [];
@@ -163,7 +163,7 @@
          * @param mixed $input The input data.
          * @return boolean Returns true if validation was successful, false otherwise.
          **/
-        public function validation($input) {
+        public function validation(mixed $input) : bool  {
             return true;
         }
 
@@ -173,7 +173,7 @@
          * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
          * @return mixed Return the data that should be in the variable.
          **/
-        public function get($data, &$object) {
+        public function get(mixed $data, zajModel &$object) : mixed {
             return zajFetcher::onetoone($object->class_name, $this->name, $data, $object);
         }
 
@@ -184,11 +184,11 @@
          * @return array Returns an array where the first parameter is the database update, the second is the object update
          * @todo Fix where second parameter is actually taken into account! Or just remove it...
          **/
-        public function save($data, &$object) {
+        public function save(mixed $data, zajModel &$object) : mixed {
 
             // Validate data
             if (!is_string($data) && !zajModel::is_instance_of_me($data) && !is_bool($data)) {
-                $this->ofw->warning("Unknown data value set for onetoone field {$this->class_name}.{$this->name}.");
+                zajLib::me()->warning("Unknown data value set for onetoone field {$this->class_name}.{$this->name}.");
 
                 return [false, $data];
             }
@@ -209,7 +209,7 @@
                     /** @var zajModel $data */
                     $newdata = $other_class_name::fetch($data);
                     if (!$newdata) {
-                        $this->ofw->warning("Unknown id set for object of type {$other_class_name} for onetoone field {$this->class_name}.{$this->name}.");
+                        zajLib::me()->warning("Unknown id set for object of type {$other_class_name} for onetoone field {$this->class_name}.{$this->name}.");
                     } else {
                         $data = $newdata;
                     }
@@ -223,7 +223,7 @@
 
                         return ['', false];
                     } else {
-                        $this->ofw->warning("Invalid data set for object of type {$other_class_name} for onetoone field {$this->class_name}.{$this->name}: $data");
+                        zajLib::me()->warning("Invalid data set for object of type {$other_class_name} for onetoone field {$this->class_name}.{$this->name}: $data");
 
                         return ['', false];
                     }
@@ -268,7 +268,7 @@
          * @param array $filter An array of values specifying what type of filter this is.
          * @return bool|string Returns false by default; this will use the default filter. Otherwise it can return the filter SQL string.
          */
-        public function filter(&$fetcher, $filter) {
+        public function filter(zajFetcher &$fetcher, array $filter) : bool|string {
 
             // break up filter
             list($field, $value, $logic, $type) = $filter;
@@ -314,7 +314,7 @@
          * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
          * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
          */
-        public function export($data, &$object) {
+        public function export(mixed $data, zajModel &$object) : string|array {
             // Decide how to format it
             if (!empty($data->name)) {
                 $data = $data->name.' ('.$data->id.')';
