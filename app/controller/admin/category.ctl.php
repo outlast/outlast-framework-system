@@ -93,7 +93,7 @@
             // Check for existing friendly url
             if (!empty($_POST['friendlyurl'])) {
                 if (Category::fetch()->filter('friendlyurl', $_POST['friendlyurl'])->filter('id', $obj->id,
-                        'NOT LIKE')->next() !== false) {
+                        'NOT LIKE')->next() != null) {
                     return $this->ofw->json([
                         'status'  => 'error',
                         'message' => $this->ofw->config->variable->category_friendlyurl_error,
@@ -179,7 +179,7 @@
             // Fetch existing product
             /** @var Category $existing_object */
             $existing_object = Category::fetch($_REQUEST['id']);
-            if ($existing_object === false) {
+            if ($existing_object == null) {
                 return $this->ofw->json('error');
             }
             // Toggle!

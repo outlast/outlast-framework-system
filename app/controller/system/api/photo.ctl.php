@@ -39,7 +39,7 @@
 
             // Authenticate as admin
             $user = User::fetch_by_session();
-            if ($user === false) {
+            if ($user == null) {
                 return $this->ofw->json(['status' => 'error', 'message' => 'Your user session has expired!']);
             }
             if ($user->has_permission('admin_site')) {
@@ -80,7 +80,7 @@
 
             /** @var Photo $pobj */
             $pobj = Photo::fetch($_GET['id']);
-            if ($pobj !== false && !$pobj->temporary && $pobj->data->status == 'saved') {
+            if ($pobj != null && !$pobj->temporary && $pobj->data->status == 'saved') {
                 $pobj->show($size);
             } else {
                 $this->ofw->reroute('__error', ['system_api_photo_show', []]);
@@ -95,7 +95,7 @@
             $pobj = Photo::fetch($_GET['id']);
             // @todo Preview should only be visible to the user who uploaded (if user exists) and should only be saved by user who uploaded
             // @todo We can achieve this with form verification id's (which we should have anyway)
-            if ($pobj !== false && $pobj->temporary) {
+            if ($pobj != null && $pobj->temporary) {
                 $pobj->show('preview');
             } else {
                 $this->ofw->reroute('__error', ['system_api_photo_preview', []]);

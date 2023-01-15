@@ -283,7 +283,7 @@
 
 		function find_ancestor_tag($tag) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -294,7 +294,7 @@
 			$ancestor = $this->parent;
 
 			while (!is_null($ancestor)) {
-				if (is_object($debug_object)) {
+				if (isset($debug_object)) {
 					$debug_object->debug_log(2, 'Current tag is: '.$ancestor->tag);
 				}
 
@@ -329,7 +329,7 @@
 		function outertext() {
 			global $debug_object;
 
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$text = '';
 
 				if ($this->tag === 'text') {
@@ -390,11 +390,10 @@
 			switch ($this->nodetype) {
 				case HDOM_TYPE_TEXT:
 					return $this->dom->restore_noise($this->_[HDOM_INFO_TEXT]);
-				case HDOM_TYPE_COMMENT:
+                case HDOM_TYPE_UNKNOWN:
+                case HDOM_TYPE_COMMENT:
 					return '';
-				case HDOM_TYPE_UNKNOWN:
-					return '';
-			}
+            }
 
 			if (strcasecmp($this->tag, 'script') === 0) {
 				return '';
@@ -551,7 +550,7 @@
 
 		protected function seek($selector, &$ret, $parent_cmd, $lowercase = false) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -728,7 +727,7 @@
 							$nodeKeyValue = $node->attr[$att_name];
 						}
 
-						if (is_object($debug_object)) {
+						if (isset($debug_object)) {
 							$debug_object->debug_log(2,
 								'testing node: '
 								.$node->tag
@@ -759,7 +758,7 @@
 							);
 						}
 
-						if (is_object($debug_object)) {
+						if (isset($debug_object)) {
 							$debug_object->debug_log(2,
 								'after match: '
 								.($check ? 'true' : 'false')
@@ -780,14 +779,14 @@
 				unset($node);
 			}
 			// It's passed by reference so this is actually what this function returns.
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log(1, 'EXIT - ret: ', $ret);
 			}
 		}
 
 		protected function match($exp, $pattern, $value, $case_sensitivity) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -834,7 +833,7 @@
 
 		protected function parse_selector($selector_string) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -891,7 +890,7 @@
 				PREG_SET_ORDER
 			);
 
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log(2, 'Matches Array: ', $matches);
 			}
 
@@ -1003,7 +1002,7 @@
 
 		function __set($name, $value) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -1028,13 +1027,11 @@
 
 		function __isset($name) {
 			switch ($name) {
-				case 'outertext':
+                case 'innertext':
+                case 'plaintext':
+                case 'outertext':
 					return true;
-				case 'innertext':
-					return true;
-				case 'plaintext':
-					return true;
-			}
+            }
 
 			//no value attr: nowrap, checked selected...
 			return (array_key_exists($name, $this->attr)) ? true : isset($this->attr[$name]);
@@ -1048,7 +1045,7 @@
 
 		function convert_text($text) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -1062,7 +1059,7 @@
 				$targetCharset = strtoupper($this->dom->_target_charset);
 			}
 
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log(3,
 					'source charset: '
 					.$sourceCharset
@@ -1249,7 +1246,7 @@
 					}
 				}
 			} else {
-				if (is_object($debug_object)) {
+				if (isset($debug_object)) {
 					$debug_object->debug_log(2, 'Invalid type: ', gettype($class));
 				}
 			}
@@ -1261,7 +1258,7 @@
 					return in_array($class, explode(' ', $this->class), true);
 				}
 			} else {
-				if (is_object($debug_object)) {
+				if (isset($debug_object)) {
 					$debug_object->debug_log(2, 'Invalid type: ', gettype($class));
 				}
 			}
@@ -1692,7 +1689,7 @@
 				$success = preg_match('/charset=(.+)/', $contentTypeHeader, $matches);
 				if ($success) {
 					$charset = $matches[1];
-					if (is_object($debug_object)) {
+					if (isset($debug_object)) {
 						$debug_object->debug_log(2,
 							'header content-type found charset of: '
 							.$charset
@@ -1707,7 +1704,7 @@
 
 				if (!empty($el)) {
 					$fullvalue = $el->content;
-					if (is_object($debug_object)) {
+					if (isset($debug_object)) {
 						$debug_object->debug_log(2,
 							'meta content-type tag found'
 							.$fullvalue
@@ -1727,7 +1724,7 @@
 							// If there is a meta tag, and they don't specify the
 							// character set, research says that it's typically
 							// ISO-8859-1
-							if (is_object($debug_object)) {
+							if (isset($debug_object)) {
 								$debug_object->debug_log(2,
 									'meta content-type tag couldn\'t be parsed. using iso-8859 default.'
 								);
@@ -1743,7 +1740,7 @@
 				// https://www.w3.org/TR/html/document-metadata.html#character-encoding-declaration
 				if ($meta = $this->root->find('meta[charset]', 0)) {
 					$charset = $meta->charset;
-					if (is_object($debug_object)) {
+					if (isset($debug_object)) {
 						$debug_object->debug_log(2, 'meta charset: '.$charset);
 					}
 				}
@@ -1784,7 +1781,7 @@
 
 					if ($encoding !== false) {
 						$charset = $encoding;
-						if (is_object($debug_object)) {
+						if (isset($debug_object)) {
 							$debug_object->debug_log(2, 'mb_detect: '.$charset);
 						}
 					}
@@ -1794,7 +1791,7 @@
 			if (empty($charset)) {
 				// Assume it's UTF-8 as it is the most likely charset to be used
 				$charset = 'UTF-8';
-				if (is_object($debug_object)) {
+				if (isset($debug_object)) {
 					$debug_object->debug_log(2, 'No match found, assume '.$charset);
 				}
 			}
@@ -1805,14 +1802,14 @@
 				|| (strtolower($charset) == 'latin1')
 				|| (strtolower($charset) == 'latin-1')) {
 				$charset = 'CP1252';
-				if (is_object($debug_object)) {
+				if (isset($debug_object)) {
 					$debug_object->debug_log(2,
 						'replacing '.$charset.' with CP1252 as its a superset'
 					);
 				}
 			}
 
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log(1, 'EXIT - '.$charset);
 			}
 
@@ -2229,7 +2226,7 @@
 
 		protected function remove_noise($pattern, $remove_tag = false) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -2243,7 +2240,7 @@
 			for ($i = $count - 1; $i > -1; --$i) {
 				$key = '___noise___'.sprintf('% 5d', count($this->noise) + 1000);
 
-				if (is_object($debug_object)) {
+				if (isset($debug_object)) {
 					$debug_object->debug_log(2, 'key is: '.$key);
 				}
 
@@ -2262,7 +2259,7 @@
 
 		function restore_noise($text) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -2281,7 +2278,7 @@
 						.$text[$pos + 14]
 						.$text[$pos + 15];
 
-					if (is_object($debug_object)) {
+					if (isset($debug_object)) {
 						$debug_object->debug_log(2, 'located key of: '.$key);
 					}
 
@@ -2310,7 +2307,7 @@
 
 		function search_noise($text) {
 			global $debug_object;
-			if (is_object($debug_object)) {
+			if (isset($debug_object)) {
 				$debug_object->debug_log_entry(1);
 			}
 
@@ -2327,11 +2324,10 @@
 
 		function __get($name) {
 			switch ($name) {
-				case 'outertext':
+                case 'innertext':
+                case 'outertext':
 					return $this->root->innertext();
-				case 'innertext':
-					return $this->root->innertext();
-				case 'plaintext':
+                case 'plaintext':
 					return $this->root->text();
 				case 'charset':
 					return $this->_charset;

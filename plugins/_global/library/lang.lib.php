@@ -15,7 +15,7 @@
         /**
          * Contains the current locale. Available locales are set in the config file site/index.php.
          **/
-        private string $current_locale;
+        private ?string $current_locale;
 
         /**
          * Contains the current locale variation. False means no variation.
@@ -41,9 +41,9 @@
         /**
          * Extend the config file loading mechanism.
          **/
-        protected $dest_path = 'cache/lang/';    // string - subfolder where compiled conf files are stored (cannot be changed)
-        protected $conf_path = 'lang/';            // string - default subfolder where uncompiled conf files are stored
-        protected $type_of_file = 'language';    // string - the name of the file type this is (either configuration or language)
+        protected string $dest_path = 'cache/lang/';    // string - subfolder where compiled conf files are stored (cannot be changed)
+        protected string $conf_path = 'lang/';            // string - default subfolder where uncompiled conf files are stored
+        protected string $type_of_file = 'language';    // string - the name of the file type this is (either configuration or language)
 
         /**
          * Creates a new language library.
@@ -71,18 +71,21 @@
 
         /**
          * Get the current locale.
-         * @return string The locale code of the current language.
+         * @return ?string The locale code of the current language.
          **/
-        public function get() : string {
+        public function get() : ?string {
             // Return the current locale language
             return $this->current_locale;
         }
 
         /**
          * Get the current two-letter language code based on the current locale.
-         * @return string The language code based on current locale.
+         * @return ?string The language code based on current locale.
          **/
-        public function get_code() : string {
+        public function get_code() : ?string {
+            if ($this->current_locale == null) {
+                return null;
+            }
             // Return the current locale language
             return substr($this->current_locale, 0, 2);
         }
@@ -304,16 +307,16 @@
          * @todo Add support so that template and block in lang will search all plugin folders as well.
          **/
         function template(
-            $source_path,
-            $force_recompile = false,
-            $return_contents = false,
-            $custom_compile_destination = false
-        ) {
+            string $source_path,
+            bool $force_recompile = false,
+            bool $return_contents = false,
+            bool|string $custom_compile_destination = false
+        ) :  string|bool {
             // Cut off the .html (.htm not supported!)
             $base_source_path = substr($source_path, 0, -5);
             // Seach for a local source_path
             // Search first for current locale
-            if (file_exists($this->ofw->basepath.'app/view/'.$base_source_path.'.'.$this->current_locale.'.html')) {
+            if ($this->current_locale != null && file_exists($this->ofw->basepath.'app/view/'.$base_source_path.'.'.$this->current_locale.'.html')) {
                 return $this->ofw->template->show($base_source_path.'.'.$this->current_locale.'.html', $force_recompile,
                     $return_contents, $custom_compile_destination);
             }
@@ -364,7 +367,7 @@
          * Loads a langauge file at runtime. The file name can be specified two ways: either the specific ini file or just the name with the locale and extension automatic.
          * For example: if you specify 'admin_shop' as the first parameter with en_US as the locale, the file lang/admin/shop.en_US.lang.ini will be loaded. If it is not found, the default locale will also be searched.
          * @param string $name_OR_source_path The name of the file (without locale or ini extension) or the specific ini file to load.
-         * @param bool|string $section The section to compile.
+         * @param null|string $section The section to compile.
          * @param boolean $force_set This will force setting of variables even if the same file / section was previously loaded.
          * @param boolean $warn_on_error If set to true (the default), it will fail with error.
          * @param boolean $autoload_default
@@ -372,12 +375,12 @@
          * @todo Instead of loading default first, this should happen during compile to improve performance.
          */
         public function load(
-            $name,
-            $section = false,
-            $force_set = false,
-            $warn_on_error = true,
-            $autoload_default = true
-        ) {
+            string $name,
+            ?string $section = null,
+            bool $force_set = false,
+            bool $warn_on_error = true,
+            bool $autoload_default = true
+        ) : bool {
 
             // Results fail by default
             $current_result = $default_result = false;
@@ -387,7 +390,7 @@
                 $source_path = $name.'.'.$this->get_default_locale().'.lang.ini';
                 $default_result = parent::load($source_path, $section, $force_set, false);
                 if (!$default_result && $warn_on_error) {
-                    if ($section === false) {
+                    if ($section == null) {
                         $this->ofw->warning("The language file $source_path was not found for the default locale. It needs to exist!");
                     } else {
                         $this->ofw->warning("The section $section in language file $source_path was not found for the default locale. It needs to exist!");

@@ -215,7 +215,7 @@
                     }
                 } else {
                     // False value sets to empty
-                    if ($data === false) {
+                    if ($data == null) {
                         $old_other_object = $object->data->{$this->name};
                         if ($other_field && $old_other_object) {
                             $old_other_object->data->unload($other_field_name);
@@ -242,7 +242,7 @@
                 $class_name = $this->options['model'];
                 $field_name = $this->options['field'];
 
-                if ($data === false) {
+                if ($data == null) {
                     $old_other_object = $object->data->{$this->name};
                     if ($old_other_object) {
                         $old_other_object->set($field_name, false)->save();

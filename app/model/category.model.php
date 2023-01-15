@@ -125,7 +125,7 @@
         /**
          * Fetch a category object by friendly url.
          * @param string $friendlyurl The friendly url.
-         * @return Category|boolean Returns false if failed, a Category object if not.
+         * @return zajFetcher|zajModel Returns false if failed, a Category object if not.
          **/
         public static function fetch_by_friendlyurl($friendlyurl) {
             if (zajLib::me()->lang->is_default_locale()) {
@@ -135,7 +135,7 @@
                 $t = Translation::fetch()->filter('modelname', 'Category')->filter('field',
                     'friendlyurl')->filter('locale', zajLib::me()->lang->get())->filter('value', $friendlyurl)->next();
                 // If found return, if not, try default
-                if ($t !== false) {
+                if ($t != null) {
                     return Category::fetch($t->parent);
                 } else {
                     return Category::fetch()->filter('friendlyurl', $friendlyurl)->next();

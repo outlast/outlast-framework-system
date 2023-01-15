@@ -617,7 +617,7 @@
 			}
 			// Create object
 			/** @var Photo $pobj * */
-			if ($parent !== false) {
+			if ($parent != null) {
 				$pobj = Photo::create_with_parent($parent, $field);
 			} else {
 				$pobj = Photo::create();
@@ -698,7 +698,7 @@
 			}
 			// Create a Photo object
 			/** @var Photo $pobj * */
-			if ($parent !== false) {
+			if ($parent != null) {
 				$pobj = Photo::create_with_parent($parent, $field);
 			} else {
 				$pobj = Photo::create();
@@ -754,7 +754,7 @@
 			}
 			// Now create photo object and set me
 			/** @var Photo $pobj * */
-			if ($parent !== false) {
+			if ($parent != null) {
 				$pobj = Photo::create_with_parent($parent, $field);
 			} else {
 				$pobj = Photo::create();

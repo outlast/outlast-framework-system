@@ -149,7 +149,7 @@
 						$otherobject = $othermodel::fetch($otherobject);
 					}
 					// only save if not connected already (TODO: make this an option!)
-					if ($otherobject !== false) {
+					if ($otherobject != null) {
 						if (!$object->data->$field_name->is_connected($otherobject)) {
 							$object->data->$field_name->add($otherobject, 'add', $additional_fields);
 						}
@@ -219,6 +219,7 @@
 				}
 				if (!empty($data->order)) {
 					// TODO: add order support for manytomany fields
+                    zajLib::me()->notice("Add support.");
 				}
 			} // data is empty, so remove all connections
 			else if (empty($data)) {

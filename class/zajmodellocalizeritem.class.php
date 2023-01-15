@@ -41,7 +41,7 @@ class zajModelLocalizerItem implements JsonSerializable {
 		if(empty($locale) || $locale == zajLib::me()->lang->get_default_locale()) return $this->parent->data->{$this->fieldname};
 		// A translation is requested, so let's retrieve it
 		$tobj = Translation::fetch_by_properties($this->parent->class_name, $this->parent->id, $this->fieldname, $locale);
-		if($tobj !== false) $field_value = $tobj->value;
+		if($tobj != null) $field_value = $tobj->value;
 		else $field_value = "";
 		// check if translation filter is to be used
 		// TODO: ADD THIS!

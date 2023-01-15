@@ -217,9 +217,6 @@ abstract class zajModel implements JsonSerializable {
         $ext = $class_name::extension();
         if($ext) $fields = $ext::__model($fields);
 
-        // Check for errors
-        if(!is_object($fields)) zajLib::me()->error("The __model() method of $fields is not yet upgraded to the new PHP 7 standard. Please review its other methods as well to avoid warnings and errors.");
-
 		// now set defaults (if not already set)
         if(!isset($fields->unit_test)) $fields->unit_test = zajDb::unittest();
         if(!isset($fields->time_create)) $fields->time_create = zajDb::time();
@@ -629,7 +626,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @param boolean $permanent If set to true, object is permanently removed from db. Defaults to true.
 	 * @return integer Returns the number of objects deleted.
 	 */
-	public static function delete_tests($max_to_delete = false, $permanent = true){
+	public static function delete_tests(bool $max_to_delete = false, bool $permanent = true) : int {
 		// Fetch the test objects
 			$test_objects = self::fetch()->filter('unit_test', true);
 			if($max_to_delete !== false && $test_objects->total > $max_to_delete) return zajLib::me()->error("Reached maximum number of test object deletes during unit test for ".get_called_class().". Allowance is ".$max_to_delete." but found ".$test_objects->total." objects. Delete manually or raise limit!", true);
@@ -759,16 +756,15 @@ abstract class zajModel implements JsonSerializable {
 			case '__beforeSave':
 			case '__beforeCache':
 			case '__beforeUncache':
-			case '__beforeDelete':
-				return true;
+            case '__afterUncache':
+            case '__afterCache':
+            case '__beforeDelete':
 			case '__afterCreateSave':
 			case '__afterCreate':
 			case '__afterSave':
 			case '__afterDelete':
 			case '__afterFetch':
-			case '__afterFetchCache':
-			case '__afterCache':
-			case '__afterUncache':
+            case '__afterFetchCache':
 				return true;
             case '__toSearchApiJson':
                 return ['id'=>$this->id, 'name'=>$this->__get('name')];
@@ -830,11 +826,11 @@ abstract class zajModel implements JsonSerializable {
 		switch($name){
 			case '__onSearch':
 				if(!method_exists($arguments[0], $name)) return zajLib::me()->warning("You are trying to access the client-side search API for ".$class_name." and this is not enabled for this model. <a href='http://framework.outlast.hu/advanced/client-side-search-api/' target='_blank'>See docs</a>.");
-			case '__onSearchFetcher':
+                break;
+            case '__onFilterQueryFetcher':
+            case '__onSearchFetcher':
 			    return false;
-			case '__onFilterQueryFetcher':
-			    return false;
-		}
+        }
 		// redirect static method calls to local private ones
 		if(!method_exists($arguments[0], $name)) zajLib::me()->error("called undefined method '$name'!"); return call_user_func_array("$arguments[0]::$name", $arguments);
 	}
@@ -846,9 +842,9 @@ abstract class zajModel implements JsonSerializable {
 	public function __get($name){
 		// the zajlib
 		switch($name){
-			case "zajlib": 		return zajLib::me();
-            case "ofw": 		return zajLib::me();
-			case "data":
+            case "ofw":
+            case "zajlib": 		return zajLib::me();
+            case "data":
 				if(!$this::$in_database) return false; 	// disable for non-database objects
 				if(!$this->data) return $this->data = new zajData($this);
 				return $this->data;

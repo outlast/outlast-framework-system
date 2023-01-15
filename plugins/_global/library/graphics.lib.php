@@ -165,7 +165,8 @@ class zajlib_graphics extends zajLibExtension {
 			case IMAGETYPE_PNG:
 				$im = imagecreatefrompng($oldpath);
 				break;
-			case IMAGETYPE_GIF:
+            case IMAGETYPE_WEBP:
+            case IMAGETYPE_GIF:
 				$im = imagecreatefromgif($oldpath);
 				break;
 			case IMAGETYPE_XBM:
@@ -178,10 +179,7 @@ class zajlib_graphics extends zajLibExtension {
 			case IMAGETYPE_ICO:
 				$im = imagecreatefrombmp($oldpath);
 				break;
-			case IMAGETYPE_WEBP:
-				$im = imagecreatefromgif($oldpath);
-				break;
-			default:
+            default:
 				$im = false;
 				break;
 		}

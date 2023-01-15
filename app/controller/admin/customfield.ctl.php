@@ -14,7 +14,7 @@ class zajapp_admin_customfield extends zajController{
 	 **/
 	public function __load(){
 		// This is set any time any request is made to this controller (so every time we call /sample/anything/ or even just /sample/)
-		$this->zajlib->load->controller('admin/default.ctl.php');
+		$this->ofw->load->controller('admin/default.ctl.php');
 	}
 
 	/**
@@ -22,12 +22,12 @@ class zajapp_admin_customfield extends zajController{
 	 **/
 	public function main(){
 		// Fetch my objects
-		$this->zajlib->variable->customfields = CustomField::fetch()->paginate(25);
+		$this->ofw->variable->customfields = CustomField::fetch()->paginate(25);
 		// Search
-		if (!empty($_GET['query'])) $this->zajlib->variable->customfields->search($_GET['query']);
+		if (!empty($_GET['query'])) $this->ofw->variable->customfields->search($_GET['query']);
 		// Display list template
-		if ($this->zajlib->request->is_ajax()) return $this->zajlib->template->block("admin/customfield/customfield_list.html", "customfieldlist");
-		else return $this->zajlib->template->show("admin/customfield/customfield_list.html");
+		if ($this->ofw->request->is_ajax()) return $this->ofw->template->block("admin/customfield/customfield_list.html", "customfieldlist");
+		else return $this->ofw->template->show("admin/customfield/customfield_list.html");
 	}
 
 	/**
@@ -35,9 +35,9 @@ class zajapp_admin_customfield extends zajController{
 	 **/
 	function add(){
 		// Create and cache
-		$this->zajlib->variable->customfield = CustomField::create();
-		$this->zajlib->variable->customfield->cache();
-		return $this->zajlib->redirect("admin/customfield/edit/?id=" . $this->zajlib->variable->customfield->id);
+		$this->ofw->variable->customfield = CustomField::create();
+		$this->ofw->variable->customfield->cache();
+		return $this->ofw->redirect("admin/customfield/edit/?id=" . $this->ofw->variable->customfield->id);
 	}
 
 	/**
@@ -45,8 +45,8 @@ class zajapp_admin_customfield extends zajController{
 	 **/
 	function edit(){
 		// Resume the object
-		$this->zajlib->variable->customfield = CustomField::fetch($_GET['id']);
-		return $this->zajlib->template->show("admin/customfield/customfield_edit.html");
+		$this->ofw->variable->customfield = CustomField::fetch($_GET['id']);
+		return $this->ofw->template->show("admin/customfield/customfield_edit.html");
 	}
 
 	/**
@@ -58,11 +58,11 @@ class zajapp_admin_customfield extends zajController{
 		$obj = CustomField::fetch($_POST['id']);
 		// Validate
 		// Check name
-		if (empty($_POST['name'])) return $this->zajlib->ajax("The name is required!");
+		if (empty($_POST['name'])) return $this->ofw->ajax("The name is required!");
 		// Update the object
 		$obj->set_these('name','type','featured')->save();
 		// Return success
-		return $this->zajlib->ajax("ok");
+		return $this->ofw->ajax("ok");
 	}
 
 	/**
@@ -70,10 +70,10 @@ class zajapp_admin_customfield extends zajController{
 	 */
 	function delete(){
 		// Resume product and delete
-		$this->zajlib->variable->customfield = CustomField::fetch($_GET['id']);
-		$this->zajlib->variable->customfield->delete();
+		$this->ofw->variable->customfield = CustomField::fetch($_GET['id']);
+		$this->ofw->variable->customfield->delete();
 		// Redirect to list or site editor
-		return $this->zajlib->redirect('admin/customfield/');
+		return $this->ofw->redirect('admin/customfield/');
 	}
 
 	/**
@@ -83,7 +83,7 @@ class zajapp_admin_customfield extends zajController{
 		// reorder
 		CustomField::reorder($_POST['reorder']);
 		// okay
-		return $this->zajlib->ajax('ok');
+		return $this->ofw->ajax('ok');
 	}
 
 	/**
@@ -93,11 +93,11 @@ class zajapp_admin_customfield extends zajController{
 		// Fetch existintg product
 		/** @var Category $existing_object */
 		$existing_object = CustomField::fetch($_REQUEST['id']);
-		if($existing_object === false) return $this->zajlib->json('error');
+		if($existing_object == null) return $this->ofw->json('error');
 		// Toggle!
 		$existing_object->set('featured', !$existing_object->data->featured)->save();
 		// redirect
-		return $this->zajlib->json($existing_object->data->featured);
+		return $this->ofw->json($existing_object->data->featured);
 	}
 
 }

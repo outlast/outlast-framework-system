@@ -146,7 +146,7 @@ abstract class zajModelExtender {
 	 * @param bool|zajModel|zajModelExtender $parent_object An explicitly specified parent object.
 	 * @return zajModelExtender The extended zajModel object in the form of a zajModelExtender object.
 	 */
-	public static function create($id = false, $parent_object = false){
+	public static function create(bool|string $id = false, bool|zajModel|zajModelExtender $parent_object = false) {
 		$class_name = get_called_class();
 		// get my extension
 			/* @var zajModelExtender $class_name */

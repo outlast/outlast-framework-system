@@ -342,7 +342,7 @@
 		) {
 			// Create object
 			/** @var self $pobj * */
-			if ($parent !== false) {
+			if ($parent != null) {
 				$pobj = self::create_with_parent($parent, $field);
 			} else {
 				$pobj = self::create();
@@ -391,17 +391,17 @@
 		 * @return self|bool Returns the file object on success, false if not.
 		 **/
 		public static function create_from_upload($field_name, $parent = false, $field = null, $save_now_to_final_destination = true
-		) {
+		) : ?self {
 			// File names
 			$orig_name = $_FILES[$field_name]['name'];
 			$tmp_name = $_FILES[$field_name]['tmp_name'];
 			// If no file, return false
 			if (empty($tmp_name)) {
-				return false;
+				return null;
 			}
 			// Now create file object and set me
 			/** @var self $pobj * */
-			if ($parent !== false) {
+			if ($parent != null) {
 				$pobj = self::create_with_parent($parent, $field);
 			} else {
 				$pobj = self::create();
@@ -471,7 +471,7 @@
 		public static function create_from_raw($raw_data, $parent = false, $field = null, $save_now_to_final_destination = true) {
 			// Create a self object
 			/** @var self $pobj * */
-			if ($parent !== false) {
+			if ($parent != null) {
 				$pobj = self::create_with_parent($parent, $field);
 			} else {
 				$pobj = self::create();

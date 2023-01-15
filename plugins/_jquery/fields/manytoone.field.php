@@ -164,7 +164,7 @@
                 // unload this field to make sure the data is reloaded next time around
                 $object->data->unload($this->name);
                 // if it is explicitly false, then change it to empty
-                if ($data === false) {
+                if ($data == null) {
                     $data = '';
                 }
 

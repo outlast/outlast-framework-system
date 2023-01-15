@@ -6,25 +6,28 @@
      * @package Library
      **/
 
-    $GLOBALS['regexp_config_variable'] = "";
+use JetBrains\PhpStorm\NoReturn;
+
+$GLOBALS['regexp_config_variable'] = "";
     $GLOBALS['regexp_config_comment'] = "//";
 
     /**
      * @property zajlibConfigVariable $variable The config variables.
      * @property stdClass $section The config variables broken into sections.
      */
-    class  zajlib_config extends zajLibExtension {
-        protected $dest_path = 'cache/conf/';        // string - subfolder where compiled conf files are stored (cannot be changed)
-        protected $conf_path = 'conf/';            // string - default subfolder where uncompiled conf files are stored
-        protected $type_of_file = 'configuration';// string - the name of the file type this is (either configuration or language)
-        protected $loaded_files = [];        // array - all the files loaded with load()
-        protected $debug_stats = [];            // array - contains debug stats about current compiled file
-        protected $destination_files = [];    // array - an array of files to write to
+    class zajlib_config extends zajLibExtension {
+        protected string $dest_path = 'cache/conf/';        // string - subfolder where compiled conf files are stored (cannot be changed)
+        protected string $conf_path = 'conf/';            // string - default subfolder where uncompiled conf files are stored
+        protected string $type_of_file = 'configuration';// string - the name of the file type this is (either configuration or language)
+        protected array $loaded_files = [];        // array - all the files loaded with load()
+        protected array $debug_stats = [];            // array - contains debug stats about current compiled file
+        protected array $destination_files = [];    // array - an array of files to write to
+
         /**
          * object - config variables are stored here
          **/
-        private $variable;
-        private $section;
+        private stdClass $variable;
+        private stdClass $section;
 
         /**
          * Creates a new zajlib_config
@@ -43,12 +46,18 @@
         /**
          * Loads a configuration or language file at runtime.
          * @param string $source_path The source of the configuration file relative to the conf folder.
-         * @param string|bool $section The section to compile.
+         * @param ?string $section The section to compile.
          * @param boolean $force_set This will force setting of variables even if the same file / section was previously loaded.
          * @param boolean $fail_on_error If set to true (the default), it will fail with error.
          * @return bool Returns true if successful, false otherwise.
          */
-        public function load($source_path, $section = false, $force_set = false, $fail_on_error = true) {
+        public function load(
+            string $source_path,
+            ?string $section = null,
+            bool $force_set = false,
+            bool $fail_on_error = true
+        ) : bool {
+
             // check chroot
             if (strpos($source_path, '..') !== false) {
                 return $this->ofw->error($this->type_of_file.' source file must be relative to conf path.');
@@ -73,14 +82,13 @@
             }
             // does it exist? if not, compile now!
             $result = true;
-            $force_compile = false;
-            if ($force_compile || $this->ofw->debug_mode || !file_exists($file_name)) {
+            if ($this->ofw->debug_mode || !file_exists($file_name)) {
                 $result = $this->compile($source_path, $fail_on_error);
             }
             // If compile failed or if include fails
             if (!$result || !(@include($file_name))) {
                 if ($fail_on_error) {
-                    return $this->error("Could not load ".$this->type_of_file." file $source_path / $section! Section not found ($file_name)!");
+                    $this->error("Could not load ".$this->type_of_file." file $source_path / $section! Section not found ($file_name)!");
                 } else {
                     return false;
                 }
@@ -315,7 +323,7 @@
          * @param string $global_scope An optional string of content that all section files should contain (it is any content before any section marker).
          * @return resource Returns the file pointer to the destination file.
          **/
-        private function add_file($file_name, $global_scope = '') {
+        private function add_file(string $file_name, string $global_scope = '') : mixed {
             $this->destination_files[$file_name] = fopen($file_name, 'w');
             fputs($this->destination_files[$file_name], "<?php\n".$global_scope);
 
@@ -327,10 +335,9 @@
          * @param string $file_name The name of the file.
          * @return boolean Returns true.
          **/
-        private function remove_file($file_name) {
+        private function remove_file(string $file_name) : bool {
             fclose($this->destination_files[$file_name]);
             unset($this->destination_files[$file_name]);
-
             return true;
         }
 
@@ -349,7 +356,7 @@
          * @param string $line_content The content of the line.
          * @return integer The number of files that the output was written to.
          **/
-        private function write_line($line_content) {
+        private function write_line(string $line_content) : int {
             // run through all the files
             $file_counter = 0;
             foreach ($this->destination_files as $file_name => $file_pointer) {
@@ -363,9 +370,9 @@
         /**
          * Display a compile warning.
          * @param string $message Display this message.
-         * @param array|bool $debug_stats If set, these debug stats will be displayed (instead of the default which is $this->debug_stats).
+         * @param ?array $debug_stats If set, these debug stats will be displayed (instead of the default which is $this->debug_stats).
          */
-        public function warning($message, $debug_stats = false) {
+        public function warning(string $message, ?array $debug_stats = null) {
             // get the object debug_stats
             if (!is_array($debug_stats)) {
                 $debug_stats = $this->debug_stats;
@@ -381,9 +388,9 @@
         /**
          * Display a fatal compile error and exit.
          * @param string $message Display this message.
-         * @param array|bool $debug_stats If set, these debug stats will be displayed (instead of the default which is $this->debug_stats).
+         * @param ?array $debug_stats If set, these debug stats will be displayed (instead of the default which is $this->debug_stats).
          */
-        public function error($message, $debug_stats = false) {
+        #[NoReturn] public function error(string $message, ?array $debug_stats = null): void {
             // get the object debug_stats
             if (!is_array($debug_stats)) {
                 $debug_stats = $this->debug_stats;

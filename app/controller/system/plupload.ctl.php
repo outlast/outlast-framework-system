@@ -67,7 +67,7 @@
             $this->verify_upload();
             // Create from upload
             $file = File::create_from_upload('file', false, null, false);
-            if ($file === false) {
+            if ($file == null) {
                 $this->ofw->warning("Unknown after file upload during File object creation.");
 
                 return $this->send_error("Unknown error occurred during file upload.");
@@ -293,7 +293,7 @@
         public function preview() {
             // Retrieve image
             $pobj = Photo::fetch($_GET['id']);
-            if ($pobj !== false) {
+            if ($pobj != null) {
                 $pobj->show('preview');
             }
             exit();

@@ -122,11 +122,11 @@
          * @return string|boolean If requested by the $return_contents parameter, it returns the entire generated contents.
          **/
         public function show(
-            $source_path,
-            $force_recompile = false,
-            $return_contents = false,
-            $custom_compile_destination = false
-        ) {
+            string $source_path,
+            bool $force_recompile = false,
+            bool $return_contents = false,
+            bool|string $custom_compile_destination = false
+        ) : string|bool {
             // override source path if device mode @todo make this more efficient so it does not search files each time!
             $source_path = $this->get_source_path($source_path);
             // do i need to show by block (if pushState request detected)
@@ -257,7 +257,7 @@
             $locale = $this->ofw->lang->get();
 
             // If the locale is not set, just return the unmodified source path
-            if ($locale === false) {
+            if ($locale == null) {
                 return $source_path;
             }
 

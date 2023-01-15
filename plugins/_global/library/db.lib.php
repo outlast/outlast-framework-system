@@ -748,7 +748,7 @@
 		 * @return integer The total number of rows LIMITed.
 		 **/
 		private function get_num_rows() : int {
-			if ($this->current_session->query === false) {
+			if ($this->current_session->query == null) {
 				$this->send_error();
 
 				return 0;
@@ -762,7 +762,7 @@
 		 * @return integer The total number of rows.
 		 **/
 		private function get_total_rows() : int {
-			if ($this->current_session->query === false) {
+			if ($this->current_session->query == null) {
 				$this->send_error();
 
 				return 0;

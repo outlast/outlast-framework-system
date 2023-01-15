@@ -614,7 +614,7 @@ EOF;
 															$source->error("Use the |in filter instead!"); // fatal error
 															$param_ok = false;
 															break;
-					default:	if(!$param_ok) $source->error("Proper operator expected instead of $param!"); // fatal error
+					default:	if(!$param_ok) $source->error("Proper operator expected instead of $param->vartext!"); // fatal error
 								$string .= $param->variable.' ';
 								$param_ok = false;
 								break;

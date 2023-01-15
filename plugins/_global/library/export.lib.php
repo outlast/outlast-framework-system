@@ -280,7 +280,7 @@ class zajlib_export extends zajLibExtension {
                             if($model_mode){
                                 $field_value = $s->data->$field;
                                 // Do we need export formatting?
-                                if($field_objects[$field] !== false){
+                                if($field_objects[$field] != null){
                                     /** @var zajDb|zajField $zajdb_obj */
                                     $zajdb_obj = $field_objects[$field];
                                     $field_value = $zajdb_obj->export($field_value, $s);
