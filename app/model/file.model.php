@@ -221,7 +221,7 @@
 		 * @param string|boolean $field The name of the field. Required if you set the parent object.
 		 * @return File Returns a new file object with the physical file duplicated as well.
 		 */
-		public function duplicate($id = false, $parent = false, $field = false) {
+		public function duplicate(string|int|null $id = null, zajModel|bool $parent = false, string|bool $field = false) : File {
 			// First duplicate my object
 			/** @var File $new_object */
 			$new_object = parent::duplicate($id);
@@ -266,17 +266,17 @@
 
 		/**
 		 * Overrides the global delete.
-		 * @param bool $complete If set to true, the file will be deleted too and the full entry will be removed.
+		 * @param bool $permanent If set to true, the file will be deleted too and the full entry will be removed.
 		 * @return bool Returns true if successful.
 		 **/
-		public function delete($complete = false) {
+		public function delete(bool $permanent = false) : bool {
 			// Remove the files as well?
-			if ($complete) {
+			if ($permanent) {
 				@unlink($this->ofw->basepath.$this->get_file_path());
 			}
 
 			// call parent
-			return parent::delete($complete);
+			return parent::delete($permanent);
 		}
 
 		/**

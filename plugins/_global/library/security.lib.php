@@ -172,10 +172,10 @@
 
         /**
          * Check to see if the string is a valid ID. Valid IDs are anything with A-z0-9.
-         * @param string $id The id to check.
+         * @param string|int $id The id to check.
          * @return boolean Will return true if valid, false if not.
          */
-        public function is_valid_id($id) {
+        public function is_valid_id(string|int $id) : bool {
             return (boolean)preg_match('/^[A-z0-9]+$/', $id);
         }
 

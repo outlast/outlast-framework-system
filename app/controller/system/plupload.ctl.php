@@ -1,5 +1,8 @@
 <?php
-    /**
+
+use JetBrains\PhpStorm\NoReturn;
+
+/**
      * This controller handles callbacks from plupload file uploader.
      * @package Controller
      * @subpackage BuiltinControllers
@@ -46,7 +49,7 @@
          * Enable automatic file uploads.
          * @param boolean $process_as_image If set to true, the file will be processed as an image and a resized thumbnail will be available in /data.
          **/
-        public function upload($process_as_image = false) {
+        #[NoReturn] public function upload(bool $process_as_image = false) {
             $this->upload_standard($process_as_image);
         }
 
@@ -60,7 +63,7 @@
         /**
          * Enable automatic file uploads.
          **/
-        public function upload_file() {
+        public function upload_file() : string|array|bool|object {
             // Load up lang file for errors
             $this->ofw->lang->load('system/fields');
             // Verify file for errors
@@ -88,17 +91,12 @@
         /** PRIVATE METHODS **/
 
         /**
-         * Verify upload for errors.
-         * @param boolean $verify_that_it_is_image Verify that it is an image.
-         * @return boolean Returns boolean true if success or json error if failed.
+         * Verify file upload for errors.
          */
-        private function verify_upload($verify_that_it_is_image = true) {
+        private function verify_upload() : void {
             // Load up lang file for errors
-            if ($verify_that_it_is_image) {
-                $this->ofw->lang->load('system/fields', 'photos');
-            } else {
-                $this->ofw->lang->load('system/fields', 'files');
-            }
+            $this->ofw->lang->load('system/fields', 'files');
+
             // Look for standard errors. See @link http://php.net/manual/en/features.file-upload.errors.php
             switch ($_FILES['file']['error']) {
                 /** All is ok **/
@@ -119,44 +117,45 @@
                     $too_big = str_ireplace('%1', $ini_setting, $this->ofw->lang->variable->system_field_file_too_big);
                     $too_big = str_ireplace('%2', $ini_setting, $too_big);
 
-                    return $this->send_error($too_big);
+                    $this->send_error($too_big);
+                    break;
                 case UPLOAD_ERR_PARTIAL:
-                    return $this->send_error($this->ofw->lang->variable->system_field_file_partial);
+                    $this->send_error($this->ofw->lang->variable->system_field_file_partial);
+                    break;
                 case UPLOAD_ERR_NO_FILE:
-                    return $this->send_error($this->ofw->lang->variable->system_field_file_none);
+                    $this->send_error($this->ofw->lang->variable->system_field_file_none);
+                    break;
 
                 /** System errors **/
                 case UPLOAD_ERR_NO_TMP_DIR:
                     $this->ofw->warning("Missing a temporary folder for file uploads.");
 
-                    return $this->send_error("Unknown error occurred during file upload.");
+                    $this->send_error("Unknown error occurred during file upload.");
+                    break;
                 case UPLOAD_ERR_CANT_WRITE:
                     $this->ofw->warning("Failed to write file to disk during upload.");
 
-                    return $this->send_error("Unknown error occurred during file upload.");
+                    $this->send_error("Unknown error occurred during file upload.");
+                    break;
                 case UPLOAD_ERR_EXTENSION:
                     $this->ofw->warning("A PHP extension stopped the file upload.");
 
-                    return $this->send_error("Unknown error occurred during file upload.");
+                    $this->send_error("Unknown error occurred during file upload.");
+                    break;
                 default:
                     $this->ofw->warning("An unhandled file upload error occurred.");
 
-                    return $this->send_error("Unknown error occurred during file upload.");
+                    $this->send_error("Unknown error occurred during file upload.");
+                    break;
             }
-            // Look for picture errors
-            if ($verify_that_it_is_image) {
-                // @todo ADDTHIS!
-            }
-
-            return true;
         }
 
         /**
          * Send an error to the client.
          * @param string $message The message to send.
-         * @return boolean Returns boolean or json.
+         * @return string|array|bool|object Returns boolean or json.
          */
-        private function send_error($message) {
+        private function send_error(string $message) : string|array|bool|object {
             // Build array
             $result = [
                 'status'  => 'error',
@@ -174,21 +173,21 @@
          * @param boolean $process_as_image If set to true, the file will be processed as an image and a resized thumbnail will be available in /data.
          * @return boolean|Photo|File Returns the Photo or File object, or false if error.
          **/
-        private function upload_process($orig_name, $temp_name, $process_as_image = false) {
+        private function upload_process(string $orig_name, string $temp_name, bool $process_as_image = false): File|Photo|null {
             // Create upload cache
             if (!file_exists($this->ofw->basepath.'cache/upload/')) {
                 mkdir($this->ofw->basepath . 'cache/upload/', 0777, true);
             }
             // Verify file
             if (!is_uploaded_file($temp_name)) {
-                return false;
+                return null;
             }
             // Create a photo or file object
             /** @var Photo|File $obj */
             if ($process_as_image) {
                 // verify its an image
                 if (!getimagesize($temp_name)) {
-                    return false;
+                    return null;
                 }
                 $obj = Photo::create();
             } else {
@@ -203,7 +202,7 @@
                 $this->ofw->graphics->resize($temp_name, $new_tmp_name, $this->ofw->ofwconf->plupload_photo_maxwidth,
                     $this->ofw->ofwconf->plupload_photo_maxwidth * 2, 85, true, $force_exif_imagetype);
             } else {
-                @move_uploaded_file($temp_name, $new_tmp_name);
+                move_uploaded_file($temp_name, $new_tmp_name);
             }
             // Set status to uploaded
             $obj->set('name', $orig_name);
@@ -217,9 +216,8 @@
         /**
          * Uploads standard HTML
          * @param boolean $process_as_image If set to true, the file will be processed as an image and a resized thumbnail will be available in /data.
-         * @return boolean Returns true if successful, false if error.
          **/
-        private function upload_standard($process_as_image = false) {
+        #[NoReturn] private function upload_standard(bool $process_as_image = false): void {
             // Load up lang file for errors
             $this->ofw->lang->load('system/fields');
             // Process this one file
@@ -257,7 +255,7 @@
                 // Process file
                 $file = $this->upload_process($orig_name, $_FILES['file']['tmp_name'], $process_as_image);
                 // Now recheck the file size (it may have been resized!)
-                if (is_object($file) && $process_as_image) {
+                if (isset($file) && $process_as_image) {
                     list($width, $height, $type, $attr) = getimagesize($this->ofw->basepath.'cache/upload/'.$file->id.'.tmp');
                 }
             }
@@ -277,8 +275,8 @@
                     'id'      => $file->id,
                     'name'    => $file->name,
                     'type'    => $file->class_name,
-                    'width'   => $width,
-                    'height'  => $height,
+                    'width'   => $width ?? null,
+                    'height'  => $height ?? null,
                 ];
             }
 
@@ -290,12 +288,10 @@
         /**
          * Shows a preview of an image which has just been uploaded.
          **/
-        public function preview() {
+        #[NoReturn] public function preview() {
             // Retrieve image
             $pobj = Photo::fetch($_GET['id']);
-            if ($pobj != null) {
-                $pobj->show('preview');
-            }
+            $pobj?->show('preview');
             exit();
         }
 

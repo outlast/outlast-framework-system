@@ -472,9 +472,9 @@
 		 * @param string|boolean $id Use this to override random id generation.
 		 * @param zajModel|boolean $parent The optional parent object. You can always set this later. If you set this, you must also set the $field parameter.
 		 * @param string|boolean $field The name of the field. Required if you set the parent object.
-		 * @return Photo|bool Returns a new photo object with all files duplicated, unless it fails.
+		 * @return Photo Returns a new photo object with all files duplicated, unless it fails.
 		 */
-		public function duplicate($id = false, $parent = false, $field = false) {
+		public function duplicate($id = null, zajModel|bool $parent = false, string|bool $field = false) : Photo {
 			// First duplicate my object
 			/** @var Photo $new_object */
 			$new_object = parent::duplicate($id);
@@ -517,7 +517,9 @@
 			if (file_exists($original_file)) {
 				copy($original_file, $new_file);
 			} else {
-				return $this->ofw->warning("You tried to duplicate a photo file ($original_file) where the original file does not exist. Make sure your data folder is up to date!");
+				$this->ofw->notice("You tried to duplicate a photo file ($original_file) where the original file does not exist. Make sure your data folder is up to date!");
+                $new_object->save();
+                return $new_object;
 			}
 
 			// Create my object
@@ -543,16 +545,16 @@
 
 		/**
 		 * Overrides the global delete.
-		 * @param bool $complete If set to true, the file will be deleted too and the full entry will be removed.
+		 * @param bool $permanent If set to true, the file will be deleted too and the full entry will be removed.
 		 * @return bool Returns true if successful.
 		 **/
-		public function delete($complete = false) {
+		public function delete(bool $permanent = false) : bool {
 			// Default the extension to jpg if not defined (backwards compatibility)
 			if (empty($this->extension)) {
 				$this->extension = 'jpg';
 			}
 			// remove photo files
-			if ($complete) {
+			if ($permanent) {
 				foreach ($GLOBALS['photosizes'] as $name => $size) {
 					if ($size) {
 						@unlink($this->ofw->basepath.$this->get_file_path($this->id."-$name.".$this->extension));
@@ -561,7 +563,7 @@
 			}
 
 			// call parent
-			return parent::delete($complete);
+			return parent::delete($permanent);
 		}
 
 

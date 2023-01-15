@@ -9,8 +9,8 @@
  * @package Model
  */
 
-define('MAX_EVENT_STACK', 50);
-define('CACHE_DIR_LEVEL', 4);
+const MAX_EVENT_STACK = 50;
+const CACHE_DIR_LEVEL = 4;
 
 /**
  * This is the abstract model class from which all model classes are derived.
@@ -45,6 +45,7 @@ define('CACHE_DIR_LEVEL', 4);
  * zajLib $zajlib A pointer to the global object. - deprecated
  * @property zajLib $ofw A pointer to the singleton OFW object.
  * @property string $name The name of the object.
+ * @property ?string $name_key The key of the field where the name is stored. Will be null for non-db objects.
  * @property boolean $exists
  * @property stdClass $translation
  * @property zajData $data
@@ -55,110 +56,110 @@ abstract class zajModel implements JsonSerializable {
 	 * Stores the unique id of this object
 	 * @var string
 	 **/
-	public $id;
+	public string $id;
 	/**
 	 * Stores the value of the name field.
-	 * @var string
+	 * @var ?string
 	 **/
-	private $name;
+	private ?string $name;
 	/**
 	 * Stores the name (or key) of the name field.
-	 * @var string
+	 * @var ?string
 	 **/
-	public $name_key;
+	private ?string $name_key;
 
 	// Model structure
 	/**
-	 * Stores the field types as an associative array. See {@see zajDb}.
-	 * @var array
+	 * Stores the field type definitions. See {@see zajDb}.
+	 * @var stdClass
 	 **/
-	protected $model;
+	protected stdClass $model;
 	/**
 	 * True if the object exists in the database, false otherwise.
 	 * @var boolean
 	 **/
-	protected $exists = false;
+	protected bool $exists = false;
 
 	// Model settings
 	/**
 	 * Set to true if this object should be stored in the database.
 	 * @var boolean
 	 **/
-	public static $in_database = true;
+	public static bool $in_database = true;
 	/**
 	 * Set to true if this object should have translations associated with it.
 	 * @var boolean
 	 **/
-	public static $has_translations = true;
+	public static bool $has_translations = true;
 	/**
 	 * Set to DESC or ASC depending on the default fetch sort order.
 	 * @var string
 	 **/
-	public static $fetch_order = 'DESC';
+	public static string $fetch_order = 'DESC';
 	/**
 	 * Set to the field which should be the default fetch sort field.
 	 * @var string
 	 **/
-	public static $fetch_order_field = 'ordernum';
+	public static string $fetch_order_field = 'ordernum';
 	/**
 	 * Set the pagination default or leave as unlimited (which is the default value of 0)
 	 * @var integer
 	 **/
-	public static $fetch_paginate = 0;
+	public static int $fetch_paginate = 0;
     /**
      * Connection type, used when object is fetched in connection to another. Empty if not a connected object.
      * @var string
      */
-    public $connection_type = '';
+    public string $connection_type = '';
 
 	// Mysql database and child details / settings
 	/**
 	 * My class (or model) name.
 	 * @var string
 	 **/
-	public $class_name = "zajModel";
+	public string $class_name = "zajModel";
 	/**
 	 * My table name (typically a lower-case form of class_name)
 	 * @var string
 	 **/
-	public $table_name = "models";
+	public string $table_name = "models";
 	/**
 	 * My id column key/name ('id' by default)
 	 * @var string
 	 **/
-	public $id_column = "id";
+	public string $id_column = "id";
 
 	// Objects used by this class
 	/**
 	 * Access to the database-stored data through the object's own {@link zajData} object.
-	 * @var zajData
+	 * @var ?zajData
 	 **/
-	private $data;
+	private ?zajData $data;
 
 	/**
 	 * Access to the database-stored data that is retrieved as custom query via the {@link zajFetcher} object's add_field_source method.
-	 * @var stdClass|boolean
+	 * @var ?stdClass
 	 **/
-	public $fetchdata = false;
+	public ?stdClass $fetchdata;
 
 	/**
 	 * Access to the database-stored translation data through the object's own {@link zajModelLocalizer} object.
-	 * @var zajModelLocalizer
+	 * @var ?zajModelLocalizer
 	 **/
-	protected $translations;
+	protected ?zajModelLocalizer $translations;
 
 	// Object event stack
 	/**
 	 * The event stack, which is basically an array of events currently running.
 	 * @var array
 	 **/
-	protected $event_stack = [];
+	protected array $event_stack = [];
 
 	/**
 	 * This is an object-specific private variable which registers if any extension of $this has had its event fired. This is used to prevent infinite loops.
 	 * @var boolean
 	 **/
-	public $event_child_fired = false;
+	public bool $event_child_fired = false;
 
 
 	// Model extension
@@ -167,16 +168,16 @@ abstract class zajModel implements JsonSerializable {
 	 * @var array
 	 * @todo If it is possible to store this on a per-class basis, it would be better than this 'global' way!
 	 **/
-	public static $extensions = [];
+	public static array $extensions = [];
 
 	/**
 	 * Constructor for model object. You should never directly call this. Use {@link: create()} instead.
 	 *
-	 * @param string $id The id of the object.
+	 * @param string|int|null|bool $id The id of the object. Boolean false is allowed for backwards compatibility.
 	 * @param string $class_name The name of child class (model class). This is deprecated and overridden anyway.
 	 * @return zajModel
 	 */
-	public function __construct($id, $class_name = ''){
+	public function __construct(string|int|null|bool $id, string $class_name = ''){
 		$class_name = get_called_class();
 		// check for errors
 			if($id && !is_string($id) && !is_integer($id) && zajLib::me()->security->is_valid_id($id)) zajLib::me()->error("Invalid ID ($id) value given as parameter for model constructor! You probably tried to use an object instead of a string or integer!");
@@ -184,7 +185,7 @@ abstract class zajModel implements JsonSerializable {
 			$this->table_name = strtolower($class_name);
 			$this->class_name = $class_name;
 		// set id if its empty
-			if($id == false) $this->id = uniqid("");
+			if($id == null) $this->id = uniqid("");
 			else $this->id = $id;
 
 		// everything else is loaded on request!
@@ -296,10 +297,10 @@ abstract class zajModel implements JsonSerializable {
 
 	/**
 	 * Create a new object in this model.
-	 * @param bool|string $id Id's are automatically generated by default, but you can force one here. Once created, id's cannot be changed.
-	 * @return zajModel Returns a brand new zajModel object.
+	 * @param ?string $id Id's are automatically generated by default, but you can force one here. Once created, id's cannot be changed.
+	 * @return zajModel|zajModelExtender|null Returns a brand new zajModel object. Null if an error occurred.
 	 */
-	public static function create($id = false){
+	public static function create(?string $id = null) : self|zajModelExtender|null {
 		// Get my class_name
 			/* @var zajModel $class_name */
 			$class_name = get_called_class();
@@ -308,9 +309,12 @@ abstract class zajModel implements JsonSerializable {
 		// create the new object
 			$new_object = new $class_name(false, $class_name);
 		// if id specified
-			if($id){
+			if($id != null){
 				// Make sure ID is valid
-					if(!zajLib::me()->security->is_valid_id($id)) return zajLib::me()->warning("Tried to create object with invalid id: $id");
+					if(!zajLib::me()->security->is_valid_id($id)) {
+                        zajLib::me()->warning("Tried to create object with invalid id: $id");
+                        return null;
+                    }
 				// All ok, set it!
 					$new_object->id = $id;
 			}
@@ -327,9 +331,9 @@ abstract class zajModel implements JsonSerializable {
 
 	/**
      * Set a mock database for testing.
-     * @param $db
+     * @param mixed $db
      */
-    public function set_mock_database($db){
+    public function set_mock_database(mixed $db){
         // Only allow during testing
         if($this->ofw->test->is_running()){
             $this->data = new zajData($this, $db);
@@ -340,15 +344,21 @@ abstract class zajModel implements JsonSerializable {
 	 * Set the value of a field for this object.
 	 * @param string $field_name The name of model field.
 	 * @param mixed $value The new value of the field.
-	 * @return zajModel|bool Returns me to allow chaining or false if error.
+	 * @return zajModel Returns me to allow chaining.
 	 */
-	public function set($field_name, $value){
+	public function set(string $field_name, mixed $value) : self {
 		// disable for non-database objects
-			if(!$this::$in_database) return $this->ofw->error("Cannot set field when db not active!");
+			if(!$this::$in_database) {
+                $this->ofw->error("Cannot set field when db not active!");
+                return $this;
+            }
 		// only allow unit_test when tests are running
-			if($field_name == 'unit_test' && !$this->ofw->test->is_running()) return $this->ofw->error("Cannot set field unit_test while not running a test!");
+			if($field_name == 'unit_test' && !$this->ofw->test->is_running()) {
+                $this->ofw->error("Cannot set field unit_test while not running a test!");
+                return $this;
+            }
 		// init the data object if not done already
-			if(!$this->data) $this->data = new zajData($this);
+			if(!isset($this->data)) $this->data = new zajData($this);
 		// set it in the data object
 			$this->data->__set($field_name, $value);
 		return $this;
@@ -361,7 +371,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @note string $field_name3 The third parameter to set...etc...
 	 * @return zajModel Returns me to allow chaining.
 	 */
-	public function set_these(){
+	public function set_these() : self {
 		// Use _GET or _POST
 		$_POST = array_merge($_GET, $_POST);
 		// Run through each argument
@@ -378,7 +388,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @param array $fields_ignored If this array is specified, the fields in the array will be ignored. You should use either this or allowed.
 	 * @return zajModel Returns me to allow chaining.
 	 */
-	public function set_with_data($data, $fields_allowed = [], $fields_ignored = []){
+	public function set_with_data(array|stdClass $data, array $fields_allowed = [], array $fields_ignored = []) : self {
 	    // Fields to ignore @todo move this to field settings somehow
 	    $fields_ignored = array_merge($fields_ignored, ['unit_test', 'id', 'time_create', 'time_edit', 'ordernum', 'translation']);
 
@@ -414,9 +424,12 @@ abstract class zajModel implements JsonSerializable {
 	 * @param string $locale The locale for which to set this translation.
 	 * @return zajModel Returns me to allow chaining.
 	 */
-	public function set_translation($field_name, $value, $locale){
+	public function set_translation(string $field_name, mixed $value, string $locale) : self {
 		// disable for non-database objects
-			if(!$this::$in_database) return false;
+			if(!$this::$in_database || !$this::$has_translations) {
+                zajLib::me()->error("Tried to set translation; but translations not enabled for model $this->class_name");
+                return $this;
+            }
 		// if default locale, use set
 			if($locale == $this->ofw->lang->get_default_locale()) return $this->set($field_name, $value);
 		// init the data object if not done already
@@ -433,7 +446,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @note string $field_name3 The third parameter to set...etc...
 	 * @return zajModel Returns me to allow chaining.
 	 */
-	public function set_translations(){
+	public function set_translations() : self {
         // If only one locale, then return
         if(count($this->ofw->lang->get_locales()) <= 1) return $this;
 
@@ -455,7 +468,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @param array $fields_ignored If this array is specified, the fields in the array will be ignored. You should use either this or allowed.
 	 * @return zajModel Returns me to allow chaining.
 	 */
-	public function set_translations_with_data($data, $fields_allowed = [], $fields_ignored = []){
+	public function set_translations_with_data(array|stdClass $data, array $fields_allowed = [], array $fields_ignored = []) : self {
         // If only one locale, then return
         if(count($this->ofw->lang->get_locales()) <= 1) return $this;
 
@@ -492,18 +505,18 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Save the values set by {@link: set()} to the database.
 	 * @param boolean $events_and_cache If set to true, the before and after events and cacheing will be fired. If false, they will be ignored. This is useful when you are trying to speed things up (during import of data for example).
-	 * @return zajModel|boolean Returns the chainable object if successful, false if beforeSave prevented it.
+	 * @return ?zajModel Returns the chainable object if successful, null if beforeSave prevented it.
 	 */
-	public function save($events_and_cache = true){
+	public function save(bool $events_and_cache = true) : ?zajModel {
 		// same as cache() for non-database objects
 		if(!$this::$in_database) return $this->cache();
 		// init the data object if not done already
-		if(!$this->data) $this->data = new zajData($this);
+		if(!isset($this->data)) $this->data = new zajData($this);
 		// call beforeCreateSave event (only if this does not exist yet)
 		$exists_before_save = $this->data->exists();
 		if($events_and_cache && !$exists_before_save) $this->fire('beforeCreateSave');
 		// call beforeSave event
-		if($events_and_cache && $this->fire('beforeSave') === false) return false;
+		if($events_and_cache && $this->fire('beforeSave') === false) return null;
 		// if unit test is running, set the unit_test field
 		if(zajLib::me()->test->is_running()) $this->set('unit_test', true);
 		// set it in the data object
@@ -522,17 +535,17 @@ abstract class zajModel implements JsonSerializable {
 
 	/**
 	 * Creates a duplicate copy of the object. Connections are not duplicated by default and the new object is not saved to the db, just returned.
-	 * @param bool|string $id Id's are automatically generated by default, but you can force one here. Once created, id's cannot be changed.
+	 * @param string|int|null $id Id's are automatically generated by default, but you can force one here. Once created, id's cannot be changed.
 	 * @return zajModel Returns an object whose fields are set to the same data values.
 	 */
-	public function duplicate($id = false){
+	public function duplicate(string|int|null $id = null) : self {
 		// Get my class name
 			/* @var zajModel $class_name */
 			$class_name = $this->class_name;
 		// create the same object type
 			$new = $class_name::create($id);
 		// load up data object if not already done
-			if(!$this->data) $this->data = new zajData($this);
+			if(!isset($this->data)) $this->data = new zajData($this);
 		// run through all of my fields
 			$model = $class_name::__model();
 			foreach($model as $name=>$fielddata){
@@ -556,7 +569,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @param boolean $localized Set to true if you want the localized version.
 	 * @return array Return a single-dimensional array.
 	 */
-	public function to_array($localized = true){
+	public function to_array(bool $localized = true) : array {
 		// Get my class name
 			/* @var zajModel $class_name */
 			$class_name = $this->class_name;
@@ -568,7 +581,7 @@ abstract class zajModel implements JsonSerializable {
 				$data = $this->translations;
 			}
 			else{
-				if(!$this->data) $this->data = new zajData($this);
+				if(!isset($this->data)) $this->data = new zajData($this);
 				$data = $this->data;
 			}
 		// Now fetch array data
@@ -596,7 +609,7 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Implement json serialize method.
 	 */
-	public function jsonSerialize(){
+	public function jsonSerialize() : array {
 		return $this->to_array();
 	}
 
@@ -606,13 +619,16 @@ abstract class zajModel implements JsonSerializable {
 	 * @param boolean $permanent OPTIONAL. If set to true, object is permanently removed from db. Defaults to false.
 	 * @return boolean Returns true if the item was deleted, false if beforeDelete prevented it.
 	 */
-	public function delete($permanent = false){
+	public function delete(bool $permanent = false) : bool {
 		// fire __beforeDelete event
 		if($this->fire('beforeDelete') === false) return false;
 		// same as cache removal for non-database objects
-		if(!$this::$in_database) return $this->uncache();
+		if(!$this::$in_database) {
+            $this->uncache();
+            return true;
+        }
 		// init the data object if not done already
-		if(!$this->data) $this->data = new zajData($this);
+		if(!isset($this->data)) $this->data = new zajData($this);
 		// set it in the data object
 		$this->data->delete($permanent);
 		// now fire __afterDelete
@@ -643,16 +659,17 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Fire an event.
 	 * @param string $event Event name.
-	 * @param array|bool $arguments Array of parameters. Leave empty if no params.
+	 * @param ?array $arguments Array of parameters. Leave empty if no params.
 	 * @return mixed Returns the value returned by the event method.
 	 * @todo Somehow disable event methods from being declared public. They should be private or protected!
 	 * @todo Make this static-compatible (though you cannot do event stack in that case! or can you?)
 	 * @todo Optimize this!
 	 **/
-	public function fire($event, $arguments = false){
+	public function fire(string $event, ?array $arguments = null) : mixed {
 		// Do I even need to fire a child?
 		if(!$this->event_child_fired){
 			// Do I have an extension? If so, go down one level and start from there...
+            /** @var zajModel $ext */
 			$ext = self::extension();
 			if($ext){
 				// Create my child object, set event fired to true, and fire it!
@@ -670,7 +687,7 @@ abstract class zajModel implements JsonSerializable {
 		if($stack_size > MAX_EVENT_STACK) $this->ofw->error("Exceeded maximum event stack size of ".MAX_EVENT_STACK." for object ".$this->class_name.". Possible infinite loop?");
 		if($this->ofw->event_stack > MAX_GLOBAL_EVENT_STACK) $this->ofw->error("Exceeded maximum global event stack size of ".MAX_GLOBAL_EVENT_STACK.". Possible infinite loop?");
 		// If no arguments specified
-		if($arguments === false) $arguments = array();
+		if($arguments == null) $arguments = array();
 		// Call event function
 		$return_value = call_user_func_array(array($this, '__'.$event), $arguments);
 		// Remove from stack
@@ -683,10 +700,10 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Fire a static event.
 	 * @param string $event The name of the event.
-	 * @param array|bool $arguments Array of parameters. Leave empty if no params.
+	 * @param ?array $arguments Array of parameters. Leave empty if no params.
 	 * @return mixed Returns the value returned by the event method.
 	 */
-	public static function fire_static($event, $arguments = false){
+	public static function fire_static(string $event, ?array $arguments = null) : mixed {
 		// Make sure propagation is enabled
 		zajModelExtender::$event_stop_propagation = false;
 		// Get my class_name
@@ -696,10 +713,12 @@ abstract class zajModel implements JsonSerializable {
 		// Check stack size
 		if(zajLib::me()->event_stack > MAX_GLOBAL_EVENT_STACK) zajLib::me()->error("Exceeded maximum global event stack size of ".MAX_GLOBAL_EVENT_STACK.". Possible infinite loop?");
 		// If no arguments specified
-		if($arguments === false) $arguments = array();
+		if($arguments == null) $arguments = array();
 		// Do I have an extension? If so, go down one level...
+        /** @var zajModel $ext */
 		$ext = self::extension();
 		if($ext) $return_value = $ext::fire_static($event, $arguments);
+        else $return_value = null;
 		// Check to see if stop propagation, if so, return the return_value
 		if(zajModelExtender::$event_stop_propagation){
 			zajModelExtender::$event_stop_propagation = false;
@@ -718,12 +737,12 @@ abstract class zajModel implements JsonSerializable {
 
 	/**
 	 * This method returns the class name of the class which extends me.
-	 * @return string The name of my extension class.
+	 * @return ?string The name of my extension class.
 	 **/
-	public static function extension(){
+	public static function extension() : ?string {
 		$class_name = get_called_class();
 		if(!empty(zajModel::${'extensions'}[$class_name])) return zajModel::${'extensions'}[$class_name];
-		return false;
+		return null;
 	}
 
 	/**
@@ -731,7 +750,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @param mixed $object Checks if the passed variable is instance of me.
 	 * @return boolean True if yes, false if not.
 	 */
-	public static function is_instance_of_me($object){
+	public static function is_instance_of_me(mixed $object) : bool {
 		// Get my class name
 		$class_name = get_called_class();
 		// @todo need a more sophisticated check than zajModelExtender...this is an error!
@@ -773,6 +792,7 @@ abstract class zajModel implements JsonSerializable {
 		// Search for the method in any of my parents
 
 		// Search for the method in any of my children
+        /** @var zajModel $child_class_name */
 		$child_class_name = $class_name;
 		// Set my extension and repeat while it exists
 		$my_extension = $child_class_name::extension();
@@ -799,6 +819,7 @@ abstract class zajModel implements JsonSerializable {
 	 */
 	public static function __callStatic($name, $arguments){
 		// get current class
+        /** @var zajModel $class_name */
 		$class_name = get_called_class();
 		// any specific static?
 		switch($name){
@@ -846,43 +867,42 @@ abstract class zajModel implements JsonSerializable {
             case "zajlib": 		return zajLib::me();
             case "data":
 				if(!$this::$in_database) return false; 	// disable for non-database objects
-				if(!$this->data) return $this->data = new zajData($this);
+				if(!isset($this->data)) return $this->data = new zajData($this);
 				return $this->data;
 			case "translation":
 			case "translations":if(!$this::$has_translations) return false; 	// disable where no translations available
-				if(!$this->translations || $this->translations->get_locale() != zajLib::me()->lang->get()) return $this->translations = new zajModelLocalizer($this);
+				if(!isset($this->translations) || $this->translations->get_locale() != zajLib::me()->lang->get()) return $this->translations = new zajModelLocalizer($this);
 				return $this->translations;
 			case "autosave":	if(!$this::$in_database) return false; 	// disable for non-database objects
-				if(!$this->data) $this->data = new zajData($this);
+				if(!isset($this->data)) $this->data = new zajData($this);
 				// turn on autosave
 				$this->data->__autosave = true;
-				$returned = $this->data;
-				return $returned;
+				return $this->data;
 			case "model":		if(!$this::$in_database) return false; 	// disable for non-database objects
-				if(!$this->model) return $this->model = $this->__model();
+				if(!isset($this->model)) return $this->model = $this->__model();
 				else return $this->model;
 			case "exists":		if(!$this::$in_database) return true; 	// always return true for non-database objects
-				if(!$this->data) $this->data = new zajData($this);
+				if(!isset($this->data)) $this->data = new zajData($this);
 				return $this->data->exists();
-			case "name":		if(!$this::$in_database || $this->name) return $this->name;
+			case "name":		if(!$this::$in_database || isset($this->name)) return $this->name ?? "";
 				// load model if not yet loaded
-				if(!$this->model) $this->model = $this->__model();
+				if(!isset($this->model)) $this->model = $this->__model();
 				// load data
-				if(!$this->data) $this->data = new zajData($this);
+				if(!isset($this->data)) $this->data = new zajData($this);
 				// look for name and return if found
 				foreach($this->model as $field=>$fdata){
 					if($fdata->type == 'name'){					// actual name field
 						$this->name_key = $field;
 						return $this->name = $this->data->$field;
 					}
-					if(!$this->name && $fdata->type == 'text'){ 	// first text field
+					if(!isset($this->name) && $fdata->type == 'text'){ 	// first text field
 						$this->name_key = $field;
 						$this->name = $this->data->$field;
 					}
 				}
 				return $this->name;
-			case "name_key":	if(!$this::$in_database) return false; 	// disable for non-database objects
-				if($this->name_key) return $this->name_key;
+			case "name_key":	if(!$this::$in_database) return null; 	// disable for non-database objects
+				if(isset($this->name_key)) return $this->name_key;
 				// load name
 				$this->__get("name");
 				// now return it
@@ -890,8 +910,10 @@ abstract class zajModel implements JsonSerializable {
 		}
 
 		// Enable extended __get()
+        /** @var zajModel $class_name */
 		$class_name = get_called_class();
 		// Am I extended?
+        /** @var zajModel $ext */
 		$ext = $class_name::extension();
 		if($ext && method_exists($ext, '__get')){
 			$extobj = $ext::create($this->id, $this);
@@ -912,7 +934,7 @@ abstract class zajModel implements JsonSerializable {
 	 * @ignore
 	 * @todo Disable get_cache from being called outside. Events should be used instead of overriding...
 	 */
-	public static function get_cache($id){
+	public static function get_cache(string $id) : ?zajModel {
 		// get current class
 		$class_name = get_called_class();
 		// sanitize id just to be safe
@@ -965,17 +987,20 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Remove a cached version of an object.
 	 *
-	 * @return zajModel|boolean Returns the chainable object if successful, false if beforeUncache prevented it.
+	 * @return ?zajModel Returns the chainable object if successful, false if beforeUncache prevented it.
 	 */
-	public function uncache(){
+	public function uncache() : ?zajModel {
 		// call __beforeUncache event
-		if($this->fire('beforeUncache') === false) return false;
+		if($this->fire('beforeUncache') === false) return null;
 		// sanitize id just to be safe
-		if(!zajLib::me()->security->is_valid_id($this->id)) return zajLib::me()->warning("Tried to uncache with invalid id: $this->id");
+		if(!zajLib::me()->security->is_valid_id($this->id)) {
+            zajLib::me()->warning("Tried to uncache with invalid id: $this->id");
+            return null;
+        }
 		// return the resumed class
 		$filename = $this->ofw->file->get_id_path($this->ofw->basepath."cache/object/".$this->class_name, $this->id.".cache", false, CACHE_DIR_LEVEL);
 		// if remove is successful, call __afterUncache event and return true. false otherwise
-		if(!@unlink($filename)) return false;
+		if(!@unlink($filename)) return null;
 		else{
 			$this->fire('afterUncache');
 			return $this;
@@ -984,15 +1009,18 @@ abstract class zajModel implements JsonSerializable {
 	/**
 	 * Create a cached version of the object.
 	 *
-	 * @return zajModel|boolean Returns the chainable object if successful, false if beforeCache prevented it.
+	 * @return ?zajModel Returns the chainable object if successful, null if beforeCache prevented it.
 	 */
-	public function cache(){
+	public function cache() : ?zajModel {
 		// call __beforeCache event
-		if($this->fire('beforeCache') === false) return false;
+		if($this->fire('beforeCache') === false) return null;
 		// if not in_database, then this is creating it, so exists will equal to true
 		if(!$this::$in_database) $this->exists = true;
 		// sanitize id just to be safe
-		if(!zajLib::me()->security->is_valid_id($this->id)) return zajLib::me()->warning("Tried to save cache with invalid id: $this->id");
+		if(!zajLib::me()->security->is_valid_id($this->id)){
+            zajLib::me()->warning("Tried to save cache with invalid id: $this->id");
+            return $this;
+        }
 		// get filename
 		$filename = $this->ofw->file->get_id_path($this->ofw->basepath."cache/object/".$this->class_name,$this->id.".cache", true, CACHE_DIR_LEVEL);
 
@@ -1003,11 +1031,11 @@ abstract class zajModel implements JsonSerializable {
 		$event_child_fired = $this->event_child_fired;
 		unset($this->ofw, $this->data, $this->model, $this->event_stack, $this->event_child_fired);
 
-		if($this->fetchdata){
+		if(isset($this->fetchdata)){
 		    $fetchdata = $this->fetchdata;
 		    unset($this->fetchdata);
         }
-		if($this->translations){
+		if(isset($this->translations)){
 		    $translations = $this->translations;
 		    unset($this->translations);
         }
@@ -1037,11 +1065,11 @@ abstract class zajModel implements JsonSerializable {
 
 	/**
 	 * Reorder the item's ordernum based on the order of ids in the passed array.
-	 * @param array $reorder_array An array of object ids.
+	 * @param array|string $reorder_array An array of object ids. Optionally can be a json-encoded array.
 	 * @param bool $reverse_order If set to true, the reverse order will be taken into account.
 	 * @return bool Always returns true.
 	 */
-	public static function reorder($reorder_array, $reverse_order = false){
+	public static function reorder(array|string $reorder_array, bool $reverse_order = false) : bool {
 		// get current class
 		$class_name = get_called_class();
 		// @todo remove this support for JSON input from a Sortables.serialize method of mootools, always returns true
@@ -1050,6 +1078,8 @@ abstract class zajModel implements JsonSerializable {
 		// continue processing the array of ids
 		if((is_object($reorder_data) || is_array($reorder_data)) && count($reorder_data) > 0){
 			// get the order num of each
+            $array_of_ordernums = [];
+            $myobj = [];
 			foreach($reorder_data as $oneid){
 				/** @var zajModel $class_name */
 				$obj = $class_name::fetch($oneid);
@@ -1064,7 +1094,7 @@ abstract class zajModel implements JsonSerializable {
 				}
 			}
 			// Only proceed if actual array done
-			if(is_array($array_of_ordernums)){
+			if(count($array_of_ordernums) > 0){
 				// place them in order of descendence
 				if($class_name::$fetch_order=="DESC" && !$reverse_order || $class_name::$fetch_order=="ASC" && $reverse_order) rsort($array_of_ordernums);
 				else sort($array_of_ordernums);

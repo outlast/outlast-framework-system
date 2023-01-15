@@ -14,8 +14,8 @@
     class Category extends zajModel {
 
         // Change the default sorting behavior
-        public static $fetch_order = 'ASC';
-        public static $fetch_order_field = 'abc';
+        public static string $fetch_order = 'ASC';
+        public static string $fetch_order_field = 'abc';
 
 	/**
 	 * __model function. creates the database fields available for objects of this class.
@@ -79,19 +79,15 @@
         /**
          * Override delete so that all subcategories are also deleted.
          * @param boolean $permanent If set to true, it will permanently delete the item.
-         * @return integer Returns the number of categories deleted.
          */
-        public function delete($permanent = false) {
+        public function delete(bool $permanent = false) : bool {
             /** @var Category $subcategory */
             // Delete subcategories
-            $items_deleted = 1;
             foreach ($this->data->subcategories as $subcategory) {
-                $items_deleted += $subcategory->delete($permanent);
+                $subcategory->delete($permanent);
             }
             // Delete me
-            parent::delete($permanent);
-
-            return $items_deleted;
+            return parent::delete($permanent);
         }
 
         /**

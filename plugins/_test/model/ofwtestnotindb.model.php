@@ -11,10 +11,10 @@
 class OfwTestNotInDb extends zajModel {
 
     // Just so it is not written to db
-    public static $in_database = false;
+    public static bool $in_database = false;
 
     // Fake not exists
-    public $exists = false;
+    public bool $exists = false;
 
     static function __model(stdClass $fields = new stdClass()) : stdClass {
 

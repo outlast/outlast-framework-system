@@ -147,8 +147,9 @@
             if (is_object($form_input)) {
                 // is create requested and is it allowed? (TODO: implement allow for create)
                 if (!empty($form_input->create)) {
+                    /** @var zajModel $class_name */
                     $class_name = $this->options['model'];
-                    $other_object = $class_name::create()->set('name', $form_input->create)->save();
+                    $other_object = $class_name::create()?->set('name', $form_input->create)->save();
 
                     return [$other_object->id, $other_object];
                 } // set was used, although set might also be empty!
