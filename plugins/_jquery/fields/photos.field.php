@@ -56,11 +56,7 @@ class zajfield_photos extends zajField {
      * @return zajFetcher Returns a list of objects.
      */
     public function get_default(zajModel &$object) : mixed {
-        if(array_key_exists('default', $this->options) && is_object($this->options['default'])) return $this->options['default'];
-        else{
-            // Return an empty zajfetcher
-            return Photo::fetch()->exclude_all();
-        }
+        return $this->options['default'] ?? Photo::fetch()->exclude_all();
     }
 	
 	/**
@@ -83,7 +79,7 @@ class zajfield_photos extends zajField {
 					$data->save();
 			}
 		// else if it is an array (form field input)
-			else{
+            elseif(is_string($data)) {
 				$sdata = $data;
 				$data = json_decode($data);
 				// If data is empty alltogether, it means that it wasnt JSON data, so it's a single photo id to be added!

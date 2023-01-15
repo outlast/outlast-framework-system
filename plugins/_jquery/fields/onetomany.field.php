@@ -103,12 +103,7 @@
          * @return zajFetcher Returns a list of objects.
          */
         public function get_default(zajModel &$object) : mixed {
-            if (is_object($this->options['default'])) {
-                return $this->options['default'];
-            } else {
-                // Return an empty zajfetcher
-                return zajFetcher::onetomany($this->name, $object);
-            }
+            return $this->options['default'] ?? zajFetcher::onetomany($this->name, $object);
         }
 
         /**

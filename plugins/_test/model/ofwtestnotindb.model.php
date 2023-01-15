@@ -16,18 +16,11 @@ class OfwTestNotInDb extends zajModel {
     // Fake not exists
     public $exists = false;
 
-    public static function __model($f = false) {
+    static function __model(stdClass $fields = new stdClass()) : stdClass {
 
-        /////////////////////////////////////////
-        // begin custom fields definition:
-        if ($f === false) {
-            $f = new stdClass();
-        }
-
-        // end of custom fields definition
-        /////////////////////////////////////////
+        $fields->text = zajDb::name();
 
         // do not modify the line below!
-        return parent::__model($f);
+        return parent::__model($fields);
     }
 }

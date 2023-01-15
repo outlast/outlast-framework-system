@@ -71,8 +71,7 @@ class zajfield_locales extends zajField {
      * @return mixed Returns an empty list.
      */
     public function get_default(zajModel &$object) : mixed {
-        if(is_object($this->options['default'])) return $this->options['default'];
-        else return (object) [];
+        return $this->options['default'] ?? (object) [];
     }
 
 	/**

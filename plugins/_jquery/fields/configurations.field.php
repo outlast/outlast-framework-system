@@ -66,7 +66,6 @@
             if (!$result) {
                 $result = (object)[];
             }
-
             return $result;
         }
 
@@ -76,11 +75,7 @@
          * @return mixed Returns an empty list.
          */
         public function get_default(zajModel &$object) : mixed {
-            if (is_array($this->options) && array_key_exists('default', $this->options) && is_object($this->options['default'])) {
-                return $this->options['default'];
-            } else {
-                return (object)[];
-            }
+            return $this->options['default'] ?? (object)[];
         }
 
         /**
@@ -91,9 +86,9 @@
          **/
         public function save(mixed $data, zajModel &$object) : mixed {
             // Standard array, so serialize
-            if ($data && is_array($data)) {
+            if (isset($data) && (is_array($data) || is_object($data))) {
                 $newdata = json_encode($data);
-            } elseif(json_decode($data)) {
+            } elseif(is_string($data) && json_decode($data)) {
                 $newdata = $data;
             } else {
                 $newdata = "";

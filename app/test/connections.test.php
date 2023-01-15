@@ -68,18 +68,18 @@
 			ofwTestAssert::areIdentical($version->id, $log->data->version->id);
 			ofwTestAssert::areIdentical($log->id, $version->data->log->id);
 			$log->set('version', false)->save();
-			ofwTestAssert::isFalse($log->data->version);
+			ofwTestAssert::isNull($log->data->version);
 			$version->data->unload('log');
-			ofwTestAssert::isFalse($version->data->log);
+			ofwTestAssert::isNull($version->data->log);
 
 			// Now try to set from child side
 			$version->set('log', $log)->save();
 			ofwTestAssert::areIdentical($version->id, $log->data->version->id);
 			ofwTestAssert::areIdentical($log->id, $version->data->log->id);
 			$version->set('log', false)->save();
-			ofwTestAssert::isFalse($version->data->log);
+			ofwTestAssert::isNull($version->data->log);
 			$log->data->reload();
-			ofwTestAssert::isFalse($log->data->version);
+			ofwTestAssert::isNull($log->data->version);
 
 			return true;
 

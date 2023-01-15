@@ -11,15 +11,17 @@
 	/**
 	 * Use this constant to set a MAX() value for a database field.
 	 **/
-	define('MYSQL_MAX', 'MYSQL_MAX');
-	/**
+    const MYSQL_MAX = 'MYSQL_MAX';
+
+    /**
 	 * Use this constant to set a MAX()+1 value for a database field.
 	 **/
-	define('MYSQL_MAX_PLUS', 'MYSQL_MAX_PLUS');
-	/**
+    const MYSQL_MAX_PLUS = 'MYSQL_MAX_PLUS';
+
+    /**
 	 * Use this constant to set an AVG() value for a database field.
 	 **/
-	define('MYSQL_AVG', 'MYSQL_AVG');
+    const MYSQL_AVG = 'MYSQL_AVG';
 
 	/**
 	 * Class zajlib_db
@@ -30,33 +32,33 @@
 		 * The resouce of the default connection.
 		 * @var resource
 		 **/
-		private $default_connection;
+		private mixed $default_connection;
 
 		/**
 		 * An array of {@link zajlib_db_session} objects used to manage different session without using different connections.
 		 * @var array
 		 **/
-		private $session = [];
+		private array $session = [];
 		/**
 		 * The current session object
-		 * @var zajlib_db_session
+		 * @var zajlib_db_session|stdClass
 		 **/
-		private $current_session;
+		private zajlib_db_session|stdClass $current_session;
 		/**
 		 * The total number of queries run for all sessions together.
 		 * @var integer
 		 **/
-		private $num_of_queries = 0;
+		private int $num_of_queries = 0;
 		/**
 		 * The total microtime of query execution time for all sessions together.
 		 * @var float
 		 **/
-		private $total_time = 0;
+		private int $total_time = 0;
 		/**
 		 * The last executed query.
 		 * @var string
 		 **/
-		private $last_query = '';
+		private string $last_query = '';
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,14 +78,16 @@
 			}
 			// check if it already exists!
 			if (!empty($zajlib->db) && is_object($zajlib->db) && is_a($zajlib->db, 'zajlib_db')) {
-				return $zajlib->error('Only one db instance allowed, so unable to create new db instance. Please use the session method if you need a new db session.');
+				$zajlib->error('Only one db instance allowed, so unable to create new db instance. Please use the session method if you need a new db session.');
+                exit();
 			}
 			// send to parent
 			parent::__construct($zajlib, $system_library);
 			// create current session
-			$this->current_session = (object)[];
+			$this->current_session = new stdClass();
 			// create my default session
 			$this->create_session('default');
+            return $this;
 		}
 
 		/**
@@ -189,7 +193,7 @@
 				$this->ofw->error("Could not select this session $id. Does not exist.");
 			}
 			// check if i have a valid connection
-			if (!$this->session[$id]->conn) {
+			if (!$this->session[$id]->conn && isset($this->default_connection)) {
 				$this->session[$id]->conn = $this->default_connection;
 			}
 
@@ -285,7 +289,7 @@
 		 * @param array $array An associative array where the keys are the field names and the values are the field values.
 		 * @return bool|zajlib_db_session Returns the db session or false if error.
 		 **/
-		private function add($table, $array) {
+		private function add(string $table, array $array) : bool|zajlib_db_session {
 			// Check for errors
 			if (count($array) == 0) {
 				return false;
@@ -348,7 +352,7 @@
 		 * @param string $conditionType Can have a value of AND or OR. This only matters if $column is an array, and there are multiple key/value pairs to use in the WHERE clause.
 		 * @return bool|zajlib_db_session Returns the db session or false if error.
 		 */
-		private function edit($table, $column, $condition, $array, $conditionType = "AND") {
+		private function edit(string $table, string $column, string $condition, array $array, string $conditionType = "AND") {
 			// Generate data to add
 			foreach ($array as $key => $value) {
 				// special functions
@@ -411,7 +415,7 @@
 		 * @param string|integer $limit The maximum number of items to delete. By default, this is one to safeguard against accidental deletes.
 		 * @return zajlib_db_session
 		 **/
-		private function delete($table, $column, $condition, $limit = 1) {
+		private function delete(string $table, string $column, string $condition, string|int $limit = 1) {
 			// Generate sql
 			$condition = addslashes($condition);
 			$sql = "DELETE FROM `$table` WHERE `$column` LIKE '$condition' LIMIT $limit";
@@ -430,13 +434,14 @@
 		 * @param string $column_as_key Use a specific column as key. This is depricated, and only the default value should be used.
 		 * @return array Returns a key/value array of results.
 		 **/
-		private function get($num = 1, $startat = 0, $column_as_key = '', $one_dimensional_by_key = '') {
+		private function get(int $num = 1, int $startat = 0, string $column_as_key = '', string $one_dimensional_by_key = '') : array {
 			// set as array
 			$result_set = [];
-			$this->current_session->selected_row = false;
+			$this->current_session->selected_row = null;
 			// count the num of rows
 			if (!$this->current_session->query || !$this->current_session->conn) {
-				return $this->send_error(true);
+				$this->send_error(true);
+                return [];
 			}
 			$num_rows = $this->current_session->affected;
 			// get all remaining by setting num to the number remaining
@@ -471,22 +476,18 @@
 		/**
 		 * Get a single row from the result set. This is depricated. Use iterator methods instead.
 		 * @param integer $startat The number of rows to skip.
-		 * @return array An associative array is returned.
+		 * @return ?array An associative array is returned.
 		 **/
-		private function get_one($startat = 0) {
+		private function get_one(int $startat = 0) : ?array {
 			$result_set = $this->get(1, $startat);
-			if (!empty($result_set[0])) {
-				return $result_set[0];
-			} else {
-				return false;
-			}
+            return $result_set[0] ?? null;
 		}
 
 		/**
 		 * Get all of the remaining rows. This is depricated. Use iterator methods instead.
 		 * @return array A multi-dimensional associative array is returned.
 		 **/
-		private function get_all($startat = 0, $column_as_key = '', $one_dimensional_by_key = '') {
+		private function get_all(int $startat = 0, string $column_as_key = '', string $one_dimensional_by_key = '') : array {
 			return $this->get(-1, $startat, $column_as_key, $one_dimensional_by_key);
 		}
 
@@ -494,7 +495,7 @@
 		 * Get all of the remaining rows as objects. This is depricated. Use iterator methods instead.
 		 * @return array A multi-dimensional associative array is returned.
 		 **/
-		private function get_all_objects($class_name, $startat = 0, $id_column = 'id', $include_deleted = false) {
+		private function get_all_objects(string $class_name, int $startat = 0, string $id_column = 'id', bool $include_deleted = false) : array {
 			$my_results = $this->get(-1, $startat);
 			$my_objects = [];
 			foreach ($my_results as $result) {
@@ -558,9 +559,9 @@
 
 		/**
 		 * Returns the next object in the iteration.
-		 * @return object Returns the selected row as an object.
+		 * @return ?stdClass Returns the selected row as an object.
 		 **/
-		public function next() {
+		#[ReturnTypeWillChange] public function next() : ?stdClass {
 			// get the next row
 			$this->get_one();
 
@@ -570,9 +571,9 @@
 
 		/**
 		 * Rewinds the iterator.
-		 * @return boolean Always returns true
+         * @return ?stdClass Returns the first row as an object.
 		 **/
-		public function rewind() {
+		#[ReturnTypeWillChange] public function rewind() : ?stdClass {
 			// if not at 0, then rewind
 			if ($this->current_session->row_pointer > 0) {
 				// reset row pointer
@@ -619,7 +620,7 @@
 		/**
 		 * Returns a multi-dimensional array of selected rows based on the SQL query passed. This is depricated and will be removed.
 		 **/
-		private function select($sql, $onerow = false, $column_as_key = '') {
+		private function select(string $sql, bool $onerow = false, string $column_as_key = '') : ?array {
 			$this->query($sql);
 			if ($onerow) {
 				return $this->get_one(0);
@@ -631,7 +632,7 @@
 		/**
 		 * Return the count of a given column. This is depricated and will be removed.
 		 **/
-		private function count_only($table, $wherestr = "") {
+		private function count_only(string $table, string $wherestr = "") : int {
 			// static, so cannot reference $this
 			if ($wherestr) {
 				$wherestr = "WHERE $wherestr";
@@ -641,14 +642,14 @@
 			$this->query($sql);
 			$row = $this->get_one();
 
-			return $row['c'];
+			return (int) $row['c'];
 		}
 
 
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// !Search
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		private function search($table, $query, $columns, $max_results = 5, $return_columns = "", $similarity_search = true) {
+		private function search(string $table, string $query, string|array $columns, int $max_results = 5, string|array $return_columns = "", bool $similarity_search = true) {
 			// TODO: implement $similarity_search = false
 
 
@@ -687,15 +688,15 @@
 		 * Send a query to the database.
 		 * @param string $sql The SQL query to execute.
 		 * @param boolean $disable_error If set to true, no error will be returned or logged, though false will still be returned if the query failed.
-		 * @return zajlib_db_session Returns the current query session.
+		 * @return ?zajlib_db_session Returns the current query session. Null if failed.
 		 **/
-		private function query($sql, $disable_error = false) {
+		private function query(string $sql, bool $disable_error = false) : ?zajlib_db_session {
 			// create the connection if it doesnt already exist
 			if (!$this->current_session->conn) {
-				$this->connect($this->ofw->zajconf['mysql_server'],
-					$this->ofw->zajconf['mysql_user'],
-					$this->ofw->zajconf['mysql_password'],
-					$this->ofw->zajconf['mysql_db']);
+				$this->connect($this->ofw->ofwconf['mysql_server'],
+					$this->ofw->ofwconf['mysql_user'],
+					$this->ofw->ofwconf['mysql_password'],
+					$this->ofw->ofwconf['mysql_db']);
 			}
 			// add total tracking if not already there
 			$sql = trim($sql);
@@ -708,7 +709,7 @@
 			// TODO: change this to debug timer, which doesn't do it unless debug_mode is enabled!
 			$before_query = microtime(true);
 			$this->current_session->query = mysqli_query($this->current_session->conn, $sql);
-			if ($this->current_session->query == false) {
+			if (!$this->current_session->query) {
 				$this->current_session->last_error = mysqli_error($this->current_session->conn);
 			}
 			// count affected
@@ -732,8 +733,9 @@
 			$this->current_session->num_of_queries++;
 			$this->current_session->total_time += $time_it_took;
 			// check if all is okay
-			if ($this->current_session->query == false && !$disable_error) {
-				return $this->send_error();
+			if (!$this->current_session->query && !$disable_error) {
+				$this->send_error();
+                return null;
 			}
 			// reset row pointer
 			$this->current_session->row_pointer = 0;
@@ -745,28 +747,28 @@
 		 * Gets the total number of rows affected by the last query, taking into account the LIMIT clause.
 		 * @return integer The total number of rows LIMITed.
 		 **/
-		private function get_num_rows() {
+		private function get_num_rows() : int {
 			if ($this->current_session->query === false) {
 				$this->send_error();
 
 				return 0;
 			}
 
-			return (integer)$this->current_session->affected;
+			return $this->current_session->affected;
 		}
 
 		/**
 		 * Gets the total number of rows affected by the last query, regardless of the LIMIT clause.
 		 * @return integer The total number of rows.
 		 **/
-		private function get_total_rows() {
+		private function get_total_rows() : int {
 			if ($this->current_session->query === false) {
 				$this->send_error();
 
 				return 0;
 			}
 
-			return (integer)$this->current_session->total;
+			return $this->current_session->total;
 		}
 
 		/**
@@ -795,7 +797,7 @@
 		 * Get the last error and return it.
 		 * @return string $error_text This is the error string. An empty string is returned if no error.
 		 **/
-		public function get_error() {
+		public function get_error() : string {
 			return $this->current_session->last_error;
 		}
 
@@ -803,7 +805,7 @@
 		 * Get the last run query and return it.
 		 * @return string The last query.
 		 **/
-		public function get_last_query() {
+		public function get_last_query() : string {
 			return $this->last_query;
 		}
 
@@ -812,13 +814,13 @@
 		 * @param string $string_to_escape
 		 * @return string $escaped_string
 		 **/
-		public function escape($string_to_escape) {
+		public function escape(string $string_to_escape) : string {
 			// create the connection if it doesnt already exist
 			if (!$this->current_session->conn) {
-				$this->connect($this->ofw->zajconf['mysql_server'],
-					$this->ofw->zajconf['mysql_user'],
-					$this->ofw->zajconf['mysql_password'],
-					$this->ofw->zajconf['mysql_db']);
+				$this->connect($this->ofw->ofwconf['mysql_server'],
+					$this->ofw->ofwconf['mysql_user'],
+					$this->ofw->ofwconf['mysql_password'],
+					$this->ofw->ofwconf['mysql_db']);
 			}
 
 			// now escape
@@ -830,7 +832,7 @@
 		 * @param string $field_name
 		 * @return boolean Returns true if success, false if not.
 		 **/
-		public function verify_field($field_name) {
+		public function verify_field(string $field_name) : bool {
 			// use regexp to allow letters, numbers, and _
 			return preg_match("/[A-z0-9_]+/", $field_name);
 		}
@@ -887,60 +889,62 @@
 		 * A reference to the global zajlib object.
 		 * @var zajLib
 		 **/
-		private $zajlib;
+		private zajLib $zajlib;
+
 		// public db session variables
 		/**
 		 * My session id.
 		 * @var string
 		 **/
-		public $id;
+		public string $id;
 		/**
 		 * The last error message encountered during this session.
 		 * @var string
 		 **/
-		public $last_error = '';
+		public string $last_error = '';
 		/**
 		 * The resource of the current connection. Usually this is the same as the global db object's connection.
 		 * @var mysqli
 		 **/
-		public $conn = false;
+		public mixed $conn = false;
 		/**
 		 * The resource of the current query.
 		 * @var mysqli_result
 		 **/
-		public $query;
+		public mixed $query;
 		/**
 		 * Current position of the internal pointer.
 		 * @var integer
 		 **/
-		public $row_pointer = 0;
+		public int $row_pointer = 0;
 		/**
 		 * The currently selected row from the result set. It is an object, not an associative array. It is possible to select more than one row - regardless, selected_row will only be set to the single latest row.
-		 * @var object
+		 * @var ?stdClass
 		 **/
-		public $selected_row = false;
+		public ?stdClass $selected_row;
 		/**
 		 * The total number of rows in this query.
 		 * @var integer
 		 **/
-		public $total = 0;
+		public int $total = 0;
 		/**
 		 * The total number of affected rows in this query.
 		 * @var integer
 		 **/
-		public $affected = 0;
+		public int $affected = 0;
+
 		// log for this session
 		/**
 		 * The total number of queries in this session so far.
 		 * @var integer
 		 **/
-		public $num_of_queries = 0;
+		public int $num_of_queries = 0;
+
 		/**
 		 * The microtime value of the query execution time in this session.
 		 * @var float
 		 **/
-		public $total_time = 0;
-
+		public int $total_time = 0;
 
 		/**
 		 * Creates a new session.
@@ -948,11 +952,11 @@
 		 * @param string $id The id of this session.
 		 * @param resource $connection The mysql connection resource.
 		 **/
-		public function __construct(&$zajlib, $id, $connection) {
+		public function __construct(zajLib &$zajlib, string $id, mixed $connection) {
 			// set my id
 			$this->id = $id;
 			// set my parent
-			$this->ofw =& $zajlib;
+			$this->zajlib =& $zajlib;
 			// connection
 			$this->conn = $connection;
 		}
@@ -972,15 +976,15 @@
 		 * Count method returns the total number of rows returned by the last query. Implements Countable.
 		 * @return integer The total number of rows from last query.
 		 **/
-		public function count() {
+		public function count() : int {
 			return zajLib::me()->db->__call_session('count', [], $this->id);
 		}
 
 		/**
 		 * Returns the current object in the iteration. Implements Iterator.
-		 * @return object Returns the selected row as an object.
+		 * @return ?stdClass Returns the selected row as an object.
 		 **/
-		public function current() {
+		public function current() : ?stdClass {
 			return zajLib::me()->db->__call_session('current', [], $this->id);
 		}
 
@@ -988,23 +992,23 @@
 		 * Returns the current key in the iteration.
 		 * @return integer Returns the row pointer of the current row.
 		 **/
-		public function key() {
+		public function key() : int {
 			return zajLib::me()->db->__call_session('key', [], $this->id);
 		}
 
 		/**
 		 * Returns the next object in the iteration.
-		 * @return object Returns the selected row as an object.
+		 * @return ?stdClass Returns the selected row as an object.
 		 **/
-		public function next() {
+        #[ReturnTypeWillChange] public function next() : ?stdClass {
 			return zajLib::me()->db->__call_session('next', [], $this->id);
 		}
 
 		/**
 		 * Rewinds the iterator.
-		 * @return boolean Always returns true
+		 * @return ?stdClass Always returns true
 		 **/
-		public function rewind() {
+		#[ReturnTypeWillChange] public function rewind(): ?stdClass {
 			return zajLib::me()->db->__call_session('rewind', [], $this->id);
 		}
 
@@ -1012,7 +1016,7 @@
 		 * Returns true if the current object of the iterator is a valid object.
 		 * @return boolean Returns true or false depending on whether the currently select row is valid.
 		 **/
-		public function valid() {
+		public function valid() : bool {
 			return zajLib::me()->db->__call_session('valid', [], $this->id);
 		}
 

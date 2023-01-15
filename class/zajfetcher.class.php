@@ -70,8 +70,18 @@
         // pagination variable
         private $pagination = false;                        // pagination object (variable)
         // iterator variables
-        private $current_object = false;                    // object - the current object
-        private $current_key = false;                        // string - key of current object (id)
+
+        /**
+         * The current object
+         * @var ?zajModel
+         */
+        private ?zajModel $current_object;
+
+        /**
+         * The current object key (id)
+         * @var ?string
+         */
+        private ?string $current_key;
 
         /**
          * Creates a new fetcher object for a specific {@link zajModel} class.
@@ -978,8 +988,8 @@
             $this->affected = false;
             $this->count = false;
             // Reset iteration
-            $this->current_object = false;
-            $this->current_key = false;
+            $this->current_object = null;
+            $this->current_key = null;
 
             return $this;
         }
@@ -992,7 +1002,7 @@
         /**
          * Returns the current object in the iteration.
          **/
-        public function current() {
+        public function current() : ?zajModel {
             // if current is not an object, rewind
             if (!is_object($this->current_object)) {
                 $this->rewind();
@@ -1005,7 +1015,7 @@
         /**
          * Returns the current key in the iteration.
          **/
-        public function key() {
+        public function key() : ?string {
             if (!is_object($this->current_object)) {
                 $this->rewind();
             }
@@ -1016,7 +1026,7 @@
         /**
          * Returns the next object in the iteration.
          **/
-        public function next() {
+        #[ReturnTypeWillChange] public function next() : ?zajModel {
             // Run query if not yet done
             if (!$this->query_done) {
                 $this->query();
@@ -1024,24 +1034,23 @@
             // Get the next row
             $result = $this->db->next();
 
-            // Convert to an object and return
+            // Convert to an object
             return $this->row_to_current_object($result);
         }
 
         /**
          * Rewinds the iterator.
          **/
-        public function rewind() {
-            // reewind db pointer
+        #[ReturnTypeWillChange] public function rewind() : ?zajModel {
+            // rewind db pointer
+
             // if query not yet run, run now
             if (!$this->query_done) {
                 $this->query();
-
                 return $this->next();
             } else {
                 // Rewind my db
                 $result = $this->db->rewind();
-
                 // Now get result
                 return $this->row_to_current_object($result);
             }
@@ -1050,19 +1059,19 @@
         /**
          * Returns true if the current object of the iterator is a valid object.
          **/
-        public function valid() {
-            return is_object($this->current_object);
+        public function valid() : bool {
+            return isset($this->current_object);
         }
 
         /**
          * Converts the current database row to the current fetched object. Also sets current_key and current_object vars.
-         * @param stdClass $result The database result row object.
-         * @return zajModel Returns the currently selected zajModel object.
+         * @param ?stdClass $result The database result row object.
+         * @return ?zajModel Returns the currently selected zajModel object.
          **/
-        public function row_to_current_object($result) {
+        public function row_to_current_object(?stdClass $result) : ?zajModel {
             // First off, check to see if valid result
-            if (!is_object($result) || empty($result->id)) {
-                $this->current_object = false;
+            if (!isset($result) || !is_object($result) || empty($result->id)) {
+                $this->current_object = null;
             } else {
                 // Now fetch based on my id result
                 /** @var zajModel $class_name */
@@ -1080,7 +1089,7 @@
             if (is_object($this->current_object)) {
                 $this->current_key = $this->current_object->id;
             } else {
-                $this->current_key = false;
+                $this->current_key = null;
             }
 
             return $this->current_object;
@@ -1309,13 +1318,13 @@
          * This method returns the connected fetcher object (which actually translates to a single zajModel object).
          * @param string $class_name The class name.
          * @param string $field The field name.
-         * @param string $id The id.
-         * @return zajModel|boolean Returns the connected object or boolean if no connection.
+         * @param ?string $id The id. Can be null, if there is no connection.
+         * @return zajModel|null Returns the connected object or null if no connection.
          **/
-        public static function manytoone($class_name, $field, $id) {
-            // if not id, then return false
+        public static function manytoone(string $class_name, string $field, ?string $id) : ?zajModel {
+            // if no id, then return false
             if (empty($id)) {
-                return false;
+                return null;
             }
 
             // get the other model
@@ -1344,11 +1353,11 @@
          * This method returns the connected fetcher object (which actually translates to a single zajModel object).
          * @param string $class_name The class name.
          * @param string $field The field name.
-         * @param string $id The id.
+         * @param ?string $id The id.
          * @param zajModel $object The object.
-         * @return zajModel|boolean Returns the connected object or boolean if no connection.
+         * @return ?zajModel Returns the connected object or null if no connection.
          */
-        public static function onetoone($class_name, $field, $id, &$object) {
+        public static function onetoone(string $class_name, string $field, ?string $id, zajModel $object) : ?zajModel {
 
             // get the other model
             /** @var zajModel $class_name */
@@ -1362,7 +1371,7 @@
 
                 // if not id, then return false
                 if (empty($id)) {
-                    return false;
+                    return null;
                 }
 
                 // otherwise, continue
@@ -1379,7 +1388,7 @@
                 $fetcher->connection_type = 'onetoone';
                 // if it is deleted then do not return
                 if ($fetcher->data->status == 'deleted') {
-                    $fetcher = false;
+                    $fetcher = null;
                 }
             }
 
@@ -1399,7 +1408,7 @@
          * @return zajFetcher Returns the zajFetcher object, so it can be chained.
          * @todo This needs a better implementation so that object can accept fetchers and that the table name is not generated based on the param but based on field.
          */
-        public function add($object, $mode = 'add', $additional_fields = false, $delete_all = false) {
+        public function add(zajModel $object, string $mode = 'add', bool|array $additional_fields = false, bool $delete_all = false) : zajFetcher {
             // if not an object
             if (!is_object($object)) {
                 zajLib::me()->error('tried to edit a relationship with something that is not a model or fetcher object.');
@@ -1473,7 +1482,7 @@
          * @param bool $delete_all Remove all connections not just a single one. This only works in 'delete' mode. Defaults to false.
          * @return zajFetcher Returns the zajFetcher object, so it can be chained.
          **/
-        public function remove($object, $delete_all = false) {
+        public function remove(zajModel $object, bool $delete_all = false) : zajFetcher {
             return $this->add($object, 'delete', false, $delete_all);
         }
 
@@ -1483,7 +1492,7 @@
          * @return boolean True if connected, false otherwise.
          * @todo Change count_only!
          **/
-        public function is_connected($objectORid) {
+        public function is_connected(zajModel|string $objectORid) : bool {
             // Check for errors
             if (!zajModel::is_instance_of_me($this->connection_parent)) {
                 return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");
@@ -1537,7 +1546,7 @@ EOF;
          * @param bool $reverse_order If set to true, the reverse order will be taken into account.
          * @return bool Always returns true.
          */
-        public function reorder($reorder_array, $reverse_order = false) {
+        public function reorder(array $reorder_array, bool $reverse_order = false) : bool {
 
             // If reversed
             if ($reverse_order) {
@@ -1600,7 +1609,6 @@ EOF;
             }
 
             return true;
-
         }
 
 
@@ -1644,7 +1652,7 @@ EOF;
          * @param mixed $object
          * @return boolean True if yes, false if no.
          */
-        public static function is_instance_of_me($object) {
+        public static function is_instance_of_me(mixed $object) : bool {
             return is_object($object) && is_a($object, 'zajFetcher');
         }
 

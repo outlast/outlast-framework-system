@@ -64,11 +64,7 @@
          * @return mixed Returns an empty list.
          */
         public function get_default(zajModel &$object) : mixed {
-            if (is_array($this->options) && array_key_exists('default', $this->options) && is_object($this->options['default'])) {
-                return $this->options['default'];
-            } else {
-                return "";
-            }
+            return $this->options['default'] ?? "";
         }
 
         /**

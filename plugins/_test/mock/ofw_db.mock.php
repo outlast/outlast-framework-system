@@ -9,9 +9,17 @@ class ofw_db_mock {
     public $last_query = "";
 
     /**
+     * An array of data returned by select query
+     * @var array
+     */
+    public array $data = [];
+
+    /**
      * Methods for compatibility.
      **/
-    public function select($sql, $onerow = false, $column_as_key = ''){}
+    public function select(string $sql, bool $onerow = false, string $column_as_key = '') : array {
+        return $this->data;
+    }
     public function get_num_rows(){ return 1; }
 
     /**

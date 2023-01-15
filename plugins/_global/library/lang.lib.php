@@ -15,28 +15,28 @@
         /**
          * Contains the current locale. Available locales are set in the config file site/index.php.
          **/
-        private $current_locale;
+        private string $current_locale;
 
         /**
          * Contains the current locale variation. False means no variation.
          **/
-        private $current_variation = false;
+        private ?string $current_variation;
 
 
         /**
          * Contains the default locale. The default is set in the config file site/index.php.
          **/
-        private $default_locale;
+        private string $default_locale;
 
         /**
          * Contains all the available locales. These are set in the config file site/index.php.
          **/
-        private $available_locales;
+        private array $available_locales;
 
         /**
          * Set to true if lang was already set at any point.
          */
-        private $was_set = false;
+        private bool $was_set = false;
 
         /**
          * Extend the config file loading mechanism.
@@ -73,7 +73,7 @@
          * Get the current locale.
          * @return string The locale code of the current language.
          **/
-        public function get() {
+        public function get() : string {
             // Return the current locale language
             return $this->current_locale;
         }
@@ -82,7 +82,7 @@
          * Get the current two-letter language code based on the current locale.
          * @return string The language code based on current locale.
          **/
-        public function get_code() {
+        public function get_code() : string {
             // Return the current locale language
             return substr($this->current_locale, 0, 2);
         }
@@ -92,7 +92,7 @@
          * @param bool|string $new_locale If set, it will try to choose this locale. Otherwise the default locale will be chosen.
          * @return string Returns the name of the locale that was set.
          */
-        public function set($new_locale = false) {
+        public function set(string|bool $new_locale = false) : string {
 
             // Check to see if the language to be set is not false and is in locales available. If problem, set to default locale.
             if (!empty($new_locale) && $this->is_valid_locale($new_locale)) {
@@ -125,7 +125,7 @@
          * @param string|bool $new_code If set, it will try to choose this language. Otherwise the default langauge will be chosen based on the default locale.
          * @return string The two-letter language code based on current locale.
          **/
-        public function set_by_code($new_code = false) {
+        public function set_by_code(string|bool $new_code = false) : string {
 
             if (!empty($new_code)) {
                 // Let's see if we have a compatible locale
@@ -146,7 +146,7 @@
          * @param string $two_letter_code The two letter code.
          * @return string|boolean Returns the locale or false if not found.
          */
-        public function get_locale_by_code($two_letter_code) {
+        public function get_locale_by_code(string $two_letter_code) : string|bool {
 
             // Lowercase it!
             $two_letter_code = strtolower($two_letter_code);
@@ -169,7 +169,7 @@
          * @get lang Set by either code or locale.
          * @get disable_lang_cookie If set to a true value, a cookie will not be saved for the current language.
          */
-        public function auto() {
+        public function auto() : string {
             $cookie_value = $this->ofw->cookie->get('ofw_locale');
             // Set by query string, subdomain, top level domain, or by cookie
             // If there is a query string, set it to that either by code or by
@@ -216,7 +216,7 @@
          * Get default locales.
          * @return string Returns the hard-coded default locale.
          **/
-        public function get_default_locale() {
+        public function get_default_locale() : string {
             return $this->default_locale;
         }
 
@@ -224,14 +224,14 @@
          * Returns true if the current locale is the default locale.
          * @return boolean True if the current locale, false otherwise.
          **/
-        public function is_default_locale() {
+        public function is_default_locale() : bool {
             return ($this->default_locale == $this->get());
         }
 
         /**
          * Returns true if the language was already set at some point.
          */
-        public function is_already_set() {
+        public function is_already_set() : bool {
             return $this->was_set;
         }
 
@@ -240,15 +240,15 @@
          * @param string $locale The locale to check.
          * @return boolean True if valid, false if not.
          */
-        public function is_valid_locale($locale) {
+        public function is_valid_locale(string $locale) : bool {
             return in_array($locale, $this->available_locales);
         }
 
         /**
          * Set language variation, typically useful for applying formal variations of a locale.
-         * @param string|boolean The current locale variation. Can be used for formal vs informal.
+         * @param ?string $variation The current locale variation. Can be used for formal vs informal.
          */
-        public function set_variation($variation = null) {
+        public function set_variation(?string $variation = null) : void {
             if ($variation == null) {
                 $variation = $this->ofw->ofwconf['locale_variation'];
             }
@@ -263,7 +263,7 @@
          * Get all locales.
          * @return array Returns an array of all available locales.
          **/
-        public function get_locales() {
+        public function get_locales() : array {
             return $this->available_locales;
         }
 
@@ -271,7 +271,7 @@
          * Get all the available two-letter language codes.
          * @return array Returns an array of all available codes.
          **/
-        public function get_codes() {
+        public function get_codes() : array {
             // Run through
             $codes = [];
             foreach ($this->available_locales as $al) {
