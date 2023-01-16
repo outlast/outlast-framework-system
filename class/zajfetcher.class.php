@@ -172,14 +172,17 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
      **/
     public function paginate(?int $perpage = 10, ?int $page = null) : self {
         // if perpage is 0 or turned off
-        if (!$perpage) {
+        if ($perpage == null) {
             $this->limit(false);
             $this->pagination = null;
-        } // if specific value set
+            return $this;
+        }
+
+        // if specific value set
         else {
             // if page is false, then automatically set!
-            if (!empty($_GET['zajpagination']) && $page == null) {
-                $page = $_GET['zajpagination'][$this->class_name];
+            if (isset($_GET['zajpagination']) && $page == null) {
+                $page = $_GET['zajpagination'][$this->class_name] ?? 1;
             }
             // set to default page
             if (!$page || !is_numeric($page) || $page <= 0) {
@@ -190,7 +193,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
             // set the limit values
             $this->limit($startat, $perpage);
             // now set pagination variables
-            $this->pagination = (object)[];
+            $this->pagination = new stdClass();
             $this->pagination->page = $page;
             $this->pagination->perpage = $perpage;
             $this->pagination->pagefirstitem0 = ($page - 1) * $perpage;
@@ -220,7 +223,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
      * @param ?string $order ASC or DESC or RANDOM depending on what you want. If left empty, the default for this model will be used. If the first parameter is set to CUSTOM_SORT, you can provide a custom sort string here, including ORDER BY.
      * @return zajFetcher This method can be chained.
      **/
-    public function sort(string $by, ?string $order) : self {
+    public function sort(string $by, ?string $order = null) : self {
         // if order is not set
         if ($order) {
             $this->ordermode = $order;
@@ -654,13 +657,13 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
 
     /**
      * Limits the results of the query using LIMIT in MySQL.
-     * @param ?integer $startat This can be either startat or it can be the limit itself. If empty it turns off all limiting.
+     * @param integer|bool $startat This can be either startat or it can be the limit itself. If empty it turns off all limiting.
      * @param ?integer $limitto The number of objects to take. Leave empty if the first parameter is used as the limit.
      * @return zajFetcher This method can be chained.
      **/
-    public function limit(?int $startat = null, ?int $limitto = null) : self {
+    public function limit(int|bool $startat, ?int $limitto = null) : self {
         // turn off limit and make sure it is valid
-        if ($startat == null || !is_numeric($startat) || ($limitto != null && !is_numeric($limitto))) {
+        if ($startat === false || !is_numeric($startat) || ($limitto != null && !is_numeric($limitto))) {
             $this->limit = "";
         } // set limit to value
         else {
@@ -1369,7 +1372,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
             $fetcher->connection_type = 'manytoone';
             // if it is deleted then do not return
             if ($fetcher->data->status == 'deleted') {
-                $fetcher = false;
+                $fetcher = null;
             }
         }
 
@@ -1381,10 +1384,10 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
      * @param string $class_name The class name.
      * @param string $field The field name.
      * @param ?string $id The id.
-     * @param zajModel $object The object.
-     * @return ?zajModel Returns the connected object or null if no connection.
+     * @param zajModel|zajModelExtender $object The object.
+     * @return zajModel|zajModelExtender|null Returns the connected object or null if no connection.
      */
-    public static function onetoone(string $class_name, string $field, ?string $id, zajModel $object) : ?zajModel {
+    public static function onetoone(string $class_name, string $field, ?string $id, zajModel|zajModelExtender $object) : zajModel|zajModelExtender|null {
 
         // get the other model
         /** @var zajModel $class_name */
@@ -1428,14 +1431,14 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
 
     /**
      * This method adds $object to the manytomany relationship.
-     * @param zajModel $object
+     * @param zajModel|zajModelExtender $object
      * @param string $mode Can be add or delete. This will add or remove the relationship. Defaults to add.
      * @param bool|array $additional_fields An assoc array with key/value pairs of additional columns to save to the relationship connection table.
      * @param bool $delete_all Remove all connections not just a single one. This only works in 'delete' mode. Defaults to false.
      * @return zajFetcher Returns the zajFetcher object, so it can be chained.
      * @todo This needs a better implementation so that object can accept fetchers and that the table name is not generated based on the param but based on field.
      */
-    public function add(zajModel $object, string $mode = 'add', bool|array $additional_fields = false, bool $delete_all = false) : zajFetcher {
+    public function add(zajModel|zajModelExtender $object, string $mode = 'add', bool|array $additional_fields = false, bool $delete_all = false) : zajFetcher {
         // if not an object
         if (!is_object($object)) {
             zajLib::me()->error('tried to edit a relationship with something that is not a model or fetcher object.');
@@ -1505,21 +1508,21 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
 
     /**
      * This method removes $object from the manytomany relationship.
-     * @param zajModel $object
+     * @param zajModel|zajModelExtender $object
      * @param bool $delete_all Remove all connections not just a single one. This only works in 'delete' mode. Defaults to false.
      * @return zajFetcher Returns the zajFetcher object, so it can be chained.
      **/
-    public function remove(zajModel $object, bool $delete_all = false) : zajFetcher {
+    public function remove(zajModel|zajModelExtender $object, bool $delete_all = false) : zajFetcher {
         return $this->add($object, 'delete', false, $delete_all);
     }
 
     /**
      * Returns true or false based on whether or not the current fetcher is connected to the object $object.
-     * @param zajModel|string $objectORid The object in question.
+     * @param zajModel|zajModelExtender|string $objectORid The object in question.
      * @return boolean True if connected, false otherwise.
      * @todo Change count_only!
      **/
-    public function is_connected(zajModel|string $objectORid) : bool {
+    public function is_connected(zajModel|zajModelExtender|string $objectORid) : bool {
         // Check for errors
         if (!zajModel::is_instance_of_me($this->connection_parent)) {
             return zajLib::me()->warning("The connection parent for is_connected() is not a zajModel object.");

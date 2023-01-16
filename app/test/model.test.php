@@ -44,6 +44,31 @@
             ofwTestAssert::isNull($c2->data->get_modified('name'));
         }
 
+        /**
+         * Test fetchers
+         */
+        public function system_verify_fetcher_lists() {
+            $c2 = Category::create();
+            $c2->save();
+            $c3 = Category::create();
+            $c3->save();
+
+            // All of them
+            $cats = Category::fetch()->filter('unit_test', true);
+            ofwTestAssert::areIdentical(3, $cats->total);
+
+            // First page with 2
+            $cats->paginate(2);
+            ofwTestAssert::areIdentical(2, $cats->count);
+
+            // Second page with 1
+            $cats->paginate(2, 2);
+            ofwTestAssert::areIdentical(1, $cats->count);
+
+            $cats->exclude_all();
+            ofwTestAssert::areIdentical(0, $cats->count);
+        }
+
 
         /**
          * Verify that I could indeed save stuff
