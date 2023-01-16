@@ -490,7 +490,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
      **/
     public function filter(string $field, mixed $value, string $operator = 'LIKE', string $type = 'AND') : self {
         // add to filters array and reset
-        $this->filters[] = [$field, $value, $operator, $type];
+        $this->filters[] = [$field, $value ?? "", $operator, $type];
         $this->reset();
 
         return $this;
@@ -506,6 +506,13 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
      * @return zajFetcher This method can be chained.
      **/
     public function filter_group(string|array $fields, mixed $values, string $operator = 'LIKE', string $type = 'AND', string $group_type = 'OR') : self {
+        // Replace null values with ""
+        if (is_array($values)) {
+            $values = array_map(function(mixed $el) {
+                return ($el == null) ? "" : $el;
+            }, $values);
+        }
+
         // add to filter_groups array
         $this->filter_groups[] = [$fields, $values, $operator, $type, $group_type];
         $this->reset();

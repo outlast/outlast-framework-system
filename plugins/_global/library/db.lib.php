@@ -694,7 +694,7 @@
 		 **/
 		private function query(string $sql, bool $disable_error = false) : ?zajlib_db_session {
 			// create the connection if it doesnt already exist
-			if (!$this->current_session->conn) {
+			if (!isset($this->current_session->conn) || !$this->current_session->conn) {
 				$this->connect($this->ofw->ofwconf['mysql_server'],
 					$this->ofw->ofwconf['mysql_user'],
 					$this->ofw->ofwconf['mysql_password'],
@@ -818,7 +818,7 @@
 		 **/
 		public function escape(string $string_to_escape) : string {
 			// create the connection if it doesnt already exist
-			if (!isset($this->current_session->conn)) {
+			if (!isset($this->current_session->conn) || !$this->current_session->conn) {
 				$this->connect($this->ofw->ofwconf['mysql_server'],
 					$this->ofw->ofwconf['mysql_user'],
 					$this->ofw->ofwconf['mysql_password'],
