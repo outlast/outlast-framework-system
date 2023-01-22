@@ -7,9 +7,9 @@
 class zajModelLocalizerItem implements JsonSerializable {
 
 	/** Make all variables private **/
-	private $parent;
-	private $fieldname;
-	private $locale;
+	private zajModel $parent;
+	private string $fieldname;
+	private string $locale;
 
 	/**
 	 * Create a new localizer item.
@@ -17,7 +17,7 @@ class zajModelLocalizerItem implements JsonSerializable {
 	 * @param string $fieldname The field name of the parent object.
 	 * @param string $locale The locale of the translation.
 	 **/
-	public function __construct($parent, $fieldname, $locale){
+	public function __construct(zajModel $parent, string $fieldname, string $locale) {
 		$this->parent = $parent;
 		$this->fieldname = $fieldname;
 		$this->locale = $locale;
@@ -27,16 +27,16 @@ class zajModelLocalizerItem implements JsonSerializable {
 	 * Returns the translation for the object's set locale.
 	 * @return mixed Return the translated value according to the object's locale.
 	 **/
-	public function get(){
+	public function get() : mixed {
 		return $this->get_by_locale($this->locale);
 	}
 
 	/**
 	 * Returns the translation for the given locale. It can be set to another locale if desired. If nothing set, the global default value will be returned (not a translation).
-	 * @param string|boolean $locale The locale. If not set (or default locale set), the default value is returned.
+	 * @param ?string $locale The locale. If not set (or default locale set), the default value is returned.
 	 * @return mixed Return the translated value.
 	 **/
-	public function get_by_locale($locale = false){
+	public function get_by_locale(?string $locale = null) : mixed {
 		// Locale is not set or is default, so return the default value
 		if(empty($locale) || $locale == zajLib::me()->lang->get_default_locale()) return $this->parent->data->{$this->fieldname};
 		// A translation is requested, so let's retrieve it
@@ -63,18 +63,18 @@ class zajModelLocalizerItem implements JsonSerializable {
 	 * @param string $name The name of the field to return.
 	 * @return mixed Return the translated value or the default lang value if no translation available.
 	 **/
-	public function __get($name){
+	public function __get(string $name) : mixed {
 		// Get the property of the value
-		$value = $this->get()->$name;
-		if($value !== '') return $value;
+		$value = $this->get()->$name ?? null;
+		if(!is_null($value) && $value !== '') return $value;
 		else return $this->parent->data->$name;
 	}
 
 	/**
 	 * Simply printing this object will result in the translation being printed. Return the default value if no translation.
-	 * @return mixed Return the translated value or the default lang value if no translation available.
+	 * @return string Return the translated value or the default lang value if no translation available.
 	 **/
-	public function __toString(){
+	public function __toString() : string {
 		$value = $this->get();
 		$fieldname = $this->fieldname;
         if(is_string($value) && $value !== '') return $value;
@@ -84,7 +84,7 @@ class zajModelLocalizerItem implements JsonSerializable {
 	/**
 	 * Implement json serialize method.
 	 */
-	public function jsonSerialize(){
+	public function jsonSerialize() : string {
 		return $this->__toString();
 	}
 

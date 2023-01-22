@@ -69,7 +69,7 @@
                 return false;
             }
             // Password needs cap, small, and numbers
-            if (!preg_match('/[A-Z]+[a-z]+[0-9]+/', $input)) {
+            if (!preg_match('/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/', $input)) {
                 return false;
             }
 
