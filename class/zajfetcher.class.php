@@ -1,13 +1,12 @@
 <?php
 /**
- * The fetcher class.
  * The fetcher class is the API to fetch data from the database. This could be a single row (single object) or many rows
  * filtered by one or more parameters, sorted, paginated, etc.
- * @author Aron Budinszky <aron@outlast.hu>
- * @version 3.0
+ *
+ * @author Aron Budinszky <aron@outlast.io>
+ * @version 4.0
  * @package Model
  * @subpackage DatabaseApi
- * @todo Make sure all methods can be chained! Parameters should be the only things that "stop" the chaining.
  */
 
 /**
@@ -53,54 +52,119 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
      */
     private zajlib_db_session|ofw_db_mock $db;                                        //
 
-    private bool $query_done = false;                        // true if query has been run already
-    private ?int $total;                                // the total count (limit not taken into account)
-    private ?int $count;                                // the instance count (limit included)
-    private ?int $affected;                            // the number returned (limit is taken into account)
+    /**
+     * True if query has been run already
+     */
+    private bool $query_done = false;
+
+    /**
+     * @var int|null the total count (limit not taken into account)
+     */
+    private ?int $total = null;
+
+    /**
+     * @var int|null the instance count (limit included)
+     */
+    private ?int $count = null;
+
+    /**
+     * @var int|null the number returned (limit is taken into account)
+     */
+    private ?int $affected = null;
+
     // instance variables needed for generating the sql
-    private array $select_what = [];                        // what to select from db. the index is the 'as' value.
-    private array $select_from = [];                        // the tables to select from
-    private string $limit = "";                                // the limit parameter
-    private string $orderby = "ORDER BY model.ordernum";        // ordered by ordernum by default
-    private string $ordermode = "DESC";                        // default order ASC or DESC (defined by model)
-    private string $groupby = "";                                // not grouped by default
-    private string $filter_deleted = "model.status!='deleted'";    // this does not show deleted items by default
-    private array $filters = [];                                // an array of filters to be applied
-    private array $filter_groups = [];                        // an array of filter groups to be applied (useful for OR logic)
-    private string $filterstr = "";                            // the generated filter query
-    private string $wherestr = "";                                // where is empty by default
+
+    /**
+     * @var array what to select from db. the index is the 'as' value.
+     */
+    private array $select_what = [];
+
+    /**
+     * @var array the tables to select from
+     */
+    private array $select_from = [];
+
+    /**
+     * @var string the limit parameter
+     */
+    private string $limit = "";
+
+    /**
+     * @var string the ordering; ordered by ordernum by default
+     */
+    private string $orderby = "ORDER BY model.ordernum";
+
+    /**
+     * @var string default order ASC or DESC (defined by model)
+     */
+    private string $ordermode = "DESC";
+
+    /**
+     * @var string not grouped by default
+     */
+    private string $groupby = "";
+
+    /**
+     * @var string The filter to apply to not show deleted items.
+     */
+    private string $filter_deleted = "model.status!='deleted'";
+
+    /**
+     * @var array an array of filters to be applied
+     */
+    private array $filters = [];
+
+    /**
+     * @var array an array of filter groups to be applied (useful for OR logic)
+     */
+    private array $filter_groups = [];
+
+    /**
+     * @var string the generated filter query
+     */
+    private string $filterstr = "";
+    /**
+     * @var string where is empty by default
+     */
+
+    private string $wherestr = "";
+
     // connection related stuff
-    private string $connection_wherestr = "";                    // part of the where string if there is a connection involved
+
+    /**
+     * @var string part of the where string if there is a connection involved
+     */
+    private string $connection_wherestr = "";
 
     /**
      * Connections have a parent object - this is a reference to that
      */
-    public zajModel|zajModelExtender|null $connection_parent;                            // connections have a parent object - this is a reference to that
+    public zajModel|zajModelExtender|null $connection_parent = null;
 
     /**
      * Field name of the connection
      */
-    public ?string $connection_field;                            // field name of connection
+    public ?string $connection_field = null;
 
     /**
      * Connections sometimes have another field
      */
-    public ?string $connection_other;                            // connections sometimes have another field
+    public ?string $connection_other = null;
 
     /**
      * Type of connection, such as manytomany, manytoone, etc.
      */
-    public ?string $connection_type;                            // string - manytomany, manytoone, etc.
+    public ?string $connection_type = null;
 
     /**
      * Full SQL (utilized by connection-related methods)
      */
-    private ?string $full_sql;
+    private ?string $full_sql = null;
 
     /**
      * Pagination object (variable)
      */
-    private ?stdClass $pagination;
+    private ?stdClass $pagination = null;
 
     // iterator variables
 
@@ -108,13 +172,13 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
      * The current object
      * @var ?zajModel
      */
-    private ?zajModel $current_object;
+    private ?zajModel $current_object = null;
 
     /**
      * The current object key (id)
      * @var ?string
      */
-    private ?string $current_key;
+    private ?string $current_key = null;
 
     /**
      * Creates a new fetcher object for a specific {@link zajModel} class.
@@ -962,36 +1026,42 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
      * @return zajFetcher
      */
     public function query(bool $force = false) : self {
+
         // if query already done
         if ($this->query_done === true && !$force) {
             return $this;
         }
+
         // get query and execute it
         $this->db->query($this->get_query());
+
         // count rows
         $this->total = $this->db->get_total_rows();
         $this->count = $this->db->get_num_rows();
-        // set pagination stuff
+
+        // set pagination stuff (if pagination enabled)
         if (isset($this->pagination)) {
+
             $this->pagination->pagecount = ceil($this->total / $this->pagination->perpage);
             if ($this->pagination->nextpage > $this->pagination->pagecount) {
                 $this->pagination->nextpage = false;
                 $this->pagination->next = '';
             }
-            // Set autopagination data
+
+            /// Set autopagination data
             $this->pagination->autopagination = OfwSafeString::set(htmlspecialchars(
                 json_encode([
-                    'model'     => $this->class_name,
-                    'url'       => zajLib::me()->protocol.$this->pagination->pageurl,
+                    'model' => $this->class_name,
+                    'url' => zajLib::me()->protocol . $this->pagination->pageurl,
                     'startPage' => $this->pagination->page,
                     'pageCount' => $this->pagination->pagecount,
-                ]),ENT_QUOTES, 'UTF-8'
+                ]), ENT_QUOTES, 'UTF-8'
             ));
         }
+
         // query is done
         $this->query_done = true;
 
-        // return me, so as to enable chaining
         return $this;
     }
 
@@ -1039,7 +1109,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
     /**
      * Returns the current object in the iteration.
      **/
-    public function current() : ?zajModel {
+    public function current() : zajModel|zajModelExtender|null {
         // if current is not an object, rewind
         if (!is_object($this->current_object)) {
             $this->rewind();
@@ -1063,7 +1133,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
     /**
      * Returns the next object in the iteration.
      **/
-    #[ReturnTypeWillChange] public function next() : ?zajModel {
+    #[ReturnTypeWillChange] public function next() : zajModel|zajModelExtender|null {
         // Run query if not yet done
         if (!$this->query_done) {
             $this->query();
@@ -1078,7 +1148,7 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
     /**
      * Rewinds the iterator.
      **/
-    #[ReturnTypeWillChange] public function rewind() : ?zajModel {
+    #[ReturnTypeWillChange] public function rewind() : zajModel|zajModelExtender|null {
         // rewind db pointer
 
         // if query not yet run, run now
@@ -1103,9 +1173,9 @@ class zajFetcher implements Iterator, Countable, JsonSerializable {
     /**
      * Converts the current database row to the current fetched object. Also sets current_key and current_object vars.
      * @param ?stdClass $result The database result row object.
-     * @return ?zajModel Returns the currently selected zajModel object.
+     * @return zajModel|zajModelExtender|null Returns the currently selected zajModel object.
      **/
-    public function row_to_current_object(?stdClass $result) : ?zajModel {
+    public function row_to_current_object(?stdClass $result) : zajModel|zajModelExtender|null {
         // First off, check to see if valid result
         if (!isset($result) || !is_object($result) || empty($result->id)) {
             $this->current_object = null;
