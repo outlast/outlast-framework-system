@@ -68,7 +68,7 @@
         function edit() {
             // resume the object
             $this->ofw->variable->object = Category::fetch($_GET['id']);
-            if ($_GET['parentcategory']) {
+            if (!empty($_GET['parentcategory'])) {
                 $this->ofw->variable->currentcat = Category::fetch($_GET['parentcategory']);
             } else {
                 $this->ofw->variable->currentcat = $this->ofw->variable->object->data->parentcategory;

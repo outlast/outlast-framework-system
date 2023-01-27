@@ -279,7 +279,7 @@ abstract class zajModel implements JsonSerializable {
             if(count($args) > 0) $has_args = true;
             else $has_args = false;
         // if id is specifically null or empty, then return false
-			if($has_args && (is_null($id) || $id === false || (is_string($id) && $id == ''))) return null;
+			if($has_args && (is_null($id) || (is_string($id) && $id == ''))) return null;
 		// call event
 			$class_name::fire_static('onFetch', array($class_name, $id));
 		// disable for non-database objects if id not given!
