@@ -18,7 +18,7 @@ class zajfield_photo extends zajField {
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name){
 		// load up config file
 			zajLib::me()->config->load('system/fields.conf.ini', 'photos');
 		// set default options
@@ -28,7 +28,7 @@ class zajfield_photo extends zajField {
 			if(empty($options['max_width'])) $options['max_width'] = zajLib::me()->config->variable->field_photos_max_width_default;
 			if(empty($options['max_file_size'])) $options['max_file_size'] = zajLib::me()->config->variable->field_photos_max_file_size_default;
 		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			parent::__construct(__CLASS__, $name, $options, $class_name);
 	}
 
 	/**
@@ -36,7 +36,7 @@ class zajfield_photo extends zajField {
 	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
-	public function validation($input){
+	public function validation(mixed $input) : bool {
 		return true;
 	}
 
@@ -46,7 +46,7 @@ class zajfield_photo extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return mixed Return the data that should be in the variable.
 	 **/
-	public function get($data, &$object){
+	public function get(mixed $data, zajModel &$object) : mixed {
 		return Photo::fetch()->filter('parent',$object->id)->filter('field', $this->name)->next();
 	}
 
@@ -57,11 +57,11 @@ class zajfield_photo extends zajField {
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		// if data is a photo object
 			if(is_object($data) && is_a($data, 'Photo')){
 				// Check to see if already has parent (disable hijacking of photos)
-					if($data->data->parent && $data->data->parent != $object->id) return $this->zajlib->warning("Cannot set parent of a photo object that already has a parent!");
+					if($data->data->parent && $data->data->parent != $object->id) return zajLib::me()->warning("Cannot set parent of a photo object that already has a parent!");
 				// Remove previous ones
 					$photos = Photo::fetch()->filter('parent', $object->id)->filter('field', $this->name);
 					foreach($photos as $pold){ $pold->delete(); }
@@ -91,7 +91,7 @@ class zajfield_photo extends zajField {
 					}
 
 					// cannot reclaim here!
-					if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->warning("Cannot save a final of a photo that already exists! You are not the owner!");
+					if($object->id != $pobj->parent && $pobj->status == 'saved') return zajLib::me()->warning("Cannot save a final of a photo that already exists! You are not the owner!");
 
 					$pobj->set('parent',$object->id);
 					$pobj->set('field',$this->name);
@@ -108,7 +108,7 @@ class zajfield_photo extends zajField {
 							foreach($photos as $pold){ $pold->delete(); }
 						}
 						// cannot reclaim here!
-						if($object->id != $pobj->parent && $pobj->status == 'saved') return $this->zajlib->warning("Cannot save a final of a photo that already exists! You are not the owner!");
+						if($object->id != $pobj->parent && $pobj->status == 'saved') return zajLib::me()->warning("Cannot save a final of a photo that already exists! You are not the owner!");
 
 						$pobj->set('parent',$object->id);
 						$pobj->set('field',$this->name);
@@ -119,7 +119,7 @@ class zajfield_photo extends zajField {
                 if(!empty($data->rename)){
                     foreach($data->rename as $fileid=>$newname){
                         $pobj = Photo::fetch($fileid);
-                        if($object->id != $pobj->parent) return $this->zajlib->warning("Cannot rename a Photo object that belongs to another object!");
+                        if($object->id != $pobj->parent) return zajLib::me()->warning("Cannot rename a Photo object that belongs to another object!");
                         $pobj->set('name', $newname)->save();
                     }
                 }

@@ -13,7 +13,7 @@ class zajlib_cache extends zajLibExtension{
 	 * @param bool|string $class An optional CaseSensitive parameter which specifies the name of the class to be cleared.
 	 * @return bool Will alway return true.
 	 */
-	public function clear_objects($class=false){
+	public function clear_objects(string|bool $class = false){
 			// check to see if $class is valid
 				if($class && (!class_exists($class) || strstr($class, '.') !== false || strstr($class, '/') !== false)) return $this->zajlib->warning("Invalid class name given while trying to clear the cache!");
 			// load file handler

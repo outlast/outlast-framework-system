@@ -148,10 +148,7 @@ class zajlib_text extends zajLibExtension {
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 	// Tag conversions
-	public function convertTagToURL($text, $tag, $link){
-	 $text = ereg_replace("<$tag>([A-z0-9ÁÉÓÖŐÜŰÚÍéáűőúöüóí&'\?!:/\. \-]*)</$tag>", "<b><a href=\"$link\\1\">\\1</a></b>", $text);
-	 return $text;
-	}
+
 	public function convertTagToIMG($text, $tag, $align='left'){
 	 	$parts = explode("<$tag>", $text);
 	 	if(count($parts) > 1){
@@ -169,20 +166,6 @@ class zajlib_text extends zajLibExtension {
 			}
 	 	}
 	 	return $text;
-	}
-	
-	/**
-	 * Deprecated version
-	 * @ignore
-	 **/
-	public function get_auto_link($text, $truncate = false){
-	  if(strip_tags($text) == $text){
-	  	$text = ereg_replace('((www\.)([a-zA-Z0-9@:%_.~#-\?&]+[a-zA-Z0-9@:%_~#\?&/]))', "http://\\1", $text);
-	  	$text = ereg_replace('((ftp://|http://|https://){2})([a-zA-Z0-9@:%_.~#-\?&]+[a-zA-Z0-9@:%_~#\?&/])', "http://\\3", $text);
-	  	$text = ereg_replace('(((ftp://|http://|https://){1})[a-zA-Z0-9@:%_.~#-\?&]+[a-zA-Z0-9@:%_~#\?&/])', "<A HREF=\"\\1\" TARGET=\"_blank\">\\1</A>", $text);
-	  	$text = ereg_replace('([_\.0-9a-z-]+@([0-9a-z][0-9a-z-]+\.)+[a-z]{2,3})',"<A HREF=\"mailto:\\1\">\\1</A>", $text);
-	  }
-	  return $text;
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////////

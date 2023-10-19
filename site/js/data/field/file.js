@@ -13,6 +13,9 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 	var _fileFieldValues = {};
 	var _fileFieldUploaderObjects = {};
 
+	/** The timeout variable **/
+	var _setFieldInputTriggerEventTimeout;
+
     /** Private API **/
 
     /**
@@ -51,7 +54,14 @@ define('system/js/data/field/file', ["../../ext/dropzone/dropzone-require.js", "
 	var setFieldInput = function(fieldid) {
 		if(typeof _fileFieldValues[fieldid] !== 'undefined'){
 			// Set stringified array to input
-			$('#'+fieldid).val(JSON.stringify(_fileFieldValues[fieldid]));
+			let $field = $('#'+fieldid);
+			$field.val(JSON.stringify(_fileFieldValues[fieldid]));
+
+			// Trigger change with a bit of delay to filter out duplicate events
+			clearTimeout(_setFieldInputTriggerEventTimeout)
+			_setFieldInputTriggerEventTimeout = setTimeout(function(){
+				$field.trigger('change');
+			}, 500);
 		}
 	};
 

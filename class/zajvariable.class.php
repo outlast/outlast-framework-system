@@ -26,6 +26,15 @@ class zajVariable {
 		$this->data[$name] = $value;
 	}
 
+    /**
+     * Make sure isset/empty works properly.
+     * @param $name
+     * @return bool Returns true if the item is set.
+     */
+    public function __isset($name) {
+        return array_key_exists($name, $this->data);
+    }
+
 	/**
 	 * Magic method to return debug information
 	 * @return string Returns some nice debug info.

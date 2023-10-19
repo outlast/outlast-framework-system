@@ -19,25 +19,27 @@ class zajfield_boolean extends zajField {
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 		
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name) {
 		// set default options
 			// A single option is interpreted as the default field value (backwards-compatibility)
 			if(!is_array($options)) $options = (object) array('default'=>$options);
 			else{
-				if($options[0]) $options = (object) array('default'=>true);
-                elseif($options['default']) $options = (object) array('default'=>true);
+				if(array_key_exists(0, $options) && $options[0]) $options = (object) array('default'=>true);
+                elseif(array_key_exists('default', $options) && $options['default']) {
+                    $options = (object) array('default'=>true);
+                }
 			}
 		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
-	}	
-	
+			parent::__construct(__CLASS__, $name, $options, $class_name);
+	}
+
 	/**
 	 * Defines the structure and type of this field in the mysql database.
 	 * @return array Returns in array with the database definition.
 	 **/
-	public function database(){
+	public function database() : array {
 		// set my default
-			if($this->options->default){
+			if(is_object($this->options) && property_exists($this->options, 'default') && $this->options->default){
 			    $default = 'yes';
             }
 			else $default = '';
@@ -53,25 +55,16 @@ class zajfield_boolean extends zajField {
 			);
 		return $fields;
 	}
-	
-	/**
-	 * Check to see if input data is valid.
-	 * @param mixed $input The input data.
-	 * @return boolean Returns true if validation was successful, false otherwise.
-	 **/
-	public function validation($input){
-		return true;
-	}
-	
+
 	/**
 	 * Preprocess the data before returning the data from the database.
 	 * @param mixed $data The first parameter is the input data.
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return mixed Return the data that should be in the variable.
 	 **/
-	public function get($data, &$object){
+    public function get(mixed $data, zajModel &$object): mixed {
 		// If the object does not exist yet, then use the default value
-			if(!$object->exists) $data = $this->options->default;
+        if(is_object($this->options) && !$object->exists) $data = property_exists($this->options, 'default') ? $this->options->default : false;
 		return $data;
 	}
 	
@@ -82,7 +75,7 @@ class zajfield_boolean extends zajField {
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
-	public function save($data, &$object){
+    public function save(mixed $data, zajModel &$object): mixed {
 		if($data && $data !== "no")	$value = 'yes';
 		else $value = '';
 		return array($value, $value);	
@@ -94,7 +87,7 @@ class zajfield_boolean extends zajField {
 	 * @param array $filter An array of values specifying what type of filter this is.
 	 * @return string Returns the filtering string.
 	 **/
-	public function filter(&$fetcher, $filter){
+	public function filter(zajFetcher &$fetcher, array $filter): bool|string {
 		// break up filter
 			list($field, $value, $logic, $type) = $filter;
 		// modify value to yes or empty
@@ -103,6 +96,5 @@ class zajfield_boolean extends zajField {
 		// filter return
 		return "`$field` $logic '$value'";
 	}
-
 
 }

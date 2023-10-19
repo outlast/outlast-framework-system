@@ -263,8 +263,14 @@ class zajlib_file extends zajLibExtension {
 			$path = dirname($filename);
 		// validate path
 			$path = $this->folder_check($path, "Invalid path requested for create_path_for.");
-		// all ok, create
-		return @mkdir($path, 0777, true);
+		// check if exists
+            if (!file_exists($path)) {
+                // all ok, create
+                mkdir($path, 0777, true);
+                return true;
+            } else {
+                return false;
+            }
 	}
 
 	/**
@@ -310,7 +316,11 @@ class zajlib_file extends zajLibExtension {
 			$fullpath = $basepath."/".$sub1."/".$sub2."/".$sub3."/".$filename;
 		// Make sure folders exist...if not, create...(unless not needed)
 			if($create_folders_if_they_dont_exist){
-				if(!$filename) @mkdir($fullpath, 0777, true);
+				if(!$filename) {
+                    if(!file_exists($fullpath)) {
+                        mkdir($fullpath, 0777, true);
+                    }
+                }
 				else $this->create_path_for($fullpath);
 			}		
 		// Return the full path	
@@ -346,7 +356,9 @@ class zajlib_file extends zajLibExtension {
 		// create folders?
 			// TODO: review permissions!
 			if($create_folders_if_they_dont_exist){
-				if(!$filename) @mkdir($new_folder, 0777, true);
+				if(!$filename && !file_exists($new_folder)) {
+                    mkdir($new_folder, 0777, true);
+                }
 				else $this->create_path_for($new_full_path);
 			}
 		// done.

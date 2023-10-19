@@ -12,9 +12,9 @@
 // RSS 0.91, 0.92, 0.93 and 0.94  Officially obsoleted by 2.0
 // So, define constants for RSS 1.0, RSS 2.0 and ATOM 	
 
-define('RSS1', 'RSS 1.0', true);
-define('RSS2', 'RSS 2.0', true);
-define('ATOM', 'ATOM', true);
+define('RSS1', 'RSS 1.0');
+define('RSS2', 'RSS 2.0');
+define('ATOM', 'ATOM');
 
 /**
  * Generate RSS and ATOM feeds.
@@ -75,9 +75,15 @@ class zajlib_feed extends zajLibExtension {
 		else{
 			// Decide automatically based on version.
 				switch($this->version){
-					case RSS1: $this->head = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://purl.org/rss/1.0/" xmlns:dc="http://purl.org/dc/elements/1.1/">';
-					case RSS2: $this->head = '<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/">';
-					case ATOM: $this->head = '<feed xmlns="http://www.w3.org/2005/Atom">';
+					case RSS1:
+                        $this->head = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://purl.org/rss/1.0/" xmlns:dc="http://purl.org/dc/elements/1.1/">';
+                        break;
+					case RSS2:
+                        $this->head = '<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/">';
+                        break;
+					case ATOM:
+                        $this->head = '<feed xmlns="http://www.w3.org/2005/Atom">';
+                        break;
 				}	
 		}
 		return $this->head;
@@ -340,13 +346,13 @@ class zajlib_feed extends zajLibExtension {
 			$thisItems = $item->get_elements();
 			
 			//the argument is printed as rdf:about attribute of item in rss 1.0 
-			echo $this->startItem($thisItems['link']['content']);
+			$this->startItem($thisItems['link']['content']);
 			
 			foreach ($thisItems as $zajlib_feed_item ) 
 			{
 				echo $this->makeNode($zajlib_feed_item['name'], $zajlib_feed_item['content'], $zajlib_feed_item['attributes']); 
 			}
-			echo $this->endItem();
+			$this->endItem();
 		}
 	}
 	

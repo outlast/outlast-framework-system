@@ -14,9 +14,9 @@ class zajfield_categories extends zajfield_manytomany {
 	const filter_template = 'field/categories.filter.html';	// string - the filter template
 
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name){
 		$options = ['Category'];
-		return parent::__construct($name, $options, $class_name, $zajlib);
+		return parent::__construct($name, $options, $class_name);
 	}
 
     /**
@@ -27,15 +27,15 @@ class zajfield_categories extends zajfield_manytomany {
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
-	public function save($data, &$object, $additional_fields = false){
+    public function save(mixed $data, zajModel &$object, $additional_fields = false) : mixed {
 	    // Run manytoone version
 	    $return = parent::save($data, $object);
 
         // Now check if parent categories need to be added (recursive)
-        $this->zajlib->config->load('category');
+        zajLib::me()->config->load('category');
         /** @var Category $my_category */
         $my_categories = clone $object->data->{$this->name};
-        if($this->zajlib->config->variable->category_auto_add_parents){
+        if(zajLib::me()->config->variable->category_auto_add_parents){
             foreach($my_categories as $my_category){
                 $my_category->add_parent_categories_recursively($object, $this->name);
             }
@@ -53,12 +53,12 @@ class zajfield_categories extends zajfield_manytomany {
 	 * @param zajCompileSource $source This is a pointer to the source file object which contains this tag.
 	 * @return bool
 	 */
-	public function __onInputGeneration($param_array, &$source){
+    public function __onInputGeneration(array $param_array, zajCompileSource &$source) : bool {
 		// override to print all choices
 			// use search method with all
 				$class_name = $this->options['model'];
 			// write to compile destination
-				$this->zajlib->compile->write('<?php $this->zajlib->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); $this->zajlib->variable->field->choices_toplevel = '.$class_name.'::__onSearch('.$class_name.'::fetch_top_level()); if($this->zajlib->variable->field->choices === false) $this->zajlib->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
+				zajLib::me()->compile->write('<?php zajLib::me()->variable->field->choices = '.$class_name.'::__onSearch('.$class_name.'::fetch()); zajLib::me()->variable->field->choices_toplevel = '.$class_name.'::__onSearch('.$class_name.'::fetch_top_level()); if(zajLib::me()->variable->field->choices === false) zajLib::me()->warning("__onSearch method required for '.$class_name.' for this input."); ?>');
 		return true;
 	}
 }

@@ -15,7 +15,10 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	var _photoFieldValues = {};
 	var _photoFieldUploaderObjects = {};
 
-    /** Private API **/
+	/** The timeout variable **/
+	var _setFieldInputTriggerEventTimeout;
+
+	/** Private API **/
 
     /**
      * Object init
@@ -53,10 +56,16 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 	var setFieldInput = function(fieldid) {
 		if(typeof _photoFieldValues[fieldid] !== 'undefined'){
 			// Set stringified array to input
-			$('#'+fieldid).val(JSON.stringify(_photoFieldValues[fieldid]));
+			let $field = $('#'+fieldid);
+			$field.val(JSON.stringify(_photoFieldValues[fieldid]));
+
+			// Trigger change with a bit of delay to filter out duplicate events
+			clearTimeout(_setFieldInputTriggerEventTimeout)
+			_setFieldInputTriggerEventTimeout = setTimeout(function(){
+				$field.trigger('change');
+			}, 500);
 		}
 	};
-
 
 	/**
 	 * Get my list element
@@ -148,7 +157,6 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		});
 		dropzoneActions.onInit(fieldid);
 
-
 		// Finally, set
 		_photoFieldUploaderObjects[fieldid] = myDropzone;
 	};
@@ -179,8 +187,6 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 			file['previewElement'] = $photoElement[0];
 			// Emit events
 			_photoFieldUploaderObjects[fieldid].emit("removedfile", file);
-			//_photoFieldUploaderObjects[fieldid].emit("thumbnail", file, photoUrl);
-			//_photoFieldUploaderObjects[fieldid].emit("complete", file);
 		},
 
 
@@ -557,6 +563,15 @@ define('system/js/data/field/photo', ["../../ext/dropzone/dropzone-require.js", 
 		getFieldOption: function(fieldid, key){
 			if(typeof _photoFieldOptions[fieldid] === 'undefined') return null;
 			return _photoFieldOptions[fieldid][key];
+		},
+
+		/**
+		 * Reset values and options for field id.
+		 * @param {string} fieldid The field unique id.
+		 */
+		resetValuesAndOptions: function(fieldid) {
+			_photoFieldOptions[fieldid] = {};
+			_photoFieldValues[fieldid] = {};
 		}
 	};
 

@@ -32,6 +32,6 @@
 {% endblock %}
 <div data-file="uploadProgressBar" data-file-field-id="{{field.uid}}" class="progress progress-striped active hide"><div class="progress-bar bar" style="width: 0;"></div></div>
 
-<input type="hidden" name="{{field.name}}" id="{{field.uid}}" data-file="field" data-file-field-id="{{field.uid}}">
+<input data-event="trigger" data-event-trigger-major="change" type="hidden" name="{{field.name}}" id="{{field.uid}}" data-file="field" data-file-field-id="{{field.uid}}">
 
 <div class="clearfix"><br/></div>

@@ -100,8 +100,15 @@ class zajLibLoader{
 				else return false;
 			}
 			else{
-				// return the new lib object
-					$library_class = 'zajlib_'.$name;
+				// determine class name (backwards compatibility)
+				$library_class = 'zajlib_'.$name;
+    			if(!class_exists($library_class, false)) {
+    			    $library_class = 'ofw_'.$name;
+    			    if(!class_exists($library_class, false)) {
+        				if($fail_with_error_message) return $this->zajlib->error("Tried to auto-load library ($name), but failed: library class name not properly defined, should be 'ofw_$name'!");
+                    }
+    			}
+                    /** @var ofw_plugin $libobj */
 					$libobj = new $library_class($this->zajlib, $name);
 					$libobj->options = $optional_parameters;
 					$this->loaded['library'][$name] = $libobj;
@@ -176,14 +183,14 @@ class zajLibLoader{
 					$zaj_app = implode("/", array_slice($rdata, 0, $fnum));
 					$zaj_mode = implode("_", array_slice($rdata, $fnum));
 				// now try to load the file
-					$result = $this->file("controller/".strtolower($zaj_app).'/'.strtolower($this->zajlib->zajconf['default_app']).'.ctl.php', false);
+					$result = $this->file("controller/".strtolower($zaj_app).'/'.strtolower($this->zajlib->ofwconf['default_app']).'.ctl.php', false);
 				// add one
 					$fnum--;
 			}
 		// if result still not successful just do default (5. default.ctl.php)
 			if(!$result){
 				// create file name
-					$zaj_app = $this->zajlib->zajconf['default_app'];
+					$zaj_app = $this->zajlib->ofwconf['default_app'];
 					$zaj_mode = implode("_", $rdata);
 				// now try to load the file
 					$result = $this->file("controller/".strtolower($zaj_app).".ctl.php", false);
@@ -191,7 +198,7 @@ class zajLibLoader{
 			}
 
 		// if zaj_mode not defined
-			if(empty($zaj_mode)) $zaj_mode = strtolower($this->zajlib->zajconf['default_mode']);
+			if(empty($zaj_mode)) $zaj_mode = strtolower($this->zajlib->ofwconf['default_mode']);
 
 		//////////////////////////////////////////////////
 		// - zaj_mode and zaj_app are properly defined!
@@ -234,11 +241,11 @@ class zajLibLoader{
 				// If no error method, but $reroute_to_error is true, throw an error
 					elseif($reroute_to_error){
 						// Check if not already default
-							if($zaj_app == $this->zajlib->zajconf['default_app']) $this->zajlib->error("Could not route request and default controller does not implement __error() method.");
+							if($zaj_app == $this->zajlib->ofwconf['default_app']) $this->zajlib->error("Could not route request and default controller does not implement __error() method.");
 						// Split into sections and remerge into parent
 							$parent_controller = implode('_', array_slice(explode('_', $zaj_app), 0, -1));
 						// Set to default
-							if(empty($parent_controller)) $parent_controller = $this->zajlib->zajconf['default_app'];
+							if(empty($parent_controller)) $parent_controller = $this->zajlib->ofwconf['default_app'];
 						// Reroute to parent method's error method
 							// TODO: fix so that first parameter passed is correct (currently it is not!)
 							return $this->app($parent_controller.'/__error', array($zaj_app.'_'.$zaj_mode, $optional_parameters));
@@ -341,8 +348,8 @@ class zajLibLoader{
                 }
                 // If it is a list of apps (plugins, system plugins) then replace *
                 else{
-                    if(is_array($this->zajlib->zajconf[$app_type])){
-                        foreach($this->zajlib->zajconf[$app_type] as $app_name){
+                    if(is_array($this->zajlib->ofwconf[$app_type])){
+                        foreach($this->zajlib->ofwconf[$app_type] as $app_name){
                             self::$app_folder_paths[$scope][] = str_replace('*', $app_name, $app_path);
                         }
                     }

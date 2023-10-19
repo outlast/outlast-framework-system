@@ -22,9 +22,9 @@ class zajlib_import extends zajLibExtension {
 	 **/
 	public function gdocs_spreadsheet($url, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
 		// Must be a valid url
-			if(!$this->zajlib->url->valid($url)) return $this->zajlib->warning("Gdocs import must be a valid url.");
+			if(!$this->ofw->url->valid($url)) return $this->ofw->warning("Gdocs import must be a valid url.");
 		// Check if we have access
-			if($this->zajlib->request->response_code($url) != 200) return $this->zajlib->warning("No access to Gdocs document. Is the link publicly shared?");
+			if($this->ofw->request->response_code($url) != 200) return $this->ofw->warning("No access to Gdocs document. Is the link publicly shared?");
 
 		// If url is not an export url convert it now
 			if(strstr($url, 'export') === false){
@@ -51,9 +51,9 @@ class zajlib_import extends zajLibExtension {
 	 */
 	public function csv($urlORfile, $first_row_is_header = true, $delimiter = ',', $enclosure = '"', $escape = '\\'){
 		// If it is not a url, then check sandbox
-			if(!$this->zajlib->url->valid($urlORfile)){
-				$this->zajlib->file->file_check($urlORfile);
-				$urlORfile = $this->zajlib->basepath.$urlORfile;
+			if(!$this->ofw->url->valid($urlORfile)){
+				$this->ofw->file->file_check($urlORfile);
+				$urlORfile = $this->ofw->basepath.$urlORfile;
 			}
 		// Open the url
 			$return_data = array();
@@ -75,7 +75,7 @@ class zajlib_import extends zajLibExtension {
 						$return_data[] = (object) $current_data;
 					}
 			}
-			else return $this->zajlib->warning("Could not open CSV for importing: $urlORfile");
+			else return $this->ofw->warning("Could not open CSV for importing: $urlORfile");
 		// Now return my data
 			return $return_data;
 	}
@@ -88,9 +88,9 @@ class zajlib_import extends zajLibExtension {
 	 */
 	public function xls($urlORfile, $first_row_is_header = true){
 		// If it is not a url, then check sandbox
-			if(!$this->zajlib->url->valid($urlORfile)){
-				$this->zajlib->file->file_check($urlORfile);
-				$urlORfile = $this->zajlib->basepath.$urlORfile;
+			if(!$this->ofw->url->valid($urlORfile)){
+				$this->ofw->file->file_check($urlORfile);
+				$urlORfile = $this->ofw->basepath.$urlORfile;
 			}
 		// No more autoloading for OFW
 			zajLib::me()->model_autoloading = false;
@@ -138,7 +138,7 @@ class zajlib_import extends zajLibExtension {
 			$objects = array();
 		// Validate data. It must be an array or an object.
 			if(!is_array($data) && !is_object($data)){
-				return $this->zajlib->warning("You tried to import invalid JSON data. JSON data must be an array or an object.");
+				return $this->ofw->warning("You tried to import invalid JSON data. JSON data must be an array or an object.");
 			}
 		// If this is not an array, then just create a single element array
 			if(is_object($data)) $data = array($data);
@@ -149,13 +149,13 @@ class zajlib_import extends zajLibExtension {
 					$object = $model_name::fetch($d->id);
 
 					// Let's create it if it does not exist
-					if($object === false && $create_if_not_exists) $object = $model_name::create($d->id);
+					if($object == null && $create_if_not_exists) $object = $model_name::create($d->id);
 					// Create a new one if it exists already, but with a new id
-					if($object !== false && $create_if_exists) $object = $model_name::create();
+					if($object != null && $create_if_exists) $object = $model_name::create();
 					// Otherwise update if it already exists...
 
 					// If found or created object then time to set with data
-					if($object !== false){
+					if($object != null){
 						$object->set_with_data($d)->save();
 						$updated++;
 						if($return_created_objects) $objects[] = $object;

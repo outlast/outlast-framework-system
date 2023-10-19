@@ -12,22 +12,22 @@ class zajCompileTag extends zajCompileElement {
     /**
      * @var array Array of parameters. Each item is a zajCompileVariable in parameter mode.
      */
-	private $parameters = [];
+	private array $parameters = [];
 
     /**
      * @var string This is the parameters as passed directly.
      */
-	private $paramtext;
+	private string $paramtext;
 
     /**
      * @var string The name of the tag.
      */
-	private $tag;
+	private string $tag;
 
     /**
      * @var int The number of parameters.
      */
-	public $param_count = 0;
+	public int $param_count = 0;
 
     /**
      * zajCompileTag constructor.
@@ -35,7 +35,7 @@ class zajCompileTag extends zajCompileElement {
      * @param string $parameters The parameters section of the tag.
      * @param zajCompileSource $parent The parent source.
      */
-	protected function __construct($element_name, $parameters, &$parent){
+	protected function __construct(string $element_name, string $parameters, zajCompileSource &$parent){
 		// call parent
 			parent::__construct($element_name, $parent);
 		// set paramtext & tag
@@ -62,7 +62,7 @@ class zajCompileTag extends zajCompileElement {
     /**
      * Write the code for a particular tag to the destination.
      */
-	public function write(){
+	public function write() : void {
 		// prepare all filtered parameters
 			$filter_prepare = '';
 			foreach($this->parameters as $pkey=>$param){
@@ -79,21 +79,21 @@ class zajCompileTag extends zajCompileElement {
 			}
 		// now call me
 			$element_name = $this->element_name;
-			$this->parent->zajlib->compile->tags->$element_name($this->parameters, $this->parent);
+			zajLib::me()->compile->tags->$element_name($this->parameters, $this->parent);
 	}
 
-	public static function compile($element_name, $parameters, &$parent){
+	public static function compile(string $element_name, string $parameters, zajCompileSource &$parent){
 		// create new
 			$tag = new zajCompileTag($element_name, $parameters, $parent);
 		// write
 			$tag->write();
 	}
 
-	public function __get($name){
+	public function __get(string $name) : string|bool {
 		switch($name){
 			case 'tag': return $this->tag;
 			case 'paramtext': return $this->paramtext;
-			default: return $this->parent->zajlib->warning("Tried to access inaccessible parameter $name of zajCompileTag.");
+			default: return zajLib::me()->warning("Tried to access inaccessible parameter $name of zajCompileTag.");
 		}
 	}
 

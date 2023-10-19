@@ -18,24 +18,24 @@ class zajfield_select extends zajField {
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 		
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name){
 		// set default options
 			// for backwards compatibility (deprecated)
 				if(!empty($options[0])) $options['choices'] = $options[0];
 				if(!empty($options[1])) $options['default'] = $options[1];
 				unset($options[0], $options[1]);
 			// is choices not an array?
-				if(!is_array($options['choices'])) return exit("You must specify an array of choices for the field $name of type select in $class_name.");
+				if(!is_array($options['choices'] ?? null)) return exit("You must specify an array of choices for the field $name of type select in $class_name.");
 				if(empty($options['default'])) $options['default'] = reset($options['choices']);
 		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			return parent::__construct(__CLASS__, $name, $options, $class_name);
 	}
 	
 	/**
 	 * Defines the structure and type of this field in the mysql database.
 	 * @return array Returns in array with the database definition.
 	 **/
-	public function database(){
+	public function database() : array {
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name,
@@ -54,8 +54,8 @@ class zajfield_select extends zajField {
 	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
-	public function validation($input){
-		if(in_array($input, $this->options['choices'])){
+	public function validation(mixed $input) : bool {
+		if(is_array($this->options['choices'] ?? null) && in_array($input, $this->options['choices'])){
 		    return true;
         }
 		else return false;
@@ -67,7 +67,7 @@ class zajfield_select extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return mixed Return the data that should be in the variable.
 	 **/
-	public function get($data, &$object){
+	public function get(mixed $data, zajModel &$object) : mixed {
 		return $data;
 	}
 	
@@ -78,7 +78,7 @@ class zajfield_select extends zajField {
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		return $data;	
 	}
 

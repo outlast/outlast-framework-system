@@ -51,7 +51,17 @@ define('system/js/data/block', ["../ofw-jquery"], function() {
 	 * @param {function} callback A callback function after the reload finished.
 	 */
 	var reloadBlock = function(blockName, callback){
-		var myUrl = ofw.queryMode(_initialFullRequest)+'&zaj_pushstate_block='+blockName;
+		loadBlock(_initialFullRequest, blockName, callback);
+	};
+
+	/**
+	 * Load contents into a block.
+	 * @param {string} url The full url.
+	 * @param {string} blockName The block name.
+	 * @param {function} callback A callback function after the reload finished.
+	 */
+	var loadBlock = function(url, blockName, callback){
+		var myUrl = ofw.queryMode(url)+'&zaj_pushstate_block='+blockName;
 		ofw.ajax.get(myUrl, function(r){
 			var $block = $('[data-block="'+blockName+'"]');
 			$block.html(r);
@@ -83,10 +93,12 @@ define('system/js/data/block', ["../ofw-jquery"], function() {
         },
 
 		/**
-		 * Enable reload block publicly.
+		 * Enable public methods.
 		 */
 		reload: reloadBlock,
-		reloadBlock: reloadBlock
+		reloadBlock: reloadBlock,
+		load: loadBlock,
+		loadBlock: loadBlock
 	};
 
 	/** Perform initialization **/
