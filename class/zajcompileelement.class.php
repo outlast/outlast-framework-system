@@ -13,19 +13,19 @@ class zajCompileElement{
     /**
      * @var string The name of the variable or tag.
      */
-	protected $element_name;
+	protected string $element_name;
 	
     /**
      * @var zajCompileSource The parent source.
      */
-	protected $parent;
+	protected zajCompileSource $parent;
 
     /**
      * zajCompileElement constructor.
      * @param string $element_name
      * @param zajCompileSource $parent
      */
-	protected function __construct($element_name, &$parent){
+	protected function __construct(string $element_name, zajCompileSource &$parent){
 		// set parent and element
 			/** @var zajCompileSource $parent */
 			$this->parent =& $parent;
@@ -36,21 +36,23 @@ class zajCompileElement{
     /**
      * Converts a variable to php output. Used in both tags and variables.
      * @param string $variable The variable as passed from the template source.
-     * @param bool $check_xss Whether or not to check the variable contents for XSS. Defaults to true.
+     * @param bool $check_xss Whether to check the variable contents for XSS. Defaults to true.
+     * @param bool $add_null_protection If set to true, the variable will be null-protected. This is only supported when *reading* the variable. Defaults to true.
      * @return string Returns the valid PHP format, ready for writing.
      */
-	protected function convert_variable($variable, $check_xss = true){
+	protected function convert_variable(string $variable, bool $check_xss = true, bool $add_null_protection = true) : string {
 		// leaves 'asdf' as is but converts asdf.qwer to $this->zajlib->variable->asdf->qwer
 		// config variables #asdf# now supported!
 		// and so are filters...
 			if(substr($variable, 0, 1) == '"' || substr($variable, 0, 1) == "'") return $variable;
 			elseif(substr($variable, 0, 1) == '#'){
 				$var_element = trim($variable, '#');
-				return '$this->zajlib->config->variable->'.$var_element;
+				return '($this->zajlib->config->variable->'.$var_element.' ?? null)';
 			}
 			else{
 				$var_elements = explode('.',$variable);
 				$new_var = '$this->zajlib->variable';
+                $is_variable = false;
 				// Run through each variable. Variables are valid in three ways: (1) actual variable, (2) numerical, or (3) operator in if tag
 				foreach($var_elements as $element){
 					// (1) Is it an actual variable?
@@ -73,10 +75,22 @@ class zajCompileElement{
 								else $new_var = $element;
 							}
 						}
-						else $new_var .= '->'.$element;
+						else {
+                            // Add null protection
+                            if ($add_null_protection) {
+                                $new_var .= '?->' . $element;
+                            } else {
+                                $new_var .= '->' . $element;
+                            }
+                            $is_variable = true;
+                        }
 				}
+                // Add null protection for variables (to avoid warnings)
+                    if ($is_variable && $add_null_protection) {
+                        $new_var = '('.$new_var.' ?? null)';
+                    }
 				// Add xss protection
-					if($check_xss && !empty(zajLib::me()->zajconf['feature_xss_protection_enabled'])) $new_var = '$this->zajlib->template->strip_xss('.$new_var.', "Found in {{'.$variable.'}} for '.$this->parent->get_requested_path().' / '.$this->parent->line_number.'.")';
+					if($check_xss && !empty(zajLib::me()->ofwconf->feature_xss_protection_enabled)) $new_var = '$this->ofw->security->purify('.$new_var.')';
 				return $new_var;
 			}
 	}

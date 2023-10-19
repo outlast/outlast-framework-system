@@ -19,18 +19,18 @@ class zajfield_timestamp extends zajField {
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 		
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name){
 		// set default options
 			// no default options
 		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			parent::__construct(__CLASS__, $name, $options, $class_name);
 	}	
 	
 	/**
 	 * Defines the structure and type of this field in the mysql database.
 	 * @return array Returns in array with the database definition.
 	 **/
-	public function database(){
+	public function database() : array {
 		// define each field
 			$fields[$this->name] = array(
 					'field' => $this->name,
@@ -49,7 +49,7 @@ class zajfield_timestamp extends zajField {
 	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
-	public function validation($input){
+	public function validation(mixed $input) : bool {
 		return true;
 	}
 	
@@ -59,7 +59,7 @@ class zajfield_timestamp extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return integer Return the data that should be in the variable.
 	 **/
-	public function get($data, &$object){
+	public function get(mixed $data, zajModel &$object) : mixed {
 		// turn date into unix date
 			$datetime = DateTime::createFromFormat("Y-m-d H:i:s", $data);
 			$data = $datetime->getTimestamp();
@@ -74,7 +74,7 @@ class zajfield_timestamp extends zajField {
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 * @todo Remove display/format version
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		// Convert a unix timestamp into the proper format
 		if(is_numeric($data)){
 			$datetime = new DateTime();
@@ -89,7 +89,7 @@ class zajfield_timestamp extends zajField {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return string|array Returns a string ready for export column. If you return an array of strings, then the data will be parsed into multiple columns with 'columnname_arraykey' as the name.
 	 */
-	public function export($data, &$object){
+    public function export(mixed $data, zajModel &$object) : string|array {
 		if(is_numeric($data) && $data != 0) $data = date("Y.m.d. H:i:s", $data);
 		return $data;
 	}

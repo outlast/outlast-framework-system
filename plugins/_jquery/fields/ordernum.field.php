@@ -15,9 +15,9 @@ class zajfield_ordernum extends zajfield_integer {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return mixed Returns the duplicated value.
 	 **/
-	public function duplicate($data, &$object){
+    public function duplicate(mixed $data, zajModel &$object) : mixed {
 		// Ordernum for this object should not be the same as the duplicated object, instead just use what you would for a new object - max+1
-			$maxnum = $this->zajlib->db->max($object->table_name, $this->name);
+			$maxnum = zajLib::me()->db->max($object->table_name, $this->name);
 		return $maxnum+1;
 	}
 }

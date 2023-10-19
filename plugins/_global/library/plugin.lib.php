@@ -7,7 +7,7 @@
  * @package Library
  **/
 
-class zajlib_plugin extends zajLibExtension {
+class ofw_plugin extends zajLibExtension {
 
 	/**
 	 * Checks to see if a plugin is enabled.
@@ -24,7 +24,7 @@ class zajlib_plugin extends zajLibExtension {
 	 * @return boolean Returns true if the plugin is loaded, false otherwise.
 	 **/
 	public function is_loaded($name){
-		return in_array($name, $this->zajlib->loaded_plugins);
+		return in_array($name, $this->ofw->loaded_plugins);
 	}
 
 	/**
@@ -33,9 +33,9 @@ class zajlib_plugin extends zajLibExtension {
 	 * @return array Returns an array of plugin names that are currently enabled.
 	 **/
 	public function get_plugins($type = "all|app|system"){
-		if($type == 'app') return $this->zajlib->zajconf['plugin_apps'];
-		if($type == 'system') return $this->zajlib->zajconf['system_apps'];
-		return $this->zajlib->array->merge($this->zajlib->zajconf['plugin_apps'], $this->zajlib->zajconf['system_apps']);
+		if($type == 'app') return $this->ofw->ofwconf['plugin_apps'];
+		if($type == 'system') return $this->ofw->ofwconf['system_apps'];
+		return $this->ofw->array->merge($this->ofw->ofwconf['plugin_apps'], $this->ofw->ofwconf['system_apps']);
 	}
 
 	/**
@@ -53,24 +53,23 @@ class zajlib_plugin extends zajLibExtension {
 
 		// Result defaults to true
         $result = true;
-
 		// Add the new plugin to the front of the assoc array
         if($system_plugin){
-            $this->zajlib->zajconf['system_apps'] = array_merge(array($plugin=>$plugin), $this->zajlib->zajconf['system_apps']);
-            $pluginbasepath = $this->zajlib->basepath.'system/plugins/';
+            $this->ofw->ofwconf['system_apps'] = array_merge(array($plugin=>$plugin), $this->ofw->ofwconf['system_apps']);
+            $pluginbasepath = $this->ofw->basepath.'system/plugins/';
         }
         else{
-            $this->zajlib->loaded_plugins = array_merge(array($plugin=>$plugin), $this->zajlib->loaded_plugins);
-            $pluginbasepath = $this->zajlib->basepath.'plugins/';
+            $this->ofw->loaded_plugins = array_merge(array($plugin=>$plugin), $this->ofw->loaded_plugins);
+            $pluginbasepath = $this->ofw->basepath.'plugins/';
         }
 
         // Reset the plugin folders
-        $this->zajlib->load->reset_app_folder_paths();
+        $this->ofw->load->reset_app_folder_paths();
 
 		// Only do this if either default controller exists in the plugin folder
         if($load_function && file_exists($pluginbasepath.$plugin.'/controller/'.$plugin.'.ctl.php') || file_exists($pluginbasepath.$plugin.'/controller/'.$plugin.'/default.ctl.php')){
             // reroute but if no __plugin method, just skip without an error message (TODO: maybe remove the false here?)!
-            $result = $this->zajlib->reroute($plugin.'/__plugin/', array($this->zajlib->app.$this->zajlib->mode, $this->zajlib->app, $this->zajlib->mode), false, false);
+            $result = $this->ofw->reroute($plugin.'/__plugin/', array($this->ofw->app.$this->ofw->mode, $this->ofw->app, $this->ofw->mode), false, false);
             // unload the plugin if the result is explicitly false
             if($result === false) $this->unload($plugin);
         }
@@ -88,10 +87,10 @@ class zajlib_plugin extends zajLibExtension {
 		// Check to see if plugin loaded
         if(!$this->is_loaded($plugin)) return false;
 		// Unload plugin and return true
-        unset($this->zajlib->loaded_plugins[$plugin]);
+        unset($this->ofw->loaded_plugins[$plugin]);
 
         // Reset the plugin folders
-        $this->zajlib->load->reset_app_folder_paths();
+        $this->ofw->load->reset_app_folder_paths();
 
 		return true;
 	}
@@ -106,11 +105,11 @@ class zajlib_plugin extends zajLibExtension {
 	public function required($plugin, $requires, $fatal_error = true){
 		$result = true;
 		foreach($requires as $requirement){
-		    if(!$this->zajlib->plugin->is_enabled($requirement) || !$this->zajlib->plugin->is_loaded($requirement)){
+		    if(!$this->ofw->plugin->is_enabled($requirement) || !$this->ofw->plugin->is_loaded($requirement)){
 				$result = false;
 				$msg = "The <strong>$plugin</strong> plugin requires the <strong>$requirement</strong> plugin. You must load $requirement first, and then $plugin in site/index.php. Since this happens in reverse order, use: ['$plugin', '$requirement']";
-				if($fatal_error) return $this->zajlib->error($msg, true);
-				else $this->zajlib->warning($msg);
+				if($fatal_error) return $this->ofw->error($msg, true);
+				else $this->ofw->warning($msg);
 		    }
 		}
 		return $result;
@@ -126,11 +125,11 @@ class zajlib_plugin extends zajLibExtension {
 	public function optional($plugin, $optionals, $fatal_error = true){
 		$result = true;
 		foreach($optionals as $optional){
-		    if($this->zajlib->plugin->is_enabled($optional) && !$this->zajlib->plugin->is_loaded($optional)){
+		    if($this->ofw->plugin->is_enabled($optional) && !$this->ofw->plugin->is_loaded($optional)){
 				$result = false;
 				$msg = "When you include both the <strong>$plugin</strong> and <strong>$optional</strong> plugins, you must load $optional first, and then $plugin in site/index.php. Since this happens in reverse order, use: ['$plugin', '$optional']";
-				if($fatal_error) return $this->zajlib->error($msg, true);
-				else $this->zajlib->warning($msg);
+				if($fatal_error) return $this->ofw->error($msg, true);
+				else $this->ofw->warning($msg);
 		    }
 		}
 		return $result;

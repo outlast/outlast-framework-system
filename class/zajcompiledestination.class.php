@@ -9,25 +9,42 @@
  * @subpackage CompilingBackend
  */
 class zajCompileDestination {
-	private $zajlib;				// object - pointer to global zajlib object
 
-	// instance variables
-		private $file;					// file pointer - source file
-		private $line_number = 0;		// int - number of the current line in this file
-		private $file_path;				// file pointer - source file
+    /**
+     * File pointer resource
+     * @var mixed|false|resource
+     */
+    private mixed $file;
 
-	// controls
-		private $exists = false;		// boolean - true if file exists, writing to this file will not occur
-		private $paused = false;		// boolean - if paused, writing to this file will not occur
-		private $temporary = false;		// boolean - if true, then this is a temporary file, delete on unset
+    /**
+     * Path of the destination
+     * @var string
+     */
+    private string $file_path;
 
-	public function __construct($dest_file, &$zajlib, $temporary = false){
-		// set zajlib & debug stats
-		$this->zajlib =& $zajlib;
+    /**
+     * true if file exists, writing to this file will not occur
+     * @var bool
+     */
+    private bool $exists = false;
+
+    /**
+     * if paused, writing to this file will not occur
+     * @var bool
+     */
+    private bool $paused = false;
+
+    /**
+     * if true, then this is a temporary file, delete on unset
+     * @var bool|mixed
+     */
+    private bool $temporary;
+
+	public function __construct(string $dest_file, bool $temporary = false){
 
 		// jail the destination path
 		$dest_file = trim($dest_file, '/');
-		$this->zajlib->file->file_check($dest_file);
+		zajLib::me()->file->file_check($dest_file);
 
 		// tmp or not?
 		$this->temporary = $temporary;
@@ -35,7 +52,7 @@ class zajCompileDestination {
 		else $subfolder = "view";
 
 		// check path
-		$this->file_path = $this->zajlib->basepath.'cache/'.$subfolder.'/'.$dest_file.'.php';
+		$this->file_path = zajLib::me()->basepath.'cache/'.$subfolder.'/'.$dest_file.'.php';
 
 		zajCompileSession::verbose("Adding <code>$this->file_path</code> to compile destinations.");
 
@@ -46,15 +63,18 @@ class zajCompileDestination {
 		}
 
 		// open the cache file, create folders (if needed)
-		@mkdir(dirname($this->file_path), 0777, true);
+        $directory = dirname($this->file_path);
+        if(!file_exists($directory)){
+            mkdir($directory, 0777, true);
+        }
 		$this->file = fopen($this->file_path, 'w');
 
 		// did it fail?
-		if(!$this->file) return $this->zajlib->error("could not open ($dest_file) for writing. does cache folder have write permissions?");
+		if(!$this->file) return zajLib::me()->error("could not open ($dest_file) for writing. does cache folder have write permissions?");
 		return true;
 	}
 
-	public function write($content){
+	public function write(string $content) : false|int {
 		// if paused, just return OR if exists&temp
 			if(($this->exists && $this->temporary) || $this->paused) return true;
 		// write this to file
@@ -62,21 +82,21 @@ class zajCompileDestination {
 			return fputs($this->file, $content);
 	}
 
-	public function pause(){
+	public function pause() : bool {
 		zajCompileSession::verbose("Pausing <code>$this->file_path</code> compile destination.");
 		$this->paused = true;
 		return true;
 	}
 
-	public function resume(){
+	public function resume() : bool {
 		zajCompileSession::verbose("Resuming <code>$this->file_path</code> compile destination.");
 		$this->paused = false;
 		return true;
 	}
 
-	public function unlink(){
+	public function unlink() : bool {
 		// delete this file
-			return @unlink($this->file_path);
+			return unlink($this->file_path);
 	}
 
 	public function __destruct(){
@@ -84,11 +104,11 @@ class zajCompileDestination {
 		// close the file
 			if($this->file) fclose($this->file);
 		// if this is temporary, delete
-			if($this->temporary) $this->zajlib->compile->unlink($this);
+			if($this->temporary) zajLib::me()->compile->unlink($this);
 	}
 
 	// Read-only access to variables!
-	public function __get($name){
+	public function __get(string $name) : mixed {
 		return $this->$name;
 	}
 

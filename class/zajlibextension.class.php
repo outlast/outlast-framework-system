@@ -32,15 +32,15 @@ abstract class zajLibExtension{
 
 	/**
 	 * Creates a new {@link zajLibExtension}
-	 * @param zajLib $zajlib A reference to the global zajlib object.
-	 * @param string $system_library The name of the system library.
+	 * @param zajLib $ofw A reference to the global zajlib object.
+	 * @param string $library_name The name of the system library.
 	 **/
-	public function __construct(&$zajlib, $system_library){
+	public function __construct(&$ofw, $library_name){
 		// set my system library
-		$this->system_library = $system_library;
+		$this->system_library = $library_name;
 		// set my parent
-		$this->ofw = $zajlib;
-        $this->zajlib = $this->ofw;
+		$this->ofw = $ofw;
+		$this->zajlib = $this->ofw;
 	}
 
 	/**
@@ -52,5 +52,6 @@ abstract class zajLibExtension{
 		// throw warning
 		$this->ofw->warning("The method $method is not available in library {$this->system_library}!");
 	}
+
 }
 

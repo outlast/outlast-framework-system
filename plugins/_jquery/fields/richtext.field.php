@@ -18,7 +18,7 @@ class zajfield_richtext extends zajfield_textarea {
 	 * @param zajModel $object This parameter is a pointer to the actual object which is being modified here.
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		$data = strip_tags($data, '<p><br><a><b><i><u><strong><em><div>');
 		return $data;
 	}

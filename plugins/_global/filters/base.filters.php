@@ -380,11 +380,6 @@ class zajlib_filter_base extends zajElementCollection{
 		return true;
 	}
 
-	public function filter_safe($parameter, &$source){
-		// write to file
-			// TODO: add
-		return true;
-	}
 	public function filter_safeseq($parameter, &$source){
 		// write to file
 			// TODO: add

@@ -17,7 +17,7 @@ class zajfield_name extends zajfield_text {
 	 * @return array Returns an array where the first parameter is the database update, the second is the object update
 	 * @todo Fix where second parameter is actually taken into account! Or just remove it...
 	 **/
-	public function save($data, &$object){
+	public function save(mixed $data, zajModel &$object) : mixed {
 		// modify the object name
 			$object->name = $data;
 		// now return

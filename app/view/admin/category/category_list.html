@@ -10,7 +10,7 @@
             <input type="radio" name="show"> {{#show_all#}}
         </label>
     </div>
-	<a href='{{baseurl}}admin/{{#admin_list_url#}}/add/' class="btn btn-primary btn-xs"><i class="fa fa-plus"></i> {{#admin_new#}}</a>
+	<a href='{{baseurl}}admin/{{#admin_list_url#}}/add/{% if current_category %}?parentcategory={{current_category.id}}{% endif %}' class="btn btn-primary btn-xs"><i class="fa fa-plus"></i> {{#admin_new#}}</a>
 {% endblock submenu %}
 
 {% block content %}

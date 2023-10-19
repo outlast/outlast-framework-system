@@ -23,7 +23,7 @@ class zajlib_tag_base extends zajElementCollection{
 	 **/
 	public function tag_comment($param_array, &$source){
 		// convert to php comment
-			if($param_array[0]) $this->zajlib->compile->write("<?php\n// $param_array[0]\n?>");
+			if(array_key_exists(0, $param_array)) $this->zajlib->compile->write("<?php\n// $param_array[0]\n?>");
 			else{
 				// nested mode!
 				$this->zajlib->compile->write("<?php\n/*");
@@ -70,7 +70,7 @@ class zajlib_tag_base extends zajElementCollection{
 	// choose which one to display now
 		\$which_one = abs($var_name_counter % count($var_name));
 	// choose
-		echo \$this->zajlib->template->strip_xss({$var_name}{$which_one_var}, 'Found in {% cycle %} tag.');
+		echo \$this->ofw->security->purify({$var_name}{$which_one_var});
 ?>
 EOF;
 		// write to file
@@ -130,7 +130,7 @@ EOF;
 		$my_array
 	// first which is true
 		foreach($firstof_array as $el->variable){
-			if($el->variable) echo $this->zajlib->template->strip_xss($el->variable, 'Found in {% firstof %} tag.');
+			if($el->variable) echo $this->ofw->security->purify($el->variable);
 			break;
 		}
 EOF;
@@ -161,18 +161,21 @@ EOF;
 	 * {@link tag_for()}
 	 **/
 	public function tag_foreach($param_array, &$source){
-		// which parameter goes where?
+        if (count($param_array) < 3) {
+            $source->error("Invalid for tag syntax!");
+        }
+        // which parameter goes where?
 			// django compatible
-			if($param_array[1]->variable == '$this->zajlib->variable->in'){
+			if($param_array[1]->vartext == 'in'){
 				$fetcher = $param_array[2]->variable;
 				$fetchervar = $param_array[2]->vartext;
-				$item = $param_array[0]->variable;
+				$item = $param_array[0]->variable_write;
 			}
 			// php compatible
-			elseif($param_array[1]->variable == '$this->zajlib->variable->as'){
+			elseif($param_array[1]->vartext == 'as'){
 				$fetcher = $param_array[0]->variable;
 				$fetchervar = $param_array[0]->vartext;
-				$item = $param_array[2]->variable;
+				$item = $param_array[2]->variable_write;
 			}
 			else $source->warning('Invalid foreach tag syntax.');
 		// add a level to hierarchy
@@ -192,7 +195,7 @@ EOF;
 			if(empty(\$forloop_depth)) \$forloop_depth = 1;
 			else \$forloop_depth++;
 		// does a parent forloop exist?
-			if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop)) \$this->zajlib->variable->ofw->tmp->parent_forloop = clone \$this->zajlib->variable->ofw->tmp->current_forloop;
+			if(isset(\$this->zajlib->variable->ofw->tmp->current_forloop)) \$this->zajlib->variable->ofw->tmp->parent_forloop = clone \$this->zajlib->variable->ofw->tmp->current_forloop;
 			else \$this->zajlib->variable->ofw->tmp->parent_forloop = false;
 		// create for loop variables
 			\$this->zajlib->variable->ofw->tmp->current_forloop = new stdClass();
@@ -304,12 +307,12 @@ EOF;
 	}}
 	
 // reset foreach item
-	if(@defined($data[local])){
+	if(isset($data[local])){
 		$data[item] = $data[local];
 		unset(\$foreach_item);
 	}
 	// if I had a parent, set me
-	if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop->parentloop)){
+	if(is_object(\$this->zajlib->variable->ofw->tmp->current_forloop->parentloop ?? null)){
 		// Set my total counters
 		\$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter = \$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter;
 		\$this->zajlib->variable->ofw->tmp->parent_forloop->totalcounter0 = \$this->zajlib->variable->ofw->tmp->current_forloop->totalcounter0;
@@ -555,27 +558,28 @@ EOF;
 	private function generate_conditional_string($param_array, $source){
 			$param_ok = true;	// needed to track that param cannot follow param
 			$string = '';
-			foreach($param_array as $param){
-				switch($param->variable){
-					case '$this->zajlib->variable->not':	$string .= "!";
+            /** @var zajCompileVariable $param */
+            foreach($param_array as $param){
+				switch($param->vartext){
+					case 'not':	                            $string .= "!";
 															break;
-					case '$this->zajlib->variable->and':	$string .= "&& ";
+					case 'and':	                            $string .= "&& ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->or':		$string .= "|| ";
+					case 'or':		                        $string .= "|| ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->gt':
+					case 'gt':
 					case '>':
 															$string .= "> ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->lt':
+					case 'lt':
 					case '<':
 															$string .= "< ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->eq':
+					case 'eq':
 					case '=':
 					case '==':
 
@@ -587,17 +591,17 @@ EOF;
 															$string .= "=== ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->lteq':
+					case 'lteq':
 					case '<=':
 															$string .= "<= ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->gteq':
+					case 'gteq':
 					case '>=':
 															$string .= ">= ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->neq':
+					case 'neq':
 					case '!=':
 															$string .= "!= ";
 															$param_ok = true;
@@ -606,11 +610,11 @@ EOF;
 															$string .= "!== ";
 															$param_ok = true;
 															break;
-					case '$this->zajlib->variable->in':
+					case 'in':
 															$source->error("Use the |in filter instead!"); // fatal error
 															$param_ok = false;
 															break;
-					default:	if(!$param_ok) $source->error("Proper operator expected instead of $param!"); // fatal error
+					default:	if(!$param_ok) $source->error("Proper operator expected instead of $param->vartext!"); // fatal error
 								$string .= $param->variable.' ';
 								$param_ok = false;
 								break;
@@ -728,36 +732,36 @@ EOF;
 	 **/
 	public function tag_templatetag($param_array, &$source){
 		// write to file
-			switch($param_array[0]->variable){
-				case '$this->zajlib->variable->openblock':
+			switch($param_array[0]->vartext){
+				case 'openblock':
 				case "'openblock'":
 																$this->zajlib->compile->write('{%');
 																break;
-				case '$this->zajlib->variable->closeblock':
+				case 'closeblock':
 				case "'closeblock'":
 																$this->zajlib->compile->write('%}');
 																break;
-				case '$this->zajlib->variable->openvariable':
+				case 'openvariable':
 				case "'openvariable'":
 																$this->zajlib->compile->write('{{');
 																break;
-				case '$this->zajlib->variable->closevariable':
+				case 'closevariable':
 				case "'closevariable'":
 																$this->zajlib->compile->write('}}');
 																break;
-				case '$this->zajlib->variable->openbrace':
+				case 'openbrace':
 				case "'openbrace'":
 																$this->zajlib->compile->write('{');
 																break;
-				case '$this->zajlib->variable->closebrace':
+				case 'closebrace':
 				case "'closebrace'":
 																$this->zajlib->compile->write('}');
 																break;
-				case '$this->zajlib->variable->opencomment':
+				case 'opencomment':
 				case "'opencomment'":
 																$this->zajlib->compile->write('{#');
 																break;
-				case '$this->zajlib->variable->closecomment':
+				case 'closecomment':
 				case "'closecomment'":
 																$this->zajlib->compile->write('#}');
 																break;
@@ -799,14 +803,14 @@ EOF;
 		if($param_array[1]->vartext == 'as'){
 			// add level
 				$temporary_variable = '$this->zajlib->variable->ofw->tmp->before_with_'.uniqid();
-				$source->add_level('with', array([$param_array[2]->variable], [$temporary_variable]));
+				$source->add_level('with', array([$param_array[2]->variable_write], [$temporary_variable]));
 			// generate with
 				$contents = <<<EOF
 <?php
 // save previous value for restore
 	{$temporary_variable} = {$param_array[2]->variable};
 // start with
-	{$param_array[2]->variable} = {$param_array[0]->variable};
+	{$param_array[2]->variable_write} = {$param_array[0]->variable};
 ?>
 EOF;
 		}
@@ -823,7 +827,8 @@ EOF;
 				// The first element is the left side of the equals. It must be a variable.
 				$set_me_param = $param_array[$i];
 				if(is_numeric($set_me_param->vartext) || $set_me_param->vartext[0] == '"' || $set_me_param->vartext[0] == "'") return $source->error("You cannot set a string or number to a value in your {% with %} tag! Make sure to have a variable on the left of your x=y syntax.");
-				$set_me = $set_me_param->variable;
+                $set_me = $set_me_param->variable;
+				$set_me_write = $set_me_param->variable_write;
 
 				// The second item should be an = sign
 				$equal_param = $param_array[$i+1];
@@ -836,7 +841,7 @@ EOF;
 				// Store old value in temporary variable and store var name for endwith reference
 				$temporary_variable = '$before_with_'.uniqid();
 				$temporary_variables[] = $temporary_variable;
-				$set_variables[] = $set_me;
+				$set_variables[] = $set_me_write;
 
 				// Generate php
 				$contents .= <<<EOF
@@ -844,7 +849,7 @@ EOF;
 // save previous value for restore
 	{$temporary_variable} = {$set_me};
 // start with
-	{$set_me} = {$to_this_value};
+	{$set_me_write} = {$to_this_value};
 ?>
 EOF;
 			}
@@ -895,6 +900,9 @@ EOF;
 	public function tag_block($param_array, &$source){
 		// Note: the block parameter is special because even if it is a variable it is not
 		//		treated as such. So {% block content %} is same as {% block 'content' %}.
+        if(is_string($source)) {
+            exit("Woo: $source");
+        }
 
 		/** @var zajCompileSource $source */
 
@@ -913,6 +921,9 @@ EOF;
 			// Yes.
 
 			// Write lower level block cache to all main source block caches
+            if(is_string($source)) {
+                exit("ooppaa: $source");
+            }
 			$child_block = $source->child_source->get_block($block_name, true);
 			$child_block->insert();
 
@@ -985,7 +996,11 @@ EOF;
                 // If the currently ended block is not overridden (and nor are any of its parents)
                 ($new_current_block && !$new_current_block->is_overridden(true))
             ){
-                zajCompileSession::verbose("We are back at $new_current_block->name in <code>$source->file_path</code>, so unpausing main destination.");
+                if ($new_current_block != null) {
+                    zajCompileSession::verbose("We are back at $new_current_block->name in <code>$source->file_path</code>, so unpausing main destination.");
+                } else {
+                    zajCompileSession::verbose("We are back at root in <code>$source->file_path</code>, so unpausing main destination.");
+                }
                 $this->zajlib->compile->main_dest_paused(false);
             }
 

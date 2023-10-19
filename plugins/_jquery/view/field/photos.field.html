@@ -10,7 +10,11 @@
 		ofw.loadCss('system/css/ext/dropzone/outlast.css');
 
 		// Add data attr
+		var didLoadExistingItems = false;
 		ofw.addDataAttributeHandler('photo', 'system/js/data/field/', function(photo){
+			if(didLoadExistingItems) return;
+			didLoadExistingItems = true;
+			photo.resetValuesAndOptions('{{field.uid}}');
 			{% block photo_attribute_init %}
 				{% foreach field.value as field_thumb %}
 					photo.loadExisting('{{field.uid}}', '{{field_thumb.id}}', { name: '{{field_thumb.name|escapejs}}', size: '{{field_thumb.data.filesizes.full|escapejs}}', orientation: '{{field_thumb.orientation|escapejs}}' });
@@ -36,6 +40,6 @@
 {% endblock %}
 <div data-photo="uploadProgressBar" data-photo-field-id="{{field.uid}}" class="progress progress-striped active hide"><div class="progress-bar bar" style="width: 0;"></div></div>
 
-<input type="hidden" name="{{field.name}}" id="{{field.uid}}" data-photo="field" data-photo-field-id="{{field.uid}}">
+<input data-event="trigger" data-event-trigger-major="change" type="hidden" name="{{field.name}}" id="{{field.uid}}" data-photo="field" data-photo-field-id="{{field.uid}}">
 
 <div class="clearfix"><br/></div>

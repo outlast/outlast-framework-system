@@ -16,7 +16,7 @@ class zajfield_email extends zajfield_text {
 	 * @param mixed $input The input data.
 	 * @return boolean Returns true if validation was successful, false otherwise.
 	 **/
-	public function validation($input){
+	public function validation(mixed $input) : bool {
 		// Check to see if email is good
 		return zajLib::me()->email->valid($input);
 	}

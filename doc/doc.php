@@ -8,6 +8,8 @@ die("This file is for documentation.");
  * @method static zajDb boolean(boolean $default=false)
  * @method static zajDb category
  * @method static zajDb categories
+ * @method static zajDbConfiguration configuration
+ * @method static zajDbConfiguration configurations
  * @method static zajDb color
  * @method static zajDB custom
  * @method static zajDb date
@@ -23,12 +25,12 @@ die("This file is for documentation.");
  * @method static zajDb keyvalue
  * @method static zajDb locale
  * @method static zajDb locales
- * @method static zajDb manytomany(string $other_object, string $other_field='')
+ * @method static zajDbManyToMany manytomany(string $other_object, string $other_field='')
  * @method static zajDb manytoone($other_object)
  * @method static zajDbMap map
  * @method static zajDb name(integer $length=255)
- * @method static zajDb onetoone($other_object, $other_field='')
- * @method static zajDb onetomany($other_object, $other_field='')
+ * @method static zajDb onetoone(string $other_object, string $other_field='')
+ * @method static zajDb onetomany(string $other_object, string $other_field)
  * @method static zajDb ordernum
  * @method static zajDb password
  * @method static zajDbPhoto photo
@@ -51,6 +53,15 @@ class zajDb{}
 
 
 /**
+ * Class zajDbConfiguration
+ * @method zajDbConfiguration file(string $name)
+ * @method zajDbConfiguration section(string $name)
+ * @method zajDbConfiguration key(string $name)
+ */
+class zajDbConfiguration{}
+
+
+/**
  * Class zajDbPhoto
  * @method zajDbPhoto min_width
  * @method zajDbPhoto min_height
@@ -63,6 +74,10 @@ class zajDbPhoto extends zajDb{}
  **/
 class zajDbFriendly extends zajDb{}
 
+/**
+ * @method zajDbManyToMany maximum_selection_length(int $count) The number of connections that can be selected.
+ */
+class zajDbManyToMany extends zajDb {}
 
 /**
  * Class zajDbMap
@@ -169,7 +184,7 @@ class zajlibConfigVariable extends stdClass{}
 
 /**
  * Class zajTestInstance
- * @property zajLib $zajlib
+ * @property zajLib $ofw
  */
 class zajTestInstance{}
 

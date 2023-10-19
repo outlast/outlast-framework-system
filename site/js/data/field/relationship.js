@@ -45,9 +45,17 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 	 * Set the input field value.
 	 * @param {string} fieldid The field identifier.
 	 * @param {Array|values} values An array of ids or a single id. Depending on the type of relationship.
+	 * @param {bool} [triggerOnChangeEvent=true] If set to true (the default), onChange will be triggered.
 	 */
-	var setFieldValues = function(fieldid, values) {
-		getSelectElement(fieldid).val(values).trigger('change');
+	var setFieldValues = function(fieldid, values, triggerOnChangeEvent) {
+		let $field = getSelectElement(fieldid)
+		$field.val(values)
+		if (typeof triggerOnChangeEvent === 'undefined' || triggerOnChangeEvent) {
+			$field.trigger('change');
+		} else {
+			// Trigger scoped change
+			$field.trigger('change.select2');
+		}
 	};
 
 	/**
@@ -71,11 +79,13 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 	/**
 	 * Init the select javascript.
 	 * @param {string} fieldid The field unique id.
+	 * @param {boolean} tagMode If set to true, free-text will be allowed (to create new items).
 	 * @param {boolean} ajaxMode If set to true, the select will initialize as an ajax search box.
 	 * @param {string} [className=null] The class name (zajModel name) for this search field. Only required if ajaxMode is true.
 	 * @param {string} [fieldName=null] The field name (zajModel field name) for this search field. Only required if ajaxMode is true.
+	 * @param {Number} [maximumSelectionLength=null] The max number of items that can be selected. Null or 0 means unlimited.
 	 */
-	var selectInit = function(fieldid, ajaxMode, className, fieldName) {
+	var selectInit = function(fieldid, tagMode, ajaxMode, className, fieldName, maximumSelectionLength) {
 		var $mySelectElement = getSelectElement(fieldid);
 
 		// Default options
@@ -83,6 +93,16 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 			allowClear: true,
 			width: '100%'
 		};
+
+		// Tagging mode?
+		if (tagMode) {
+			mySelectOptions['tags'] = true;
+		}
+
+		// Limit?
+		if (typeof maximumSelectionLength != 'undefined') {
+			mySelectOptions['maximumSelectionLength'] = maximumSelectionLength;
+		}
 
 		// Set up options if in ajaxMode
 		if(ajaxMode){
@@ -143,7 +163,8 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 		 * Initialize the select.
 		 */
 		select: function(dataset, $el){
-			selectInit(dataset.relationshipFieldId, dataset.relationshipAjaxMode, dataset.relationshipClassName, dataset.relationshipFieldName);
+			let numericMaximumLength = parseInt(dataset.relationshipMaximumSelectionLength);
+			selectInit(dataset.relationshipFieldId, dataset.relationshipFieldAllowNew === "true", dataset.relationshipAjaxMode, dataset.relationshipClassName, dataset.relationshipFieldName, !isNaN(numericMaximumLength) ? numericMaximumLength : null);
 		}
 
 	};
@@ -166,12 +187,13 @@ define('system/js/data/field/relationship', ["../../ext/select2/select2.min", ".
 		 * Set field value and then set the input value.
 		 * @param {string} fieldid The field unique id.
 		 * @param {Array|string} values An array of ids.
+		 * @param {bool} [triggerOnChangeEvent=true] If set to true (the default), onChange will be triggered.
 		 */
-		setFieldValues: function(fieldid, values){
+		setFieldValues: function(fieldid, values, triggerOnChangeEvent){
 			// Set input
-			setFieldValues(fieldid, values);
+			setFieldValues(fieldid, values, triggerOnChangeEvent);
         },
-		setFieldValue: function(fieldid, values){ api.setFieldValues(fieldid, values); },
+		setFieldValue: function(fieldid, values, triggerOnChangeEvent){ api.setFieldValues(fieldid, values, triggerOnChangeEvent); },
 
 		/**
 		 * Get field value for a specific field and type.

@@ -6,46 +6,55 @@
 
 <hr/>
 	{% block testresults %}
-        {% if test.Errors|count > 0 %}
-			<span class="badge badge-important">{{test.Errors|count}} tests failed</span><br/><br/>
-			{% foreach test.Errors as Error %}
-				<div class="alert alert-error">
-					{{Error.message}}
-				</div>
-			{% endforeach %}
-		{% endif %}
+		{% if dbresults and dbresults.num_of_changes > 0 %}
+			<span class="badge badge-warning">All tests were skipped</span><br/><br/>
+			<div class="alert alert-warning">
+				<h5>Tests were not run!</h5>
+				There are pending database changes. Please run the database update first, then rerun the deployment tests.
+			</div>
+		{% elseif %}
+			{% if test.Errors|count > 0 %}
+				<span class="badge badge-important">{{test.Errors|count}} tests failed</span><br/><br/>
+				{% foreach test.Errors as Error %}
+					<div class="alert alert-error">
+						{{Error.message}}
+					</div>
+				{% endforeach %}
+			{% endif %}
 
-		{% if test.Warnings|count > 0 %}
-			<span class="badge badge-warning">{{test.Warnings|count}} tests were skipped</span><br/><br/>
-			{% foreach test.Warnings as Result %}
-				<div class="alert alert-warning">
+			{% if test.Warnings|count > 0 %}
+				<span class="badge badge-warning">{{test.Warnings|count}} tests were skipped</span><br/><br/>
+				{% foreach test.Warnings as Result %}
+					<div class="alert alert-warning">
+						{{Result.message}}
+					</div>
+				{% endforeach %}
+			{% endif %}
+
+			{% if testnotices|count > 0 %}
+				<span class="badge badge-invert" style="cursor: pointer;" onclick="$('.notices').toggleClass('hide');">{{testnotices|count}} notices</span><br/><br/>
+				{% foreach testnotices as notice %}
+				<div class="alert alert-info notices hide">
+					{{notice}}
+				</div>
+				{% endforeach %}
+			{% endif %}
+
+			<span class="badge badge-success">{{test.Results|count}} tests succeeded</span><br/><br/>
+			{% foreach test.Results as Result %}
+				<div class="alert alert-success">
 					{{Result.message}}
 				</div>
 			{% endforeach %}
-		{% endif %}
 
-        {% if testnotices|count > 0 %}
-			<span class="badge badge-invert" style="cursor: pointer;" onclick="$('.notices').toggleClass('hide');">{{testnotices|count}} notices</span><br/><br/>
-			{% foreach testnotices as notice %}
-			<div class="alert alert-info notices hide">
-				{{notice}}
-			</div>
-			{% endforeach %}
-		{% endif %}
+			<hr/>
 
-		<span class="badge badge-success">{{test.Results|count}} tests succeeded</span><br/><br/>
-		{% foreach test.Results as Result %}
-			<div class="alert alert-success">
-				{{Result.message}}
-			</div>
-		{% endforeach %}
-
-		<hr/>
-
-		{% if test.testcount %}
-			<p align="center">Ran {{test.testcount}} tests in {{test.filecount}} files, completed in {{test.Duration|round:2}} seconds</p>
-		{% elseif %}
-			<p align="center">No tests have been defined. You can <a href="http://outlast.hu/test-driven-development-in-mozajik/" target="_blank">create unit tests like this</a>.</p>
+			{% if test.testcount %}
+				<p align="center">Ran {{test.testcount}} tests in {{test.filecount}} files, completed in {{test.Duration|round:2}} seconds</p>
+			{% elseif %}
+				<p align="center">No tests have been defined. You can <a href="http://outlast.hu/test-driven-development-in-mozajik/" target="_blank">create unit tests like this</a>.</p>
+			{% endif %}
 		{% endif %}
 	{% endblock testresults %}
+
 {% endblock updatecontent %}

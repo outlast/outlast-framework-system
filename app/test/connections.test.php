@@ -1,21 +1,21 @@
 <?php
 
     // Load up mocks and models
-    include(zajLib::me()->basepath.'system/plugins/_test/mock/zajlib_db.mock.php');
+    include(zajLib::me()->basepath.'system/plugins/_test/mock/ofw_db.mock.php');
 
 	/**
 	 * A standard unit test for Outlast Framework model connections
 	 **/
-	class OfwConnectionsTest extends zajTest {
+	class OfwConnectionsTest extends ofwTest {
 
 		/**
 		 * Set up stuff.
 		 **/
 		public function setUp(){
 			// Disabled if mysql not enabled
-				if(!$this->zajlib->zajconf['mysql_enabled']) return false;
+				if(!$this->ofw->ofwconf['mysql_enabled']) return false;
 			// Load up my _test plugin (if not already done)
-				$this->zajlib->plugin->load('_test', true, true);
+				$this->ofw->plugin->load('_test', true, true);
 
 			return true;
 		}
@@ -25,14 +25,14 @@
 		 */
 		public function system_connections_is_connected(){
 			// Disabled if mysql not enabled
-			if(!$this->zajlib->zajconf['mysql_enabled']) return false;
+			if(!$this->ofw->ofwconf['mysql_enabled']) return false;
 
-            /** @var OfwTest $ofwtest */
+            /** @var OfwTestModel $ofwtest */
             /** @var OfwTestAnother $ofwtestanother */
-            $ofwtest = OfwTest::create();
+            $ofwtest = OfwTestModel::create();
             $ofwtestanother = OfwTestAnother::create();
-            $db = new zajlib_db_mock();
-            $db2 = new zajlib_db_mock();
+            $db = new ofw_db_mock();
+            $db2 = new ofw_db_mock();
             $ofwtest->set_mock_database($db);
             $ofwtestanother->set_mock_database($db2);
             $ofwtest->data->ofwtestanothers->set_mock_database($db);
@@ -42,31 +42,67 @@
             $ofwtestanother->data->ofwtests->set_mock_database($db2);
             $ofwtestanother->data->ofwtests->is_connected($ofwtest);
 
-            $sql = "SELECT COUNT(*) as c FROM connection_ofwtest_ofwtestanother WHERE id1='{$ofwtest->id}' AND id2='{$ofwtestanother->id}' AND field='ofwtestanothers'";
-            zajTestAssert::areIdentical($sql, $db->last_query);
-            $sql2 = "SELECT COUNT(*) as c FROM connection_ofwtest_ofwtestanother WHERE id2='{$ofwtestanother->id}' AND id1='{$ofwtest->id}' AND field='ofwtestanothers'";
-            zajTestAssert::areIdentical($sql2, $db2->last_query);
+            $sql = "SELECT COUNT(*) as c FROM connection_ofwtestmodel_ofwtestanother WHERE id1='{$ofwtest->id}' AND id2='{$ofwtestanother->id}' AND field='ofwtestanothers'";
+            ofwTestAssert::areIdentical($sql, $db->last_query);
+            $sql2 = "SELECT COUNT(*) as c FROM connection_ofwtestmodel_ofwtestanother WHERE id2='{$ofwtestanother->id}' AND id1='{$ofwtest->id}' AND field='ofwtestanothers'";
+            ofwTestAssert::areIdentical($sql2, $db2->last_query);
 
 			return true;
 		}
+
+        /**
+         * Check saving one to ones
+         */
+        public function system_connections_onetoone() {
+			// Disabled if mysql not enabled
+			if(!$this->ofw->ofwconf['mysql_enabled']) return false;
+
+			// Create two test items
+			$log = EmailLog::create();
+			$log->set('subject', 'Test 1')->save();
+			$version = MozajikVersion::create();
+			$version->set('major', 20)->save();
+
+			// Try to set from parent side
+			$log->set('version', $version)->save();
+			ofwTestAssert::areIdentical($version->id, $log->data->version?->id);
+			ofwTestAssert::areIdentical($log->id, $version->data->log->id);
+			$log->set('version', false)->save();
+			ofwTestAssert::isNull($log->data->version);
+			$version->data->unload('log');
+			ofwTestAssert::isNull($version->data->log);
+
+			// Now try to set from child side
+			$version->set('log', $log)->save();
+			ofwTestAssert::areIdentical($version->id, $log->data->version->id);
+			ofwTestAssert::areIdentical($log->id, $version->data->log->id);
+			$version->set('log', false)->save();
+			ofwTestAssert::isNull($version->data->log);
+			$log->data->reload();
+			ofwTestAssert::isNull($log->data->version);
+
+			return true;
+
+        }
+
 
 		/**
 		 * Check reordering
 		 */
 		public function system_connections_reordering(){
 			// Disabled if mysql not enabled
-			if(!$this->zajlib->zajconf['mysql_enabled']) return false;
+			if(!$this->ofw->ofwconf['mysql_enabled']) return false;
 
-            /** @var OfwTest $ofwtest */
-            $ofwtest = OfwTest::create();
-            $db = new zajlib_db_mock();
+            /** @var OfwTestModel $ofwtest */
+            $ofwtest = OfwTestModel::create();
+            $db = new ofw_db_mock();
             $ofwtest->set_mock_database($db);
             $ofwtest->data->ofwtestanothers->set_mock_database($db);
             $ofwtest->data->ofwtestanothers->reorder([3, 2, 1]);
 
 
-            $sql = "SELECT id2 as id, order2 as ordernum FROM connection_ofwtest_ofwtestanother WHERE id1='$ofwtest->id' AND id2 IN ('3', '2', '1') ORDER BY order2 ASC";
-            zajTestAssert::areIdentical($sql, $db->last_query);
+            $sql = "SELECT id2 as id, order2 as ordernum FROM connection_ofwtestmodel_ofwtestanother WHERE id1='$ofwtest->id' AND id2 IN ('3', '2', '1') ORDER BY order2 ASC";
+            ofwTestAssert::areIdentical($sql, $db->last_query);
 
             return true;
         }
@@ -76,7 +112,7 @@
 		 **/
 		public function tearDown(){
 			// Disabled if mysql not enabled
-            if(!$this->zajlib->zajconf['mysql_enabled']) return false;
+            if(!$this->ofw->ofwconf['mysql_enabled']) return false;
             return true;
 		}
 

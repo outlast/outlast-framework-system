@@ -20,17 +20,17 @@ class zajfield_id extends zajField {
 	const show_template = false;	// string - used on displaying the data via the appropriate tag (n/a)
 			
 	// Construct
-	public function __construct($name, $options, $class_name, &$zajlib){
+	public function __construct($name, $options, $class_name){
 		// call parent constructor
-			parent::__construct(__CLASS__, $name, $options, $class_name, $zajlib);
+			parent::__construct(__CLASS__, $name, $options, $class_name);
 	}	
 
 	/**
 	 * Defines the structure and type of this field in the mysql database.
 	 * @return array Returns in array with the database definition.
 	 **/
-	public function database(){
-		if($this->options[0] == AUTO_INCREMENT){
+	public function database() : array {
+		if($this->options[0] ?? null == AUTO_INCREMENT){
 			$type = 'int';
 			$options = array(0 => 11);
 			$extra = AUTO_INCREMENT;
@@ -60,7 +60,7 @@ class zajfield_id extends zajField {
 	 * @param array $filter An array of values specifying what type of filter this is.
 	 * @return bool|string
 	 */
-	public function filter(&$fetcher, $filter){
+    public function filter(zajFetcher &$fetcher, array $filter) : bool|string {
 		// break up filter
 		list($field, $value, $operator, $type) = $filter;
 
@@ -101,7 +101,7 @@ class zajfield_id extends zajField {
     /**
      * Disable save as a fatal error for id fields.
      */
-	public function save($data, &$object){
+    public function save(mixed $data, zajModel &$object) : mixed {
 		return zajLib::me()->error("You tried modifying the id of an object. This is not allowed.");
 	}
 
