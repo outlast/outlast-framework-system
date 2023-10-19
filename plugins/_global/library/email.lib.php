@@ -65,7 +65,10 @@ class zajlib_email extends zajLibExtension {
 		}
 
 		// Get my email data for from and to
-		$from_data = $this->get_named_email($from);
+        $from_data = $from;
+        if (is_string($from)) {
+            $from_data = $this->get_named_email($from);
+        }
 		$to_data = $this->get_named_email($to);
 
 		// Check if $to is valid
@@ -232,6 +235,17 @@ class zajlib_email extends zajLibExtension {
 			$this->postmark_warning_sent = true;
 		}
 
+        // Separate emails
+        if (is_string($from)) {
+            $from = $this->get_named_email($from);
+        }
+        $to = $this->get_named_email($to);
+
+        if ($additional_headers === false) {
+            $additional_headers = array();
+        }
+        $additional_headers['ReplyTo'] = (!empty($from->replyto)) ? $from->replyto : $from->email;
+
 		// Tag with domain
 		$tag = $this->zajlib->domain;
 		// Build my headers
@@ -251,8 +265,8 @@ class zajlib_email extends zajLibExtension {
 		// Now build my body
 		// {From: 'sender@example.com', To: 'receiver@example.com', Subject: 'Postmark test', HtmlBody: '<html><body><strong>Hello</strong> dear Postmark user.</body></html>'}
 		$pbody = array(
-			'From'=> $from,
-			'To'=>$to,
+			'From'=> $from->email,
+			'To'=>$to->email,
 			'Subject'=>$subject,
 			'HtmlBody'=>$body,
 			'TextBody'=>$txtbody,
@@ -296,7 +310,7 @@ class zajlib_email extends zajLibExtension {
 		}
 
 		// Post it and return it!
-		return json_decode($this->zajlib->request->post(POSTMARK_API_SEND_URL, json_encode($pbody), false, $pheader));
+		return (json_decode($this->zajlib->request->post(POSTMARK_API_SEND_URL, json_encode($pbody), false, $pheader)));
 	}
 
 	/**
@@ -313,7 +327,9 @@ class zajlib_email extends zajLibExtension {
 	 */
 	private function sendgrid($from, $to, $subject, $body, $bcc = false, $additional_headers = false, $send_at = false) {
 		// Separate emails
-		$from = $this->get_named_email($from);
+        if (is_string($from)) {
+            $from = $this->get_named_email($from);
+        }
 		$to = $this->get_named_email($to);
 
 		// Calculate text body based on actual body or stripped body
@@ -328,6 +344,7 @@ class zajlib_email extends zajLibExtension {
 			'api_user'=>$this->zajlib->config->variable->email_api_user,
 			'api_key'=>$this->zajlib->config->variable->email_api_key,
 			'from'=> $from->email,
+			'replyto'=> (!empty($from->replyto)) ? $from->replyto : $from->email,
 			'fromname'=> $from->name,
 			'to'=>$to->email,
 			'toname'=>$to->name,
