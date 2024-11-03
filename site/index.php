@@ -42,7 +42,7 @@
 
     // Set default encoding to unicode
     ini_set('default_charset', 'utf-8');
-    mb_internal_encoding("UTF-8");
+    mb_regex_encoding("UTF-8");
 
     // Avoid scientific notation in large numbers (64bit int is 19 digits)
     ini_set('precision', 19);
